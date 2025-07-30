@@ -330,6 +330,22 @@
 - ✅ Eliminación de variable activeTab no utilizada
 - ✅ Interfaz más limpia sin duplicaciones visuales
 
+### **Commit #011 - Gestor de Categorías Jerárquico**
+**Fecha:** [Fecha actual]
+**Descripción:** Implementación completa del gestor de categorías con estructura jerárquica de 3 niveles
+**Cambios:**
+- ✅ Estructura jerárquica: Pestañas → Estilos → Categorías con tags
+- ✅ Navegación específica por pestaña (FIGURAS, ESCUELA, EVENTOS)
+- ✅ Estilos específicos por pestaña (SALSA, BACHATA, KIZOMBA, ZOUK, MERENGUE)
+- ✅ Categorías específicas por estilo y pestaña
+- ✅ Tags hardcodeados protegidos con icono de candado (primeros 3)
+- ✅ Tags dinámicos gestionables por admins
+- ✅ Botón "+ NUEVA CATEGORÍA" solo para admins
+- ✅ Botón "Agregar tag" en cada categoría (solo admins)
+- ✅ Colores específicos para cada categoría y estilo
+- ✅ Estructura independiente por pestaña (no se comparten tags)
+- ✅ Interfaz moderna con gradientes y transiciones suaves
+
 ---
 
 ## 🎯 PRÓXIMAS TAREAS

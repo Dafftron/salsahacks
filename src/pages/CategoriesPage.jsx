@@ -2,8 +2,6 @@ import { useState } from 'react'
 import { 
   Plus, 
   Tag, 
-  Edit, 
-  Trash2, 
   Eye, 
   Music, 
   Heart, 
@@ -317,12 +315,6 @@ const CategoriesPage = () => {
             <h2 className="text-2xl font-semibold text-gray-800">
               Categorías de {currentStyle.name} en {currentPage.name}
             </h2>
-            {isAdmin && (
-              <button className="flex items-center space-x-2 px-4 py-2 bg-green-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-                <Plus className="h-4 w-4" />
-                <span>+ NUEVA CATEGORÍA</span>
-              </button>
-            )}
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -338,21 +330,11 @@ const CategoriesPage = () => {
                         {category.tags.length} tags
                       </span>
                     </div>
-                    <div className="flex space-x-2">
-                      <button className="p-1 text-gray-400 hover:text-blue-500 transition-colors">
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      {isAdmin && (
-                        <>
-                          <button className="p-1 text-gray-400 hover:text-orange-500 transition-colors">
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button className="p-1 text-gray-400 hover:text-red-500 transition-colors">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </>
-                      )}
-                    </div>
+                                         <div className="flex space-x-2">
+                       <button className="p-1 text-gray-400 hover:text-blue-500 transition-colors">
+                         <Eye className="h-4 w-4" />
+                       </button>
+                     </div>
                   </div>
 
                   {/* Tags */}
@@ -369,7 +351,7 @@ const CategoriesPage = () => {
                         <span>{tag}</span>
                         {isAdmin && index >= 3 && (
                           <button className="ml-1 hover:bg-white hover:bg-opacity-20 rounded-full p-0.5 transition-colors">
-                            <Trash2 className="h-3 w-3" />
+                            <span className="text-xs">×</span>
                           </button>
                         )}
                       </div>
