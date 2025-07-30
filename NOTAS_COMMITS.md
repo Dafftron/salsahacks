@@ -36,6 +36,18 @@ Este archivo documenta todos los commits y cambios realizados durante el desarro
 - Remote origin configurado a GitHub
 - Punto de restauración seguro establecido
 
+### [2025-01-27] - 153bf64
+**Commit:** `Add: Sistema de seguimiento de commits en NOTAS_COMMITS.md`
+**Descripción:** Implementación del sistema de documentación de commits para seguimiento y restauración
+**Archivos modificados:**
+- `NOTAS_COMMITS.md` - Sistema de seguimiento de commits
+- `leviosa.bat` - Actualizado para recordar actualizar notas
+**Estado:** ✅ Completado
+**Notas:** 
+- Sistema de documentación de commits implementado
+- Script leviosa mejorado con recordatorios
+- Punto de restauración adicional creado
+
 ---
 
 ## 🎯 PUNTOS DE RESTAURACIÓN IMPORTANTES
@@ -47,6 +59,13 @@ Este archivo documenta todos los commits y cambios realizados durante el desarro
 **Para restaurar:** `git reset --hard 2f0e0ee`
 **Cuándo usar:** Si queremos empezar desde cero con la configuración inicial
 
+### Punto de Restauración #2 - Sistema de Notas Implementado
+**Commit:** `153bf64`
+**Fecha:** 2025-01-27
+**Descripción:** Sistema de seguimiento de commits implementado
+**Para restaurar:** `git reset --hard 153bf64`
+**Cuándo usar:** Si queremos volver al estado con sistema de notas funcionando
+
 ---
 
 ## 📊 ESTADO ACTUAL DEL PROYECTO
@@ -56,6 +75,7 @@ Este archivo documenta todos los commits y cambios realizados durante el desarro
 - [x] Documentación del proyecto
 - [x] Scripts de automatización
 - [x] Plan de desarrollo detallado
+- [x] Sistema de seguimiento de commits
 
 ### 🚧 Próximos pasos:
 - [ ] Crear proyecto React con Vite
