@@ -1,26 +1,14 @@
-import { useState } from 'react'
 import { 
   Search, 
   Upload, 
   Plus, 
-  Video, 
   Heart, 
-  Settings, 
-  Music, 
-  GraduationCap, 
-  Calendar, 
-  Home, 
-  Bell, 
-  Sun, 
-  User,
-  Zap,
-  Star
+  Music
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
 
 const FigurasPage = () => {
-  const [activeTab, setActiveTab] = useState('videos')
   const { 
     selectedStyle, 
     setSelectedStyle, 
@@ -55,70 +43,6 @@ const FigurasPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center space-x-8">
-            <div className="flex items-center space-x-2">
-              <div className="text-pink-500">
-                <Music className="h-6 w-6" />
-              </div>
-              <span className="text-xl font-bold text-gray-800">SalsaHacks</span>
-            </div>
-            
-            {/* Navigation */}
-            <nav className="flex items-center space-x-6">
-              <a href="#" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
-                <Home className="h-5 w-5" />
-                <span>Inicio</span>
-              </a>
-              <a href="#" className="flex items-center space-x-2 bg-pink-100 text-pink-500 px-3 py-2 rounded-lg">
-                <Music className="h-5 w-5" />
-                <span>Figuras</span>
-              </a>
-              <a href="#" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
-                <GraduationCap className="h-5 w-5" />
-                <span>Escuela</span>
-              </a>
-              <a href="#" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
-                <Calendar className="h-5 w-5" />
-                <span>Eventos</span>
-              </a>
-              <a href="#" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
-                <Home className="h-5 w-5" />
-                <span>Categorías</span>
-              </a>
-              <a href="#" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
-                <Music className="h-5 w-5" />
-                <span>Notas</span>
-              </a>
-            </nav>
-          </div>
-
-          {/* Right side icons */}
-          <div className="flex items-center space-x-4">
-            <button className="text-gray-600 hover:text-gray-800 transition-colors">
-              <Search className="h-5 w-5" />
-            </button>
-            <button className="text-gray-600 hover:text-gray-800 transition-colors relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">3</span>
-            </button>
-            <button className="text-gray-600 hover:text-gray-800 transition-colors">
-              <Heart className="h-5 w-5" />
-            </button>
-            <button className="text-gray-600 hover:text-gray-800 transition-colors">
-              <Sun className="h-5 w-5" />
-            </button>
-            <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
-              <User className="h-5 w-5" />
-              <span>Usuario Dev</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Title */}
@@ -177,31 +101,7 @@ const FigurasPage = () => {
           </button>
         </div>
 
-        {/* Gallery Tabs */}
-        <div className="flex justify-center gap-4 mb-8">
-          <button
-            onClick={() => setActiveTab('videos')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              activeTab === 'videos'
-                ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg transform scale-105'
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            <Video className="h-4 w-4" />
-            <span>GALERÍA DE VIDEOS (2)</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('sequences')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              activeTab === 'sequences'
-                ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg transform scale-105'
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            <Settings className="h-4 w-4" />
-            <span>GALERÍA DE SECUENCIAS (0)</span>
-          </button>
-        </div>
+
 
         {/* Videos Grid */}
         <div className="mb-8">
