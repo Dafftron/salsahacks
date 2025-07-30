@@ -1,158 +1,267 @@
 import { useState } from 'react'
-import { Search, Upload, Plus, Filter, Video, Heart, Star } from 'lucide-react'
+import { 
+  Search, 
+  Upload, 
+  Plus, 
+  Video, 
+  Heart, 
+  Settings, 
+  Music, 
+  GraduationCap, 
+  Calendar, 
+  Home, 
+  Bell, 
+  Sun, 
+  User,
+  Zap,
+  Star
+} from 'lucide-react'
 
 const FigurasPage = () => {
   const [selectedStyle, setSelectedStyle] = useState('SALSA')
+  const [activeTab, setActiveTab] = useState('videos')
 
-  const styles = ['SALSA', 'BACHATA', 'KIZOMBA', 'ZOUK', 'MERENGUE']
+  const styles = [
+    { name: 'SALSA', icon: Music, hasNotification: true },
+    { name: 'BACHATA', icon: Heart },
+    { name: 'KIZOMBA', icon: Zap },
+    { name: 'ZOUK', icon: Star },
+    { name: 'MERENGUE', icon: Sun }
+  ]
 
   const videos = [
     {
       id: 1,
-      title: 'Giro Básico de Salsa',
-      description: 'Aprende el giro básico paso a paso',
-      thumbnail: 'https://via.placeholder.com/300x200',
+      title: 'Figura Básica Salsa - Derecha',
+      description: 'Aprende la figura básica de derecha en salsa',
+      thumbnail: 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=RICK+ASTLEY+NEVER+GONNA+GIVE+YOU+UP',
       views: 1250,
       likes: 89,
-      rating: 4.5,
-      tags: ['Básico', 'Giro', 'Ritmo', 'Cubano'],
-      duration: '3:45'
+      tags: ['Derecha', 'Básico', 'Ritmo', 'Cubano'],
+      quality: '4K'
     },
     {
       id: 2,
-      title: 'Secuencia Avanzada',
-      description: 'Combinación compleja para bailarines experimentados',
-      thumbnail: 'https://via.placeholder.com/300x200',
+      title: 'Giro Completo Salsa',
+      description: 'Técnica avanzada de giro completo',
+      thumbnail: 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=RICK+ASTLEY+NEVER+GONNA+GIVE+YOU+UP',
       views: 890,
       likes: 67,
-      rating: 4.8,
-      tags: ['Avanzado', 'Secuencia', 'Timing', 'LA Style'],
-      duration: '5:20'
+      tags: ['Giro', 'Avanzado', 'Técnica', 'LA Style'],
+      quality: '4K'
     }
   ]
 
-  return (
-    <div className="max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-salsa-primary mb-2">FIGURAS - SALSA</h1>
-        <p className="text-gray-600">Galería de videos de figuras de salsa</p>
-      </div>
+  const tagColors = {
+    'Derecha': 'bg-blue-500',
+    'Básico': 'bg-green-500',
+    'Ritmo': 'bg-orange-500',
+    'Cubano': 'bg-purple-500',
+    'Giro': 'bg-blue-500',
+    'Avanzado': 'bg-green-500',
+    'Técnica': 'bg-orange-500',
+    'LA Style': 'bg-purple-500'
+  }
 
-      {/* Style Selector */}
-      <div className="mb-6">
-        <div className="flex flex-wrap gap-2">
-          {styles.map((style) => (
-            <button
-              key={style}
-              onClick={() => setSelectedStyle(style)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                selectedStyle === style
-                  ? 'salsa-gradient-primary text-white shadow-lg'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-              }`}
-            >
-              {style}
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center space-x-8">
+            <div className="flex items-center space-x-2">
+              <div className="text-pink-500">
+                <Music className="h-6 w-6" />
+              </div>
+              <span className="text-xl font-bold text-gray-800">SalsaHacks</span>
+            </div>
+            
+            {/* Navigation */}
+            <nav className="flex items-center space-x-6">
+              <a href="#" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
+                <Home className="h-5 w-5" />
+                <span>Inicio</span>
+              </a>
+              <a href="#" className="flex items-center space-x-2 bg-pink-100 text-pink-500 px-3 py-2 rounded-lg">
+                <Music className="h-5 w-5" />
+                <span>Figuras</span>
+              </a>
+              <a href="#" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
+                <GraduationCap className="h-5 w-5" />
+                <span>Escuela</span>
+              </a>
+              <a href="#" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
+                <Calendar className="h-5 w-5" />
+                <span>Eventos</span>
+              </a>
+              <a href="#" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
+                <Home className="h-5 w-5" />
+                <span>Categorías</span>
+              </a>
+              <a href="#" className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
+                <Music className="h-5 w-5" />
+                <span>Notas</span>
+              </a>
+            </nav>
+          </div>
+
+          {/* Right side icons */}
+          <div className="flex items-center space-x-4">
+            <button className="text-gray-600 hover:text-gray-800 transition-colors">
+              <Search className="h-5 w-5" />
             </button>
-          ))}
+            <button className="text-gray-600 hover:text-gray-800 transition-colors relative">
+              <Bell className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">3</span>
+            </button>
+            <button className="text-gray-600 hover:text-gray-800 transition-colors">
+              <Heart className="h-5 w-5" />
+            </button>
+            <button className="text-gray-600 hover:text-gray-800 transition-colors">
+              <Sun className="h-5 w-5" />
+            </button>
+            <button className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
+              <User className="h-5 w-5" />
+              <span>Usuario Dev</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="mb-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 relative">
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Title */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-2">
+            <span className="text-pink-500">FIGURAS</span>
+            <span className="text-pink-600"> - SALSA</span>
+          </h1>
+          <p className="text-gray-600 text-lg">Galería de videos de figuras de salsa</p>
+        </div>
+
+        {/* Style Filters */}
+        <div className="flex flex-wrap justify-center gap-3 mb-8">
+          {styles.map((style) => (
+            <button
+              key={style.name}
+              onClick={() => setSelectedStyle(style.name)}
+              className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                selectedStyle === style.name
+                  ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg transform scale-105'
+                  : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+              }`}
+            >
+              <style.icon className="h-4 w-4" />
+              <span>{style.name}</span>
+              {style.hasNotification && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full animate-pulse"></div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
               placeholder="Buscar videos en salsa..."
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-salsa-primary focus:border-transparent"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
             />
           </div>
-          <button className="btn-primary flex items-center space-x-2">
-            <Filter className="h-4 w-4" />
-            <span>Filtros</span>
-          </button>
         </div>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="mb-8">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button className="btn-primary flex items-center justify-center space-x-2">
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+          <button className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
             <Upload className="h-5 w-5" />
-            <span>SUBIR VIDEO A SALSA</span>
+            <span>SUBIR VIDEO(S) A SALSA</span>
           </button>
-          <button className="btn-secondary flex items-center justify-center space-x-2">
+          <button className="flex items-center justify-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
             <Plus className="h-5 w-5" />
             <span>CONSTRUCTOR DE SECUENCIAS</span>
           </button>
         </div>
-        
-        <div className="flex gap-4 mt-4">
-          <button className="px-4 py-2 bg-orange-500 text-white rounded-lg font-medium">
-            GALERÍA DE VIDEOS (2)
+
+        {/* Gallery Tabs */}
+        <div className="flex justify-center gap-4 mb-8">
+          <button
+            onClick={() => setActiveTab('videos')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              activeTab === 'videos'
+                ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg transform scale-105'
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Video className="h-4 w-4" />
+            <span>GALERÍA DE VIDEOS (2)</span>
           </button>
-          <button className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium">
-            GALERÍA DE SECUENCIAS (0)
+          <button
+            onClick={() => setActiveTab('sequences')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              activeTab === 'sequences'
+                ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg transform scale-105'
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Settings className="h-4 w-4" />
+            <span>GALERÍA DE SECUENCIAS (0)</span>
           </button>
         </div>
-      </div>
 
-      {/* Videos Grid */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Videos de salsa (2)</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos.map((video) => (
-            <div key={video.id} className="card overflow-hidden">
-              <div className="relative">
-                <img
-                  src={video.thumbnail}
-                  alt={video.title}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="absolute top-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm">
-                  {video.duration}
-                </div>
-                <button className="absolute top-2 left-2 p-2 bg-white bg-opacity-90 rounded-full hover:bg-opacity-100">
-                  <Heart className="h-4 w-4 text-gray-600" />
-                </button>
-              </div>
-              
-              <div className="p-4">
-                <h3 className="font-semibold text-gray-800 mb-2">{video.title}</h3>
-                <p className="text-gray-600 text-sm mb-3">{video.description}</p>
-                
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {video.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 bg-salsa-light text-salsa-dark text-xs rounded"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <div className="flex items-center space-x-4">
-                    <span className="flex items-center space-x-1">
-                      <Video className="h-4 w-4" />
-                      <span>{video.views}</span>
-                    </span>
-                    <span className="flex items-center space-x-1">
-                      <Heart className="h-4 w-4" />
-                      <span>{video.likes}</span>
-                    </span>
+        {/* Videos Grid */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Videos de salsa (2)</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {videos.map((video) => (
+              <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
+                <div className="relative">
+                  <img
+                    src={video.thumbnail}
+                    alt={video.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
+                    {video.quality}
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <Star className="h-4 w-4 text-yellow-500" />
-                    <span>{video.rating}</span>
+                </div>
+                
+                <div className="p-4">
+                  <h3 className="font-semibold text-gray-800 mb-2 text-lg">{video.title}</h3>
+                  <p className="text-gray-600 text-sm mb-3">{video.description}</p>
+                  
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {video.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className={`px-3 py-1 text-white text-xs rounded-full font-medium ${tagColors[tag] || 'bg-gray-500'}`}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span className="font-medium">{video.views} vistas</span>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-1">
+                        <Heart className="h-4 w-4 text-red-500 fill-current" />
+                        <span className="font-medium">{video.likes}</span>
+                      </div>
+                      <button className="text-gray-400 hover:text-red-500 transition-colors duration-200">
+                        <Heart className="h-4 w-4" />
+                      </button>
+                      <button className="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                        <Upload className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
