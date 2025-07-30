@@ -346,6 +346,19 @@
 - ✅ Estructura independiente por pestaña (no se comparten tags)
 - ✅ Interfaz moderna con gradientes y transiciones suaves
 
+### **Commit #012 - Simplificación del Gestor de Categorías**
+**Fecha:** [Fecha actual]
+**Descripción:** Simplificación de la interfaz del gestor de categorías eliminando funcionalidades innecesarias
+**Cambios:**
+- ✅ Eliminación del botón "+ NUEVA CATEGORÍA" (no se necesitará)
+- ✅ Eliminación de botones de editar y eliminar categorías
+- ✅ Mantenido solo el botón "Ver" (👁️) para detalles de categoría
+- ✅ Corrección de error de importación Trash2 que causaba página en blanco
+- ✅ Reemplazo de icono Trash2 por símbolo "×" para eliminar tags dinámicos
+- ✅ Limpieza de imports no utilizados (Edit, Trash2)
+- ✅ Interfaz más limpia y enfocada en gestión de tags
+- ✅ Protección total de categorías hardcodeadas (solo lectura)
+
 ---
 
 ## 🎯 PRÓXIMAS TAREAS
