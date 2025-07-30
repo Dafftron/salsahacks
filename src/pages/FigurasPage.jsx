@@ -16,18 +16,17 @@ import {
   Zap,
   Star
 } from 'lucide-react'
+import { useCategories } from '../hooks/useCategories'
+import CategoryBadge from '../components/common/CategoryBadge'
 
 const FigurasPage = () => {
-  const [selectedStyle, setSelectedStyle] = useState('SALSA')
   const [activeTab, setActiveTab] = useState('videos')
-
-  const styles = [
-    { name: 'SALSA', icon: Music, hasNotification: true },
-    { name: 'BACHATA', icon: Heart },
-    { name: 'KIZOMBA', icon: Zap },
-    { name: 'ZOUK', icon: Star },
-    { name: 'MERENGUE', icon: Sun }
-  ]
+  const { 
+    selectedStyle, 
+    setSelectedStyle, 
+    DANCE_STYLES,
+    getColorForCategory 
+  } = useCategories()
 
   const videos = [
     {
@@ -52,16 +51,7 @@ const FigurasPage = () => {
     }
   ]
 
-  const tagColors = {
-    'Derecha': 'bg-blue-500',
-    'Básico': 'bg-green-500',
-    'Ritmo': 'bg-orange-500',
-    'Cubano': 'bg-purple-500',
-    'Giro': 'bg-blue-500',
-    'Avanzado': 'bg-green-500',
-    'Técnica': 'bg-orange-500',
-    'LA Style': 'bg-purple-500'
-  }
+  // Los colores de etiquetas ahora vienen del sistema de categorías
 
   return (
     <div className="min-h-screen bg-white">
@@ -142,20 +132,22 @@ const FigurasPage = () => {
 
         {/* Style Filters */}
         <div className="flex flex-wrap justify-center gap-3 mb-8">
-          {styles.map((style) => (
+          {DANCE_STYLES.map((style) => (
             <button
               key={style.name}
               onClick={() => setSelectedStyle(style.name)}
               className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                 selectedStyle === style.name
-                  ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg transform scale-105'
+                  ? `bg-gradient-to-r ${style.gradient} text-white shadow-lg transform scale-105`
                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
               }`}
             >
               <style.icon className="h-4 w-4" />
               <span>{style.name}</span>
               {style.hasNotification && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full animate-pulse"></div>
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium animate-pulse">
+                  {style.notificationCount}
+                </span>
               )}
             </button>
           ))}
@@ -234,12 +226,11 @@ const FigurasPage = () => {
                   
                   <div className="flex flex-wrap gap-2 mb-4">
                     {video.tags.map((tag) => (
-                      <span
+                      <CategoryBadge
                         key={tag}
-                        className={`px-3 py-1 text-white text-xs rounded-full font-medium ${tagColors[tag] || 'bg-gray-500'}`}
-                      >
-                        {tag}
-                      </span>
+                        category={tag}
+                        size="sm"
+                      />
                     ))}
                   </div>
                   

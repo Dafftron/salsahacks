@@ -296,6 +296,29 @@
 - ✅ Mejor experiencia de usuario sin confusión
 - ✅ Consistencia con el patrón de navegación global
 
+### **Commit #008 - Hoja de Ruta Completa**
+**Fecha:** [Fecha actual]
+**Descripción:** Implementación de toda la hoja de ruta del proyecto con 25 tareas organizadas en categorías claras
+**Cambios:**
+- ✅ Hoja de ruta completa con 25 tareas totales
+- ✅ Categorías mejoradas: PÁGINAS (12), SISTEMAS (8), CONTENIDO (5)
+- ✅ Eliminación de términos técnicos confusos (Frontend/Backend)
+- ✅ Mejora de claridad visual en NotasPage
+- ✅ Separación clara entre tareas hechas, en proceso y futuras
+
+### **Commit #009 - Sistema de Categorías Hardcodeadas Completado**
+**Fecha:** [Fecha actual]
+**Descripción:** Implementación completa del sistema de categorías hardcodeadas con gestión centralizada
+**Cambios:**
+- ✅ Archivo de constantes `src/constants/categories.js` creado
+- ✅ Hook personalizado `useCategories` implementado
+- ✅ Componente `CategoryBadge` reutilizable creado
+- ✅ Integración en `FigurasPage` con nuevo sistema
+- ✅ Categorías hardcodeadas: Estilos (5), Niveles (4), Etiquetas (7), Regionales (5)
+- ✅ Sistema de colores y gradientes consistente
+- ✅ Protección de categorías no eliminables
+- ✅ Funciones de utilidad para gestión de categorías
+
 ---
 
 ## 🎯 PRÓXIMAS TAREAS

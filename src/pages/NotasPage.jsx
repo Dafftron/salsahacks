@@ -110,21 +110,21 @@ const NotasPage = () => {
       date: '2025-01-27',
       priority: 'Media',
       status: 'Completado'
+    },
+    {
+      id: 6,
+      title: 'Sistema de categorías hardcodeadas',
+      description: 'Implementación completa con gestión centralizada',
+      category: 'SISTEMAS',
+      date: '2025-01-27',
+      priority: 'Alta',
+      status: 'Completado'
     }
   ]
 
   const cosasEnProceso = [
     {
       id: 1,
-      title: 'Sistema de categorías hardcodeadas',
-      description: 'Implementar gestión de categorías no eliminables',
-      category: 'SISTEMAS',
-      priority: 'Alta',
-      progress: 75,
-      status: 'En Progreso'
-    },
-    {
-      id: 2,
       title: 'Configuración de Firebase',
       description: 'Firestore y Authentication configurados',
       category: 'SISTEMAS',
