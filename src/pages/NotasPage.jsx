@@ -31,35 +31,101 @@ const NotasPage = () => {
 
   const commits = [
     {
-      id: 1,
-      hash: '83eeffb',
+      id: 13,
+      hash: '78f59b2',
       date: '2025-01-27',
-      title: 'Commit #007 - Corrección de Navegación Duplicada',
-      description: 'Eliminación de headers duplicados en EscuelaPage y EventosPage',
-      files: ['EscuelaPage.jsx', 'EventosPage.jsx', 'NOTAS_COMMITS.md'],
-      notes: 'Interfaz más limpia y consistente, navegación global unificada',
+      title: 'Commit #013 - Actualización de Documentación',
+      description: 'Agregado Commit #012 a NOTAS_COMMITS.md',
+      files: ['NOTAS_COMMITS.md'],
+      notes: 'Documentación actualizada con simplificación del gestor de categorías',
+      status: 'Completado',
+      category: 'SISTEMAS'
+    },
+    {
+      id: 12,
+      hash: '26b3ab2',
+      date: '2025-01-27',
+      title: 'Commit #012 - Simplificación del Gestor de Categorías',
+      description: 'Eliminación de botones innecesarios, corrección de errores',
+      files: ['src/pages/CategoriesPage.jsx'],
+      notes: 'Interfaz más limpia, solo botón Ver, protección de categorías hardcodeadas',
+      status: 'Completado',
+      category: 'SISTEMAS'
+    },
+    {
+      id: 11,
+      hash: '360fa0a',
+      date: '2025-01-27',
+      title: 'Commit #011 - Gestor de Categorías Jerárquico',
+      description: 'Implementación de estructura jerárquica de 3 niveles',
+      files: ['src/pages/CategoriesPage.jsx', 'NOTAS_COMMITS.md'],
+      notes: 'Pestañas → Estilos → Categorías con tags, navegación específica',
+      status: 'Completado',
+      category: 'SISTEMAS'
+    },
+    {
+      id: 10,
+      hash: 'a3933cb',
+      date: '2025-01-27',
+      title: 'Commit #010 - Eliminación de Header Duplicado en FigurasPage',
+      description: 'Limpieza de navegación duplicada',
+      files: ['src/pages/FigurasPage.jsx'],
+      notes: 'Eliminación de Gallery Tabs, imports no utilizados',
       status: 'Completado',
       category: 'PÁGINAS'
     },
     {
-      id: 2,
+      id: 9,
+      hash: '6938a03',
+      date: '2025-01-27',
+      title: 'Commit #009 - Sistema de Categorías Hardcodeadas',
+      description: 'Implementación completa del sistema centralizado',
+      files: ['src/constants/categories.js', 'src/hooks/useCategories.js', 'src/components/common/CategoryBadge.jsx'],
+      notes: 'Hook useCategories, componente CategoryBadge, integración en FigurasPage',
+      status: 'Completado',
+      category: 'SISTEMAS'
+    },
+    {
+      id: 8,
+      hash: '0e51076',
+      date: '2025-01-27',
+      title: 'Commit #008 - Hoja de Ruta Completa',
+      description: 'Implementación de toda la hoja de ruta del proyecto',
+      files: ['NOTAS_COMMITS.md'],
+      notes: '25 tareas organizadas, categorías claras, eliminación de términos técnicos',
+      status: 'Completado',
+      category: 'SISTEMAS'
+    },
+    {
+      id: 7,
+      hash: '83eeffb',
+      date: '2025-01-27',
+      title: 'Commit #007 - Corrección de Navegación Duplicada',
+      description: 'Eliminación de headers duplicados',
+      files: ['EscuelaPage.jsx', 'EventosPage.jsx', 'SISTEMA_CATEGORIAS.md'],
+      notes: 'Interfaz más limpia, navegación global unificada',
+      status: 'Completado',
+      category: 'PÁGINAS'
+    },
+    {
+      id: 6,
       hash: 'b3b80a8',
       date: '2025-01-27',
       title: 'Commit #006 - Unificación de Estructura',
-      description: 'Conversión de EscuelaPage y EventosPage a estructura de FigurasPage',
-      files: ['EscuelaPage.jsx', 'EventosPage.jsx', 'SISTEMA_CATEGORIAS.md'],
+      description: 'Conversión a estructura de FigurasPage',
+      files: ['EscuelaPage.jsx', 'EventosPage.jsx'],
       notes: 'Estructura unificada, contenido específico por página',
       status: 'Completado',
       category: 'PÁGINAS'
     },
     {
-      id: 3,
+      id: 5,
       hash: 'a1b2c3d',
       date: '2025-01-27',
       title: 'Commit #005 - Perfeccionamiento de FigurasPage',
-      description: 'Ajustes finos para perfeccionar la página de Figuras',
+      description: 'Ajustes finos y efectos visuales',
       files: ['FigurasPage.jsx', 'NOTAS_COMMITS.md'],
-      notes: 'Transiciones suaves, animaciones, efectos visuales pulidos',
+      notes: 'Transiciones suaves, animaciones, efectos pulidos',
       status: 'Completado',
       category: 'PÁGINAS'
     }
@@ -503,100 +569,102 @@ const NotasPage = () => {
             {activeTab === 'futuras' && 'Tareas Futuras'}
           </h2>
           
-          <div className="grid gap-6">
+          <div className="grid gap-4">
             {filteredItems().map((item) => (
-              <div key={item.id} className={`bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border-l-4 ${getStatusBorderColor(item.status)}`}>
-                <div className="p-6">
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
+              <div key={item.id} className={`bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.01] border-l-4 ${getStatusBorderColor(item.status)}`}>
+                <div className="p-4">
+                  {/* Header - Compact */}
+                  <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
                       {activeTab === 'commits' && (
                         <div className="flex items-center space-x-2">
-                          <GitBranch className="h-5 w-5 text-pink-500" />
-                          <span className="font-mono text-sm text-gray-600">{item.hash}</span>
+                          <GitBranch className="h-4 w-4 text-pink-500" />
+                          <span className="font-mono text-xs text-gray-600">{item.hash}</span>
                         </div>
                       )}
                       {activeTab !== 'commits' && getStatusIcon(item.status)}
                       <div>
-                        <h3 className="font-semibold text-gray-800 text-lg">{item.title}</h3>
+                        <h3 className="font-semibold text-gray-800 text-base">{item.title}</h3>
                         {activeTab === 'commits' && (
-                          <p className="text-sm text-gray-500">{item.date}</p>
+                          <p className="text-xs text-gray-500">{item.date}</p>
                         )}
                       </div>
                     </div>
                     
                     <div className="flex items-center space-x-2">
-                      <span className={`px-3 py-1 text-white text-xs rounded-full font-medium ${getCategoryColor(item.category)}`}>
+                      <span className={`px-2 py-1 text-white text-xs rounded-full font-medium ${getCategoryColor(item.category)}`}>
                         {item.category}
                       </span>
-                      <span className={`px-3 py-1 text-white text-xs rounded-full font-medium ${getStatusColor(item.status)}`}>
+                      <span className={`px-2 py-1 text-white text-xs rounded-full font-medium ${getStatusColor(item.status)}`}>
                         {item.status}
                       </span>
                       {item.priority && (
-                        <span className={`px-3 py-1 text-white text-xs rounded-full font-medium ${getPriorityColor(item.priority)}`}>
+                        <span className={`px-2 py-1 text-white text-xs rounded-full font-medium ${getPriorityColor(item.priority)}`}>
                           {item.priority}
                         </span>
                       )}
                     </div>
                   </div>
 
-                  {/* Description */}
-                  <p className="text-gray-600 mb-4">{item.description}</p>
+                  {/* Description - Compact */}
+                  <p className="text-gray-600 text-sm mb-3">{item.description}</p>
 
                   {/* Progress Bar for En Proceso */}
                   {activeTab === 'proceso' && item.progress && (
-                    <div className="mb-4">
-                      <div className="flex justify-between text-sm text-gray-600 mb-1">
+                    <div className="mb-3">
+                      <div className="flex justify-between text-xs text-gray-600 mb-1">
                         <span>Progreso</span>
                         <span>{item.progress}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
                         <div
-                          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                          className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
                           style={{ width: `${item.progress}%` }}
                         ></div>
                       </div>
                     </div>
                   )}
 
-                  {/* Files (for commits) */}
+                  {/* Files (for commits) - Compact */}
                   {activeTab === 'commits' && item.files && (
-                    <div className="mb-4">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Archivos modificados:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {item.files.map((file, index) => (
-                          <span key={index} className="px-3 py-1 bg-pink-100 text-pink-700 text-xs rounded-full font-medium">
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-1">
+                        {item.files.slice(0, 3).map((file, index) => (
+                          <span key={index} className="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded font-medium">
                             {file}
                           </span>
                         ))}
+                        {item.files.length > 3 && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded font-medium">
+                            +{item.files.length - 3} más
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
 
-                  {/* Notes */}
+                  {/* Notes - Compact */}
                   {item.notes && (
-                    <div className="mb-4">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Notas:</p>
-                      <p className="text-sm text-gray-600">{item.notes}</p>
+                    <div className="mb-3">
+                      <p className="text-xs text-gray-600">{item.notes}</p>
                     </div>
                   )}
 
-                  {/* Additional info for futuras */}
+                  {/* Additional info - Compact */}
                   {activeTab === 'futuras' && item.estimatedTime && (
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                    <div className="flex items-center space-x-4 text-xs text-gray-500">
                       <span className="flex items-center space-x-1">
-                        <Clock className="h-4 w-4" />
-                        <span>Tiempo estimado: {item.estimatedTime}</span>
+                        <Clock className="h-3 w-3" />
+                        <span>{item.estimatedTime}</span>
                       </span>
                     </div>
                   )}
 
-                  {/* Additional info for hechas */}
                   {activeTab === 'hechas' && item.date && (
-                    <div className="flex items-center space-x-4 text-sm text-gray-500">
+                    <div className="flex items-center space-x-4 text-xs text-gray-500">
                       <span className="flex items-center space-x-1">
-                        <Calendar className="h-4 w-4" />
-                        <span>Completado: {item.date}</span>
+                        <Calendar className="h-3 w-3" />
+                        <span>{item.date}</span>
                       </span>
                     </div>
                   )}
