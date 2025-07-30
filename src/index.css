@@ -3,30 +3,30 @@
 @tailwind utilities;
 
 :root {
-  /* Colores Salsa - Paleta Principal */
-  --salsa-primary: #FF6B35;
-  --salsa-secondary: #F7931E;
-  --salsa-accent: #FFD23F;
-  --salsa-dark: #2C1810;
-  --salsa-light: #FFF8F0;
-  
+  /* Colores Salsa - Paleta Principal (Rosita) */
+  --salsa-primary: #FF69B4;
+  --salsa-secondary: #FFB6C1;
+  --salsa-accent: #FFC0CB;
+  --salsa-dark: #8B008B;
+  --salsa-light: #FFF0F5;
+
   /* Colores de Fondo */
   --bg-primary: #FFFFFF;
   --bg-secondary: #F8F9FA;
   --bg-dark: #1A1A1A;
-  --bg-salsa: #FFF8F0;
-  
+  --bg-salsa: #FFF0F5;
+
   /* Colores de Texto */
   --text-primary: #1A1A1A;
   --text-secondary: #6C757D;
   --text-light: #FFFFFF;
-  --text-salsa: #2C1810;
-  
+  --text-salsa: #8B008B;
+
   /* Colores de Bordes */
   --border-primary: #E5E5E5;
   --border-secondary: #DEE2E6;
-  --border-salsa: #FF6B35;
-  
+  --border-salsa: #FF69B4;
+
   /* Colores de Estados */
   --success: #28A745;
   --warning: #FFC107;
@@ -54,33 +54,33 @@
 
 /* Tema Salsa */
 [data-theme="salsa"] {
-  --bg-primary: #FFF8F0;
-  --bg-secondary: #FFE8D6;
-  --text-primary: #2C1810;
-  --text-secondary: #8B4513;
-  --border-primary: #FF6B35;
+  --bg-primary: #FFF0F5;
+  --bg-secondary: #FFE6F2;
+  --text-primary: #8B008B;
+  --text-secondary: #C71585;
+  --border-primary: #FF69B4;
 }
 
 /* Gradientes Salsa */
 .salsa-gradient-primary {
-  background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+  background: linear-gradient(135deg, #FF69B4 0%, #FFB6C1 100%);
 }
 
 .salsa-gradient-secondary {
-  background: linear-gradient(135deg, #F7931E 0%, #FFD23F 100%);
+  background: linear-gradient(135deg, #FFB6C1 0%, #FFC0CB 100%);
 }
 
 .salsa-gradient-accent {
-  background: linear-gradient(135deg, #FFD23F 0%, #FFE8D6 100%);
+  background: linear-gradient(135deg, #FFC0CB 0%, #FFE6F2 100%);
 }
 
 /* Gradientes de Fondo */
 .bg-gradient-salsa {
-  background: linear-gradient(135deg, #FFF8F0 0%, #FFE8D6 100%);
+  background: linear-gradient(135deg, #FFF0F5 0%, #FFE6F2 100%);
 }
 
 .bg-gradient-dark {
-  background: linear-gradient(135deg, #2C1810 0%, #1A1A1A 100%);
+  background: linear-gradient(135deg, #8B008B 0%, #1A1A1A 100%);
 }
 
 /* Estilos base */
@@ -146,5 +146,5 @@ body {
   background-color: var(--salsa-light);
   border: 2px solid var(--salsa-primary);
   border-radius: 0.75rem;
-  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+  box-shadow: 0 4px 12px rgba(255, 105, 180, 0.2);
 } 

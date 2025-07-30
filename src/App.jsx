@@ -15,7 +15,7 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <div className="min-h-screen bg-gradient-to-br from-salsa-light to-white">
+                             <div className="min-h-screen bg-gradient-to-br from-pink-50 via-salsa-light to-white">
             <Navigation />
             <main className="container mx-auto px-4 py-8">
               <Routes>

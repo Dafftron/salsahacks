@@ -6,15 +6,15 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        salsa: {
-          primary: '#FF6B35',
-          secondary: '#F7931E',
-          accent: '#FFD23F',
-          dark: '#2C1810',
-          light: '#FFF8F0',
-        }
-      },
+                     colors: {
+                 salsa: {
+                   primary: '#FF69B4',
+                   secondary: '#FFB6C1',
+                   accent: '#FFC0CB',
+                   dark: '#8B008B',
+                   light: '#FFF0F5',
+                 }
+               },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
