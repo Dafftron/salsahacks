@@ -9,6 +9,192 @@ import {
 } from 'firebase/storage';
 import { storage } from './config';
 
+// Función para generar thumbnail del video completo
+export const generateVideoThumbnail = (videoFile) => {
+  return new Promise((resolve, reject) => {
+    try {
+      // Crear URL temporal del video
+      const videoURL = URL.createObjectURL(videoFile);
+      
+      // Crear elemento de video
+      const video = document.createElement('video');
+      video.crossOrigin = 'anonymous';
+      video.muted = true;
+      video.playsInline = true;
+      
+      // Crear canvas para capturar el frame
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Configurar canvas
+      canvas.width = 300;
+      canvas.height = 200;
+      
+      video.onloadedmetadata = () => {
+                 try {
+           // Buscar un frame en el medio del video (como al principio)
+           const duration = video.duration;
+           const targetTime = duration * 0.5; // 50% del video (medio)
+           
+           video.currentTime = targetTime;
+          
+                     video.onseeked = () => {
+             try {
+               // Dibujar el frame completo en el canvas
+               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              
+              // Convertir a blob
+              canvas.toBlob((blob) => {
+                if (blob) {
+                  // Crear URL del thumbnail
+                  const thumbnailURL = URL.createObjectURL(blob);
+                  
+                  // Limpiar recursos
+                  URL.revokeObjectURL(videoURL);
+                  video.remove();
+                  canvas.remove();
+                  
+                  resolve({
+                    success: true,
+                    thumbnailURL,
+                    blob,
+                    error: null
+                  });
+                } else {
+                  reject(new Error('No se pudo generar el thumbnail'));
+                }
+              }, 'image/jpeg', 0.8);
+              
+            } catch (error) {
+              reject(new Error(`Error al capturar frame: ${error.message}`));
+            }
+          };
+          
+          video.onerror = () => {
+            reject(new Error('Error al cargar el video para thumbnail'));
+          };
+          
+        } catch (error) {
+          reject(new Error(`Error al procesar metadata: ${error.message}`));
+        }
+      };
+      
+      video.onerror = () => {
+        reject(new Error('Error al cargar el video'));
+      };
+      
+      // Cargar el video
+      video.src = videoURL;
+      
+    } catch (error) {
+      reject(new Error(`Error al generar thumbnail: ${error.message}`));
+    }
+  });
+};
+
+// Función para generar múltiples thumbnails y elegir el mejor
+export const generateBestVideoThumbnail = async (videoFile) => {
+  try {
+    const videoURL = URL.createObjectURL(videoFile);
+    const video = document.createElement('video');
+    video.crossOrigin = 'anonymous';
+    video.muted = true;
+    video.playsInline = true;
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 300;
+    canvas.height = 200;
+    
+    return new Promise((resolve, reject) => {
+      video.onloadedmetadata = () => {
+        const duration = video.duration;
+        
+                 // Intentar diferentes puntos del video para encontrar el mejor frame
+         const timePoints = [
+           duration * 0.25, // 25% - inicio
+           duration * 0.5,  // 50% - medio
+           duration * 0.75  // 75% - final
+         ];
+        
+        let attempts = 0;
+        const maxAttempts = timePoints.length;
+        
+        const tryNextFrame = (index) => {
+          if (index >= maxAttempts) {
+            // Si no se pudo generar ningún thumbnail, usar placeholder
+            URL.revokeObjectURL(videoURL);
+            video.remove();
+            canvas.remove();
+            
+            resolve({
+              success: true,
+              thumbnailURL: 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=VIDEO',
+              blob: null,
+              error: null
+            });
+            return;
+          }
+          
+          video.currentTime = timePoints[index];
+          
+                     video.onseeked = () => {
+             try {
+               // Dibujar el frame completo en el canvas
+               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              
+              canvas.toBlob((blob) => {
+                if (blob) {
+                  const thumbnailURL = URL.createObjectURL(blob);
+                  
+                  URL.revokeObjectURL(videoURL);
+                  video.remove();
+                  canvas.remove();
+                  
+                  resolve({
+                    success: true,
+                    thumbnailURL,
+                    blob,
+                    error: null
+                  });
+                } else {
+                  tryNextFrame(index + 1);
+                }
+              }, 'image/jpeg', 0.8);
+              
+            } catch (error) {
+              tryNextFrame(index + 1);
+            }
+          };
+          
+          video.onerror = () => {
+            tryNextFrame(index + 1);
+          };
+        };
+        
+        tryNextFrame(0);
+      };
+      
+      video.onerror = () => {
+        URL.revokeObjectURL(videoURL);
+        video.remove();
+        canvas.remove();
+        reject(new Error('Error al cargar el video'));
+      };
+      
+      video.src = videoURL;
+    });
+    
+  } catch (error) {
+    return {
+      success: false,
+      thumbnailURL: 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=VIDEO',
+      blob: null,
+      error: error.message
+    };
+  }
+};
+
 // Función de upload simulado para desarrollo (cuando Firebase Storage no está disponible)
 export const uploadVideoSimulated = async (file, path, onProgress) => {
   try {

@@ -12,8 +12,8 @@ import {
   Play
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
-import { uploadVideo, getFileURL } from '../../services/firebase/storage'
-import { createVideoDocument } from '../../services/firebase/firestore'
+import { uploadVideo, getFileURL, generateBestVideoThumbnail } from '../../services/firebase/storage'
+import { createVideoDocument, checkVideoDuplicate } from '../../services/firebase/firestore'
 import { hasPermission } from '../../constants/roles'
 import { ref, getDownloadURL } from 'firebase/storage'
 import { storage } from '../../services/firebase/config'
@@ -101,13 +101,20 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
         const file = files[i]
         const fileName = file.name.replace(/\.[^/.]+$/, '') // Remove extension
         
-        // Check for duplicates
-        const isDuplicate = uploadedVideos.some(video => 
+        // Check for duplicates in current session
+        const isDuplicateInSession = uploadedVideos.some(video => 
           video.originalTitle === file.name
         )
         
-        if (isDuplicate) {
-          alert(`El video "${file.name}" ya existe`)
+        if (isDuplicateInSession) {
+          alert(`El video "${file.name}" ya está en la lista de subida`)
+          continue
+        }
+
+        // Check for duplicates in database
+        const duplicateCheck = await checkVideoDuplicate(file.name)
+        if (duplicateCheck.isDuplicate) {
+          alert(`El video "${file.name}" ya existe en la base de datos`)
           continue
         }
 
@@ -197,27 +204,20 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
     }
   }
 
-  // Generate thumbnail from video
-  const generateThumbnail = (file) => {
-    return new Promise((resolve) => {
-      const video = document.createElement('video')
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      
-      video.onloadedmetadata = () => {
-        canvas.width = video.videoWidth
-        canvas.height = video.videoHeight
-        video.currentTime = 1 // Get frame at 1 second
+  // Generate thumbnail from video using our improved function
+  const generateThumbnail = async (file) => {
+    try {
+      const result = await generateBestVideoThumbnail(file)
+      if (result.success) {
+        return result.thumbnailURL
+      } else {
+        // Fallback to placeholder if thumbnail generation fails
+        return 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=VIDEO'
       }
-      
-      video.onseeked = () => {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-        const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.8)
-        resolve(thumbnailUrl)
-      }
-      
-      video.src = URL.createObjectURL(file)
-    })
+    } catch (error) {
+      console.error('Error generating thumbnail:', error)
+      return 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=VIDEO'
+    }
   }
 
   // Close modal
@@ -499,6 +499,16 @@ const UploadStep = ({
 
 // Edit Step Component
 const EditStep = ({ uploadedVideos, setUploadedVideos, onClose, onVideoUploaded }) => {
+  const handleFinalize = () => {
+    // Llamar a onVideoUploaded para cada video subido
+    uploadedVideos.forEach(video => {
+      if (onVideoUploaded) {
+        onVideoUploaded(video)
+      }
+    })
+    onClose()
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -506,7 +516,7 @@ const EditStep = ({ uploadedVideos, setUploadedVideos, onClose, onVideoUploaded 
           Videos subidos ({uploadedVideos.length})
         </h3>
         <button
-          onClick={onClose}
+          onClick={handleFinalize}
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
         >
           Finalizar
