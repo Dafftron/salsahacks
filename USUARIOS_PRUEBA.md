@@ -2,33 +2,33 @@
 
 ## 📋 **Información de Usuarios de Prueba**
 
-### **Usuario #1: Administrador**
-- **Email:** admin@salsahacks.com
-- **Contraseña:** admin123456
-- **Nombre:** Administrador SalsaHacks
-- **Rol:** admin
-- **Propósito:** Gestión completa del sistema
+### **Usuario #1: Super Administrador**
+- **Email:** superadmin@salsahacks.com
+- **Contraseña:** superadmin123
+- **Nombre:** Super Administrador SalsaHacks
+- **Rol:** super_admin
+- **Propósito:** Control total del sistema (solo tú)
 
-### **Usuario #2: Instructor**
-- **Email:** instructor@salsahacks.com
-- **Contraseña:** instructor123
-- **Nombre:** María González
-- **Rol:** instructor
-- **Propósito:** Crear contenido y enseñar
+### **Usuario #2: Maese**
+- **Email:** maese@salsahacks.com
+- **Contraseña:** maese123
+- **Nombre:** Maese María González
+- **Rol:** maese
+- **Propósito:** Crear contenido y gestionar usuarios
 
-### **Usuario #3: Estudiante**
-- **Email:** estudiante@salsahacks.com
-- **Contraseña:** estudiante123
+### **Usuario #3: Usuario**
+- **Email:** usuario@salsahacks.com
+- **Contraseña:** usuario123
 - **Nombre:** Carlos Rodríguez
 - **Rol:** user
-- **Propósito:** Aprender y practicar
+- **Propósito:** Acceso completo a contenido
 
-### **Usuario #4: Usuario Premium**
-- **Email:** premium@salsahacks.com
-- **Contraseña:** premium123
+### **Usuario #4: Pollito**
+- **Email:** pollito@salsahacks.com
+- **Contraseña:** pollito123
 - **Nombre:** Ana Martínez
-- **Rol:** premium
-- **Propósito:** Acceso a contenido exclusivo
+- **Rol:** pollito
+- **Propósito:** Acceso limitado (invitado)
 
 ---
 
@@ -61,28 +61,26 @@
 
 | Usuario | Estado | Fecha | Notas |
 |---------|--------|-------|-------|
-| Admin | ✅ Creado | 2025-01-27 | Usuario administrador funcional |
-| Instructor | ⏳ Pendiente | - | - |
-| Estudiante | ⏳ Pendiente | - | - |
-| Premium | ⏳ Pendiente | - | - |
+| Super Admin | ✅ Creado | 2025-01-27 | Usuario super administrador funcional |
+| Maese | ⏳ Pendiente | - | - |
+| Usuario | ⏳ Pendiente | - | - |
+| Pollito | ⏳ Pendiente | - | - |
 
 ---
 
 ## 🔐 **Sistema de Roles Implementado:**
 
 ### **Roles Disponibles:**
-- **👑 Administrador:** Control total del sistema
-- **👨‍🏫 Instructor:** Crear y gestionar contenido
-- **⭐ Premium:** Acceso a contenido exclusivo
-- **👤 Usuario:** Acceso básico
-- **👻 Invitado:** Acceso público limitado
+- **👑 Super Administrador:** Control total del sistema (solo tú)
+- **🔴 Maese:** Crear contenido y gestionar usuarios
+- **🟢 Usuario:** Acceso completo a contenido
+- **🟡 Pollito:** Acceso limitado (invitado)
 
 ### **Permisos por Rol:**
-- **Administrador:** Todos los permisos
-- **Instructor:** Crear contenido, gestionar eventos, subir videos
-- **Premium:** Acceso premium, comentar, calificar
-- **Usuario:** Acceso básico, comentar, calificar
-- **Invitado:** Solo contenido público
+- **Super Administrador:** Todos los permisos del sistema
+- **Maese:** Crear contenido, gestionar eventos, subir videos, ver usuarios
+- **Usuario:** Acceso completo, comentar, calificar, subir imágenes
+- **Pollito:** Solo contenido público, sin comentarios
 
 ### **Funcionalidades de Seguridad:**
 - ✅ Verificación de permisos por página

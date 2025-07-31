@@ -125,9 +125,10 @@ export const AuthProvider = ({ children }) => {
     resetPassword: resetUserPassword,
     updateUserProfile,
     isAuthenticated: !!user,
-    isAdmin: userProfile?.role === ROLES.ADMIN,
-    isInstructor: userProfile?.role === ROLES.INSTRUCTOR,
-    isPremium: userProfile?.role === ROLES.PREMIUM,
+    isSuperAdmin: userProfile?.role === ROLES.SUPER_ADMIN,
+    isMaese: userProfile?.role === ROLES.MAESE,
+    isUser: userProfile?.role === ROLES.USER,
+    isPollito: userProfile?.role === ROLES.POLLITO,
     hasPermission: (permission) => hasPermission(userProfile?.role, permission),
     hasPageAccess: (pagePath) => hasPageAccess(userProfile?.role, pagePath),
     getRolePermissions: () => getRolePermissions(userProfile?.role)
