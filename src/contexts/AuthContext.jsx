@@ -1,15 +1,14 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-// Temporalmente comentamos Firebase para que la app funcione
-// import {
-//   onAuthStateChange,
-//   loginWithEmail,
-//   loginWithGoogle,
-//   registerWithEmail,
-//   logout as firebaseLogout,
-//   resetPassword,
-//   createUserProfile,
-//   getUserProfile
-// } from '../services/firebase'
+import {
+  onAuthStateChange,
+  loginWithEmail,
+  loginWithGoogle,
+  registerWithEmail,
+  logout as firebaseLogout,
+  resetPassword,
+  createUserProfile,
+  getUserProfile
+} from '../services/firebase'
 
 const AuthContext = createContext()
 
@@ -27,99 +26,86 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Temporalmente comentamos Firebase para que la app funcione
-    // const unsubscribe = onAuthStateChange(async (firebaseUser) => {
-    //   if (firebaseUser) {
-    //     setUser(firebaseUser)
-    //     
-    //     // Obtener perfil del usuario
-    //     try {
-    //       const { user: profile } = await getUserProfile(firebaseUser.uid)
-    //       setUserProfile(profile)
-    //     } catch (error) {
-    //       console.log('Usuario nuevo, perfil no encontrado')
-    //     }
-    //   } else {
-    //     setUser(null)
-    //     setUserProfile(null)
-    //   }
-    //   setLoading(false)
-    // })
+    // Observar cambios en el estado de autenticación
+    const unsubscribe = onAuthStateChange(async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser)
+        
+        // Obtener perfil del usuario
+        try {
+          const { user: profile } = await getUserProfile(firebaseUser.uid)
+          setUserProfile(profile)
+        } catch (error) {
+          console.log('Usuario nuevo, perfil no encontrado')
+        }
+      } else {
+        setUser(null)
+        setUserProfile(null)
+      }
+      setLoading(false)
+    })
 
-    // return () => unsubscribe()
-    
-    // Temporal: Simular carga completada
-    setLoading(false)
+    return () => unsubscribe()
   }, [])
 
   const login = async (email, password) => {
-    // Temporalmente comentamos Firebase
-    // try {
-    //   const { user: firebaseUser, error } = await loginWithEmail(email, password)
-    //   if (error) throw new Error(error)
-    //   return { success: true, error: null }
-    // } catch (error) {
-    //   return { success: false, error: error.message }
-    // }
-    return { success: false, error: 'Firebase temporalmente deshabilitado' }
+    try {
+      const { user: firebaseUser, error } = await loginWithEmail(email, password)
+      if (error) throw new Error(error)
+      return { success: true, error: null }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
   }
 
   const loginWithGoogleAuth = async () => {
-    // Temporalmente comentamos Firebase
-    // try {
-    //   const { user: firebaseUser, error } = await loginWithGoogle()
-    //   if (error) throw new Error(error)
-    //   return { success: true, error: null }
-    // } catch (error) {
-    //   return { success: false, error: error.message }
-    // }
-    return { success: false, error: 'Firebase temporalmente deshabilitado' }
+    try {
+      const { user: firebaseUser, error } = await loginWithGoogle()
+      if (error) throw new Error(error)
+      return { success: true, error: null }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
   }
 
   const register = async (email, password, displayName) => {
-    // Temporalmente comentamos Firebase
-    // try {
-    //   const { user: firebaseUser, error } = await registerWithEmail(email, password, displayName)
-    //   if (error) throw new Error(error)
-    //   
-    //   // Crear perfil de usuario
-    //   if (firebaseUser) {
-    //     await createUserProfile(firebaseUser.uid, {
-    //       displayName,
-    //       email,
-    //       role: 'user',
-    //       createdAt: new Date()
-    //     })
-    //   }
-    //   
-    //   return { success: true, error: null }
-    // } catch (error) {
-    //   return { success: false, error: error.message }
-    // }
-    return { success: false, error: 'Firebase temporalmente deshabilitado' }
+    try {
+      const { user: firebaseUser, error } = await registerWithEmail(email, password, displayName)
+      if (error) throw new Error(error)
+      
+      // Crear perfil de usuario
+      if (firebaseUser) {
+        await createUserProfile(firebaseUser.uid, {
+          displayName,
+          email,
+          role: 'user',
+          createdAt: new Date()
+        })
+      }
+      
+      return { success: true, error: null }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
   }
 
   const logout = async () => {
-    // Temporalmente comentamos Firebase
-    // try {
-    //   await firebaseLogout()
-    //   return { success: true, error: null }
-    // } catch (error) {
-    //   return { success: false, error: error.message }
-    // }
-    return { success: false, error: 'Firebase temporalmente deshabilitado' }
+    try {
+      await firebaseLogout()
+      return { success: true, error: null }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
   }
 
   const resetUserPassword = async (email) => {
-    // Temporalmente comentamos Firebase
-    // try {
-    //   const { error } = await resetPassword(email)
-    //   if (error) throw new Error(error)
-    //   return { success: true, error: null }
-    // } catch (error) {
-    //   return { success: false, error: error.message }
-    // }
-    return { success: false, error: 'Firebase temporalmente deshabilitado' }
+    try {
+      const { error } = await resetPassword(email)
+      if (error) throw new Error(error)
+      return { success: true, error: null }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
   }
 
   const updateUserProfile = (profileData) => {
