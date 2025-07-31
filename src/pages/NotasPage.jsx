@@ -26,25 +26,37 @@ const NotasPage = () => {
   const [expandedCommits, setExpandedCommits] = useState(new Set())
 
   const categories = [
-    { name: 'TODAS', icon: FileText, count: 27 },
-    { name: 'PÁGINAS', icon: Home, count: 12 },
-    { name: 'SISTEMAS', icon: Settings, count: 10 },
-    { name: 'CONTENIDO', icon: Video, count: 5 }
+            { name: 'TODAS', icon: FileText, count: 31 },
+        { name: 'PÁGINAS', icon: Home, count: 12 },
+        { name: 'SISTEMAS', icon: Settings, count: 14 },
+        { name: 'CONTENIDO', icon: Video, count: 5 }
   ]
 
-  const commits = [
-    {
-      id: 15,
-      hash: '56f8efc',
-      date: '2025-01-27',
-      time: '10:45:32',
-      title: 'Commit #015 - Configuración completa de Firebase',
-      description: 'Auth, Firestore y Storage habilitados con credenciales reales',
-      files: ['src/services/firebase/*', 'src/components/FirebaseTest.jsx', 'NOTAS_COMMITS.md'],
-      notes: 'Firebase completamente configurado, componente de prueba integrado, credenciales reales actualizadas',
-      status: 'Completado',
-      category: 'SISTEMAS'
-    },
+        const commits = [
+        {
+          id: 16,
+          hash: 'e933a1a',
+          date: '2025-01-27',
+          time: '13:14:29',
+          title: 'Commit #016 - Sistema de roles simplificado',
+          description: 'Super Admin, Maese, Usuario y Pollito implementados',
+          files: ['src/constants/roles.js', 'src/contexts/AuthContext.jsx', 'USUARIOS_PRUEBA.md'],
+          notes: 'Sistema de roles simplificado con 4 roles principales, permisos actualizados, AuthContext mejorado',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 15,
+          hash: '56f8efc',
+          date: '2025-01-27',
+          time: '10:45:32',
+          title: 'Commit #015 - Configuración completa de Firebase',
+          description: 'Auth, Firestore y Storage habilitados con credenciales reales',
+          files: ['src/services/firebase/*', 'src/components/FirebaseTest.jsx', 'NOTAS_COMMITS.md'],
+          notes: 'Firebase completamente configurado, componente de prueba integrado, credenciales reales actualizadas',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
     {
       id: 14,
       hash: 'e83932a',

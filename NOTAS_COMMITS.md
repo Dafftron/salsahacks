@@ -360,6 +360,53 @@
 - ✅ Interfaz más limpia y enfocada en gestión de tags
 - ✅ Protección total de categorías hardcodeadas (solo lectura)
 
+### **Commit #013 - Sistema de Roles y Permisos Completo**
+**Fecha:** 2025-01-27
+**Descripción:** Implementación completa del sistema de roles y permisos con AuthContext mejorado
+**Cambios:**
+- ✅ Sistema de roles completo (Admin, Instructor, Premium, User, Guest)
+- ✅ Archivo `src/constants/roles.js` con configuración centralizada
+- ✅ Permisos detallados por funcionalidad (25 permisos totales)
+- ✅ AuthContext mejorado con funciones de verificación de permisos
+- ✅ Componente `RoleManager.jsx` para gestión visual de roles
+- ✅ UserProfile actualizado con información de roles y permisos
+- ✅ AdminPage integrado con RoleManager
+- ✅ Sistema de acceso controlado por roles
+- ✅ Colores y etiquetas específicas para cada rol
+
+### **Commit #014 - Sistema de Usuarios y Autenticación**
+**Fecha:** 2025-01-27
+**Descripción:** Sistema completo de usuarios con autenticación y perfiles
+**Cambios:**
+- ✅ Página de autenticación (`AuthPage.jsx`) con login y registro
+- ✅ Componente `UserProfile.jsx` con información detallada del usuario
+- ✅ Navegación actualizada con dropdown de perfil y logout
+- ✅ Integración completa con Firebase Auth
+- ✅ Persistencia de datos de usuario
+- ✅ Sistema de logout funcional
+- ✅ Interfaz moderna y responsive
+
+### **Commit #015 - Configuración Completa de Firebase**
+**Fecha:** 2025-01-27
+**Descripción:** Firebase completamente configurado y funcional
+**Cambios:**
+- ✅ Firebase Auth, Firestore y Storage habilitados
+- ✅ Credenciales reales configuradas
+- ✅ Componente de prueba integrado
+- ✅ Sistema de persistencia funcionando
+- ✅ Aplicación estable y funcional
+
+### **Commit #016 - Sistema de Roles Simplificado**
+**Fecha:** 2025-01-27
+**Descripción:** Simplificación del sistema de roles a 4 roles principales
+**Cambios:**
+- ✅ Nuevos roles: Super Admin, Maese, Usuario, Pollito
+- ✅ Actualización de permisos y accesos por página
+- ✅ AuthContext actualizado con nuevos roles
+- ✅ Documentación actualizada en `USUARIOS_PRUEBA.md`
+- ✅ Sistema más simple y fácil de gestionar
+- ✅ Colores específicos para cada rol (púrpura, rojo, verde, amarillo)
+
 ---
 
 ## 🎯 PRÓXIMAS TAREAS
