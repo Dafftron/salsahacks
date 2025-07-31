@@ -15,25 +15,53 @@ import {
   Video,
   Users,
   Home,
-  BookOpen
+  BookOpen,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react'
 
 const NotasPage = () => {
   const [activeTab, setActiveTab] = useState('commits')
   const [selectedCategory, setSelectedCategory] = useState('TODAS')
+  const [expandedCommits, setExpandedCommits] = useState(new Set())
 
   const categories = [
-    { name: 'TODAS', icon: FileText, count: 25 },
+    { name: 'TODAS', icon: FileText, count: 27 },
     { name: 'PÁGINAS', icon: Home, count: 12 },
-    { name: 'SISTEMAS', icon: Settings, count: 8 },
+    { name: 'SISTEMAS', icon: Settings, count: 10 },
     { name: 'CONTENIDO', icon: Video, count: 5 }
   ]
 
   const commits = [
     {
+      id: 15,
+      hash: '56f8efc',
+      date: '2025-01-27',
+      time: '10:45:32',
+      title: 'Commit #015 - Configuración completa de Firebase',
+      description: 'Auth, Firestore y Storage habilitados con credenciales reales',
+      files: ['src/services/firebase/*', 'src/components/FirebaseTest.jsx', 'NOTAS_COMMITS.md'],
+      notes: 'Firebase completamente configurado, componente de prueba integrado, credenciales reales actualizadas',
+      status: 'Completado',
+      category: 'SISTEMAS'
+    },
+    {
+      id: 14,
+      hash: 'e83932a',
+      date: '2025-01-27',
+      time: '10:30:15',
+      title: 'Commit #014 - Fix: Aplicación funcionando',
+      description: 'Firebase temporalmente deshabilitado para evitar errores',
+      files: ['src/contexts/AuthContext.jsx', 'src/pages/HomePage.jsx'],
+      notes: 'Aplicación funcionando correctamente, Firebase comentado temporalmente',
+      status: 'Completado',
+      category: 'SISTEMAS'
+    },
+    {
       id: 13,
       hash: '78f59b2',
       date: '2025-01-27',
+      time: '09:15:42',
       title: 'Commit #013 - Actualización de Documentación',
       description: 'Agregado Commit #012 a NOTAS_COMMITS.md',
       files: ['NOTAS_COMMITS.md'],
@@ -45,6 +73,7 @@ const NotasPage = () => {
       id: 12,
       hash: '26b3ab2',
       date: '2025-01-27',
+      time: '08:45:18',
       title: 'Commit #012 - Simplificación del Gestor de Categorías',
       description: 'Eliminación de botones innecesarios, corrección de errores',
       files: ['src/pages/CategoriesPage.jsx'],
@@ -56,6 +85,7 @@ const NotasPage = () => {
       id: 11,
       hash: '360fa0a',
       date: '2025-01-27',
+      time: '08:20:33',
       title: 'Commit #011 - Gestor de Categorías Jerárquico',
       description: 'Implementación de estructura jerárquica de 3 niveles',
       files: ['src/pages/CategoriesPage.jsx', 'NOTAS_COMMITS.md'],
@@ -67,6 +97,7 @@ const NotasPage = () => {
       id: 10,
       hash: 'a3933cb',
       date: '2025-01-27',
+      time: '07:55:27',
       title: 'Commit #010 - Eliminación de Header Duplicado en FigurasPage',
       description: 'Limpieza de navegación duplicada',
       files: ['src/pages/FigurasPage.jsx'],
@@ -78,6 +109,7 @@ const NotasPage = () => {
       id: 9,
       hash: '6938a03',
       date: '2025-01-27',
+      time: '07:30:45',
       title: 'Commit #009 - Sistema de Categorías Hardcodeadas',
       description: 'Implementación completa del sistema centralizado',
       files: ['src/constants/categories.js', 'src/hooks/useCategories.js', 'src/components/common/CategoryBadge.jsx'],
@@ -89,6 +121,7 @@ const NotasPage = () => {
       id: 8,
       hash: '0e51076',
       date: '2025-01-27',
+      time: '07:15:12',
       title: 'Commit #008 - Hoja de Ruta Completa',
       description: 'Implementación de toda la hoja de ruta del proyecto',
       files: ['NOTAS_COMMITS.md'],
@@ -447,6 +480,20 @@ const NotasPage = () => {
     }
   }
 
+  const toggleCommitExpansion = (commitId) => {
+    const newExpanded = new Set(expandedCommits)
+    if (newExpanded.has(commitId)) {
+      newExpanded.delete(commitId)
+    } else {
+      newExpanded.add(commitId)
+    }
+    setExpandedCommits(newExpanded)
+  }
+
+  const isCommitExpanded = (commitId) => {
+    return expandedCommits.has(commitId)
+  }
+
   const filteredItems = () => {
     let items = []
     
@@ -573,8 +620,11 @@ const NotasPage = () => {
             {filteredItems().map((item) => (
               <div key={item.id} className={`bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.01] border-l-4 ${getStatusBorderColor(item.status)}`}>
                 <div className="p-4">
-                  {/* Header - Compact */}
-                  <div className="flex items-center justify-between mb-3">
+                  {/* Header - Clickable for commits */}
+                  <div 
+                    className={`flex items-center justify-between mb-3 ${activeTab === 'commits' ? 'cursor-pointer' : ''}`}
+                    onClick={() => activeTab === 'commits' && toggleCommitExpansion(item.id)}
+                  >
                     <div className="flex items-center space-x-3">
                       {activeTab === 'commits' && (
                         <div className="flex items-center space-x-2">
@@ -586,12 +636,32 @@ const NotasPage = () => {
                       <div>
                         <h3 className="font-semibold text-gray-800 text-base">{item.title}</h3>
                         {activeTab === 'commits' && (
-                          <p className="text-xs text-gray-500">{item.date}</p>
+                          <div className="flex items-center space-x-2">
+                            <p className="text-xs text-gray-500">{item.date}</p>
+                            {item.time && (
+                              <p className="text-xs text-gray-400">• {item.time}</p>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
                     
                     <div className="flex items-center space-x-2">
+                      {activeTab === 'commits' && (
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleCommitExpansion(item.id)
+                          }}
+                          className="p-1 hover:bg-gray-100 rounded transition-colors"
+                        >
+                          {isCommitExpanded(item.id) ? (
+                            <ChevronDown className="h-4 w-4 text-gray-500" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-gray-500" />
+                          )}
+                        </button>
+                      )}
                       <span className={`px-2 py-1 text-white text-xs rounded-full font-medium ${getCategoryColor(item.category)}`}>
                         {item.category}
                       </span>
@@ -606,67 +676,99 @@ const NotasPage = () => {
                     </div>
                   </div>
 
-                  {/* Description - Compact */}
+                  {/* Description - Always visible */}
                   <p className="text-gray-600 text-sm mb-3">{item.description}</p>
 
-                  {/* Progress Bar for En Proceso */}
-                  {activeTab === 'proceso' && item.progress && (
-                    <div className="mb-3">
-                      <div className="flex justify-between text-xs text-gray-600 mb-1">
-                        <span>Progreso</span>
-                        <span>{item.progress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div
-                          className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
-                          style={{ width: `${item.progress}%` }}
-                        ></div>
-                      </div>
+                  {/* Expanded content for commits */}
+                  {activeTab === 'commits' && isCommitExpanded(item.id) && (
+                    <div className="border-t border-gray-100 pt-3 mt-3">
+                      {/* Files - Full list */}
+                      {item.files && (
+                        <div className="mb-3">
+                          <h4 className="text-xs font-semibold text-gray-700 mb-2">Archivos modificados:</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {item.files.map((file, index) => (
+                              <span key={index} className="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded font-medium">
+                                {file}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Notes - Full details */}
+                      {item.notes && (
+                        <div className="mb-3">
+                          <h4 className="text-xs font-semibold text-gray-700 mb-2">Notas:</h4>
+                          <p className="text-xs text-gray-600 bg-gray-50 p-2 rounded">{item.notes}</p>
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  {/* Files (for commits) - Compact */}
-                  {activeTab === 'commits' && item.files && (
-                    <div className="mb-3">
-                      <div className="flex flex-wrap gap-1">
-                        {item.files.slice(0, 3).map((file, index) => (
-                          <span key={index} className="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded font-medium">
-                            {file}
+                  {/* Compact content for non-commits or collapsed commits */}
+                  {activeTab !== 'commits' && (
+                    <>
+                      {/* Progress Bar for En Proceso */}
+                      {activeTab === 'proceso' && item.progress && (
+                        <div className="mb-3">
+                          <div className="flex justify-between text-xs text-gray-600 mb-1">
+                            <span>Progreso</span>
+                            <span>{item.progress}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div
+                              className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+                              style={{ width: `${item.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Files (for commits) - Compact */}
+                      {activeTab === 'commits' && item.files && !isCommitExpanded(item.id) && (
+                        <div className="mb-3">
+                          <div className="flex flex-wrap gap-1">
+                            {item.files.slice(0, 3).map((file, index) => (
+                              <span key={index} className="px-2 py-1 bg-pink-100 text-pink-700 text-xs rounded font-medium">
+                                {file}
+                              </span>
+                            ))}
+                            {item.files.length > 3 && (
+                              <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded font-medium">
+                                +{item.files.length - 3} más
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Notes - Compact */}
+                      {item.notes && !isCommitExpanded(item.id) && (
+                        <div className="mb-3">
+                          <p className="text-xs text-gray-600">{item.notes}</p>
+                        </div>
+                      )}
+
+                      {/* Additional info - Compact */}
+                      {activeTab === 'futuras' && item.estimatedTime && (
+                        <div className="flex items-center space-x-4 text-xs text-gray-500">
+                          <span className="flex items-center space-x-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{item.estimatedTime}</span>
                           </span>
-                        ))}
-                        {item.files.length > 3 && (
-                          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded font-medium">
-                            +{item.files.length - 3} más
+                        </div>
+                      )}
+
+                      {activeTab === 'hechas' && item.date && (
+                        <div className="flex items-center space-x-4 text-xs text-gray-500">
+                          <span className="flex items-center space-x-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>{item.date}</span>
                           </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Notes - Compact */}
-                  {item.notes && (
-                    <div className="mb-3">
-                      <p className="text-xs text-gray-600">{item.notes}</p>
-                    </div>
-                  )}
-
-                  {/* Additional info - Compact */}
-                  {activeTab === 'futuras' && item.estimatedTime && (
-                    <div className="flex items-center space-x-4 text-xs text-gray-500">
-                      <span className="flex items-center space-x-1">
-                        <Clock className="h-3 w-3" />
-                        <span>{item.estimatedTime}</span>
-                      </span>
-                    </div>
-                  )}
-
-                  {activeTab === 'hechas' && item.date && (
-                    <div className="flex items-center space-x-4 text-xs text-gray-500">
-                      <span className="flex items-center space-x-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>{item.date}</span>
-                      </span>
-                    </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
