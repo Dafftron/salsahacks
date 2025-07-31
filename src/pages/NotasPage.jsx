@@ -26,10 +26,10 @@ const NotasPage = () => {
   const [expandedCommits, setExpandedCommits] = useState(new Set())
 
   const categories = [
-            { name: 'TODAS', icon: FileText, count: 27 },
-        { name: 'PÁGINAS', icon: Home, count: 8 },
-        { name: 'SISTEMAS', icon: Settings, count: 19 },
-        { name: 'CONTENIDO', icon: Video, count: 0 }
+            { name: 'TODAS', icon: FileText, count: 41 },
+        { name: 'PÁGINAS', icon: Home, count: 10 },
+        { name: 'SISTEMAS', icon: Settings, count: 21 },
+        { name: 'CONTENIDO', icon: Video, count: 10 }
   ]
 
         const commits = [
@@ -406,17 +406,80 @@ const NotasPage = () => {
       date: '2025-01-27',
       priority: 'Alta',
       status: 'Completado'
+    },
+    {
+      id: 7,
+      title: 'Configuración completa de Firebase',
+      description: 'Auth, Firestore y Storage habilitados con credenciales reales',
+      category: 'SISTEMAS',
+      date: '2025-01-27',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
+      id: 8,
+      title: 'Sistema de autenticación completo',
+      description: 'Login/registro con Firebase Auth, roles y permisos',
+      category: 'SISTEMAS',
+      date: '2025-01-27',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
+      id: 9,
+      title: 'Sistema de invitaciones por enlace',
+      description: 'Registro controlado solo por Super Admin',
+      category: 'SISTEMAS',
+      date: '2025-01-27',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
+      id: 10,
+      title: 'Panel de administración',
+      description: 'Gestión de usuarios y invitaciones',
+      category: 'PÁGINAS',
+      date: '2025-01-27',
+      priority: 'Media',
+      status: 'Completado'
+    },
+    {
+      id: 11,
+      title: 'Páginas de perfil y configuración',
+      description: 'Perfil de usuario y configuración completa',
+      category: 'PÁGINAS',
+      date: '2025-01-27',
+      priority: 'Media',
+      status: 'Completado'
+    },
+    {
+      id: 12,
+      title: 'Sistema de roles y permisos',
+      description: 'Super Admin, Maese, Soldado, Pollito implementados',
+      category: 'SISTEMAS',
+      date: '2025-01-27',
+      priority: 'Alta',
+      status: 'Completado'
     }
   ]
 
   const cosasEnProceso = [
     {
       id: 1,
-      title: 'Configuración de Firebase',
-      description: 'Firestore y Authentication configurados',
-      category: 'SISTEMAS',
+      title: 'Sistema de gestión de videos',
+      description: 'Upload, reproducción y gestión de metadatos',
+      category: 'CONTENIDO',
       priority: 'Alta',
-      progress: 30,
+      progress: 15,
+      status: 'En Progreso'
+    },
+    {
+      id: 2,
+      title: 'HomePage - Dashboard principal',
+      description: 'Página de inicio con estadísticas y videos destacados',
+      category: 'PÁGINAS',
+      priority: 'Media',
+      progress: 25,
       status: 'En Progreso'
     }
   ]
@@ -425,24 +488,6 @@ const NotasPage = () => {
     // SISTEMAS
     {
       id: 1,
-      title: 'Sistema de autenticación',
-      description: 'Login/registro de usuarios con Firebase Auth',
-      category: 'SISTEMAS',
-      priority: 'Alta',
-      estimatedTime: '4 días',
-      status: 'Futuro'
-    },
-    {
-      id: 2,
-      title: 'Base de datos Firestore',
-      description: 'Configuración completa de la base de datos',
-      category: 'SISTEMAS',
-      priority: 'Alta',
-      estimatedTime: '3 días',
-      status: 'Futuro'
-    },
-    {
-      id: 3,
       title: 'Sistema de recomendaciones',
       description: 'Algoritmo para recomendar videos y contenido',
       category: 'SISTEMAS',
@@ -451,7 +496,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 4,
+      id: 2,
       title: 'Analytics y estadísticas',
       description: 'Métricas de uso y comportamiento de usuarios',
       category: 'SISTEMAS',
@@ -462,16 +507,7 @@ const NotasPage = () => {
     
     // PÁGINAS
     {
-      id: 5,
-      title: 'HomePage - Dashboard principal',
-      description: 'Página de inicio con estadísticas y videos destacados',
-      category: 'PÁGINAS',
-      priority: 'Media',
-      estimatedTime: '3 días',
-      status: 'Futuro'
-    },
-    {
-      id: 6,
+      id: 3,
       title: 'CategoriesPage - Gestión de categorías',
       description: 'Página para gestionar categorías y etiquetas',
       category: 'PÁGINAS',
@@ -480,25 +516,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 7,
-      title: 'AdminPage - Panel de administración',
-      description: 'Dashboard para gestión de contenido y usuarios',
-      category: 'PÁGINAS',
-      priority: 'Media',
-      estimatedTime: '4 días',
-      status: 'Futuro'
-    },
-    {
-      id: 8,
-      title: 'Perfil de usuario',
-      description: 'Página de perfil personal con historial y favoritos',
-      category: 'PÁGINAS',
-      priority: 'Baja',
-      estimatedTime: '2 días',
-      status: 'Futuro'
-    },
-    {
-      id: 9,
+      id: 4,
       title: 'Página de video individual',
       description: 'Página detallada para ver y comentar videos',
       category: 'PÁGINAS',
@@ -507,7 +525,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 10,
+      id: 5,
       title: 'Página de búsqueda avanzada',
       description: 'Búsqueda con filtros por categorías y estilos',
       category: 'PÁGINAS',
@@ -518,16 +536,7 @@ const NotasPage = () => {
     
     // CONTENIDO
     {
-      id: 11,
-      title: 'Sistema de gestión de videos',
-      description: 'Upload, reproducción y gestión de metadatos',
-      category: 'CONTENIDO',
-      priority: 'Alta',
-      estimatedTime: '5 días',
-      status: 'Futuro'
-    },
-    {
-      id: 12,
+      id: 6,
       title: 'Constructor de secuencias',
       description: 'Herramienta para crear secuencias de baile',
       category: 'CONTENIDO',
@@ -536,7 +545,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 13,
+      id: 7,
       title: 'Sistema de comentarios',
       description: 'Comentarios en videos y sistema de ratings',
       category: 'CONTENIDO',
@@ -545,7 +554,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 14,
+      id: 8,
       title: 'Sistema de favoritos',
       description: 'Guardar videos favoritos y crear playlists',
       category: 'CONTENIDO',
@@ -554,7 +563,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 15,
+      id: 9,
       title: 'Notificaciones',
       description: 'Sistema de notificaciones para nuevos videos y eventos',
       category: 'CONTENIDO',
@@ -565,7 +574,7 @@ const NotasPage = () => {
     
     // FUNCIONALIDADES AVANZADAS
     {
-      id: 16,
+      id: 10,
       title: 'Modo offline',
       description: 'Descargar videos para ver sin conexión',
       category: 'SISTEMAS',
@@ -574,7 +583,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 17,
+      id: 11,
       title: 'Integración con redes sociales',
       description: 'Compartir videos en Facebook, Instagram, etc.',
       category: 'CONTENIDO',
@@ -583,7 +592,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 18,
+      id: 12,
       title: 'Sistema de certificaciones',
       description: 'Certificados de cursos completados',
       category: 'CONTENIDO',
@@ -592,7 +601,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 19,
+      id: 13,
       title: 'Calendario de eventos',
       description: 'Calendario interactivo para eventos de salsa',
       category: 'PÁGINAS',
@@ -601,7 +610,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 20,
+      id: 14,
       title: 'Sistema de mensajería',
       description: 'Chat entre usuarios e instructores',
       category: 'SISTEMAS',
