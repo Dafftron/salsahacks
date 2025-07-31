@@ -1,4 +1,14 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import {
+  onAuthStateChange,
+  loginWithEmail,
+  loginWithGoogle,
+  registerWithEmail,
+  logout as firebaseLogout,
+  resetPassword,
+  createUserProfile,
+  getUserProfile
+} from '../services/firebase'
 
 const AuthContext = createContext()
 
@@ -12,40 +22,108 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
+  const [userProfile, setUserProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Simular carga inicial de usuario
-    const savedUser = localStorage.getItem('user')
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
-    }
-    setLoading(false)
+    // Observar cambios en el estado de autenticación
+    const unsubscribe = onAuthStateChange(async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser)
+        
+        // Obtener perfil del usuario
+        try {
+          const { user: profile } = await getUserProfile(firebaseUser.uid)
+          setUserProfile(profile)
+        } catch (error) {
+          console.log('Usuario nuevo, perfil no encontrado')
+        }
+      } else {
+        setUser(null)
+        setUserProfile(null)
+      }
+      setLoading(false)
+    })
+
+    return () => unsubscribe()
   }, [])
 
-  const login = (userData) => {
-    setUser(userData)
-    localStorage.setItem('user', JSON.stringify(userData))
+  const login = async (email, password) => {
+    try {
+      const { user: firebaseUser, error } = await loginWithEmail(email, password)
+      if (error) throw new Error(error)
+      return { success: true, error: null }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
   }
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem('user')
+  const loginWithGoogleAuth = async () => {
+    try {
+      const { user: firebaseUser, error } = await loginWithGoogle()
+      if (error) throw new Error(error)
+      return { success: true, error: null }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
   }
 
-  const updateUser = (userData) => {
-    setUser(userData)
-    localStorage.setItem('user', JSON.stringify(userData))
+  const register = async (email, password, displayName) => {
+    try {
+      const { user: firebaseUser, error } = await registerWithEmail(email, password, displayName)
+      if (error) throw new Error(error)
+      
+      // Crear perfil de usuario
+      if (firebaseUser) {
+        await createUserProfile(firebaseUser.uid, {
+          displayName,
+          email,
+          role: 'user',
+          createdAt: new Date()
+        })
+      }
+      
+      return { success: true, error: null }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  const logout = async () => {
+    try {
+      await firebaseLogout()
+      return { success: true, error: null }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  const resetUserPassword = async (email) => {
+    try {
+      const { error } = await resetPassword(email)
+      if (error) throw new Error(error)
+      return { success: true, error: null }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  const updateUserProfile = (profileData) => {
+    setUserProfile(profileData)
   }
 
   const value = {
     user,
+    userProfile,
     loading,
     login,
+    loginWithGoogle: loginWithGoogleAuth,
+    register,
     logout,
-    updateUser,
+    resetPassword: resetUserPassword,
+    updateUserProfile,
     isAuthenticated: !!user,
-    isAdmin: user?.role === 'admin'
+    isAdmin: userProfile?.role === 'admin'
   }
 
   return (

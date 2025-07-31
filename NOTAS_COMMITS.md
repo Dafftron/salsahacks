@@ -10,6 +10,7 @@
 3. [Historial de Commits](#historial-de-commits)
 4. [Próximas Tareas](#próximas-tareas)
 5. [Notas de Desarrollo](#notas-de-desarrollo)
+6. [Configuración Firebase](#configuración-firebase)
 
 ---
 
@@ -433,6 +434,152 @@
 - ✅ Accesibilidad WCAG 2.1 AA
 - ✅ 95% de cobertura de tests
 - ✅ Deploy automatizado y funcional
+
+---
+
+---
+
+## 🔥 CONFIGURACIÓN FIREBASE
+
+### **📋 Pasos para Configurar Firebase**
+
+#### **1. Crear Proyecto Firebase**
+1. Ve a https://console.firebase.google.com/
+2. Crea un nuevo proyecto o selecciona uno existente
+3. Dale un nombre descriptivo (ej: "salsahacks-app")
+
+#### **2. Configurar Aplicación Web**
+1. Ve a Configuración del proyecto > General
+2. En "Tus apps", haz clic en el ícono de web (</>)
+3. Registra tu app con un nombre (ej: "SalsaHacks Web")
+4. Copia la configuración que aparece
+
+#### **3. Habilitar Servicios**
+1. **Authentication:** Ve a Authentication > Sign-in method
+   - Habilita Email/Password
+   - Habilita Google
+2. **Firestore Database:** Ve a Firestore Database
+   - Crea base de datos en modo de prueba
+   - Selecciona ubicación (ej: us-central1)
+3. **Storage:** Ve a Storage
+   - Inicia Storage
+   - Selecciona ubicación (ej: us-central1)
+
+#### **4. Configurar Reglas de Seguridad**
+1. **Firestore Rules:**
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /notes/{noteId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+    }
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /figures/{figureId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /school/{contentId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
+```
+
+2. **Storage Rules:**
+```javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /profiles/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == userId;
+    }
+    match /notes/{noteId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+    match /events/{eventId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /figures/{figureId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
+```
+
+#### **5. Actualizar Configuración**
+1. Copia el archivo `firebase.config.example.js`
+2. Renómbralo como `firebase.config.js`
+3. Reemplaza las credenciales con las tuyas
+4. Actualiza `src/services/firebase/config.js` con tus credenciales
+
+### **🔧 Estructura de Servicios Firebase**
+
+#### **📁 Archivos Creados:**
+- `src/services/firebase/config.js` - Configuración principal
+- `src/services/firebase/auth.js` - Servicios de autenticación
+- `src/services/firebase/firestore.js` - Servicios de base de datos
+- `src/services/firebase/storage.js` - Servicios de archivos
+- `src/services/firebase/index.js` - Exportaciones principales
+- `src/hooks/useFirebase.js` - Hooks personalizados
+
+#### **🎯 Funcionalidades Implementadas:**
+- ✅ Autenticación con email/password y Google
+- ✅ Gestión de usuarios y perfiles
+- ✅ CRUD completo para notas, eventos, figuras
+- ✅ Upload de imágenes y videos con compresión
+- ✅ Listeners en tiempo real
+- ✅ Hooks personalizados para fácil uso
+- ✅ Manejo de errores robusto
+
+### **🚀 Próximos Pasos**
+1. ✅ **Configurar credenciales** en Firebase Console
+2. ✅ **Actualizar configuración** en el código
+3. 🔄 **Probar autenticación** con usuarios de prueba
+4. 🔄 **Implementar componentes** de login/registro
+5. 🔄 **Conectar páginas** con Firebase
+
+---
+
+## 🎉 CONFIGURACIÓN FIREBASE COMPLETADA - [Fecha: Actual]
+
+### **✅ Servicios Configurados:**
+- **Authentication**: Email/Password + Google Sign-In habilitados
+- **Firestore Database**: Base de datos creada en modo de prueba
+- **Storage**: Almacenamiento habilitado en modo de prueba
+
+### **✅ Credenciales Configuradas:**
+```javascript
+const firebaseConfig = {
+  apiKey: "AIzaSyBxqEJAHyV4jyeE1-GW-dOeECyLXRAsjiM",
+  authDomain: "salsahacks-a9cac.firebaseapp.com",
+  projectId: "salsahacks-a9cac",
+  storageBucket: "salsahacks-a9cac.firebasestorage.app",
+  messagingSenderId: "934621871243",
+  appId: "1:934621871243:web:9107fa3b61d9b9928fa88e"
+};
+```
+
+### **✅ Componente de Prueba Creado:**
+- `src/components/FirebaseTest.jsx` - Componente para verificar conexión
+- Integrado en `HomePage.jsx` para pruebas inmediatas
+- Pruebas de Auth, Firestore y Storage
+
+### **🔄 Estado Actual:**
+- ✅ Firebase completamente configurado
+- ✅ Aplicación corriendo en http://localhost:3000
+- 🔄 Listo para probar funcionalidades de Firebase
 
 ---
 

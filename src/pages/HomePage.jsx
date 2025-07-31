@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Music, Video, BookOpen, Calendar, Tag, FileText } from 'lucide-react'
+import FirebaseTest from '../components/FirebaseTest'
 
 const HomePage = () => {
   const features = [
@@ -108,6 +109,11 @@ const HomePage = () => {
             <div className="text-gray-600">Usuarios Activos</div>
           </div>
         </div>
+      </div>
+
+      {/* Firebase Test Section */}
+      <div className="mb-16">
+        <FirebaseTest />
       </div>
 
       {/* Quick Actions */}
