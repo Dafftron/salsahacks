@@ -25,4 +25,4 @@ export {
 } from './firestore'
 
 // Storage functions
-export { uploadFile, getDownloadURL, deleteFile } from './storage' 
+export { uploadFile, getFileURL, deleteFile } from './storage' 
