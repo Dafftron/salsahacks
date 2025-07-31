@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Music, Video, BookOpen, Calendar, Tag, FileText } from 'lucide-react'
-import FirebaseTest from '../components/FirebaseTest'
+// Temporalmente comentamos FirebaseTest
+// import FirebaseTest from '../components/FirebaseTest'
 
 const HomePage = () => {
   const features = [
@@ -111,10 +112,10 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Firebase Test Section */}
-      <div className="mb-16">
+      {/* Firebase Test Section - Temporalmente comentado */}
+      {/* <div className="mb-16">
         <FirebaseTest />
-      </div>
+      </div> */}
 
       {/* Quick Actions */}
       <div className="text-center">
