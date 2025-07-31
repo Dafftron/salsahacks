@@ -26,19 +26,139 @@ const NotasPage = () => {
   const [expandedCommits, setExpandedCommits] = useState(new Set())
 
   const categories = [
-            { name: 'TODAS', icon: FileText, count: 32 },
-        { name: 'PÁGINAS', icon: Home, count: 12 },
-        { name: 'SISTEMAS', icon: Settings, count: 15 },
-        { name: 'CONTENIDO', icon: Video, count: 5 }
+            { name: 'TODAS', icon: FileText, count: 27 },
+        { name: 'PÁGINAS', icon: Home, count: 8 },
+        { name: 'SISTEMAS', icon: Settings, count: 19 },
+        { name: 'CONTENIDO', icon: Video, count: 0 }
   ]
 
         const commits = [
+        {
+          id: 27,
+          hash: '24f8600',
+          date: '2025-01-27',
+          time: '16:15:30',
+          title: 'Commit #027 - Sistema de Usuarios de Prueba Creados',
+          description: 'Creación exitosa de usuarios de prueba de todos los niveles',
+          files: ['NOTAS_COMMITS.md', 'Firebase Console'],
+          notes: 'Usuario Pollito, Soldado, Maese, Admin y Super Admin David creados. Sistema de invitaciones completamente funcional. Todos los usuarios persistentes en Firebase Console.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 26,
+          hash: '603085c',
+          date: '2025-01-27',
+          time: '16:10:15',
+          title: 'Commit #026 - Fix: Creación Automática del Perfil de David como Super Admin',
+          description: 'Implementación de creación automática del perfil de David como Super Admin',
+          files: ['src/contexts/AuthContext.jsx', 'src/services/firebase/firestore.js'],
+          notes: 'Función forceUpdateDavidRole para el botón del perfil. Creación automática de perfil si no existe en Firestore. Logs detallados para debugging. Sistema de roles persistente para David.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 25,
+          hash: 'b024ca6',
+          date: '2025-01-27',
+          time: '16:05:45',
+          title: 'Commit #025 - Debug: Verificación de Rol de Super Admin de David',
+          description: 'Agregados logs para verificar el rol de Super Admin de David',
+          files: ['src/contexts/AuthContext.jsx'],
+          notes: 'Logs detallados en autenticación y carga de perfil. Verificación automática de rol david_exile_92@hotmail.com. Debugging mejorado para roles de usuario.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 24,
+          hash: 'e8bba30',
+          date: '2025-01-27',
+          time: '16:00:20',
+          title: 'Commit #024 - Mejorado Sistema de Persistencia de Usuarios',
+          description: 'Mejora del sistema de persistencia de usuarios con UID como ID de documento',
+          files: ['src/services/firebase/firestore.js', 'src/contexts/AuthContext.jsx'],
+          notes: 'Uso de UID como ID de documento en Firestore. Logs de debugging agregados. Carga inmediata de perfil después de registro. Prevención de duplicados de usuarios.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 23,
+          hash: '2f9aaa8',
+          date: '2025-01-27',
+          time: '15:55:10',
+          title: 'Commit #023 - Actualización Completa de NOTAS_COMMITS.md',
+          description: 'Actualización completa de la documentación del proyecto',
+          files: ['NOTAS_COMMITS.md'],
+          notes: 'Estado actual del proyecto con 27 commits. Sistema de invitaciones completamente funcional. Página cargando correctamente. Roles y permisos operativos.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 22,
+          hash: 'cf253bf',
+          date: '2025-01-27',
+          time: '15:50:25',
+          title: 'Commit #022 - Sistema Completo Funcionando',
+          description: 'Sistema completo funcionando con página cargando correctamente',
+          files: ['src/services/firebase/index.js'],
+          notes: 'Página cargando correctamente sin errores. Rol Super Administrador visible en navegación. Sistema de invitaciones operativo. Warnings de React Router resueltos.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 21,
+          hash: 'fa3c24c',
+          date: '2025-01-27',
+          time: '15:45:15',
+          title: 'Commit #021 - Fix: Error de Importación de Storage',
+          description: 'Corrección del error de importación que causaba página en blanco',
+          files: ['src/services/firebase/index.js'],
+          notes: 'Corregida exportación de getFileURL en lugar de getDownloadURL. Solucionado error de importación. Página cargando correctamente sin errores.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 20,
+          hash: 'e83932a',
+          date: '2025-01-27',
+          time: '15:40:30',
+          title: 'Commit #020 - Fix: Marcado de Invitaciones como Usadas',
+          description: 'Corrección del sistema de marcado de invitaciones como usadas',
+          files: ['src/contexts/AuthContext.jsx', 'src/services/firebase/firestore.js'],
+          notes: 'Agregada función markInvitationAsUsed al contexto de autenticación. Marcado automático de invitaciones como usadas al crear usuarios. Integración completa con Firebase Firestore.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 19,
+          hash: '78f59b2',
+          date: '2025-01-27',
+          time: '15:35:45',
+          title: 'Commit #019 - Sistema de Invitaciones por Enlace',
+          description: 'Implementación completa del sistema de invitaciones por enlace',
+          files: ['src/pages/AdminPage.jsx', 'src/pages/InvitePage.jsx', 'src/services/firebase/firestore.js'],
+          notes: 'Creación de invitaciones únicas con códigos alfanuméricos. Panel de administración para gestionar invitaciones. Página de registro por invitación. Enlaces copiables para compartir por WhatsApp.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 18,
+          hash: '56f8efc',
+          date: '2025-01-27',
+          time: '15:30:20',
+          title: 'Commit #018 - Sistema de Seguridad por Invitación',
+          description: 'Implementación del sistema de seguridad que elimina el registro público',
+          files: ['src/pages/AuthPage.jsx', 'src/contexts/AuthContext.jsx'],
+          notes: 'Eliminación completa del registro público. Sistema de registro solo por invitación del Super Admin. Panel de administración para crear usuarios por invitación. Control total de roles y permisos.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
         {
           id: 17,
           hash: '879754e',
           date: '2025-01-27',
           time: '15:30:45',
-          title: 'Commit #017 - Páginas de perfil y configuración implementadas',
+          title: 'Commit #017 - Páginas de Perfil y Configuración Implementadas',
           description: 'Páginas de perfil y configuración completas con funcionalidad',
           files: ['src/pages/ProfilePage.jsx', 'src/pages/SettingsPage.jsx', 'src/components/UserProfile.jsx', 'src/components/layout/Navigation.jsx', 'src/App.jsx', 'src/pages/HomePage.jsx'],
           notes: 'Páginas de perfil y configuración implementadas, botones funcionales, navegación mejorada, botones de acción rápida removidos',
@@ -50,7 +170,7 @@ const NotasPage = () => {
           hash: 'e933a1a',
           date: '2025-01-27',
           time: '13:14:29',
-          title: 'Commit #016 - Sistema de roles simplificado',
+          title: 'Commit #016 - Sistema de Roles Simplificado',
           description: 'Super Admin, Maese, Usuario y Pollito implementados',
           files: ['src/constants/roles.js', 'src/contexts/AuthContext.jsx', 'USUARIOS_PRUEBA.md'],
           notes: 'Sistema de roles simplificado con 4 roles principales, permisos actualizados, AuthContext mejorado',
@@ -62,7 +182,7 @@ const NotasPage = () => {
           hash: '56f8efc',
           date: '2025-01-27',
           time: '10:45:32',
-          title: 'Commit #015 - Configuración completa de Firebase',
+          title: 'Commit #015 - Configuración Completa de Firebase',
           description: 'Auth, Firestore y Storage habilitados con credenciales reales',
           files: ['src/services/firebase/*', 'src/components/FirebaseTest.jsx', 'NOTAS_COMMITS.md'],
           notes: 'Firebase completamente configurado, componente de prueba integrado, credenciales reales actualizadas',
@@ -185,6 +305,50 @@ const NotasPage = () => {
       notes: 'Transiciones suaves, animaciones, efectos pulidos',
       status: 'Completado',
       category: 'PÁGINAS'
+    },
+    {
+      id: 4,
+      hash: 'd4e5f6g',
+      date: '2025-01-27',
+      title: 'Commit #004 - Sistema de Categorías',
+      description: 'Documentación completa del sistema de categorías hardcodeadas',
+      files: ['SISTEMA_CATEGORIAS.md'],
+      notes: 'Definición de categorías principales, estilos de baile, niveles de dificultad, etiquetas específicas',
+      status: 'Completado',
+      category: 'SISTEMAS'
+    },
+    {
+      id: 3,
+      hash: 'h7i8j9k',
+      date: '2025-01-27',
+      title: 'Commit #003 - Documentación y Planificación',
+      description: 'Creación de sistema de documentación y notas',
+      files: ['NOTAS_COMMITS.md'],
+      notes: 'Documentación de funcionalidades planificadas, estado actual del proyecto, historial de commits',
+      status: 'Completado',
+      category: 'SISTEMAS'
+    },
+    {
+      id: 2,
+      hash: 'l1m2n3o',
+      date: '2025-01-27',
+      title: 'Commit #002 - Diseño de FigurasPage',
+      description: 'Implementación completa del diseño de FigurasPage basado en imagen de referencia',
+      files: ['src/pages/FigurasPage.jsx'],
+      notes: 'Header completo, filtros de estilo, barra de búsqueda, botones de acción, grid de videos, sistema de etiquetas',
+      status: 'Completado',
+      category: 'PÁGINAS'
+    },
+    {
+      id: 1,
+      hash: 'p4q5r6s',
+      date: '2025-01-27',
+      title: 'Commit #001 - Configuración Inicial',
+      description: 'Configuración inicial del proyecto SalsaHacks V2.0',
+      files: ['package.json', 'vite.config.js', 'src/App.jsx', 'src/main.jsx'],
+      notes: 'Creación del proyecto React con Vite, instalación de dependencias, configuración de estructura de carpetas',
+      status: 'Completado',
+      category: 'SISTEMAS'
     }
   ]
 

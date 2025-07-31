@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { User, Mail, Shield, Plus, Trash2, Edit, Crown, Users, Key, Link, Copy, Check } from 'lucide-react'
+import { User, Mail, Shield, Plus, Trash2, Edit, Crown, Users, Key, Link, Copy, Check, Eye, Ban, Unlock, MoreVertical } from 'lucide-react'
 import { ROLES, ROLE_LABELS, ROLE_COLORS } from '../constants/roles'
 
 const AdminPage = () => {
@@ -10,6 +10,7 @@ const AdminPage = () => {
   const [users, setUsers] = useState([])
   const [invitations, setInvitations] = useState([])
   const [copiedInvitation, setCopiedInvitation] = useState(null)
+  const [activeTab, setActiveTab] = useState('users')
   
   const [inviteForm, setInviteForm] = useState({
     email: '',
@@ -18,6 +19,70 @@ const AdminPage = () => {
     role: ROLES.POLLITO,
     expiresIn: '7' // días
   })
+
+  // Datos de usuarios de prueba (simulando datos de Firebase)
+  const mockUsers = [
+    {
+      id: 'YvT9KXqQA5TQbAmAe4IFkYh0LDY2',
+      email: 'david_exile_92@hotmail.com',
+      displayName: 'David',
+      username: 'david',
+      role: ROLES.SUPER_ADMIN,
+      createdAt: '2025-01-27',
+      lastLogin: '2025-01-27',
+      status: 'active',
+      isSuperAdmin: true
+    },
+    {
+      id: 'gkjNUPbjpUbGGVArXEO3Izxn',
+      email: 'admin@salsahacks.com',
+      displayName: 'Admin',
+      username: 'admin',
+      role: ROLES.SUPER_ADMIN,
+      createdAt: '2025-01-27',
+      lastLogin: '2025-01-27',
+      status: 'active',
+      isSuperAdmin: true
+    },
+    {
+      id: 'IM3g8N6XuyQKFLwozPqv6Ei1',
+      email: 'maese@salsahacks.com',
+      displayName: 'Maese',
+      username: 'maese',
+      role: ROLES.MAESE,
+      createdAt: '2025-01-27',
+      lastLogin: '2025-01-27',
+      status: 'active',
+      isSuperAdmin: false
+    },
+    {
+      id: 'hljlH3bbIDS6hwPZ9fzfFnzbOk',
+      email: 'soldado@salsahacks.com',
+      displayName: 'Soldado',
+      username: 'soldado',
+      role: ROLES.USER,
+      createdAt: '2025-01-27',
+      lastLogin: '2025-01-27',
+      status: 'active',
+      isSuperAdmin: false
+    },
+    {
+      id: 'plJ9SnLFEKdJHZunlbATscuW',
+      email: 'pollito@salsahacks.com',
+      displayName: 'Pollito',
+      username: 'pollito',
+      role: ROLES.POLLITO,
+      createdAt: '2025-01-27',
+      lastLogin: '2025-01-27',
+      status: 'active',
+      isSuperAdmin: false
+    }
+  ]
+
+  useEffect(() => {
+    // Simular carga de usuarios desde Firebase
+    setUsers(mockUsers)
+  }, [])
 
   // Verificar acceso
   if (!isSuperAdmin && !hasPermission('MANAGE_USERS')) {
@@ -112,6 +177,53 @@ const AdminPage = () => {
     }
   }
 
+  // Funciones para gestión de usuarios
+  const handleBlockUser = (userId) => {
+    if (window.confirm('¿Estás seguro de que quieres bloquear este usuario?')) {
+      setUsers(prev => prev.map(user => 
+        user.id === userId ? { ...user, status: 'blocked' } : user
+      ))
+      setMessage({ type: 'success', text: 'Usuario bloqueado exitosamente' })
+    }
+  }
+
+  const handleUnblockUser = (userId) => {
+    if (window.confirm('¿Estás seguro de que quieres desbloquear este usuario?')) {
+      setUsers(prev => prev.map(user => 
+        user.id === userId ? { ...user, status: 'active' } : user
+      ))
+      setMessage({ type: 'success', text: 'Usuario desbloqueado exitosamente' })
+    }
+  }
+
+  const handleDeleteUser = (userId) => {
+    const user = users.find(u => u.id === userId)
+    if (user.isSuperAdmin) {
+      setMessage({ type: 'error', text: 'No puedes eliminar un Super Administrador' })
+      return
+    }
+    
+    if (window.confirm('¿Estás seguro de que quieres eliminar este usuario? Esta acción no se puede deshacer.')) {
+      setUsers(prev => prev.filter(user => user.id !== userId))
+      setMessage({ type: 'success', text: 'Usuario eliminado exitosamente' })
+    }
+  }
+
+  const handleChangeUserRole = (userId, newRole) => {
+    const user = users.find(u => u.id === userId)
+    if (user.isSuperAdmin && newRole !== ROLES.SUPER_ADMIN) {
+      setMessage({ type: 'error', text: 'No puedes cambiar el rol de un Super Administrador' })
+      return
+    }
+    
+    if (window.confirm(`¿Estás seguro de que quieres cambiar el rol de ${user.displayName} a ${ROLE_LABELS[newRole]}?`)) {
+      setUsers(prev => prev.map(user => 
+        user.id === userId ? { ...user, role: newRole } : user
+      ))
+      setMessage({ type: 'success', text: `Rol de ${user.displayName} cambiado a ${ROLE_LABELS[newRole]}` })
+    }
+  }
+
   const formatExpiryDate = (date) => {
     return new Date(date).toLocaleDateString('es-ES', {
       day: '2-digit',
@@ -126,8 +238,26 @@ const AdminPage = () => {
     return new Date(expiresAt) < new Date()
   }
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'active': return 'bg-green-500'
+      case 'blocked': return 'bg-red-500'
+      case 'pending': return 'bg-yellow-500'
+      default: return 'bg-gray-500'
+    }
+  }
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'active': return 'Activo'
+      case 'blocked': return 'Bloqueado'
+      case 'pending': return 'Pendiente'
+      default: return 'Desconocido'
+    }
+  }
+
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Panel de Administración</h1>
         <p className="text-gray-600">Gestiona usuarios y permisos del sistema</p>
@@ -144,237 +274,398 @@ const AdminPage = () => {
         </div>
       )}
 
-      <div className="grid lg:grid-cols-2 gap-8">
-        {/* Create Invitation Form */}
+      {/* Tabs */}
+      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-8">
+        <button
+          onClick={() => setActiveTab('users')}
+          className={`flex-1 py-2 px-4 rounded-md font-medium transition-all duration-200 ${
+            activeTab === 'users'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <div className="flex items-center justify-center space-x-2">
+            <Users className="h-4 w-4" />
+            <span>Usuarios ({users.length})</span>
+          </div>
+        </button>
+        <button
+          onClick={() => setActiveTab('invitations')}
+          className={`flex-1 py-2 px-4 rounded-md font-medium transition-all duration-200 ${
+            activeTab === 'invitations'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          <div className="flex items-center justify-center space-x-2">
+            <Link className="h-4 w-4" />
+            <span>Invitaciones ({invitations.length})</span>
+          </div>
+        </button>
+      </div>
+
+      {/* Users Tab */}
+      {activeTab === 'users' && (
         <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-          <div className="flex items-center space-x-2 mb-6">
-            <Link className="h-6 w-6 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-800">Crear Invitación</h2>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-2">
+              <Users className="h-6 w-6 text-blue-600" />
+              <h2 className="text-xl font-semibold text-gray-800">Gestión de Usuarios</h2>
+            </div>
+            <div className="text-sm text-gray-500">
+              {users.filter(u => u.status === 'active').length} activos, {users.filter(u => u.status === 'blocked').length} bloqueados
+            </div>
           </div>
 
-          <form onSubmit={handleCreateInvitation} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Correo electrónico
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={inviteForm.email}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="usuario@email.com"
-                />
-              </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Usuario
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rol
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Estado
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Fecha de Creación
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Último Acceso
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full flex items-center justify-center">
+                          <User className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{user.displayName}</div>
+                          <div className="text-sm text-gray-500">{user.email}</div>
+                          <div className="text-xs text-gray-400">@{user.username}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[user.role] || 'bg-gray-500 text-white'}`}>
+                        <Shield className="h-3 w-3 mr-1" />
+                        {ROLE_LABELS[user.role] || user.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)} text-white`}>
+                        {getStatusText(user.status)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.createdAt}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {user.lastLogin}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-2">
+                        <button
+                          onClick={() => handleChangeUserRole(user.id, ROLES.POLLITO)}
+                          className="text-blue-600 hover:text-blue-900 p-1"
+                          title="Cambiar a Pollito"
+                        >
+                          <Shield className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleChangeUserRole(user.id, ROLES.USER)}
+                          className="text-green-600 hover:text-green-900 p-1"
+                          title="Cambiar a Soldado"
+                        >
+                          <Shield className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleChangeUserRole(user.id, ROLES.MAESE)}
+                          className="text-purple-600 hover:text-purple-900 p-1"
+                          title="Cambiar a Maese"
+                        >
+                          <Shield className="h-4 w-4" />
+                        </button>
+                        {user.status === 'active' ? (
+                          <button
+                            onClick={() => handleBlockUser(user.id)}
+                            className="text-red-600 hover:text-red-900 p-1"
+                            title="Bloquear usuario"
+                          >
+                            <Ban className="h-4 w-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleUnblockUser(user.id)}
+                            className="text-green-600 hover:text-green-900 p-1"
+                            title="Desbloquear usuario"
+                          >
+                            <Unlock className="h-4 w-4" />
+                          </button>
+                        )}
+                        {!user.isSuperAdmin && (
+                          <button
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="text-red-600 hover:text-red-900 p-1"
+                            title="Eliminar usuario"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Invitations Tab */}
+      {activeTab === 'invitations' && (
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Create Invitation Form */}
+          <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+            <div className="flex items-center space-x-2 mb-6">
+              <Link className="h-6 w-6 text-blue-600" />
+              <h2 className="text-xl font-semibold text-gray-800">Crear Invitación</h2>
             </div>
 
-            <div>
-              <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre completo
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  id="displayName"
-                  name="displayName"
-                  type="text"
-                  required
-                  value={inviteForm.displayName}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Nombre completo"
-                />
+            <form onSubmit={handleCreateInvitation} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Correo electrónico
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    value={inviteForm.email}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="usuario@email.com"
+                  />
+                </div>
               </div>
+
+              <div>
+                <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre completo
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    id="displayName"
+                    name="displayName"
+                    type="text"
+                    required
+                    value={inviteForm.displayName}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Nombre completo"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre de usuario
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    required
+                    value={inviteForm.username}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="nombreusuario"
+                    pattern="[a-zA-Z0-9_]+"
+                    title="Solo letras, números y guiones bajos"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                  Rol
+                </label>
+                <div className="relative">
+                  <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <select
+                    id="role"
+                    name="role"
+                    value={inviteForm.role}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
+                  >
+                    <option value={ROLES.POLLITO}>Pollito (Nivel 1)</option>
+                    <option value={ROLES.USER}>Soldado (Nivel 2)</option>
+                    <option value={ROLES.MAESE}>Maese (Nivel 3)</option>
+                    {isSuperAdmin && <option value={ROLES.SUPER_ADMIN}>Super Administrador (Nivel 4)</option>}
+                  </select>
+                </div>
+                <div className="mt-2">
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[inviteForm.role] || 'bg-gray-500 text-white'}`}>
+                    <Shield className="h-3 w-3 mr-1" />
+                    {ROLE_LABELS[inviteForm.role] || inviteForm.role}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="expiresIn" className="block text-sm font-medium text-gray-700 mb-1">
+                  Expira en (días)
+                </label>
+                <div className="relative">
+                  <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <select
+                    id="expiresIn"
+                    name="expiresIn"
+                    value={inviteForm.expiresIn}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
+                  >
+                    <option value="1">1 día</option>
+                    <option value="3">3 días</option>
+                    <option value="7">7 días</option>
+                    <option value="14">14 días</option>
+                    <option value="30">30 días</option>
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                {loading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Procesando...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Link className="h-4 w-4" />
+                    <span>Crear Invitación</span>
+                  </div>
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Invitations List */}
+          <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+            <div className="flex items-center space-x-2 mb-6">
+              <Link className="h-6 w-6 text-green-600" />
+              <h2 className="text-xl font-semibold text-gray-800">Invitaciones Activas</h2>
             </div>
 
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre de usuario
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  value={inviteForm.username}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="nombreusuario"
-                  pattern="[a-zA-Z0-9_]+"
-                  title="Solo letras, números y guiones bajos"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                Rol
-              </label>
-              <div className="relative">
-                <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <select
-                  id="role"
-                  name="role"
-                  value={inviteForm.role}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
-                >
-                  <option value={ROLES.POLLITO}>Pollito (Nivel 1)</option>
-                  <option value={ROLES.USER}>Soldado (Nivel 2)</option>
-                  <option value={ROLES.MAESE}>Maese (Nivel 3)</option>
-                  {isSuperAdmin && <option value={ROLES.SUPER_ADMIN}>Super Administrador (Nivel 4)</option>}
-                </select>
-              </div>
-              <div className="mt-2">
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[inviteForm.role] || 'bg-gray-500 text-white'}`}>
-                  <Shield className="h-3 w-3 mr-1" />
-                  {ROLE_LABELS[inviteForm.role] || inviteForm.role}
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="expiresIn" className="block text-sm font-medium text-gray-700 mb-1">
-                Expira en (días)
-              </label>
-              <div className="relative">
-                <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <select
-                  id="expiresIn"
-                  name="expiresIn"
-                  value={inviteForm.expiresIn}
-                  onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
-                >
-                  <option value="1">1 día</option>
-                  <option value="3">3 días</option>
-                  <option value="7">7 días</option>
-                  <option value="14">14 días</option>
-                  <option value="30">30 días</option>
-                </select>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-            >
-              {loading ? (
-                <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>Procesando...</span>
+            <div className="space-y-4">
+              {invitations.length === 0 ? (
+                <div className="text-center py-8">
+                  <Link className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No hay invitaciones creadas aún</p>
+                  <p className="text-sm text-gray-400">Las invitaciones que crees aparecerán aquí</p>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2">
-                  <Link className="h-4 w-4" />
-                  <span>Crear Invitación</span>
-                </div>
-              )}
-            </button>
-          </form>
-        </div>
-
-        {/* Invitations List */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-          <div className="flex items-center space-x-2 mb-6">
-            <Link className="h-6 w-6 text-green-600" />
-            <h2 className="text-xl font-semibold text-gray-800">Invitaciones Activas</h2>
-          </div>
-
-          <div className="space-y-4">
-            {invitations.length === 0 ? (
-              <div className="text-center py-8">
-                <Link className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No hay invitaciones creadas aún</p>
-                <p className="text-sm text-gray-400">Las invitaciones que crees aparecerán aquí</p>
-              </div>
-            ) : (
-              invitations.map((invitation) => (
-                <div key={invitation.id} className={`p-4 border rounded-lg ${isExpired(invitation.expiresAt) ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-white" />
+                invitations.map((invitation) => (
+                  <div key={invitation.id} className={`p-4 border rounded-lg ${isExpired(invitation.expiresAt) ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full flex items-center justify-center">
+                          <User className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{invitation.displayName}</p>
+                          <p className="text-sm text-gray-500">{invitation.email}</p>
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${ROLE_COLORS[invitation.role] || 'bg-gray-500 text-white'}`}>
+                            <Shield className="h-3 w-3 mr-1" />
+                            {ROLE_LABELS[invitation.role] || invitation.role}
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{invitation.displayName}</p>
-                        <p className="text-sm text-gray-500">{invitation.email}</p>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${ROLE_COLORS[invitation.role] || 'bg-gray-500 text-white'}`}>
-                          <Shield className="h-3 w-3 mr-1" />
-                          {ROLE_LABELS[invitation.role] || invitation.role}
-                        </span>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => handleCopyInvitation(invitation.invitationUrl)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title="Copiar enlace de invitación"
+                        >
+                          {copiedInvitation === invitation.invitationUrl ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteInvitation(invitation.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Eliminar invitación"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => handleCopyInvitation(invitation.invitationUrl)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Copiar enlace de invitación"
-                      >
-                        {copiedInvitation === invitation.invitationUrl ? (
-                          <Check className="h-4 w-4" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
+                    
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-xs text-gray-600 mb-2">
+                        <strong>Enlace de invitación:</strong>
+                      </p>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value={invitation.invitationUrl}
+                          readOnly
+                          className="flex-1 text-xs bg-white border border-gray-300 rounded px-2 py-1"
+                        />
+                        <button
+                          onClick={() => handleCopyInvitation(invitation.invitationUrl)}
+                          className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors"
+                        >
+                          {copiedInvitation === invitation.invitationUrl ? 'Copiado!' : 'Copiar'}
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Expira: {formatExpiryDate(invitation.expiresAt)}
+                        {isExpired(invitation.expiresAt) && (
+                          <span className="text-red-500 ml-2">(Expirada)</span>
                         )}
-                      </button>
-                      <button
-                        onClick={() => handleDeleteInvitation(invitation.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Eliminar invitación"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      </p>
                     </div>
                   </div>
-                  
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-xs text-gray-600 mb-2">
-                      <strong>Enlace de invitación:</strong>
-                    </p>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="text"
-                        value={invitation.invitationUrl}
-                        readOnly
-                        className="flex-1 text-xs bg-white border border-gray-300 rounded px-2 py-1"
-                      />
-                      <button
-                        onClick={() => handleCopyInvitation(invitation.invitationUrl)}
-                        className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors"
-                      >
-                        {copiedInvitation === invitation.invitationUrl ? 'Copiado!' : 'Copiar'}
-                      </button>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-2">
-                      Expira: {formatExpiryDate(invitation.expiresAt)}
-                      {isExpired(invitation.expiresAt) && (
-                        <span className="text-red-500 ml-2">(Expirada)</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
+                ))
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Admin Info */}
       <div className="mt-8 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
         <div className="flex items-center space-x-3">
           <Crown className="h-8 w-8 text-purple-600" />
           <div>
-            <h3 className="text-lg font-semibold text-purple-800">Sistema de Invitaciones</h3>
+            <h3 className="text-lg font-semibold text-purple-800">Panel de Administración Completo</h3>
             <p className="text-sm text-purple-600">
-              Crea invitaciones únicas que puedes compartir por WhatsApp, email o cualquier medio. 
-              Cada invitación tiene un enlace único y expira automáticamente.
+              Gestiona usuarios existentes, crea invitaciones únicas y controla el acceso al sistema. 
+              Como Super Administrador tienes control total sobre roles, permisos y estado de usuarios.
             </p>
           </div>
         </div>
