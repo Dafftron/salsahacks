@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { 
   Search, 
   Upload, 
@@ -7,8 +8,11 @@ import {
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
+import VideoUploadModal from '../components/video/VideoUploadModal'
 
 const FigurasPage = () => {
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  
   const { 
     selectedStyle, 
     setSelectedStyle, 
@@ -91,7 +95,10 @@ const FigurasPage = () => {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-          <button className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+          <button 
+            onClick={() => setIsUploadModalOpen(true)}
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          >
             <Upload className="h-5 w-5" />
             <span>SUBIR VIDEO(S) A SALSA</span>
           </button>
@@ -155,6 +162,16 @@ const FigurasPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Video Upload Modal */}
+      <VideoUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onVideoUploaded={(video) => {
+          console.log('Video subido:', video)
+          // Aquí se puede actualizar la lista de videos
+        }}
+      />
     </div>
   )
 }

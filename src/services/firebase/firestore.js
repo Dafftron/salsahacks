@@ -24,7 +24,9 @@ const COLLECTIONS = {
   CATEGORIES: 'categories',
   EVENTS: 'events',
   FIGURES: 'figures',
-  SCHOOL: 'school'
+  SCHOOL: 'school',
+  INVITATIONS: 'invitations',
+  VIDEOS: 'videos'
 };
 
 // ===== USUARIOS =====
@@ -417,4 +419,129 @@ const generateInvitationCode = () => {
     result += chars.charAt(Math.floor(Math.random() * chars.length))
   }
   return result
+}
+
+// ===== VIDEO MANAGEMENT FUNCTIONS =====
+
+export const createVideoDocument = async (videoData) => {
+  try {
+    console.log('📹 Creando documento de video en Firestore:', videoData.title)
+    const videoRef = doc(collection(db, COLLECTIONS.VIDEOS))
+    await setDoc(videoRef, {
+      ...videoData,
+      id: videoRef.id,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    })
+    console.log('✅ Documento de video creado exitosamente:', videoRef.id)
+    return { success: true, id: videoRef.id, error: null }
+  } catch (error) {
+    console.error('❌ Error al crear documento de video:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export const getVideoDocument = async (videoId) => {
+  try {
+    console.log('🔍 Buscando video:', videoId)
+    const docRef = doc(db, COLLECTIONS.VIDEOS, videoId)
+    const docSnap = await getDoc(docRef)
+    if (docSnap.exists()) {
+      const videoData = { id: docSnap.id, ...docSnap.data() }
+      console.log('✅ Video encontrado:', videoData.title)
+      return { video: videoData, error: null }
+    }
+    console.log('❌ Video no encontrado en Firestore')
+    return { video: null, error: 'Video no encontrado' }
+  } catch (error) {
+    console.error('❌ Error al obtener video:', error)
+    return { video: null, error: error.message }
+  }
+}
+
+export const updateVideoDocument = async (videoId, updates) => {
+  try {
+    console.log('📝 Actualizando video:', videoId, updates)
+    const docRef = doc(db, COLLECTIONS.VIDEOS, videoId)
+    await updateDoc(docRef, {
+      ...updates,
+      updatedAt: serverTimestamp()
+    })
+    console.log('✅ Video actualizado exitosamente')
+    return { success: true, error: null }
+  } catch (error) {
+    console.error('❌ Error al actualizar video:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export const deleteVideoDocument = async (videoId) => {
+  try {
+    console.log('🗑️ Eliminando video:', videoId)
+    await deleteDoc(doc(db, COLLECTIONS.VIDEOS, videoId))
+    console.log('✅ Video eliminado exitosamente')
+    return { success: true, error: null }
+  } catch (error) {
+    console.error('❌ Error al eliminar video:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export const getVideosByCategory = async (category) => {
+  try {
+    console.log('🔍 Buscando videos por categoría:', category)
+    const q = query(
+      collection(db, COLLECTIONS.VIDEOS),
+      where('category', '==', category),
+      orderBy('createdAt', 'desc')
+    )
+    const querySnapshot = await getDocs(q)
+    const videos = []
+    querySnapshot.forEach((doc) => {
+      videos.push({ id: doc.id, ...doc.data() })
+    })
+    console.log(`✅ ${videos.length} videos encontrados para categoría: ${category}`)
+    return { videos, error: null }
+  } catch (error) {
+    console.error('❌ Error al obtener videos por categoría:', error)
+    return { videos: [], error: error.message }
+  }
+}
+
+export const getVideosByUser = async (userId) => {
+  try {
+    console.log('🔍 Buscando videos del usuario:', userId)
+    const q = query(
+      collection(db, COLLECTIONS.VIDEOS),
+      where('uploadedBy', '==', userId),
+      orderBy('createdAt', 'desc')
+    )
+    const querySnapshot = await getDocs(q)
+    const videos = []
+    querySnapshot.forEach((doc) => {
+      videos.push({ id: doc.id, ...doc.data() })
+    })
+    console.log(`✅ ${videos.length} videos encontrados del usuario: ${userId}`)
+    return { videos, error: null }
+  } catch (error) {
+    console.error('❌ Error al obtener videos del usuario:', error)
+    return { videos: [], error: error.message }
+  }
+}
+
+export const checkVideoDuplicate = async (originalTitle) => {
+  try {
+    console.log('🔍 Verificando duplicado:', originalTitle)
+    const q = query(
+      collection(db, COLLECTIONS.VIDEOS),
+      where('originalTitle', '==', originalTitle)
+    )
+    const querySnapshot = await getDocs(q)
+    const isDuplicate = !querySnapshot.empty
+    console.log(`✅ Verificación de duplicado: ${isDuplicate ? 'SÍ' : 'NO'}`)
+    return { isDuplicate, error: null }
+  } catch (error) {
+    console.error('❌ Error al verificar duplicado:', error)
+    return { isDuplicate: false, error: error.message }
+  }
 } 
