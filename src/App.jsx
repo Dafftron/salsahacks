@@ -10,6 +10,8 @@ import EscuelaPage from './pages/EscuelaPage'
 import EventosPage from './pages/EventosPage'
 import AdminPage from './pages/AdminPage'
 import AuthPage from './pages/AuthPage'
+import ProfilePage from './pages/ProfilePage'
+import SettingsPage from './pages/SettingsPage'
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/notas" element={<NotasPage />} />
                 <Route path="/categorias" element={<CategoriesPage />} />
                 <Route path="/figuras" element={<FigurasPage />} />

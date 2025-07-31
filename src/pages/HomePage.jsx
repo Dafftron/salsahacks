@@ -138,24 +138,6 @@ const HomePage = () => {
       {/* <div className="mb-16">
         <FirebaseSimpleTest />
       </div> */}
-
-      {/* Quick Actions */}
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8">
-          Acciones Rápidas
-        </h2>
-        <div className="flex flex-wrap justify-center gap-4">
-          <button className="btn-accent">
-            Subir Video
-          </button>
-          <button className="btn-primary">
-            Crear Secuencia
-          </button>
-          <button className="btn-secondary">
-            Ver Favoritos
-          </button>
-        </div>
-      </div>
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { useAuth } from '../contexts/AuthContext'
+import { Link } from 'react-router-dom'
 import { User, Mail, Calendar, LogOut, Settings, Shield, Crown, BookOpen, Star } from 'lucide-react'
 import { ROLE_LABELS, ROLE_COLORS } from '../constants/roles'
 
@@ -42,6 +43,7 @@ const UserProfile = () => {
         {userProfile?.role && (
           <div className="mt-2">
             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[userProfile.role] || 'bg-gray-500 text-white'}`}>
+              <Shield className="h-3 w-3 mr-1" />
               {ROLE_LABELS[userProfile.role] || userProfile.role}
             </span>
           </div>
@@ -107,10 +109,15 @@ const UserProfile = () => {
       </div>
 
       <div className="space-y-3">
-        <button className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+        <Link to="/profile" className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
+          <User className="h-4 w-4" />
+          <span>Mi Perfil</span>
+        </Link>
+        
+        <Link to="/settings" className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
           <Settings className="h-4 w-4" />
           <span>Configuración</span>
-        </button>
+        </Link>
         
         <button
           onClick={handleLogout}

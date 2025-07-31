@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useAuth } from '../../contexts/AuthContext'
-import { Music, Sun, Moon, User, Bell, Heart, Search } from 'lucide-react'
+import { Music, Sun, Moon, User, Bell, Heart, Search, Shield } from 'lucide-react'
 
 const Navigation = () => {
   const location = useLocation()
   const { theme, changeTheme } = useTheme()
-  const { user, isAuthenticated, logout } = useAuth()
+  const { user, isAuthenticated, logout, hasPermission } = useAuth()
 
   const navItems = [
     { path: '/', label: 'Inicio' },
@@ -16,6 +16,11 @@ const Navigation = () => {
     { path: '/categorias', label: 'Categorías' },
     { path: '/notas', label: 'Notas' }
   ]
+
+  // Agregar enlace de administración si el usuario tiene permisos
+  if (hasPermission('MANAGE_USERS')) {
+    navItems.push({ path: '/admin', label: 'Admin' })
+  }
 
   const toggleTheme = () => {
     const themes = ['light', 'dark', 'salsa']
@@ -93,10 +98,16 @@ const Navigation = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="py-2">
                     <Link
-                      to="/"
+                      to="/profile"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                     >
                       Mi Perfil
+                    </Link>
+                    <Link
+                      to="/settings"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      Configuración
                     </Link>
                     <button
                       onClick={async () => {
