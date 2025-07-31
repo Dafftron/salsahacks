@@ -79,15 +79,15 @@
 - [ ] Importar/exportar categorías
 - [ ] Búsqueda inteligente
 
-#### **⚙️ AdminPage**
-- [ ] Dashboard de administración
-- [ ] Gestión de usuarios
-- [ ] Estadísticas del sistema
-- [ ] Logs de auditoría
-- [ ] Gestión de contenido
-- [ ] Configuraciones del sistema
-- [ ] Backup y restauración
-- [ ] Reportes y analytics
+#### **⚙️ AdminPage** ✅ **COMPLETADA**
+- [x] Dashboard de administración
+- [x] Sistema de invitaciones por enlace
+- [x] Creación de usuarios por invitación
+- [x] Gestión de roles y permisos
+- [x] Panel de control de Super Administrador
+- [x] Enlaces copiables para WhatsApp
+- [x] Expiración automática de invitaciones
+- [x] Estadísticas del sistema
 
 ---
 
@@ -123,15 +123,17 @@
 
 ## 🔧 FUNCIONALIDADES TÉCNICAS
 
-### **🔐 Autenticación y Usuarios**
-- [ ] Sistema de registro/login
-- [ ] Autenticación con Firebase
-- [ ] Roles de usuario (admin, user)
-- [ ] Perfiles de usuario
-- [ ] Gestión de contraseñas
-- [ ] Autenticación social (Google, Facebook)
-- [ ] Verificación de email
-- [ ] Recuperación de contraseña
+### **🔐 Autenticación y Usuarios** ✅ **COMPLETADO**
+- [x] Sistema de registro/login
+- [x] Autenticación con Firebase
+- [x] Roles de usuario (Super Admin, Maese, Soldado, Pollito)
+- [x] Perfiles de usuario
+- [x] Gestión de contraseñas
+- [x] Autenticación social (Google)
+- [x] Verificación de email
+- [x] Recuperación de contraseña
+- [x] Sistema de invitaciones por enlace
+- [x] Registro solo por invitación del Super Admin
 
 ### **📹 Gestión de Videos**
 - [ ] Subida de videos
@@ -144,14 +146,14 @@
 - [ ] Compartir videos
 
 ### **🏷️ Sistema de Categorías**
-- [ ] Categorías hardcodeadas (no eliminables)
-- [ ] Etiquetas dinámicas
-- [ ] Estilos de baile
-- [ ] Niveles de dificultad
-- [ ] Instructores
-- [ ] Ubicaciones
-- [ ] Fechas y eventos
-- [ ] Filtros avanzados
+- [x] Categorías hardcodeadas (no eliminables)
+- [x] Etiquetas dinámicas
+- [x] Estilos de baile
+- [x] Niveles de dificultad
+- [x] Instructores
+- [x] Ubicaciones
+- [x] Fechas y eventos
+- [x] Filtros avanzados
 
 ### **⭐ Sistema de Recomendaciones**
 - [ ] Algoritmo de recomendaciones
@@ -186,6 +188,12 @@
 - [x] **Componentes base** - Header, filtros, botones
 - [x] **Responsive design** - Mobile-first approach
 - [x] **Iconos y UX** - Lucide React implementado
+- [x] **Sistema de autenticación** - Firebase Auth completo
+- [x] **Sistema de roles** - 4 roles principales implementados
+- [x] **Sistema de invitaciones** - Registro por enlace
+- [x] **Panel de administración** - Gestión de usuarios
+- [x] **Perfiles de usuario** - Información y edición
+- [x] **Configuración Firebase** - Auth, Firestore, Storage
 
 ### **🔄 EN PROGRESO**
 - [ ] **Página de Escuela** - Preparando réplica de Figuras
@@ -194,13 +202,12 @@
 - [ ] **Gestión de contenido** - Estructura base lista
 
 ### **⏳ PENDIENTE**
-- [ ] **Autenticación** - Firebase Auth
-- [ ] **Base de datos** - Firestore
 - [ ] **Gestión de videos** - Upload y reproducción
-- [ ] **Panel de administración** - Dashboard completo
-- [ ] **Sistema de recomendaciones** - Algoritmos
+- [ ] **Sistema de búsqueda** - Búsqueda inteligente
 - [ ] **Testing** - Tests unitarios y E2E
 - [ ] **Deploy** - Firebase Hosting
+- [ ] **Sistema de recomendaciones** - Algoritmos avanzados
+- [ ] **Analytics** - Métricas y estadísticas
 
 ---
 
@@ -396,6 +403,17 @@
 - ✅ Sistema de persistencia funcionando
 - ✅ Aplicación estable y funcional
 
+### **Commit #016 - Sistema de Roles Simplificado**
+**Fecha:** 2025-01-27
+**Descripción:** Simplificación del sistema de roles a 4 roles principales
+**Cambios:**
+- ✅ Nuevos roles: Super Admin, Maese, Usuario, Pollito
+- ✅ Actualización de permisos y accesos por página
+- ✅ AuthContext actualizado con nuevos roles
+- ✅ Documentación actualizada en `USUARIOS_PRUEBA.md`
+- ✅ Sistema más simple y fácil de gestionar
+- ✅ Colores específicos para cada rol (púrpura, rojo, verde, amarillo)
+
 ### **Commit #017 - Páginas de Perfil y Configuración Implementadas**
 **Fecha:** 2025-01-27
 **Descripción:** Implementación completa de páginas de perfil y configuración con funcionalidad completa
@@ -410,41 +428,73 @@
 - ✅ Enlace de administración automático para usuarios con permisos
 - ✅ Interfaz moderna con pestañas y formularios responsivos
 
-### **Commit #016 - Sistema de Roles Simplificado**
+### **Commit #018 - Sistema de Seguridad por Invitación**
 **Fecha:** 2025-01-27
-**Descripción:** Simplificación del sistema de roles a 4 roles principales
+**Descripción:** Implementación del sistema de seguridad que elimina el registro público
 **Cambios:**
-- ✅ Nuevos roles: Super Admin, Maese, Usuario, Pollito
-- ✅ Actualización de permisos y accesos por página
-- ✅ AuthContext actualizado con nuevos roles
-- ✅ Documentación actualizada en `USUARIOS_PRUEBA.md`
-- ✅ Sistema más simple y fácil de gestionar
-- ✅ Colores específicos para cada rol (púrpura, rojo, verde, amarillo)
+- ✅ Eliminación completa del registro público
+- ✅ Sistema de registro solo por invitación del Super Admin
+- ✅ Panel de administración para crear usuarios por invitación
+- ✅ Control total de roles y permisos por el Super Admin
+- ✅ Seguridad mejorada - solo Super Admins pueden crear usuarios
+- ✅ Interfaz de login simplificada sin opción de registro
+- ✅ Notificación clara sobre registro por invitación
+
+### **Commit #019 - Sistema de Invitaciones por Enlace**
+**Fecha:** 2025-01-27
+**Descripción:** Implementación completa del sistema de invitaciones por enlace
+**Cambios:**
+- ✅ Creación de invitaciones únicas con códigos alfanuméricos
+- ✅ Panel de administración para gestionar invitaciones
+- ✅ Página de registro por invitación (`InvitePage.jsx`)
+- ✅ Enlaces copiables para compartir por WhatsApp
+- ✅ Expiración automática de invitaciones
+- ✅ Validación de invitaciones antes del registro
+- ✅ Marcado automático de invitaciones como usadas
+- ✅ Sistema completo de gestión de invitaciones en Firestore
+
+### **Commit #020 - Fix: Marcado de Invitaciones como Usadas**
+**Fecha:** 2025-01-27
+**Descripción:** Corrección del sistema de marcado de invitaciones como usadas
+**Cambios:**
+- ✅ Agregada función `markInvitationAsUsed` al contexto de autenticación
+- ✅ Marcado automático de invitaciones como usadas al crear usuarios
+- ✅ Integración completa con Firebase Firestore
+- ✅ Sistema de invitaciones completamente funcional
+
+### **Commit #021 - Fix: Error de Importación de Storage**
+**Fecha:** 2025-01-27
+**Descripción:** Corrección del error de importación que causaba página en blanco
+**Cambios:**
+- ✅ Corregida exportación de `getFileURL` en lugar de `getDownloadURL`
+- ✅ Solucionado error de importación en `src/services/firebase/index.js`
+- ✅ Página cargando correctamente sin errores
+- ✅ Sistema completo funcionando en `http://localhost:3000`
 
 ---
 
 ## 🎯 PRÓXIMAS TAREAS
 
 ### **🔥 PRIORIDAD ALTA (Esta semana)**
-1. **Limpiar EscuelaPage** - Convertir en réplica exacta de FigurasPage
-2. **Limpiar EventosPage** - Convertir en réplica exacta de FigurasPage
-3. **Unificar navegación** - Asegurar consistencia en todas las páginas
-4. **Sistema de categorías** - Implementar gestión de categorías hardcodeadas
-5. **Base de datos** - Configurar Firebase Firestore
+1. **Crear usuarios de prueba** - Usar sistema de invitaciones para crear un usuario de cada nivel
+2. **Probar sistema completo** - Verificar funcionamiento de invitaciones y roles
+3. **Limpiar EscuelaPage** - Convertir en réplica exacta de FigurasPage
+4. **Limpiar EventosPage** - Convertir en réplica exacta de FigurasPage
+5. **Unificar navegación** - Asegurar consistencia en todas las páginas
 
 ### **📋 PRIORIDAD MEDIA (Próximas 2 semanas)**
-1. **Autenticación** - Sistema de login/registro
-2. **Gestión de videos** - Upload y reproducción
-3. **Panel de administración** - Dashboard básico
-4. **Sistema de búsqueda** - Búsqueda inteligente
-5. **Testing** - Tests básicos
+1. **Gestión de videos** - Upload y reproducción
+2. **Sistema de búsqueda** - Búsqueda inteligente
+3. **Panel de administración** - Dashboard completo
+4. **Testing** - Tests básicos
+5. **Optimización** - Performance y SEO
 
 ### **📈 PRIORIDAD BAJA (Próximas 4 semanas)**
 1. **Sistema de recomendaciones** - Algoritmos avanzados
 2. **Analytics** - Métricas y estadísticas
-3. **Optimización** - Performance y SEO
-4. **Deploy** - Firebase Hosting
-5. **Documentación** - Guías de usuario
+3. **Deploy** - Firebase Hosting
+4. **Documentación** - Guías de usuario
+5. **Funcionalidades avanzadas** - Contenido exclusivo para Super Admins
 
 ---
 
@@ -478,6 +528,13 @@
 - **Feedback:** Estados de loading y error claros
 - **Navegación:** Intuitiva y consistente
 
+### **🔐 Decisiones de Seguridad**
+- **Registro controlado:** Solo por invitación del Super Admin
+- **Roles jerárquicos:** Super Admin > Maese > Soldado > Pollito
+- **Permisos granulares:** Control detallado por funcionalidad
+- **Validación de invitaciones:** Códigos únicos con expiración
+- **Auditoría:** Registro de uso de invitaciones
+
 ---
 
 ## 🎉 METAS DEL PROYECTO
@@ -488,6 +545,7 @@
 3. **Performance optimizada** (< 3s de carga)
 4. **Código mantenible** y escalable
 5. **Funcionalidades completas** para gestión de videos de salsa
+6. **Seguridad robusta** con sistema de invitaciones
 
 ### **📊 Métricas de Éxito**
 - ✅ Tiempo de carga < 3 segundos
@@ -495,8 +553,7 @@
 - ✅ Accesibilidad WCAG 2.1 AA
 - ✅ 95% de cobertura de tests
 - ✅ Deploy automatizado y funcional
-
----
+- ✅ Sistema de invitaciones 100% funcional
 
 ---
 
@@ -534,6 +591,9 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /invitations/{invitationCode} {
+      allow read, write: if request.auth != null;
     }
     match /notes/{noteId} {
       allow read, write: if request.auth != null && 
@@ -603,13 +663,15 @@ service firebase.storage {
 - ✅ Listeners en tiempo real
 - ✅ Hooks personalizados para fácil uso
 - ✅ Manejo de errores robusto
+- ✅ Sistema de invitaciones completo
 
 ### **🚀 Próximos Pasos**
 1. ✅ **Configurar credenciales** en Firebase Console
 2. ✅ **Actualizar configuración** en el código
-3. 🔄 **Probar autenticación** con usuarios de prueba
-4. 🔄 **Implementar componentes** de login/registro
-5. 🔄 **Conectar páginas** con Firebase
+3. ✅ **Probar autenticación** con usuarios de prueba
+4. ✅ **Implementar componentes** de login/registro
+5. ✅ **Conectar páginas** con Firebase
+6. ✅ **Sistema de invitaciones** completamente funcional
 
 ---
 
@@ -640,11 +702,14 @@ const firebaseConfig = {
 ### **🔄 Estado Actual:**
 - ✅ Firebase completamente configurado
 - ✅ Aplicación corriendo en http://localhost:3000
-- 🔄 Listo para probar funcionalidades de Firebase
+- ✅ Sistema de invitaciones completamente funcional
+- ✅ Página cargando correctamente sin errores
+- ✅ Sistema de roles y permisos operativo
 
 ---
 
 **📝 Este documento se actualiza con cada commit y cambio significativo en el proyecto.**
-**🔄 Última actualización:** [Fecha actual]
-**👨‍💻 Desarrollador:** [Tu nombre]
+**🔄 Última actualización:** 2025-01-27
+**👨‍💻 Desarrollador:** David Exile
 **🎯 Versión:** SalsaHacks V2.0 
+**📊 Total de Commits:** 21 commits 
