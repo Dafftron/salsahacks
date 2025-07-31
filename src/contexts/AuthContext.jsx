@@ -9,6 +9,7 @@ import {
   createUserProfile,
   getUserProfile
 } from '../services/firebase'
+import { ROLES, hasPermission, getRolePermissions, hasPageAccess } from '../constants/roles'
 
 const AuthContext = createContext()
 
@@ -68,7 +69,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const register = async (email, password, displayName) => {
+  const register = async (email, password, displayName, role = ROLES.USER) => {
     try {
       const { user: firebaseUser, error } = await registerWithEmail(email, password, displayName)
       if (error) throw new Error(error)
@@ -78,8 +79,9 @@ export const AuthProvider = ({ children }) => {
         await createUserProfile(firebaseUser.uid, {
           displayName,
           email,
-          role: 'user',
-          createdAt: new Date()
+          role: role,
+          createdAt: new Date(),
+          permissions: getRolePermissions(role)
         })
       }
       
@@ -123,7 +125,12 @@ export const AuthProvider = ({ children }) => {
     resetPassword: resetUserPassword,
     updateUserProfile,
     isAuthenticated: !!user,
-    isAdmin: userProfile?.role === 'admin'
+    isAdmin: userProfile?.role === ROLES.ADMIN,
+    isInstructor: userProfile?.role === ROLES.INSTRUCTOR,
+    isPremium: userProfile?.role === ROLES.PREMIUM,
+    hasPermission: (permission) => hasPermission(userProfile?.role, permission),
+    hasPageAccess: (pagePath) => hasPageAccess(userProfile?.role, pagePath),
+    getRolePermissions: () => getRolePermissions(userProfile?.role)
   }
 
   return (

@@ -1,8 +1,9 @@
 import { useAuth } from '../contexts/AuthContext'
-import { User, Mail, Calendar, LogOut, Settings } from 'lucide-react'
+import { User, Mail, Calendar, LogOut, Settings, Shield, Crown, BookOpen, Star } from 'lucide-react'
+import { ROLE_LABELS, ROLE_COLORS } from '../constants/roles'
 
 const UserProfile = () => {
-  const { user, userProfile, logout } = useAuth()
+  const { user, userProfile, logout, hasPermission, getRolePermissions } = useAuth()
 
   const handleLogout = async () => {
     try {
@@ -13,7 +14,17 @@ const UserProfile = () => {
   }
 
   if (!user) {
-    return null
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <div className="text-center">
+          <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="h-10 w-10 text-gray-500" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">No autenticado</h3>
+          <p className="text-gray-600">Inicia sesión para ver tu perfil</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -26,6 +37,15 @@ const UserProfile = () => {
           {userProfile?.displayName || user.displayName || 'Usuario'}
         </h3>
         <p className="text-gray-600">{user.email}</p>
+        
+        {/* Badge de rol */}
+        {userProfile?.role && (
+          <div className="mt-2">
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[userProfile.role] || 'bg-gray-500 text-white'}`}>
+              {ROLE_LABELS[userProfile.role] || userProfile.role}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="space-y-4 mb-6">
@@ -55,10 +75,32 @@ const UserProfile = () => {
 
         {userProfile?.role && (
           <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-            <Settings className="h-5 w-5 text-gray-500" />
+            <Shield className="h-5 w-5 text-gray-500" />
             <div>
               <p className="text-sm font-medium text-gray-700">Rol</p>
-              <p className="text-sm text-gray-600 capitalize">{userProfile.role}</p>
+              <p className="text-sm text-gray-600 capitalize">{ROLE_LABELS[userProfile.role] || userProfile.role}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Permisos del usuario */}
+        {userProfile?.permissions && userProfile.permissions.length > 0 && (
+          <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+            <Crown className="h-5 w-5 text-gray-500 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-700 mb-2">Permisos principales</p>
+              <div className="flex flex-wrap gap-1">
+                {userProfile.permissions.slice(0, 3).map((permission, index) => (
+                  <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded font-medium">
+                    {permission.replace(/_/g, ' ')}
+                  </span>
+                ))}
+                {userProfile.permissions.length > 3 && (
+                  <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded font-medium">
+                    +{userProfile.permissions.length - 3} más
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         )}

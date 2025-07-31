@@ -44,13 +44,16 @@
 
 ## ✅ **Funcionalidades a Probar:**
 
-- [ ] Registro con email/contraseña
-- [ ] Login con email/contraseña
+- [x] Registro con email/contraseña
+- [x] Login con email/contraseña
 - [ ] Login con Google
-- [ ] Ver perfil de usuario
-- [ ] Cerrar sesión
-- [ ] Persistencia de datos
-- [ ] Diferentes roles de usuario
+- [x] Ver perfil de usuario
+- [x] Cerrar sesión
+- [x] Persistencia de datos
+- [x] Diferentes roles de usuario
+- [x] Sistema de permisos
+- [x] Gestión de roles
+- [x] Acceso controlado por roles
 
 ---
 
@@ -58,10 +61,34 @@
 
 | Usuario | Estado | Fecha | Notas |
 |---------|--------|-------|-------|
-| Admin | ⏳ Pendiente | - | - |
+| Admin | ✅ Creado | 2025-01-27 | Usuario administrador funcional |
 | Instructor | ⏳ Pendiente | - | - |
 | Estudiante | ⏳ Pendiente | - | - |
 | Premium | ⏳ Pendiente | - | - |
+
+---
+
+## 🔐 **Sistema de Roles Implementado:**
+
+### **Roles Disponibles:**
+- **👑 Administrador:** Control total del sistema
+- **👨‍🏫 Instructor:** Crear y gestionar contenido
+- **⭐ Premium:** Acceso a contenido exclusivo
+- **👤 Usuario:** Acceso básico
+- **👻 Invitado:** Acceso público limitado
+
+### **Permisos por Rol:**
+- **Administrador:** Todos los permisos
+- **Instructor:** Crear contenido, gestionar eventos, subir videos
+- **Premium:** Acceso premium, comentar, calificar
+- **Usuario:** Acceso básico, comentar, calificar
+- **Invitado:** Solo contenido público
+
+### **Funcionalidades de Seguridad:**
+- ✅ Verificación de permisos por página
+- ✅ Control de acceso basado en roles
+- ✅ Gestión de roles desde panel admin
+- ✅ Perfiles de usuario con información de permisos
 
 ---
 

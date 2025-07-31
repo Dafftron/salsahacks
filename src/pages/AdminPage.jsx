@@ -1,8 +1,11 @@
 import { useState } from 'react'
-import { Users, Video, BarChart3, Settings, Shield, Activity } from 'lucide-react'
+import { Users, Video, BarChart3, Settings, Shield, Activity, Crown } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
+import RoleManager from '../components/RoleManager'
 
 const AdminPage = () => {
   const [activeTab, setActiveTab] = useState('dashboard')
+  const { userProfile, hasPermission } = useAuth()
 
   const stats = [
     { title: 'Usuarios Totales', value: '1,234', icon: Users, color: 'text-blue-600' },
@@ -54,6 +57,17 @@ const AdminPage = () => {
         >
           <Users className="h-4 w-4" />
           <span>Usuarios</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('roles')}
+          className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+            activeTab === 'roles'
+              ? 'bg-white text-salsa-primary shadow-sm'
+              : 'text-gray-600 hover:text-salsa-primary'
+          }`}
+        >
+          <Crown className="h-4 w-4" />
+          <span>Roles</span>
         </button>
         <button
           onClick={() => setActiveTab('content')}
@@ -152,11 +166,22 @@ const AdminPage = () => {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-semibold text-gray-800">Gestión de Usuarios</h2>
-            <button className="btn-primary">Nuevo Usuario</button>
+            {hasPermission('MANAGE_USERS') && (
+              <button className="btn-primary">Nuevo Usuario</button>
+            )}
           </div>
           <div className="card p-6">
             <p className="text-gray-600">Aquí irá la tabla de usuarios con opciones de edición, eliminación y gestión de roles.</p>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'roles' && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold text-gray-800">Gestión de Roles y Permisos</h2>
+          </div>
+          <RoleManager />
         </div>
       )}
 
