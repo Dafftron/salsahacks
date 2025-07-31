@@ -10,7 +10,8 @@ import {
   getUserProfile,
   updateUserProfile as firebaseUpdateUserProfile,
   createInvitation as firebaseCreateInvitation,
-  validateInvitation as firebaseValidateInvitation
+  validateInvitation as firebaseValidateInvitation,
+  markInvitationAsUsed as firebaseMarkInvitationAsUsed
 } from '../services/firebase'
 import { ROLES, hasPermission, getRolePermissions, hasPageAccess } from '../constants/roles'
 
@@ -177,6 +178,9 @@ export const AuthProvider = ({ children }) => {
           invitationCode: invitationCode,
           invitationDate: new Date()
         })
+
+        // Marcar la invitación como usada
+        await firebaseMarkInvitationAsUsed(invitationCode, firebaseUser.uid)
       }
       
       return { success: true, error: null }
