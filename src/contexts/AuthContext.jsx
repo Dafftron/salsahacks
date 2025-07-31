@@ -152,21 +152,30 @@ export const AuthProvider = ({ children }) => {
   // Función para crear usuario por invitación
   const createUserByInvitation = async (invitationCode, password) => {
     try {
+      console.log('🔍 Iniciando creación de usuario por invitación:', invitationCode)
+      
       // Primero validar la invitación
       const validation = await validateInvitation(invitationCode)
       if (!validation.success) {
+        console.error('❌ Invitación inválida:', validation.error)
         throw new Error(validation.error)
       }
 
       const invitation = validation.invitation
+      console.log('✅ Invitación válida:', invitation)
 
       // Crear el usuario
       const { user: firebaseUser, error } = await registerWithEmail(invitation.email, password, invitation.displayName)
-      if (error) throw new Error(error)
+      if (error) {
+        console.error('❌ Error al crear usuario:', error)
+        throw new Error(error)
+      }
+      
+      console.log('✅ Usuario creado en Firebase Auth:', firebaseUser.uid)
       
       // Crear perfil de usuario
       if (firebaseUser) {
-        await createUserProfile(firebaseUser.uid, {
+        const profileData = {
           displayName: invitation.displayName,
           email: invitation.email,
           role: invitation.role,
@@ -177,14 +186,37 @@ export const AuthProvider = ({ children }) => {
           invitedBy: invitation.createdBy,
           invitationCode: invitationCode,
           invitationDate: new Date()
-        })
+        }
+        
+        console.log('📝 Creando perfil de usuario:', profileData)
+        
+        const profileResult = await createUserProfile(firebaseUser.uid, profileData)
+        if (!profileResult.success) {
+          console.error('❌ Error al crear perfil:', profileResult.error)
+          throw new Error(profileResult.error)
+        }
+        
+        console.log('✅ Perfil de usuario creado exitosamente')
 
         // Marcar la invitación como usada
-        await firebaseMarkInvitationAsUsed(invitationCode, firebaseUser.uid)
+        const markResult = await firebaseMarkInvitationAsUsed(invitationCode, firebaseUser.uid)
+        if (!markResult.success) {
+          console.error('❌ Error al marcar invitación como usada:', markResult.error)
+        } else {
+          console.log('✅ Invitación marcada como usada')
+        }
+        
+        // Cargar el perfil inmediatamente
+        const { user: newProfile } = await getUserProfile(firebaseUser.uid)
+        if (newProfile) {
+          console.log('✅ Perfil cargado inmediatamente:', newProfile)
+          setUserProfile(newProfile)
+        }
       }
       
       return { success: true, error: null }
     } catch (error) {
+      console.error('❌ Error en createUserByInvitation:', error)
       return { success: false, error: error.message }
     }
   }

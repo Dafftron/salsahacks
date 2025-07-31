@@ -30,50 +30,61 @@ const COLLECTIONS = {
 // ===== USUARIOS =====
 export const createUserProfile = async (userId, userData) => {
   try {
-    await addDoc(collection(db, COLLECTIONS.USERS), {
+    console.log('📝 Creando perfil de usuario en Firestore:', userId)
+    
+    // Usar setDoc con el UID como ID del documento para evitar duplicados
+    await setDoc(doc(db, COLLECTIONS.USERS, userId), {
       uid: userId,
       ...userData,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     });
+    
+    console.log('✅ Perfil de usuario creado exitosamente en Firestore')
     return { success: true, error: null };
   } catch (error) {
+    console.error('❌ Error al crear perfil de usuario:', error)
     return { success: false, error: error.message };
   }
 };
 
 export const getUserProfile = async (userId) => {
   try {
-    const q = query(collection(db, COLLECTIONS.USERS), where('uid', '==', userId));
-    const querySnapshot = await getDocs(q);
+    console.log('🔍 Buscando perfil de usuario:', userId)
     
-    if (!querySnapshot.empty) {
-      const doc = querySnapshot.docs[0];
-      return { user: { id: doc.id, ...doc.data() }, error: null };
+    // Usar getDoc directamente con el UID como ID del documento
+    const docRef = doc(db, COLLECTIONS.USERS, userId);
+    const docSnap = await getDoc(docRef);
+    
+    if (docSnap.exists()) {
+      const userData = { id: docSnap.id, ...docSnap.data() };
+      console.log('✅ Perfil de usuario encontrado:', userData)
+      return { user: userData, error: null };
     }
     
+    console.log('❌ Usuario no encontrado en Firestore')
     return { user: null, error: 'Usuario no encontrado' };
   } catch (error) {
+    console.error('❌ Error al obtener perfil de usuario:', error)
     return { user: null, error: error.message };
   }
 };
 
 export const updateUserProfile = async (userId, updates) => {
   try {
-    const q = query(collection(db, COLLECTIONS.USERS), where('uid', '==', userId));
-    const querySnapshot = await getDocs(q);
+    console.log('📝 Actualizando perfil de usuario:', userId, updates)
     
-    if (!querySnapshot.empty) {
-      const docRef = doc(db, COLLECTIONS.USERS, querySnapshot.docs[0].id);
-      await updateDoc(docRef, {
-        ...updates,
-        updatedAt: serverTimestamp()
-      });
-      return { success: true, error: null };
-    }
+    // Usar updateDoc directamente con el UID como ID del documento
+    const docRef = doc(db, COLLECTIONS.USERS, userId);
+    await updateDoc(docRef, {
+      ...updates,
+      updatedAt: serverTimestamp()
+    });
     
-    return { success: false, error: 'Usuario no encontrado' };
+    console.log('✅ Perfil de usuario actualizado exitosamente')
+    return { success: true, error: null };
   } catch (error) {
+    console.error('❌ Error al actualizar perfil de usuario:', error)
     return { success: false, error: error.message };
   }
 };
