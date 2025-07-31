@@ -6,7 +6,7 @@ import { Music, Sun, Moon, User, Bell, Heart, Search } from 'lucide-react'
 const Navigation = () => {
   const location = useLocation()
   const { theme, changeTheme } = useTheme()
-  const { user, isAuthenticated } = useAuth()
+  const { user, isAuthenticated, logout } = useAuth()
 
   const navItems = [
     { path: '/', label: 'Inicio' },
@@ -81,13 +81,37 @@ const Navigation = () => {
 
             {/* User Profile */}
             {isAuthenticated ? (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700">
-                  {user?.displayName || user?.email || 'Usuario'}
-                </span>
-                <button className="p-2 text-gray-600 hover:text-salsa-primary transition-colors">
+              <div className="relative group">
+                <button className="flex items-center space-x-2 p-2 text-gray-600 hover:text-salsa-primary transition-colors rounded-lg hover:bg-gray-100">
+                  <span className="text-sm font-medium text-gray-700">
+                    {user?.displayName || user?.email || 'Usuario'}
+                  </span>
                   <User className="h-5 w-5" />
                 </button>
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="py-2">
+                    <Link
+                      to="/"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      Mi Perfil
+                    </Link>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await logout()
+                        } catch (error) {
+                          console.error('Error al cerrar sesión:', error)
+                        }
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      Cerrar Sesión
+                    </button>
+                  </div>
+                </div>
               </div>
             ) : (
               <Link
