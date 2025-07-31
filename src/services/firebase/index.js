@@ -2,48 +2,27 @@
 export { default as app } from './config';
 export { auth } from './config';
 
-// Servicios de autenticación
-export {
-  registerWithEmail,
-  loginWithEmail,
-  loginWithGoogle,
-  logout,
-  resetPassword,
-  onAuthStateChange,
-  getCurrentUser
-} from './auth';
+// Auth functions
+export { 
+  onAuthStateChange, 
+  loginWithEmail, 
+  loginWithGoogle, 
+  registerWithEmail, 
+  logout, 
+  resetPassword 
+} from './auth'
 
-// Servicios de Firestore
-export {
-  createUserProfile,
-  getUserProfile,
+// Firestore functions
+export { 
+  createUserProfile, 
+  getUserProfile, 
   updateUserProfile,
-  createNote,
-  getNotes,
-  updateNote,
-  deleteNote,
-  getCategories,
-  createEvent,
-  getEvents,
-  createFigure,
-  getFigures,
-  createSchoolContent,
-  getSchoolContent,
-  subscribeToNotes,
-  subscribeToEvents
-} from './firestore';
+  createInvitation,
+  validateInvitation,
+  markInvitationAsUsed,
+  getUserInvitations,
+  deleteInvitation
+} from './firestore'
 
-// Servicios de Storage
-export {
-  uploadFile,
-  uploadImage,
-  getFileURL,
-  deleteFile,
-  listFiles,
-  uploadProfileImage,
-  uploadNoteImage,
-  uploadEventImage,
-  uploadFigureImage,
-  uploadVideo,
-  uploadFigureVideo
-} from './storage'; 
+// Storage functions
+export { uploadFile, getDownloadURL, deleteFile } from './storage' 

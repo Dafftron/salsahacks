@@ -12,7 +12,8 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  serverTimestamp
+  serverTimestamp,
+  setDoc
 } from 'firebase/firestore';
 import { db } from './config';
 
@@ -271,3 +272,138 @@ export const subscribeToEvents = (callback) => {
     callback(events);
   });
 }; 
+
+// Función para crear una invitación
+export const createInvitation = async (invitationData) => {
+  try {
+    // Generar código único de invitación
+    const invitationCode = generateInvitationCode()
+    
+    // Calcular fecha de expiración
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + invitationData.expiresInDays)
+    
+    const invitation = {
+      code: invitationCode,
+      email: invitationData.email,
+      displayName: invitationData.displayName,
+      username: invitationData.username,
+      role: invitationData.role,
+      createdBy: invitationData.createdBy,
+      createdAt: serverTimestamp(),
+      expiresAt: expiresAt,
+      status: 'pending', // pending, used, expired
+      usedAt: null,
+      usedBy: null
+    }
+    
+    // Guardar en Firestore
+    await setDoc(doc(db, 'invitations', invitationCode), invitation)
+    
+    return { 
+      success: true, 
+      invitationCode: invitationCode,
+      invitation: invitation 
+    }
+  } catch (error) {
+    console.error('Error creating invitation:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Función para validar una invitación
+export const validateInvitation = async (invitationCode) => {
+  try {
+    const invitationRef = doc(db, 'invitations', invitationCode)
+    const invitationSnap = await getDoc(invitationRef)
+    
+    if (!invitationSnap.exists()) {
+      return { success: false, error: 'Invitación no encontrada' }
+    }
+    
+    const invitation = invitationSnap.data()
+    
+    // Verificar si ya fue usada
+    if (invitation.status === 'used') {
+      return { success: false, error: 'Esta invitación ya ha sido utilizada' }
+    }
+    
+    // Verificar si ha expirado
+    if (invitation.expiresAt && invitation.expiresAt.toDate() < new Date()) {
+      return { success: false, error: 'Esta invitación ha expirado' }
+    }
+    
+    return { 
+      success: true, 
+      invitation: invitation 
+    }
+  } catch (error) {
+    console.error('Error validating invitation:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Función para marcar invitación como usada
+export const markInvitationAsUsed = async (invitationCode, userId) => {
+  try {
+    const invitationRef = doc(db, 'invitations', invitationCode)
+    await updateDoc(invitationRef, {
+      status: 'used',
+      usedAt: serverTimestamp(),
+      usedBy: userId
+    })
+    
+    return { success: true }
+  } catch (error) {
+    console.error('Error marking invitation as used:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Función para obtener invitaciones de un usuario
+export const getUserInvitations = async (userId) => {
+  try {
+    const invitationsRef = collection(db, 'invitations')
+    const q = query(
+      invitationsRef,
+      where('createdBy', '==', userId),
+      orderBy('createdAt', 'desc')
+    )
+    
+    const querySnapshot = await getDocs(q)
+    const invitations = []
+    
+    querySnapshot.forEach((doc) => {
+      invitations.push({
+        id: doc.id,
+        ...doc.data()
+      })
+    })
+    
+    return { success: true, invitations }
+  } catch (error) {
+    console.error('Error getting user invitations:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Función para eliminar una invitación
+export const deleteInvitation = async (invitationCode) => {
+  try {
+    await deleteDoc(doc(db, 'invitations', invitationCode))
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting invitation:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Función auxiliar para generar código de invitación único
+const generateInvitationCode = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  let result = ''
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+} 

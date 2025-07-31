@@ -8,7 +8,9 @@ import {
   resetPassword,
   createUserProfile,
   getUserProfile,
-  updateUserProfile as firebaseUpdateUserProfile
+  updateUserProfile as firebaseUpdateUserProfile,
+  createInvitation as firebaseCreateInvitation,
+  validateInvitation as firebaseValidateInvitation
 } from '../services/firebase'
 import { ROLES, hasPermission, getRolePermissions, hasPageAccess } from '../constants/roles'
 
@@ -101,28 +103,78 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  // Función para crear usuario por invitación (solo Super Admin)
-  const createUserByInvitation = async (email, password, displayName, role, username) => {
+  // Función para crear invitación (solo Super Admin)
+  const createInvitation = async (email, displayName, role, username, expiresInDays = 7) => {
     try {
       // Verificar que el usuario actual es Super Admin
       if (!userProfile || userProfile.role !== ROLES.SUPER_ADMIN) {
-        throw new Error('Solo el Super Administrador puede crear usuarios')
+        throw new Error('Solo el Super Administrador puede crear invitaciones')
       }
 
-      const { user: firebaseUser, error } = await registerWithEmail(email, password, displayName)
+      const result = await firebaseCreateInvitation({
+        email,
+        displayName,
+        role,
+        username,
+        expiresInDays,
+        createdBy: userProfile.uid,
+        createdAt: new Date()
+      })
+
+      if (result.success) {
+        // Generar URL de invitación
+        const invitationUrl = `${window.location.origin}/invite/${result.invitationCode}`
+        return { 
+          success: true, 
+          invitationCode: result.invitationCode,
+          invitationUrl: invitationUrl,
+          error: null 
+        }
+      } else {
+        return { success: false, error: result.error }
+      }
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Función para validar invitación
+  const validateInvitation = async (invitationCode) => {
+    try {
+      const result = await firebaseValidateInvitation(invitationCode)
+      return result
+    } catch (error) {
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Función para crear usuario por invitación
+  const createUserByInvitation = async (invitationCode, password) => {
+    try {
+      // Primero validar la invitación
+      const validation = await validateInvitation(invitationCode)
+      if (!validation.success) {
+        throw new Error(validation.error)
+      }
+
+      const invitation = validation.invitation
+
+      // Crear el usuario
+      const { user: firebaseUser, error } = await registerWithEmail(invitation.email, password, invitation.displayName)
       if (error) throw new Error(error)
       
       // Crear perfil de usuario
       if (firebaseUser) {
         await createUserProfile(firebaseUser.uid, {
-          displayName,
-          email,
-          role: role,
-          username: username || displayName?.toLowerCase().replace(/\s+/g, ''),
+          displayName: invitation.displayName,
+          email: invitation.email,
+          role: invitation.role,
+          username: invitation.username,
           createdAt: new Date(),
-          permissions: getRolePermissions(role),
+          permissions: getRolePermissions(invitation.role),
           photoURL: firebaseUser.photoURL || null,
-          invitedBy: userProfile.uid,
+          invitedBy: invitation.createdBy,
+          invitationCode: invitationCode,
           invitationDate: new Date()
         })
       }
@@ -192,6 +244,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     loginWithGoogle: loginWithGoogleAuth,
+    createInvitation,
+    validateInvitation,
     createUserByInvitation,
     logout,
     resetPassword: resetUserPassword,

@@ -1,20 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { User, Mail, Shield, Plus, Trash2, Edit, Crown, Users, Key } from 'lucide-react'
+import { User, Mail, Shield, Plus, Trash2, Edit, Crown, Users, Key, Link, Copy, Check } from 'lucide-react'
 import { ROLES, ROLE_LABELS, ROLE_COLORS } from '../constants/roles'
 
 const AdminPage = () => {
-  const { userProfile, isSuperAdmin, hasPermission, createUserByInvitation } = useAuth()
+  const { userProfile, isSuperAdmin, hasPermission, createInvitation } = useAuth()
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   const [users, setUsers] = useState([])
+  const [invitations, setInvitations] = useState([])
+  const [copiedInvitation, setCopiedInvitation] = useState(null)
   
   const [inviteForm, setInviteForm] = useState({
     email: '',
     displayName: '',
     username: '',
     role: ROLES.POLLITO,
-    password: ''
+    expiresIn: '7' // días
   })
 
   // Verificar acceso
@@ -36,41 +38,44 @@ const AdminPage = () => {
     })
   }
 
-  const handleInviteUser = async (e) => {
+  const handleCreateInvitation = async (e) => {
     e.preventDefault()
     setLoading(true)
     setMessage({ type: '', text: '' })
 
     try {
-      const result = await createUserByInvitation(
+      const result = await createInvitation(
         inviteForm.email,
-        inviteForm.password,
         inviteForm.displayName,
         inviteForm.role,
-        inviteForm.username
+        inviteForm.username,
+        parseInt(inviteForm.expiresIn)
       )
 
       if (result.success) {
-        // Agregar usuario a la lista local
-        const newUser = {
+        // Agregar invitación a la lista local
+        const newInvitation = {
           id: Date.now(),
           ...inviteForm,
+          invitationCode: result.invitationCode,
+          invitationUrl: result.invitationUrl,
           createdAt: new Date(),
-          status: 'active'
+          status: 'pending',
+          expiresAt: new Date(Date.now() + parseInt(inviteForm.expiresIn) * 24 * 60 * 60 * 1000)
         }
         
-        setUsers(prev => [...prev, newUser])
+        setInvitations(prev => [...prev, newInvitation])
         setInviteForm({
           email: '',
           displayName: '',
           username: '',
           role: ROLES.POLLITO,
-          password: ''
+          expiresIn: '7'
         })
         
         setMessage({ 
           type: 'success', 
-          text: `Usuario ${inviteForm.displayName} creado exitosamente con rol de ${ROLE_LABELS[inviteForm.role]}` 
+          text: `Invitación creada exitosamente para ${inviteForm.displayName} con rol de ${ROLE_LABELS[inviteForm.role]}` 
         })
       } else {
         setMessage({ type: 'error', text: result.error })
@@ -82,11 +87,43 @@ const AdminPage = () => {
     }
   }
 
-  const handleDeleteUser = (userId) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
-      setUsers(prev => prev.filter(user => user.id !== userId))
-      setMessage({ type: 'success', text: 'Usuario eliminado exitosamente' })
+  const handleCopyInvitation = async (invitationUrl) => {
+    try {
+      await navigator.clipboard.writeText(invitationUrl)
+      setCopiedInvitation(invitationUrl)
+      setTimeout(() => setCopiedInvitation(null), 2000)
+    } catch (error) {
+      // Fallback para navegadores que no soportan clipboard API
+      const textArea = document.createElement('textarea')
+      textArea.value = invitationUrl
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopiedInvitation(invitationUrl)
+      setTimeout(() => setCopiedInvitation(null), 2000)
     }
+  }
+
+  const handleDeleteInvitation = (invitationId) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta invitación?')) {
+      setInvitations(prev => prev.filter(inv => inv.id !== invitationId))
+      setMessage({ type: 'success', text: 'Invitación eliminada exitosamente' })
+    }
+  }
+
+  const formatExpiryDate = (date) => {
+    return new Date(date).toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const isExpired = (expiresAt) => {
+    return new Date(expiresAt) < new Date()
   }
 
   return (
@@ -108,14 +145,14 @@ const AdminPage = () => {
       )}
 
       <div className="grid lg:grid-cols-2 gap-8">
-        {/* Invite User Form */}
+        {/* Create Invitation Form */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
           <div className="flex items-center space-x-2 mb-6">
-            <Plus className="h-6 w-6 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-800">Crear Usuario por Invitación</h2>
+            <Link className="h-6 w-6 text-blue-600" />
+            <h2 className="text-xl font-semibold text-gray-800">Crear Invitación</h2>
           </div>
 
-          <form onSubmit={handleInviteUser} className="space-y-4">
+          <form onSubmit={handleCreateInvitation} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Correo electrónico
@@ -203,24 +240,25 @@ const AdminPage = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Contraseña temporal
+              <label htmlFor="expiresIn" className="block text-sm font-medium text-gray-700 mb-1">
+                Expira en (días)
               </label>
               <div className="relative">
                 <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  id="password"
-                  name="password"
-                  type="text"
-                  required
-                  value={inviteForm.password}
+                <select
+                  id="expiresIn"
+                  name="expiresIn"
+                  value={inviteForm.expiresIn}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  placeholder="Contraseña temporal"
-                  minLength={6}
-                />
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
+                >
+                  <option value="1">1 día</option>
+                  <option value="3">3 días</option>
+                  <option value="7">7 días</option>
+                  <option value="14">14 días</option>
+                  <option value="30">30 días</option>
+                </select>
               </div>
-              <p className="text-xs text-gray-500 mt-1">El usuario deberá cambiar esta contraseña en su primer inicio de sesión</p>
             </div>
 
             <button
@@ -235,52 +273,91 @@ const AdminPage = () => {
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <Plus className="h-4 w-4" />
-                  <span>Crear Usuario</span>
+                  <Link className="h-4 w-4" />
+                  <span>Crear Invitación</span>
                 </div>
               )}
             </button>
           </form>
         </div>
 
-        {/* Users List */}
+        {/* Invitations List */}
         <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
           <div className="flex items-center space-x-2 mb-6">
-            <Users className="h-6 w-6 text-green-600" />
-            <h2 className="text-xl font-semibold text-gray-800">Usuarios del Sistema</h2>
+            <Link className="h-6 w-6 text-green-600" />
+            <h2 className="text-xl font-semibold text-gray-800">Invitaciones Activas</h2>
           </div>
 
           <div className="space-y-4">
-            {users.length === 0 ? (
+            {invitations.length === 0 ? (
               <div className="text-center py-8">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No hay usuarios creados aún</p>
-                <p className="text-sm text-gray-400">Los usuarios que crees aparecerán aquí</p>
+                <Link className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No hay invitaciones creadas aún</p>
+                <p className="text-sm text-gray-400">Las invitaciones que crees aparecerán aquí</p>
               </div>
             ) : (
-              users.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full flex items-center justify-center">
-                      <User className="h-5 w-5 text-white" />
+              invitations.map((invitation) => (
+                <div key={invitation.id} className={`p-4 border rounded-lg ${isExpired(invitation.expiresAt) ? 'border-red-200 bg-red-50' : 'border-gray-200'}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full flex items-center justify-center">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">{invitation.displayName}</p>
+                        <p className="text-sm text-gray-500">{invitation.email}</p>
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${ROLE_COLORS[invitation.role] || 'bg-gray-500 text-white'}`}>
+                          <Shield className="h-3 w-3 mr-1" />
+                          {ROLE_LABELS[invitation.role] || invitation.role}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-900">{user.displayName}</p>
-                      <p className="text-sm text-gray-500">{user.email}</p>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${ROLE_COLORS[user.role] || 'bg-gray-500 text-white'}`}>
-                        <Shield className="h-3 w-3 mr-1" />
-                        {ROLE_LABELS[user.role] || user.role}
-                      </span>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleCopyInvitation(invitation.invitationUrl)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Copiar enlace de invitación"
+                      >
+                        {copiedInvitation === invitation.invitationUrl ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteInvitation(invitation.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Eliminar invitación"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handleDeleteUser(user.id)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Eliminar usuario"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                  
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-xs text-gray-600 mb-2">
+                      <strong>Enlace de invitación:</strong>
+                    </p>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="text"
+                        value={invitation.invitationUrl}
+                        readOnly
+                        className="flex-1 text-xs bg-white border border-gray-300 rounded px-2 py-1"
+                      />
+                      <button
+                        onClick={() => handleCopyInvitation(invitation.invitationUrl)}
+                        className="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition-colors"
+                      >
+                        {copiedInvitation === invitation.invitationUrl ? 'Copiado!' : 'Copiar'}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Expira: {formatExpiryDate(invitation.expiresAt)}
+                      {isExpired(invitation.expiresAt) && (
+                        <span className="text-red-500 ml-2">(Expirada)</span>
+                      )}
+                    </p>
                   </div>
                 </div>
               ))
@@ -294,10 +371,10 @@ const AdminPage = () => {
         <div className="flex items-center space-x-3">
           <Crown className="h-8 w-8 text-purple-600" />
           <div>
-            <h3 className="text-lg font-semibold text-purple-800">Información de Super Administrador</h3>
+            <h3 className="text-lg font-semibold text-purple-800">Sistema de Invitaciones</h3>
             <p className="text-sm text-purple-600">
-              Como Super Administrador, puedes crear usuarios con cualquier rol y gestionar todos los aspectos del sistema.
-              Solo tú puedes crear nuevas cuentas en el sistema.
+              Crea invitaciones únicas que puedes compartir por WhatsApp, email o cualquier medio. 
+              Cada invitación tiene un enlace único y expira automáticamente.
             </p>
           </div>
         </div>
