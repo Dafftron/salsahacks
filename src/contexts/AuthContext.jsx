@@ -7,7 +7,8 @@ import {
   logout as firebaseLogout,
   resetPassword,
   createUserProfile,
-  getUserProfile
+  getUserProfile,
+  updateUserProfile as firebaseUpdateUserProfile
 } from '../services/firebase'
 import { ROLES, hasPermission, getRolePermissions, hasPageAccess } from '../constants/roles'
 
@@ -26,6 +27,33 @@ export const AuthProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // Función para determinar el rol por defecto basado en el email
+  const getDefaultRole = (email) => {
+    // David como Super Administrador
+    if (email === 'david_exile_92@hotmail.com') {
+      return ROLES.SUPER_ADMIN
+    }
+    // Por defecto Pollito para otros usuarios
+    return ROLES.POLLITO
+  }
+
+  // Función para actualizar automáticamente el rol de David si es necesario
+  const updateDavidRole = async (profile) => {
+    if (profile?.email === 'david_exile_92@hotmail.com' && profile?.role !== ROLES.SUPER_ADMIN) {
+      try {
+        await firebaseUpdateUserProfile(profile.uid, {
+          role: ROLES.SUPER_ADMIN,
+          permissions: getRolePermissions(ROLES.SUPER_ADMIN),
+          updatedAt: new Date()
+        })
+        return { ...profile, role: ROLES.SUPER_ADMIN, permissions: getRolePermissions(ROLES.SUPER_ADMIN) }
+      } catch (error) {
+        console.error('Error al actualizar rol de David:', error)
+      }
+    }
+    return profile
+  }
+
   useEffect(() => {
     // Observar cambios en el estado de autenticación
     const unsubscribe = onAuthStateChange(async (firebaseUser) => {
@@ -35,7 +63,11 @@ export const AuthProvider = ({ children }) => {
         // Obtener perfil del usuario
         try {
           const { user: profile } = await getUserProfile(firebaseUser.uid)
-          setUserProfile(profile)
+          if (profile) {
+            // Actualizar rol de David si es necesario
+            const updatedProfile = await updateDavidRole(profile)
+            setUserProfile(updatedProfile)
+          }
         } catch (error) {
           console.log('Usuario nuevo, perfil no encontrado')
         }
@@ -69,19 +101,24 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const register = async (email, password, displayName, role = ROLES.USER) => {
+  const register = async (email, password, displayName, role = null, username = '') => {
     try {
       const { user: firebaseUser, error } = await registerWithEmail(email, password, displayName)
       if (error) throw new Error(error)
+      
+      // Determinar el rol basado en el email si no se especifica
+      const userRole = role || getDefaultRole(email)
       
       // Crear perfil de usuario
       if (firebaseUser) {
         await createUserProfile(firebaseUser.uid, {
           displayName,
           email,
-          role: role,
+          role: userRole,
+          username: username || displayName?.toLowerCase().replace(/\s+/g, ''),
           createdAt: new Date(),
-          permissions: getRolePermissions(role)
+          permissions: getRolePermissions(userRole),
+          photoURL: firebaseUser.photoURL || null
         })
       }
       
@@ -110,8 +147,38 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const updateUserProfile = (profileData) => {
-    setUserProfile(profileData)
+  const updateUserProfile = async (profileData) => {
+    try {
+      if (!user?.uid) throw new Error('Usuario no autenticado')
+      
+      // Generar username automáticamente si no existe
+      const updatedData = {
+        ...profileData,
+        username: profileData.username || profileData.displayName?.toLowerCase().replace(/\s+/g, ''),
+        updatedAt: new Date()
+      }
+      
+      // Actualizar en Firebase
+      await firebaseUpdateUserProfile(user.uid, updatedData)
+      
+      // Actualizar estado local
+      setUserProfile(prev => ({ ...prev, ...updatedData }))
+      
+      return { success: true, error: null }
+    } catch (error) {
+      console.error('Error al actualizar perfil:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
+  // Función para obtener el username del usuario
+  const getUserUsername = () => {
+    return userProfile?.username || userProfile?.displayName?.toLowerCase().replace(/\s+/g, '') || 'usuario'
+  }
+
+  // Función para obtener la foto de perfil
+  const getUserPhoto = () => {
+    return userProfile?.photoURL || user?.photoURL || null
   }
 
   const value = {
@@ -124,6 +191,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     resetPassword: resetUserPassword,
     updateUserProfile,
+    getUserUsername,
+    getUserPhoto,
     isAuthenticated: !!user,
     isSuperAdmin: userProfile?.role === ROLES.SUPER_ADMIN,
     isMaese: userProfile?.role === ROLES.MAESE,

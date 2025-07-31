@@ -9,7 +9,7 @@ export const ROLES = {
 export const ROLE_LABELS = {
   [ROLES.SUPER_ADMIN]: 'Super Administrador',
   [ROLES.MAESE]: 'Maese',
-  [ROLES.USER]: 'Usuario',
+  [ROLES.USER]: 'Soldado',
   [ROLES.POLLITO]: 'Pollito'
 }
 
@@ -18,6 +18,14 @@ export const ROLE_COLORS = {
   [ROLES.MAESE]: 'bg-red-500 text-white',
   [ROLES.USER]: 'bg-green-500 text-white',
   [ROLES.POLLITO]: 'bg-yellow-400 text-gray-800'
+}
+
+// Orden de importancia (de menor a mayor)
+export const ROLE_HIERARCHY = {
+  [ROLES.POLLITO]: 1,    // Más pequeño
+  [ROLES.USER]: 2,       // Segundo
+  [ROLES.MAESE]: 3,      // Tercero
+  [ROLES.SUPER_ADMIN]: 4 // Mayor
 }
 
 // Permisos por funcionalidad (simplificados por ahora)

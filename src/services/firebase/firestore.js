@@ -57,6 +57,26 @@ export const getUserProfile = async (userId) => {
   }
 };
 
+export const updateUserProfile = async (userId, updates) => {
+  try {
+    const q = query(collection(db, COLLECTIONS.USERS), where('uid', '==', userId));
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const docRef = doc(db, COLLECTIONS.USERS, querySnapshot.docs[0].id);
+      await updateDoc(docRef, {
+        ...updates,
+        updatedAt: serverTimestamp()
+      });
+      return { success: true, error: null };
+    }
+    
+    return { success: false, error: 'Usuario no encontrado' };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+};
+
 // ===== NOTAS =====
 export const createNote = async (noteData) => {
   try {

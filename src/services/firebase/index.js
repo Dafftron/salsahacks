@@ -17,6 +17,7 @@ export {
 export {
   createUserProfile,
   getUserProfile,
+  updateUserProfile,
   createNote,
   getNotes,
   updateNote,

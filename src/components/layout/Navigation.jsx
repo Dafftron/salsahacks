@@ -2,11 +2,12 @@ import { Link, useLocation } from 'react-router-dom'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { Music, Sun, Moon, User, Bell, Heart, Search, Shield } from 'lucide-react'
+import { ROLE_LABELS, ROLE_COLORS } from '../../constants/roles'
 
 const Navigation = () => {
   const location = useLocation()
   const { theme, changeTheme } = useTheme()
-  const { user, isAuthenticated, logout, hasPermission } = useAuth()
+  const { user, userProfile, isAuthenticated, logout, hasPermission, getUserUsername, getUserPhoto } = useAuth()
 
   const navItems = [
     { path: '/', label: 'Inicio' },
@@ -87,16 +88,66 @@ const Navigation = () => {
             {/* User Profile */}
             {isAuthenticated ? (
               <div className="relative group">
-                <button className="flex items-center space-x-2 p-2 text-gray-600 hover:text-salsa-primary transition-colors rounded-lg hover:bg-gray-100">
-                  <span className="text-sm font-medium text-gray-700">
-                    {user?.displayName || user?.email || 'Usuario'}
-                  </span>
-                  <User className="h-5 w-5" />
+                <button className="flex items-center space-x-3 p-2 text-gray-600 hover:text-salsa-primary transition-colors rounded-lg hover:bg-gray-100">
+                  {/* Profile Photo */}
+                  <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full flex items-center justify-center">
+                    {getUserPhoto() ? (
+                      <img 
+                        src={getUserPhoto()} 
+                        alt="Foto de perfil" 
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-4 w-4 text-white" />
+                    )}
+                  </div>
+                  
+                  {/* User Info */}
+                  <div className="flex flex-col items-start">
+                    <span className="text-sm font-medium text-gray-700">
+                      {getUserUsername()}
+                    </span>
+                    {userProfile?.role && (
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[userProfile.role] || 'bg-gray-500 text-white'}`}>
+                        <Shield className="h-3 w-3 mr-1" />
+                        {ROLE_LABELS[userProfile.role] || userProfile.role}
+                      </span>
+                    )}
+                  </div>
                 </button>
                 
                 {/* Dropdown Menu */}
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="py-2">
+                    {/* User Info in Dropdown */}
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full flex items-center justify-center">
+                          {getUserPhoto() ? (
+                            <img 
+                              src={getUserPhoto()} 
+                              alt="Foto de perfil" 
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <User className="h-5 w-5 text-white" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {userProfile?.displayName || user?.displayName || 'Usuario'}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">{getUserUsername()}</p>
+                          {userProfile?.role && (
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${ROLE_COLORS[userProfile.role] || 'bg-gray-500 text-white'}`}>
+                              <Shield className="h-3 w-3 mr-1" />
+                              {ROLE_LABELS[userProfile.role] || userProfile.role}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
                     <Link
                       to="/profile"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"

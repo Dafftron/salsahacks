@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react'
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle, Shield } from 'lucide-react'
+import { ROLES, ROLE_LABELS, ROLE_COLORS } from '../constants/roles'
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true)
@@ -11,10 +12,28 @@ const AuthPage = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    displayName: ''
+    displayName: '',
+    username: '',
+    role: ROLES.POLLITO // Por defecto el más pequeño
   })
 
   const { login, register, loginWithGoogle } = useAuth()
+
+  // Función para determinar el rol por defecto basado en el email
+  const getDefaultRole = (email) => {
+    if (email === 'david_exile_92@hotmail.com') {
+      return ROLES.SUPER_ADMIN
+    }
+    return ROLES.POLLITO
+  }
+
+  // Actualizar el rol cuando cambie el email
+  useEffect(() => {
+    if (formData.email && !isLogin) {
+      const defaultRole = getDefaultRole(formData.email)
+      setFormData(prev => ({ ...prev, role: defaultRole }))
+    }
+  }, [formData.email, isLogin])
 
   const handleInputChange = (e) => {
     setFormData({
@@ -34,7 +53,9 @@ const AuthPage = () => {
       if (isLogin) {
         result = await login(formData.email, formData.password)
       } else {
-        result = await register(formData.email, formData.password, formData.displayName)
+        // Para David, siempre usar Super Admin, para otros usar el rol seleccionado
+        const userRole = formData.email === 'david_exile_92@hotmail.com' ? ROLES.SUPER_ADMIN : formData.role
+        result = await register(formData.email, formData.password, formData.displayName, userRole, formData.username)
       }
 
       if (result.success) {
@@ -43,7 +64,7 @@ const AuthPage = () => {
           text: isLogin ? '¡Inicio de sesión exitoso!' : '¡Usuario creado exitosamente!' 
         })
         // Limpiar formulario
-        setFormData({ email: '', password: '', displayName: '' })
+        setFormData({ email: '', password: '', displayName: '', username: '', role: ROLES.POLLITO })
       } else {
         setMessage({ type: 'error', text: result.error })
       }
@@ -105,24 +126,79 @@ const AuthPage = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             {!isLogin && (
-              <div>
-                <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre completo
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                  <input
-                    id="displayName"
-                    name="displayName"
-                    type="text"
-                    required={!isLogin}
-                    value={formData.displayName}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
-                    placeholder="Tu nombre completo"
-                  />
+              <>
+                <div>
+                  <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre completo
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      id="displayName"
+                      name="displayName"
+                      type="text"
+                      required={!isLogin}
+                      value={formData.displayName}
+                      onChange={handleInputChange}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
+                      placeholder="Tu nombre completo"
+                    />
+                  </div>
                 </div>
-              </div>
+
+                <div>
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre de usuario
+                  </label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      id="username"
+                      name="username"
+                      type="text"
+                      required={!isLogin}
+                      value={formData.username}
+                      onChange={handleInputChange}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
+                      placeholder="nombreusuario"
+                      pattern="[a-zA-Z0-9_]+"
+                      title="Solo letras, números y guiones bajos"
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Solo letras, números y guiones bajos</p>
+                </div>
+
+                <div>
+                  <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                    Rol (Nivel de importancia)
+                  </label>
+                  <div className="relative">
+                    <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <select
+                      id="role"
+                      name="role"
+                      value={formData.role}
+                      onChange={handleInputChange}
+                      disabled={formData.email === 'david_exile_92@hotmail.com'}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    >
+                      <option value={ROLES.POLLITO}>Pollito (Nivel 1 - Más pequeño)</option>
+                      <option value={ROLES.USER}>Soldado (Nivel 2 - Segundo)</option>
+                      <option value={ROLES.MAESE}>Maese (Nivel 3 - Tercero)</option>
+                      <option value={ROLES.SUPER_ADMIN}>Super Administrador (Nivel 4 - Mayor)</option>
+                    </select>
+                  </div>
+                  <div className="mt-2">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[formData.role] || 'bg-gray-500 text-white'}`}>
+                      <Shield className="h-3 w-3 mr-1" />
+                      {ROLE_LABELS[formData.role] || formData.role}
+                    </span>
+                    {formData.email === 'david_exile_92@hotmail.com' && (
+                      <p className="text-xs text-blue-600 mt-1">¡Rol automático asignado como Super Administrador!</p>
+                    )}
+                  </div>
+                </div>
+              </>
             )}
 
             <div>
@@ -215,7 +291,7 @@ const AuthPage = () => {
                 onClick={() => {
                   setIsLogin(!isLogin)
                   setMessage({ type: '', text: '' })
-                  setFormData({ email: '', password: '', displayName: '' })
+                  setFormData({ email: '', password: '', displayName: '', username: '', role: ROLES.POLLITO })
                 }}
                 className="ml-1 text-pink-600 hover:text-pink-500 font-medium"
               >
