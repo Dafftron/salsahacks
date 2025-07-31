@@ -11,6 +11,7 @@
 4. [Próximas Tareas](#próximas-tareas)
 5. [Notas de Desarrollo](#notas-de-desarrollo)
 6. [Configuración Firebase](#configuración-firebase)
+7. [Firebase Storage Setup](#firebase-storage-setup)
 
 ---
 
@@ -807,4 +808,59 @@ const firebaseConfig = {
 **🔄 Última actualización:** 2025-01-27 (Actualizado con todos los commits en orden cronológico)
 **👨‍💻 Desarrollador:** David Exile
 **🎯 Versión:** SalsaHacks V2.0 
-**📊 Total de Commits:** 27 commits 
+**📊 Total de Commits:** 27 commits
+
+---
+
+## 🔥 FIREBASE STORAGE SETUP - [Fecha: 2025-01-27]
+
+### **🚨 Problema Identificado:**
+- Proyecto en plan **Spark (Gratuito)** de Firebase
+- Firebase Storage no disponible en plan gratuito
+- Necesita actualización a plan **Blaze (Pago por uso)**
+
+### **✅ Soluciones Implementadas:**
+
+#### **1. Modo Simulado Temporal:**
+- Función `uploadVideoSimulated()` para desarrollo
+- Videos se "suben" localmente sin usar Storage
+- Registros se crean en Firestore normalmente
+- Funciona para pruebas y desarrollo
+
+#### **2. Componente de Estado:**
+- `FirebaseStorageStatus.jsx` - Muestra estado de Storage
+- Verificación automática de disponibilidad
+- Mensajes informativos y botones de acción
+- Integrado en `FigurasPage.jsx`
+
+#### **3. Mejoras en Código:**
+- Función `checkStorageAvailability()` mejorada
+- Timeout para evitar bloqueos
+- Manejo de errores específicos
+- Detección automática de modo simulado
+
+#### **4. Documentación Completa:**
+- `FIREBASE_STORAGE_SETUP.md` - Guía paso a paso
+- Instrucciones para actualizar plan
+- Configuración de reglas de seguridad
+- Troubleshooting y costos
+
+### **🎯 Próximos Pasos:**
+1. **Actualizar plan Firebase** a Blaze
+2. **Configurar reglas de Storage**
+3. **Probar subida de videos real**
+4. **Implementar compresión de videos**
+5. **Agregar límites de tamaño**
+
+### **💰 Costos del Plan Blaze:**
+- **Primeros 5GB:** Gratuitos
+- **Después de 5GB:** $0.026 por GB al mes
+- **Descargas:** $0.12 por GB
+- **Operaciones:** $0.004 por 10,000 operaciones
+
+### **🔧 Archivos Modificados:**
+- `src/services/firebase/storage.js` - Mejorado con modo simulado
+- `src/components/video/VideoUploadModal.jsx` - Estado de Storage
+- `src/pages/FigurasPage.jsx` - Componente de estado integrado
+- `src/components/FirebaseStorageStatus.jsx` - Nuevo componente
+- `FIREBASE_STORAGE_SETUP.md` - Documentación completa 

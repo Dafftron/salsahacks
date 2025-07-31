@@ -544,4 +544,24 @@ export const checkVideoDuplicate = async (originalTitle) => {
     console.error('❌ Error al verificar duplicado:', error)
     return { isDuplicate: false, error: error.message }
   }
+}
+
+export const getVideos = async () => {
+  try {
+    console.log('🔍 Obteniendo todos los videos...')
+    const q = query(
+      collection(db, COLLECTIONS.VIDEOS),
+      orderBy('uploadedAt', 'desc')
+    )
+    const querySnapshot = await getDocs(q)
+    const videos = []
+    querySnapshot.forEach((doc) => {
+      videos.push({ id: doc.id, ...doc.data() })
+    })
+    console.log(`✅ ${videos.length} videos obtenidos`)
+    return videos
+  } catch (error) {
+    console.error('❌ Error al obtener videos:', error)
+    return []
+  }
 } 

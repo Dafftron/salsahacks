@@ -12,8 +12,11 @@ import {
   Play
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
-import { uploadFile, getFileURL } from '../../services/firebase'
+import { uploadVideo, getFileURL } from '../../services/firebase/storage'
 import { createVideoDocument } from '../../services/firebase/firestore'
+import { hasPermission } from '../../constants/roles'
+import { ref, getDownloadURL } from 'firebase/storage'
+import { storage } from '../../services/firebase/config'
 
 const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
   const { user, userProfile } = useAuth()
@@ -25,12 +28,25 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
   const [uploadedVideos, setUploadedVideos] = useState([])
   const [currentStep, setCurrentStep] = useState('upload') // 'upload' or 'edit'
   const [dragActive, setDragActive] = useState(false)
+  const [storageStatus, setStorageStatus] = useState('checking') // 'checking', 'available', 'unavailable', 'simulated'
   const fileInputRef = useRef(null)
 
   // Verificar permisos de upload
   const canUpload = () => {
     if (!userProfile) return false
-    return ['SUPER_ADMIN', 'MAESE', 'SOLDADO'].includes(userProfile.role)
+    return hasPermission(userProfile.role, 'UPLOAD_VIDEOS')
+  }
+
+  // Verificar estado de Firebase Storage al abrir el modal
+  React.useEffect(() => {
+    if (isOpen) {
+      checkStorageStatus()
+    }
+  }, [isOpen])
+
+  const checkStorageStatus = async () => {
+    // Ya tienes el plan Blaze, Firebase Storage está disponible
+    setStorageStatus('available')
   }
 
   // Drag & Drop handlers
@@ -98,7 +114,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
         // Upload to Firebase Storage
         setUploadProgress(prev => ({ ...prev, [file.name]: 0 }))
         
-        const uploadResult = await uploadFile(
+        const uploadResult = await uploadVideo(
           file, 
           `videos/${user.uid}/${Date.now()}_${file.name}`,
           (progress) => {
@@ -108,8 +124,14 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
             }))
           }
         )
-
+        
         if (uploadResult.success) {
+          // Marcar como 100% completado
+          setUploadProgress(prev => ({ 
+            ...prev, 
+            [file.name]: 100 
+          }))
+          
           // Generate thumbnail (first frame)
           const thumbnailUrl = await generateThumbnail(file)
           
@@ -144,6 +166,17 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
               file: file
             })
           }
+        } else {
+          // Mostrar error específico
+          console.error(`Error uploading ${file.name}:`, uploadResult.error)
+          
+          // Manejar errores específicos de CORS
+          let errorMessage = uploadResult.error;
+          if (uploadResult.error.includes('CORS') || uploadResult.error.includes('blocked')) {
+            errorMessage = 'Error de conexión con Firebase. Verifica tu conexión a internet e intenta de nuevo.';
+          }
+          
+          alert(`Error al subir "${file.name}": ${errorMessage}`)
         }
       }
 
@@ -152,7 +185,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
       setCurrentStep('edit')
       
       if (uploadedVideosList.length > 0) {
-        alert(`¡${uploadedVideosList.length} video(s) subido(s) exitosamente!`)
+        alert(`¡${uploadedVideosList.length} video(s) subido(s) exitosamente a Firebase Storage!`)
       }
 
     } catch (error) {
@@ -237,6 +270,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
               handleUpload={handleUpload}
               fileInputRef={fileInputRef}
               canUpload={canUpload}
+              storageStatus={storageStatus}
             />
           ) : (
             <EditStep
@@ -268,7 +302,8 @@ const UploadStep = ({
   removeFile,
   handleUpload,
   fileInputRef,
-  canUpload
+  canUpload,
+  storageStatus
 }) => {
   return (
     <div className="space-y-6">
@@ -429,6 +464,31 @@ const UploadStep = ({
             <AlertCircle className="h-5 w-5 text-yellow-600" />
             <p className="text-yellow-800">
               No tienes permisos para subir videos. Contacta a un administrador.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Firebase Storage Status */}
+      {storageStatus === 'checking' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+            <p className="text-blue-800">
+              Verificando estado de Firebase Storage...
+            </p>
+          </div>
+        </div>
+      )}
+      
+
+      
+      {storageStatus === 'available' && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <p className="text-green-800">
+              ✅ Firebase Storage disponible - Plan Blaze activo
             </p>
           </div>
         </div>

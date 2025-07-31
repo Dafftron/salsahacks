@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Search, 
   Upload, 
@@ -9,9 +9,15 @@ import {
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
 import VideoUploadModal from '../components/video/VideoUploadModal'
+import FirebaseStorageStatus from '../components/FirebaseStorageStatus'
+import { getVideos } from '../services/firebase/firestore'
+import { useAuth } from '../contexts/AuthContext'
 
 const FigurasPage = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [videos, setVideos] = useState([])
+  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
   
   const { 
     selectedStyle, 
@@ -20,28 +26,34 @@ const FigurasPage = () => {
     getColorForCategory 
   } = useCategories()
 
-  const videos = [
-    {
-      id: 1,
-      title: 'Figura Básica Salsa - Derecha',
-      description: 'Aprende la figura básica de derecha en salsa',
-      thumbnail: 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=RICK+ASTLEY+NEVER+GONNA+GIVE+YOU+UP',
-      views: 1250,
-      likes: 89,
-      tags: ['Derecha', 'Básico', 'Ritmo', 'Cubano'],
-      quality: '4K'
-    },
-    {
-      id: 2,
-      title: 'Giro Completo Salsa',
-      description: 'Técnica avanzada de giro completo',
-      thumbnail: 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=RICK+ASTLEY+NEVER+GONNA+GIVE+YOU+UP',
-      views: 890,
-      likes: 67,
-      tags: ['Giro', 'Avanzado', 'Técnica', 'LA Style'],
-      quality: '4K'
+  // Cargar videos desde Firestore
+  useEffect(() => {
+    const loadVideos = async () => {
+      try {
+        setLoading(true)
+        const videosData = await getVideos()
+        setVideos(videosData)
+      } catch (error) {
+        console.error('Error cargando videos:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    loadVideos()
+  }, [])
+
+  // Función para actualizar la lista de videos después de subir uno nuevo
+  const handleVideoUploaded = async (video) => {
+    console.log('Video subido:', video)
+    // Recargar la lista de videos
+    try {
+      const videosData = await getVideos()
+      setVideos(videosData)
+    } catch (error) {
+      console.error('Error recargando videos:', error)
+    }
+  }
 
   // Los colores de etiquetas ahora vienen del sistema de categorías
 
@@ -93,6 +105,9 @@ const FigurasPage = () => {
           </div>
         </div>
 
+        {/* Firebase Storage Status */}
+        <FirebaseStorageStatus />
+
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
           <button 
@@ -102,9 +117,13 @@ const FigurasPage = () => {
             <Upload className="h-5 w-5" />
             <span>SUBIR VIDEO(S) A SALSA</span>
           </button>
+          <button className="flex items-center justify-center space-x-2 px-6 py-3 bg-blue-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+            <Music className="h-5 w-5" />
+            <span>GALERÍA DE VIDEOS</span>
+          </button>
           <button className="flex items-center justify-center space-x-2 px-6 py-3 bg-pink-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
             <Plus className="h-5 w-5" />
-            <span>CONSTRUCTOR DE SECUENCIAS</span>
+            <span>GALERÍA DE SECUENCIAS</span>
           </button>
         </div>
 
@@ -112,54 +131,80 @@ const FigurasPage = () => {
 
         {/* Videos Grid */}
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Videos de salsa (2)</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            {videos.map((video) => (
-              <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
-                <div className="relative">
-                  <img
-                    src={video.thumbnail}
-                    alt={video.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
-                    {video.quality}
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+            Videos de salsa ({videos.length})
+          </h2>
+          
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+              <span className="ml-3 text-gray-600">Cargando videos...</span>
+            </div>
+          ) : videos.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No hay videos subidos aún</p>
+              <p className="text-gray-400 text-sm mt-2">Sube tu primer video usando el botón de arriba</p>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-6">
+              {videos.map((video) => (
+                <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
+                  <div className="relative">
+                    <img
+                      src={video.thumbnailUrl || 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=VIDEO'}
+                      alt={video.title}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
+                      4K
+                    </div>
                   </div>
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="font-semibold text-gray-800 mb-2 text-lg">{video.title}</h3>
-                  <p className="text-gray-600 text-sm mb-3">{video.description}</p>
                   
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {video.tags.map((tag) => (
-                      <CategoryBadge
-                        key={tag}
-                        category={tag}
-                        size="sm"
-                      />
-                    ))}
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span className="font-medium">{video.views} vistas</span>
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-1">
-                        <Heart className="h-4 w-4 text-red-500 fill-current" />
-                        <span className="font-medium">{video.likes}</span>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-800 mb-2 text-lg">{video.title}</h3>
+                    <p className="text-gray-600 text-sm mb-3">{video.description || 'Sin descripción'}</p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {video.tags && video.tags.normales && video.tags.normales.length > 0 ? (
+                        video.tags.normales.map((tag) => (
+                          <CategoryBadge
+                            key={tag}
+                            category={tag}
+                            size="sm"
+                          />
+                        ))
+                      ) : (
+                        <span className="text-gray-400 text-sm">Sin etiquetas</span>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <span className="font-medium">
+                        {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
+                      </span>
+                      <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-1">
+                          <Heart className="h-4 w-4 text-red-500 fill-current" />
+                          <span className="font-medium">0</span>
+                        </div>
+                        <button className="text-gray-400 hover:text-red-500 transition-colors duration-200">
+                          <Heart className="h-4 w-4" />
+                        </button>
+                        <button className="text-gray-400 hover:text-gray-600 transition-colors duration-200">
+                          <Upload className="h-4 w-4" />
+                        </button>
                       </div>
-                      <button className="text-gray-400 hover:text-red-500 transition-colors duration-200">
-                        <Heart className="h-4 w-4" />
-                      </button>
-                      <button className="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                        <Upload className="h-4 w-4" />
-                      </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Firebase Storage Status */}
+        <div className="mb-8">
+          <FirebaseStorageStatus />
         </div>
       </div>
 
@@ -167,10 +212,7 @@ const FigurasPage = () => {
       <VideoUploadModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
-        onVideoUploaded={(video) => {
-          console.log('Video subido:', video)
-          // Aquí se puede actualizar la lista de videos
-        }}
+        onVideoUploaded={handleVideoUploaded}
       />
     </div>
   )
