@@ -1,39 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle, Shield } from 'lucide-react'
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle, Shield, Crown } from 'lucide-react'
 import { ROLES, ROLE_LABELS, ROLE_COLORS } from '../constants/roles'
 
 const AuthPage = () => {
-  const [isLogin, setIsLogin] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    displayName: '',
-    username: '',
-    role: ROLES.POLLITO // Por defecto el más pequeño
+    password: ''
   })
 
-  const { login, register, loginWithGoogle } = useAuth()
-
-  // Función para determinar el rol por defecto basado en el email
-  const getDefaultRole = (email) => {
-    if (email === 'david_exile_92@hotmail.com') {
-      return ROLES.SUPER_ADMIN
-    }
-    return ROLES.POLLITO
-  }
-
-  // Actualizar el rol cuando cambie el email
-  useEffect(() => {
-    if (formData.email && !isLogin) {
-      const defaultRole = getDefaultRole(formData.email)
-      setFormData(prev => ({ ...prev, role: defaultRole }))
-    }
-  }, [formData.email, isLogin])
+  const { login, loginWithGoogle } = useAuth()
 
   const handleInputChange = (e) => {
     setFormData({
@@ -48,23 +28,15 @@ const AuthPage = () => {
     setMessage({ type: '', text: '' })
 
     try {
-      let result
-
-      if (isLogin) {
-        result = await login(formData.email, formData.password)
-      } else {
-        // Para David, siempre usar Super Admin, para otros usar el rol seleccionado
-        const userRole = formData.email === 'david_exile_92@hotmail.com' ? ROLES.SUPER_ADMIN : formData.role
-        result = await register(formData.email, formData.password, formData.displayName, userRole, formData.username)
-      }
+      const result = await login(formData.email, formData.password)
 
       if (result.success) {
         setMessage({ 
           type: 'success', 
-          text: isLogin ? '¡Inicio de sesión exitoso!' : '¡Usuario creado exitosamente!' 
+          text: '¡Inicio de sesión exitoso!' 
         })
         // Limpiar formulario
-        setFormData({ email: '', password: '', displayName: '', username: '', role: ROLES.POLLITO })
+        setFormData({ email: '', password: '' })
       } else {
         setMessage({ type: 'error', text: result.error })
       }
@@ -99,10 +71,10 @@ const AuthPage = () => {
         {/* Header */}
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            {isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'}
+            Iniciar Sesión
           </h2>
           <p className="text-gray-600">
-            {isLogin ? 'Accede a tu cuenta de SalsaHacks' : 'Únete a la comunidad de SalsaHacks'}
+            Accede a tu cuenta de SalsaHacks
           </p>
         </div>
 
@@ -122,85 +94,22 @@ const AuthPage = () => {
           </div>
         )}
 
+        {/* Registration Notice */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <Crown className="h-5 w-5 text-blue-600" />
+            <div>
+              <h3 className="text-sm font-medium text-blue-800">Registro por Invitación</h3>
+              <p className="text-xs text-blue-600 mt-1">
+                El registro de nuevas cuentas está restringido. Solo el Super Administrador puede crear nuevas cuentas con roles específicos.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
-            {!isLogin && (
-              <>
-                <div>
-                  <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre completo
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      id="displayName"
-                      name="displayName"
-                      type="text"
-                      required={!isLogin}
-                      value={formData.displayName}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
-                      placeholder="Tu nombre completo"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre de usuario
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <input
-                      id="username"
-                      name="username"
-                      type="text"
-                      required={!isLogin}
-                      value={formData.username}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
-                      placeholder="nombreusuario"
-                      pattern="[a-zA-Z0-9_]+"
-                      title="Solo letras, números y guiones bajos"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Solo letras, números y guiones bajos</p>
-                </div>
-
-                <div>
-                  <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                    Rol (Nivel de importancia)
-                  </label>
-                  <div className="relative">
-                    <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    <select
-                      id="role"
-                      name="role"
-                      value={formData.role}
-                      onChange={handleInputChange}
-                      disabled={formData.email === 'david_exile_92@hotmail.com'}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    >
-                      <option value={ROLES.POLLITO}>Pollito (Nivel 1 - Más pequeño)</option>
-                      <option value={ROLES.USER}>Soldado (Nivel 2 - Segundo)</option>
-                      <option value={ROLES.MAESE}>Maese (Nivel 3 - Tercero)</option>
-                      <option value={ROLES.SUPER_ADMIN}>Super Administrador (Nivel 4 - Mayor)</option>
-                    </select>
-                  </div>
-                  <div className="mt-2">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[formData.role] || 'bg-gray-500 text-white'}`}>
-                      <Shield className="h-3 w-3 mr-1" />
-                      {ROLE_LABELS[formData.role] || formData.role}
-                    </span>
-                    {formData.email === 'david_exile_92@hotmail.com' && (
-                      <p className="text-xs text-blue-600 mt-1">¡Rol automático asignado como Super Administrador!</p>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Correo electrónico
@@ -260,7 +169,7 @@ const AuthPage = () => {
                 <span>Procesando...</span>
               </div>
             ) : (
-              isLogin ? 'Iniciar Sesión' : 'Crear Cuenta'
+              'Iniciar Sesión'
             )}
           </button>
 
@@ -282,21 +191,13 @@ const AuthPage = () => {
             </button>
           </div>
 
-          {/* Toggle Login/Register */}
+          {/* Contact Info */}
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              {isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
-              <button
-                type="button"
-                onClick={() => {
-                  setIsLogin(!isLogin)
-                  setMessage({ type: '', text: '' })
-                  setFormData({ email: '', password: '', displayName: '', username: '', role: ROLES.POLLITO })
-                }}
-                className="ml-1 text-pink-600 hover:text-pink-500 font-medium"
-              >
-                {isLogin ? 'Crear cuenta' : 'Iniciar sesión'}
-              </button>
+              ¿Necesitas una cuenta? Contacta al Super Administrador
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Solo se pueden crear cuentas por invitación directa
             </p>
           </div>
         </form>

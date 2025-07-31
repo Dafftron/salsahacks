@@ -1,213 +1,307 @@
-import { useState } from 'react'
-import { Users, Video, BarChart3, Settings, Shield, Activity, Crown } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import RoleManager from '../components/RoleManager'
+import { User, Mail, Shield, Plus, Trash2, Edit, Crown, Users, Key } from 'lucide-react'
+import { ROLES, ROLE_LABELS, ROLE_COLORS } from '../constants/roles'
 
 const AdminPage = () => {
-  const [activeTab, setActiveTab] = useState('dashboard')
-  const { userProfile, hasPermission } = useAuth()
+  const { userProfile, isSuperAdmin, hasPermission, createUserByInvitation } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState({ type: '', text: '' })
+  const [users, setUsers] = useState([])
+  
+  const [inviteForm, setInviteForm] = useState({
+    email: '',
+    displayName: '',
+    username: '',
+    role: ROLES.POLLITO,
+    password: ''
+  })
 
-  const stats = [
-    { title: 'Usuarios Totales', value: '1,234', icon: Users, color: 'text-blue-600' },
-    { title: 'Videos Subidos', value: '567', icon: Video, color: 'text-green-600' },
-    { title: 'Eventos Activos', value: '23', icon: Activity, color: 'text-purple-600' },
-    { title: 'Visitas Hoy', value: '2,891', icon: BarChart3, color: 'text-orange-600' }
-  ]
+  // Verificar acceso
+  if (!isSuperAdmin && !hasPermission('MANAGE_USERS')) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">Acceso Denegado</h1>
+          <p className="text-gray-600">No tienes permisos para acceder a esta página</p>
+        </div>
+      </div>
+    )
+  }
 
-  const recentUsers = [
-    { id: 1, name: 'Ana García', email: 'ana@email.com', role: 'Usuario', status: 'Activo', date: '2025-01-27' },
-    { id: 2, name: 'Carlos López', email: 'carlos@email.com', role: 'Admin', status: 'Activo', date: '2025-01-26' },
-    { id: 3, name: 'María Rodríguez', email: 'maria@email.com', role: 'Usuario', status: 'Inactivo', date: '2025-01-25' }
-  ]
+  const handleInputChange = (e) => {
+    setInviteForm({
+      ...inviteForm,
+      [e.target.name]: e.target.value
+    })
+  }
 
-  const recentVideos = [
-    { id: 1, title: 'Giro Básico de Salsa', author: 'Ana García', views: 1250, status: 'Aprobado', date: '2025-01-27' },
-    { id: 2, title: 'Secuencia Avanzada', author: 'Carlos López', views: 890, status: 'Pendiente', date: '2025-01-26' },
-    { id: 3, title: 'Técnica de Leading', author: 'María Rodríguez', views: 567, status: 'Aprobado', date: '2025-01-25' }
-  ]
+  const handleInviteUser = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setMessage({ type: '', text: '' })
+
+    try {
+      const result = await createUserByInvitation(
+        inviteForm.email,
+        inviteForm.password,
+        inviteForm.displayName,
+        inviteForm.role,
+        inviteForm.username
+      )
+
+      if (result.success) {
+        // Agregar usuario a la lista local
+        const newUser = {
+          id: Date.now(),
+          ...inviteForm,
+          createdAt: new Date(),
+          status: 'active'
+        }
+        
+        setUsers(prev => [...prev, newUser])
+        setInviteForm({
+          email: '',
+          displayName: '',
+          username: '',
+          role: ROLES.POLLITO,
+          password: ''
+        })
+        
+        setMessage({ 
+          type: 'success', 
+          text: `Usuario ${inviteForm.displayName} creado exitosamente con rol de ${ROLE_LABELS[inviteForm.role]}` 
+        })
+      } else {
+        setMessage({ type: 'error', text: result.error })
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: error.message })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDeleteUser = (userId) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
+      setUsers(prev => prev.filter(user => user.id !== userId))
+      setMessage({ type: 'success', text: 'Usuario eliminado exitosamente' })
+    }
+  }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      {/* Header */}
+    <div className="max-w-6xl mx-auto p-6">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-salsa-primary mb-2">Panel de Administración</h1>
-        <p className="text-gray-600">Gestiona usuarios, contenido y configuración del sistema</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">Panel de Administración</h1>
+        <p className="text-gray-600">Gestiona usuarios y permisos del sistema</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
-        <button
-          onClick={() => setActiveTab('dashboard')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-            activeTab === 'dashboard'
-              ? 'bg-white text-salsa-primary shadow-sm'
-              : 'text-gray-600 hover:text-salsa-primary'
-          }`}
-        >
-          <BarChart3 className="h-4 w-4" />
-          <span>Dashboard</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('users')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-            activeTab === 'users'
-              ? 'bg-white text-salsa-primary shadow-sm'
-              : 'text-gray-600 hover:text-salsa-primary'
-          }`}
-        >
-          <Users className="h-4 w-4" />
-          <span>Usuarios</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('roles')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-            activeTab === 'roles'
-              ? 'bg-white text-salsa-primary shadow-sm'
-              : 'text-gray-600 hover:text-salsa-primary'
-          }`}
-        >
-          <Crown className="h-4 w-4" />
-          <span>Roles</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('content')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-            activeTab === 'content'
-              ? 'bg-white text-salsa-primary shadow-sm'
-              : 'text-gray-600 hover:text-salsa-primary'
-          }`}
-        >
-          <Video className="h-4 w-4" />
-          <span>Contenido</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('settings')}
-          className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-            activeTab === 'settings'
-              ? 'bg-white text-salsa-primary shadow-sm'
-              : 'text-gray-600 hover:text-salsa-primary'
-          }`}
-        >
-          <Settings className="h-4 w-4" />
-          <span>Configuración</span>
-        </button>
-      </div>
+      {/* Message */}
+      {message.text && (
+        <div className={`p-4 rounded-lg flex items-center space-x-2 mb-6 ${
+          message.type === 'success' 
+            ? 'bg-green-50 border border-green-200 text-green-700' 
+            : 'bg-red-50 border border-red-200 text-red-700'
+        }`}>
+          <span className="text-sm font-medium">{message.text}</span>
+        </div>
+      )}
 
-      {/* Content */}
-      {activeTab === 'dashboard' && (
-        <div className="space-y-6">
-          {/* Stats Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((stat) => (
-              <div key={stat.title} className="card p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600">{stat.title}</p>
-                    <p className="text-2xl font-bold text-gray-800">{stat.value}</p>
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Invite User Form */}
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+          <div className="flex items-center space-x-2 mb-6">
+            <Plus className="h-6 w-6 text-blue-600" />
+            <h2 className="text-xl font-semibold text-gray-800">Crear Usuario por Invitación</h2>
+          </div>
+
+          <form onSubmit={handleInviteUser} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Correo electrónico
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={inviteForm.email}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="usuario@email.com"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
+                Nombre completo
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  id="displayName"
+                  name="displayName"
+                  type="text"
+                  required
+                  value={inviteForm.displayName}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Nombre completo"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                Nombre de usuario
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  required
+                  value={inviteForm.username}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="nombreusuario"
+                  pattern="[a-zA-Z0-9_]+"
+                  title="Solo letras, números y guiones bajos"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                Rol
+              </label>
+              <div className="relative">
+                <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <select
+                  id="role"
+                  name="role"
+                  value={inviteForm.role}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white"
+                >
+                  <option value={ROLES.POLLITO}>Pollito (Nivel 1)</option>
+                  <option value={ROLES.USER}>Soldado (Nivel 2)</option>
+                  <option value={ROLES.MAESE}>Maese (Nivel 3)</option>
+                  {isSuperAdmin && <option value={ROLES.SUPER_ADMIN}>Super Administrador (Nivel 4)</option>}
+                </select>
+              </div>
+              <div className="mt-2">
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${ROLE_COLORS[inviteForm.role] || 'bg-gray-500 text-white'}`}>
+                  <Shield className="h-3 w-3 mr-1" />
+                  {ROLE_LABELS[inviteForm.role] || inviteForm.role}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Contraseña temporal
+              </label>
+              <div className="relative">
+                <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  id="password"
+                  name="password"
+                  type="text"
+                  required
+                  value={inviteForm.password}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Contraseña temporal"
+                  minLength={6}
+                />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">El usuario deberá cambiar esta contraseña en su primer inicio de sesión</p>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              {loading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Procesando...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Plus className="h-4 w-4" />
+                  <span>Crear Usuario</span>
+                </div>
+              )}
+            </button>
+          </form>
+        </div>
+
+        {/* Users List */}
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+          <div className="flex items-center space-x-2 mb-6">
+            <Users className="h-6 w-6 text-green-600" />
+            <h2 className="text-xl font-semibold text-gray-800">Usuarios del Sistema</h2>
+          </div>
+
+          <div className="space-y-4">
+            {users.length === 0 ? (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No hay usuarios creados aún</p>
+                <p className="text-sm text-gray-400">Los usuarios que crees aparecerán aquí</p>
+              </div>
+            ) : (
+              users.map((user) => (
+                <div key={user.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full flex items-center justify-center">
+                      <User className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{user.displayName}</p>
+                      <p className="text-sm text-gray-500">{user.email}</p>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${ROLE_COLORS[user.role] || 'bg-gray-500 text-white'}`}>
+                        <Shield className="h-3 w-3 mr-1" />
+                        {ROLE_LABELS[user.role] || user.role}
+                      </span>
+                    </div>
                   </div>
-                  <div className={`${stat.color} p-3 rounded-lg bg-gray-100`}>
-                    <stat.icon className="h-6 w-6" />
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleDeleteUser(user.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Eliminar usuario"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Recent Activity */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Usuarios Recientes</h3>
-              <div className="space-y-3">
-                {recentUsers.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-800">{user.name}</p>
-                      <p className="text-sm text-gray-600">{user.email}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        user.status === 'Activo' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                      }`}>
-                        {user.status}
-                      </span>
-                      <p className="text-xs text-gray-500 mt-1">{user.date}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="card p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Videos Recientes</h3>
-              <div className="space-y-3">
-                {recentVideos.map((video) => (
-                  <div key={video.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-800">{video.title}</p>
-                      <p className="text-sm text-gray-600">por {video.author}</p>
-                    </div>
-                    <div className="text-right">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        video.status === 'Aprobado' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'
-                      }`}>
-                        {video.status}
-                      </span>
-                      <p className="text-xs text-gray-500 mt-1">{video.views} vistas</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'users' && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold text-gray-800">Gestión de Usuarios</h2>
-            {hasPermission('MANAGE_USERS') && (
-              <button className="btn-primary">Nuevo Usuario</button>
+              ))
             )}
           </div>
-          <div className="card p-6">
-            <p className="text-gray-600">Aquí irá la tabla de usuarios con opciones de edición, eliminación y gestión de roles.</p>
-          </div>
         </div>
-      )}
+      </div>
 
-      {activeTab === 'roles' && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold text-gray-800">Gestión de Roles y Permisos</h2>
-          </div>
-          <RoleManager />
-        </div>
-      )}
-
-      {activeTab === 'content' && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold text-gray-800">Gestión de Contenido</h2>
-            <button className="btn-primary">Revisar Contenido</button>
-          </div>
-          <div className="card p-6">
-            <p className="text-gray-600">Aquí irá la gestión de videos, aprobación de contenido y moderación.</p>
+      {/* Admin Info */}
+      <div className="mt-8 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
+        <div className="flex items-center space-x-3">
+          <Crown className="h-8 w-8 text-purple-600" />
+          <div>
+            <h3 className="text-lg font-semibold text-purple-800">Información de Super Administrador</h3>
+            <p className="text-sm text-purple-600">
+              Como Super Administrador, puedes crear usuarios con cualquier rol y gestionar todos los aspectos del sistema.
+              Solo tú puedes crear nuevas cuentas en el sistema.
+            </p>
           </div>
         </div>
-      )}
-
-      {activeTab === 'settings' && (
-        <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold text-gray-800">Configuración del Sistema</h2>
-            <button className="btn-primary">Guardar Cambios</button>
-          </div>
-          <div className="card p-6">
-            <p className="text-gray-600">Aquí irán las configuraciones del sistema, categorías, permisos y ajustes generales.</p>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   )
 }

@@ -101,24 +101,29 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const register = async (email, password, displayName, role = null, username = '') => {
+  // Función para crear usuario por invitación (solo Super Admin)
+  const createUserByInvitation = async (email, password, displayName, role, username) => {
     try {
+      // Verificar que el usuario actual es Super Admin
+      if (!userProfile || userProfile.role !== ROLES.SUPER_ADMIN) {
+        throw new Error('Solo el Super Administrador puede crear usuarios')
+      }
+
       const { user: firebaseUser, error } = await registerWithEmail(email, password, displayName)
       if (error) throw new Error(error)
-      
-      // Determinar el rol basado en el email si no se especifica
-      const userRole = role || getDefaultRole(email)
       
       // Crear perfil de usuario
       if (firebaseUser) {
         await createUserProfile(firebaseUser.uid, {
           displayName,
           email,
-          role: userRole,
+          role: role,
           username: username || displayName?.toLowerCase().replace(/\s+/g, ''),
           createdAt: new Date(),
-          permissions: getRolePermissions(userRole),
-          photoURL: firebaseUser.photoURL || null
+          permissions: getRolePermissions(role),
+          photoURL: firebaseUser.photoURL || null,
+          invitedBy: userProfile.uid,
+          invitationDate: new Date()
         })
       }
       
@@ -187,7 +192,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     loginWithGoogle: loginWithGoogleAuth,
-    register,
+    createUserByInvitation,
     logout,
     resetPassword: resetUserPassword,
     updateUserProfile,
