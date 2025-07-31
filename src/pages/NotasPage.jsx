@@ -26,10 +26,10 @@ const NotasPage = () => {
   const [expandedCommits, setExpandedCommits] = useState(new Set())
 
   const categories = [
-            { name: 'TODAS', icon: FileText, count: 41 },
-        { name: 'PÁGINAS', icon: Home, count: 10 },
-        { name: 'SISTEMAS', icon: Settings, count: 21 },
-        { name: 'CONTENIDO', icon: Video, count: 10 }
+            { name: 'TODAS', icon: FileText, count: 46 },
+        { name: 'PÁGINAS', icon: Home, count: 9 },
+        { name: 'SISTEMAS', icon: Settings, count: 22 },
+        { name: 'CONTENIDO', icon: Video, count: 15 }
   ]
 
         const commits = [
@@ -467,10 +467,10 @@ const NotasPage = () => {
     {
       id: 1,
       title: 'Sistema de gestión de videos',
-      description: 'Upload, reproducción y gestión de metadatos',
+      description: 'Upload, reproducción y gestión de metadatos con etiquetas plegables',
       category: 'CONTENIDO',
       priority: 'Alta',
-      progress: 15,
+      progress: 5,
       status: 'En Progreso'
     },
     {
@@ -517,15 +517,6 @@ const NotasPage = () => {
     },
     {
       id: 4,
-      title: 'Página de video individual',
-      description: 'Página detallada para ver y comentar videos',
-      category: 'PÁGINAS',
-      priority: 'Alta',
-      estimatedTime: '3 días',
-      status: 'Futuro'
-    },
-    {
-      id: 5,
       title: 'Página de búsqueda avanzada',
       description: 'Búsqueda con filtros por categorías y estilos',
       category: 'PÁGINAS',
@@ -534,9 +525,63 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     
-    // CONTENIDO
+    // CONTENIDO - SISTEMA DE VIDEOS
+    {
+      id: 5,
+      title: 'Componente de Upload de Videos',
+      description: 'Modal de subida con drag & drop, múltiples archivos, barra de progreso',
+      category: 'CONTENIDO',
+      priority: 'Alta',
+      estimatedTime: '2 días',
+      status: 'Futuro'
+    },
     {
       id: 6,
+      title: 'Sistema de Etiquetas Plegables',
+      description: 'Tags normales/iniciales/finales organizados por categorías con colores',
+      category: 'CONTENIDO',
+      priority: 'Alta',
+      estimatedTime: '2 días',
+      status: 'Futuro'
+    },
+    {
+      id: 7,
+      title: 'Gestión de Metadatos de Videos',
+      description: 'Título automático, thumbnail automático, edición de metadatos',
+      category: 'CONTENIDO',
+      priority: 'Alta',
+      estimatedTime: '2 días',
+      status: 'Futuro'
+    },
+    {
+      id: 8,
+      title: 'Detección de Duplicados',
+      description: 'Prevenir subida de videos duplicados, mensajes de éxito/error',
+      category: 'CONTENIDO',
+      priority: 'Alta',
+      estimatedTime: '1 día',
+      status: 'Futuro'
+    },
+    {
+      id: 9,
+      title: 'Reproductor de Videos',
+      description: 'Reproductor integrado con controles personalizados',
+      category: 'CONTENIDO',
+      priority: 'Alta',
+      estimatedTime: '2 días',
+      status: 'Futuro'
+    },
+    {
+      id: 10,
+      title: 'Cards de Videos con Edición',
+      description: 'Grid de videos con botón de edición, preview, thumbnail',
+      category: 'CONTENIDO',
+      priority: 'Alta',
+      estimatedTime: '2 días',
+      status: 'Futuro'
+    },
+    {
+      id: 11,
       title: 'Constructor de secuencias',
       description: 'Herramienta para crear secuencias de baile',
       category: 'CONTENIDO',
@@ -545,7 +590,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 7,
+      id: 12,
       title: 'Sistema de comentarios',
       description: 'Comentarios en videos y sistema de ratings',
       category: 'CONTENIDO',
@@ -554,7 +599,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 8,
+      id: 13,
       title: 'Sistema de favoritos',
       description: 'Guardar videos favoritos y crear playlists',
       category: 'CONTENIDO',
@@ -563,7 +608,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 9,
+      id: 14,
       title: 'Notificaciones',
       description: 'Sistema de notificaciones para nuevos videos y eventos',
       category: 'CONTENIDO',
@@ -574,7 +619,7 @@ const NotasPage = () => {
     
     // FUNCIONALIDADES AVANZADAS
     {
-      id: 10,
+      id: 15,
       title: 'Modo offline',
       description: 'Descargar videos para ver sin conexión',
       category: 'SISTEMAS',
@@ -709,6 +754,56 @@ const NotasPage = () => {
     }
     
     return items
+  }
+
+  // ESPECIFICACIONES TÉCNICAS DEL SISTEMA DE VIDEOS
+  const videoSystemSpecs = {
+    upload: {
+      methods: ['Drag & Drop', 'Selección múltiple', 'URL de YouTube'],
+      features: ['Barra de progreso', 'Detección de duplicados', 'Mensajes de éxito/error'],
+      storage: 'Firebase Storage + Firestore'
+    },
+    metadata: {
+      automatic: ['Título (nombre archivo)', 'Thumbnail (primer frame)'],
+      editable: ['Título personalizado', 'Thumbnail personalizado', 'Descripción'],
+      structure: {
+        title: 'string',
+        originalTitle: 'string',
+        description: 'string',
+        fileUrl: 'string',
+        thumbnailUrl: 'string',
+        category: 'FIGURAS|ESCUELA|EVENTOS',
+        style: 'SALSA|BACHATA|etc',
+        tags: {
+          normales: ['array'],
+          iniciales: ['array'],
+          finales: ['array']
+        },
+        uploadedBy: 'user_uid',
+        uploadedAt: 'timestamp',
+        lastModified: 'timestamp'
+      }
+    },
+    tags: {
+      structure: 'Plegable por categorías',
+      types: ['Normales', 'Iniciales', 'Finales'],
+      colors: 'Sincronizados con CategoriesPage',
+      management: 'Hardcodeados + nuevos desde consola',
+      organization: 'Por categorías con colores específicos'
+    },
+    editing: {
+      location: 'Misma modal/ventana',
+      features: ['Cambiar título', 'Cambiar thumbnail', 'Editar etiquetas'],
+      access: 'Botón de edición en cada card'
+    },
+    permissions: {
+      upload: {
+        'SUPER_ADMIN': 'Todos los videos',
+        'MAESE': 'Su nivel y menores',
+        'SOLDADO': 'Videos básicos',
+        'POLLITO': 'Solo ver'
+      }
+    }
   }
 
   return (
