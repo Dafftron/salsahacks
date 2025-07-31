@@ -42,17 +42,23 @@ export const AuthProvider = ({ children }) => {
 
   // Función para actualizar automáticamente el rol de David si es necesario
   const updateDavidRole = async (profile) => {
+    console.log('🔍 Verificando rol de David:', profile?.email, profile?.role)
+    
     if (profile?.email === 'david_exile_92@hotmail.com' && profile?.role !== ROLES.SUPER_ADMIN) {
+      console.log('🔄 Actualizando rol de David a Super Admin...')
       try {
         await firebaseUpdateUserProfile(profile.uid, {
           role: ROLES.SUPER_ADMIN,
           permissions: getRolePermissions(ROLES.SUPER_ADMIN),
           updatedAt: new Date()
         })
+        console.log('✅ Rol de David actualizado a Super Admin exitosamente')
         return { ...profile, role: ROLES.SUPER_ADMIN, permissions: getRolePermissions(ROLES.SUPER_ADMIN) }
       } catch (error) {
-        console.error('Error al actualizar rol de David:', error)
+        console.error('❌ Error al actualizar rol de David:', error)
       }
+    } else if (profile?.email === 'david_exile_92@hotmail.com') {
+      console.log('✅ David ya tiene rol de Super Admin')
     }
     return profile
   }
@@ -60,21 +66,29 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Observar cambios en el estado de autenticación
     const unsubscribe = onAuthStateChange(async (firebaseUser) => {
+      console.log('🔄 Cambio en estado de autenticación:', firebaseUser?.email)
+      
       if (firebaseUser) {
         setUser(firebaseUser)
+        console.log('👤 Usuario autenticado:', firebaseUser.email, firebaseUser.uid)
         
         // Obtener perfil del usuario
         try {
           const { user: profile } = await getUserProfile(firebaseUser.uid)
           if (profile) {
+            console.log('📋 Perfil encontrado:', profile.email, profile.role)
             // Actualizar rol de David si es necesario
             const updatedProfile = await updateDavidRole(profile)
             setUserProfile(updatedProfile)
+            console.log('✅ Perfil actualizado y establecido:', updatedProfile.role)
+          } else {
+            console.log('❌ No se encontró perfil para:', firebaseUser.email)
           }
         } catch (error) {
-          console.log('Usuario nuevo, perfil no encontrado')
+          console.log('❌ Error al obtener perfil:', error)
         }
       } else {
+        console.log('🚪 Usuario no autenticado')
         setUser(null)
         setUserProfile(null)
       }
