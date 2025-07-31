@@ -40,6 +40,36 @@ export const AuthProvider = ({ children }) => {
     return ROLES.POLLITO
   }
 
+  // Función para crear perfil de David si no existe
+  const createDavidProfile = async (firebaseUser) => {
+    if (firebaseUser.email === 'david_exile_92@hotmail.com') {
+      console.log('🆕 Creando perfil de David en Firestore...')
+      try {
+        const profileData = {
+          displayName: 'David',
+          email: firebaseUser.email,
+          role: ROLES.SUPER_ADMIN,
+          username: 'david',
+          createdAt: new Date(),
+          permissions: getRolePermissions(ROLES.SUPER_ADMIN),
+          photoURL: firebaseUser.photoURL || null,
+          isSuperAdmin: true
+        }
+        
+        const result = await createUserProfile(firebaseUser.uid, profileData)
+        if (result.success) {
+          console.log('✅ Perfil de David creado exitosamente')
+          return profileData
+        } else {
+          console.error('❌ Error al crear perfil de David:', result.error)
+        }
+      } catch (error) {
+        console.error('❌ Error al crear perfil de David:', error)
+      }
+    }
+    return null
+  }
+
   // Función para actualizar automáticamente el rol de David si es necesario
   const updateDavidRole = async (profile) => {
     console.log('🔍 Verificando rol de David:', profile?.email, profile?.role)
@@ -83,9 +113,29 @@ export const AuthProvider = ({ children }) => {
             console.log('✅ Perfil actualizado y establecido:', updatedProfile.role)
           } else {
             console.log('❌ No se encontró perfil para:', firebaseUser.email)
+            
+            // Si es David y no tiene perfil, crearlo automáticamente
+            if (firebaseUser.email === 'david_exile_92@hotmail.com') {
+              console.log('🆕 David no tiene perfil, creándolo automáticamente...')
+              const newProfile = await createDavidProfile(firebaseUser)
+              if (newProfile) {
+                setUserProfile(newProfile)
+                console.log('✅ Perfil de David creado y establecido automáticamente')
+              }
+            }
           }
         } catch (error) {
           console.log('❌ Error al obtener perfil:', error)
+          
+          // Si es David y hay error, intentar crear perfil
+          if (firebaseUser.email === 'david_exile_92@hotmail.com') {
+            console.log('🆕 Error al obtener perfil de David, creándolo...')
+            const newProfile = await createDavidProfile(firebaseUser)
+            if (newProfile) {
+              setUserProfile(newProfile)
+              console.log('✅ Perfil de David creado después de error')
+            }
+          }
         }
       } else {
         console.log('🚪 Usuario no autenticado')
@@ -288,6 +338,55 @@ export const AuthProvider = ({ children }) => {
     return userProfile?.photoURL || user?.photoURL || null
   }
 
+  // Función para forzar actualización del rol de David (para el botón del perfil)
+  const forceUpdateDavidRole = async () => {
+    if (!user?.uid) {
+      console.error('❌ No hay usuario autenticado')
+      return { success: false, error: 'No hay usuario autenticado' }
+    }
+    
+    if (user.email !== 'david_exile_92@hotmail.com') {
+      console.error('❌ Solo David puede usar esta función')
+      return { success: false, error: 'Solo David puede usar esta función' }
+    }
+    
+    console.log('🔧 Forzando actualización del rol de David...')
+    
+    try {
+      // Primero verificar si existe el perfil
+      const { user: existingProfile } = await getUserProfile(user.uid)
+      
+      if (existingProfile) {
+        // Actualizar perfil existente
+        await firebaseUpdateUserProfile(user.uid, {
+          role: ROLES.SUPER_ADMIN,
+          permissions: getRolePermissions(ROLES.SUPER_ADMIN),
+          updatedAt: new Date(),
+          isSuperAdmin: true
+        })
+        console.log('✅ Perfil de David actualizado forzadamente')
+      } else {
+        // Crear perfil nuevo
+        const newProfile = await createDavidProfile(user)
+        if (newProfile) {
+          console.log('✅ Perfil de David creado forzadamente')
+        }
+      }
+      
+      // Recargar el perfil
+      const { user: updatedProfile } = await getUserProfile(user.uid)
+      if (updatedProfile) {
+        setUserProfile(updatedProfile)
+        console.log('✅ Perfil recargado:', updatedProfile.role)
+      }
+      
+      return { success: true, error: null }
+    } catch (error) {
+      console.error('❌ Error al forzar actualización:', error)
+      return { success: false, error: error.message }
+    }
+  }
+
   const value = {
     user,
     userProfile,
@@ -309,7 +408,8 @@ export const AuthProvider = ({ children }) => {
     isPollito: userProfile?.role === ROLES.POLLITO,
     hasPermission: (permission) => hasPermission(userProfile?.role, permission),
     hasPageAccess: (pagePath) => hasPageAccess(userProfile?.role, pagePath),
-    getRolePermissions: () => getRolePermissions(userProfile?.role)
+    getRolePermissions: () => getRolePermissions(userProfile?.role),
+    forceUpdateDavidRole: forceUpdateDavidRole
   }
 
   return (
