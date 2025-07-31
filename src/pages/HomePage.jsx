@@ -2,8 +2,12 @@ import { Link } from 'react-router-dom'
 import { Music, Video, BookOpen, Calendar, Tag, FileText } from 'lucide-react'
 import FirebaseTest from '../components/FirebaseTest'
 import FirebaseSimpleTest from '../components/FirebaseSimpleTest'
+import UserProfile from '../components/UserProfile'
+import { useAuth } from '../contexts/AuthContext'
 
 const HomePage = () => {
+  const { isAuthenticated } = useAuth()
+  
   const features = [
     {
       icon: <Video className="h-8 w-8" />,
@@ -116,6 +120,18 @@ const HomePage = () => {
       <div className="mb-16">
         <FirebaseTest />
       </div>
+      
+      {/* User Profile Section */}
+      {isAuthenticated && (
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+            Mi Perfil
+          </h2>
+          <div className="max-w-md mx-auto">
+            <UserProfile />
+          </div>
+        </div>
+      )}
       
       {/* Firebase Simple Test Section */}
       <div className="mb-16">

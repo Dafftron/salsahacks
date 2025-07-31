@@ -80,15 +80,22 @@ const Navigation = () => {
             </button>
 
             {/* User Profile */}
-            <button className="p-2 text-gray-600 hover:text-salsa-primary transition-colors">
-              <User className="h-5 w-5" />
-            </button>
-
-            {/* User Name */}
-            {isAuthenticated && (
-              <span className="text-sm font-medium text-gray-700">
-                {user?.name || 'Usuario'}
-              </span>
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700">
+                  {user?.displayName || user?.email || 'Usuario'}
+                </span>
+                <button className="p-2 text-gray-600 hover:text-salsa-primary transition-colors">
+                  <User className="h-5 w-5" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                to="/auth"
+                className="px-4 py-2 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded-lg hover:from-pink-600 hover:to-orange-600 transition-all duration-200 font-medium"
+              >
+                Iniciar Sesión
+              </Link>
             )}
           </div>
         </div>

@@ -9,6 +9,7 @@ import FigurasPage from './pages/FigurasPage'
 import EscuelaPage from './pages/EscuelaPage'
 import EventosPage from './pages/EventosPage'
 import AdminPage from './pages/AdminPage'
+import AuthPage from './pages/AuthPage'
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <main className="container mx-auto px-4 py-8">
               <Routes>
                 <Route path="/" element={<HomePage />} />
+                <Route path="/auth" element={<AuthPage />} />
                 <Route path="/notas" element={<NotasPage />} />
                 <Route path="/categorias" element={<CategoriesPage />} />
                 <Route path="/figuras" element={<FigurasPage />} />
