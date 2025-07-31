@@ -26,13 +26,25 @@ const NotasPage = () => {
   const [expandedCommits, setExpandedCommits] = useState(new Set())
 
   const categories = [
-            { name: 'TODAS', icon: FileText, count: 31 },
+            { name: 'TODAS', icon: FileText, count: 32 },
         { name: 'PÁGINAS', icon: Home, count: 12 },
-        { name: 'SISTEMAS', icon: Settings, count: 14 },
+        { name: 'SISTEMAS', icon: Settings, count: 15 },
         { name: 'CONTENIDO', icon: Video, count: 5 }
   ]
 
         const commits = [
+        {
+          id: 17,
+          hash: '879754e',
+          date: '2025-01-27',
+          time: '15:30:45',
+          title: 'Commit #017 - Páginas de perfil y configuración implementadas',
+          description: 'Páginas de perfil y configuración completas con funcionalidad',
+          files: ['src/pages/ProfilePage.jsx', 'src/pages/SettingsPage.jsx', 'src/components/UserProfile.jsx', 'src/components/layout/Navigation.jsx', 'src/App.jsx', 'src/pages/HomePage.jsx'],
+          notes: 'Páginas de perfil y configuración implementadas, botones funcionales, navegación mejorada, botones de acción rápida removidos',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
         {
           id: 16,
           hash: 'e933a1a',
