@@ -12,7 +12,7 @@ import {
   Play
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
-import { uploadVideo, getFileURL, generateBestVideoThumbnail } from '../../services/firebase/storage'
+import { uploadVideo, getFileURL, generateVideoThumbnail, uploadFile } from '../../services/firebase/storage'
 import { createVideoDocument, checkVideoDuplicate } from '../../services/firebase/firestore'
 import { hasPermission } from '../../constants/roles'
 import { ref, getDownloadURL } from 'firebase/storage'
@@ -204,12 +204,24 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
     }
   }
 
-  // Generate thumbnail from video using our improved function
+  // Generate thumbnail from video and upload to Firebase Storage
   const generateThumbnail = async (file) => {
     try {
-      const result = await generateBestVideoThumbnail(file)
-      if (result.success) {
-        return result.thumbnailURL
+      const result = await generateVideoThumbnail(file)
+      if (result.success && result.blob) {
+        // Subir el thumbnail a Firebase Storage
+        const thumbnailPath = `thumbnails/${user.uid}/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '')}.jpg`
+        const uploadResult = await uploadFile(result.blob, thumbnailPath)
+        
+        if (uploadResult.success) {
+          // Limpiar el blob URL temporal
+          URL.revokeObjectURL(result.thumbnailURL)
+          return uploadResult.url
+        } else {
+          console.error('Error uploading thumbnail:', uploadResult.error)
+          // Fallback al blob URL temporal
+          return result.thumbnailURL
+        }
       } else {
         // Fallback to placeholder if thumbnail generation fails
         return 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=VIDEO'
