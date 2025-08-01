@@ -3,26 +3,12 @@ import { X, Upload, Tag, Trash2, CheckCircle, AlertCircle } from 'lucide-react'
 import { uploadVideo, uploadFile, generateVideoThumbnail } from '../../services/firebase/storage'
 import { createVideoDocument, checkVideoDuplicate } from '../../services/firebase/firestore'
 import { useAuth } from '../../contexts/AuthContext'
+import { useCategories } from '../../hooks/useCategories'
 import Toast from '../common/Toast'
 
-// Tags predefinidos por categoría
-const AVAILABLE_TAGS = {
-  normales: [
-    'Básico', 'Principiante', 'Fácil', 'Simple', 'Fundamental'
-  ],
-  avanzadas: [
-    'Avanzado', 'Difícil', 'Complejo', 'Experto', 'Profesional'
-  ],
-  estilos: [
-    'Salsa Casino', 'Salsa LA', 'Salsa NY', 'Bachata', 'Merengue', 'Chachachá'
-  ],
-  elementos: [
-    'Dile que no', 'Setenta', 'Exhibela', 'Sombrero', 'Vacilala', 'Sombrero doble'
-  ]
-}
-
-const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
+const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', style = 'salsa' }) => {
   const { user } = useAuth()
+  const { currentCategories, categoriesList, getColorClasses } = useCategories(page, style)
   const fileInputRef = useRef(null)
   const [selectedFiles, setSelectedFiles] = useState([])
   const [uploading, setUploading] = useState(false)
@@ -31,13 +17,8 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
   const [videoData, setVideoData] = useState({})
   const [toasts, setToasts] = useState([])
 
-  // Estados para tags
-  const [selectedTags, setSelectedTags] = useState({
-    normales: [],
-    avanzadas: [],
-    estilos: [],
-    elementos: []
-  })
+  // Estados para tags organizados por categorías
+  const [selectedTags, setSelectedTags] = useState({})
 
   useEffect(() => {
     if (!isOpen) {
@@ -45,18 +26,30 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
     }
   }, [isOpen])
 
+  useEffect(() => {
+    // Inicializar selectedTags con las categorías disponibles
+    if (currentCategories) {
+      const initialTags = {}
+      Object.keys(currentCategories).forEach(categoryKey => {
+        initialTags[categoryKey] = []
+      })
+      setSelectedTags(initialTags)
+    }
+  }, [currentCategories])
+
   const resetForm = () => {
     setSelectedFiles([])
     setUploading(false)
     setUploadProgress({})
     setCurrentStep(1)
     setVideoData({})
-    setSelectedTags({
-      normales: [],
-      avanzadas: [],
-      estilos: [],
-      elementos: []
-    })
+    if (currentCategories) {
+      const initialTags = {}
+      Object.keys(currentCategories).forEach(categoryKey => {
+        initialTags[categoryKey] = []
+      })
+      setSelectedTags(initialTags)
+    }
   }
 
   const addToast = (message, type = 'success') => {
@@ -98,12 +91,22 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
   }
 
   const handleTagToggle = (category, tag) => {
-    setSelectedTags(prev => ({
-      ...prev,
-      [category]: prev[category].includes(tag)
-        ? prev[category].filter(t => t !== tag)
-        : [...prev[category], tag]
-    }))
+    setSelectedTags(prev => {
+      const currentTags = prev[category] || []
+      const isSelected = currentTags.includes(tag)
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          [category]: currentTags.filter(t => t !== tag)
+        }
+      } else {
+        return {
+          ...prev,
+          [category]: [...currentTags, tag]
+        }
+      }
+    })
   }
 
   const generateThumbnail = async (file) => {
@@ -265,26 +268,26 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded }) => {
         <p className="text-gray-600">Selecciona las etiquetas que describan tus videos</p>
       </div>
 
-      {Object.entries(AVAILABLE_TAGS).map(([category, tags]) => (
-        <div key={category} className="space-y-3">
-          <h4 className="font-medium text-gray-900 capitalize">{category}</h4>
-          <div className="flex flex-wrap gap-2">
-            {tags.map(tag => (
-              <button
-                key={tag}
-                onClick={() => handleTagToggle(category, tag)}
-                className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
-                  selectedTags[category].includes(tag)
-                    ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-        </div>
-      ))}
+             {categoriesList.map((category) => (
+         <div key={category.key} className="space-y-3">
+           <h4 className="font-medium text-gray-900 capitalize">{category.name}</h4>
+           <div className="flex flex-wrap gap-2">
+             {category.tags.map(tag => (
+               <button
+                 key={tag}
+                 onClick={() => handleTagToggle(category.key, tag)}
+                 className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                   selectedTags[category.key]?.includes(tag)
+                      ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                 }`}
+               >
+                 {tag}
+               </button>
+             ))}
+           </div>
+         </div>
+       ))}
 
       <div className="bg-blue-50 p-4 rounded-lg">
         <div className="flex items-start space-x-2">

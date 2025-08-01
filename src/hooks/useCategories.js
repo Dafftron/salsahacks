@@ -1,240 +1,331 @@
 // 🎯 HOOK PARA GESTIÓN DE CATEGORÍAS - SALSAHACKS V2.0
 
 import { useState, useMemo } from 'react'
-import { 
-  DANCE_STYLES, 
-  DIFFICULTY_LEVELS, 
-  MAIN_CATEGORIES,
-  TECHNICAL_TAGS,
-  REGIONAL_STYLES,
-  INSTRUCTORS,
-  LOCATIONS,
-  getCategoryColor,
-  isHardcodedCategory
-} from '../constants/categories'
 
-export const useCategories = () => {
-  // 🎵 Estados para filtros
-  const [selectedStyle, setSelectedStyle] = useState('SALSA')
-  const [selectedLevel, setSelectedLevel] = useState(null)
-  const [selectedMainCategory, setSelectedMainCategory] = useState(null)
-  const [selectedTags, setSelectedTags] = useState([])
-  const [selectedRegionalStyle, setSelectedRegionalStyle] = useState(null)
-  const [selectedInstructor, setSelectedInstructor] = useState(null)
-  const [selectedLocation, setSelectedLocation] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
+// Estructura jerárquica de categorías (copiada de CategoriesPage.jsx)
+const categoryStructure = {
+  figuras: {
+    name: 'FIGURAS',
+    icon: 'Music',
+    styles: {
+      salsa: {
+        name: 'SALSA',
+        icon: 'Music',
+        color: 'pink',
+        categories: {
+          estilo: {
+            name: 'ESTILO',
+            color: 'pink',
+            tags: ['Salsa', 'Salsa en línea On1', 'Salsa cubana', 'Estilo LA', 'Estilo NY', 'Estilo show']
+          },
+          subestilo: {
+            name: 'SUBESTILO/TÉCNICA',
+            color: 'orange',
+            tags: ['Pasitos libres', 'Parejas', 'Footwork On1', 'Footwork On2', 'Shines', 'Fusionado con afro', 'Body movement']
+          },
+          tipo: {
+            name: 'TIPO DE FIGURA',
+            color: 'green',
+            tags: ['Cross Body Lead', 'Copa', 'Sombrero', 'Dile que no', 'Setenta', 'Vacilala', 'Enchufla']
+          },
+          manos: {
+            name: 'MANOS/TÉCNICA DE AGARRE',
+            color: 'blue',
+            tags: ['Una mano', 'Dos manos paralelas', 'Cruzadas', 'Entrelazadas', 'Cambio de manos', 'Manos abiertas', 'Sin contacto']
+          }
+        }
+      },
+      bachata: {
+        name: 'BACHATA',
+        icon: 'Heart',
+        color: 'red',
+        categories: {
+          estilo: {
+            name: 'ESTILO',
+            color: 'red',
+            tags: ['Bachata dominicana', 'Bachata moderna', 'Bachata sensual', 'Bachata urbana']
+          },
+          subestilo: {
+            name: 'SUBESTILO/TÉCNICA',
+            color: 'orange',
+            tags: ['Body rolls', 'Hip movement', 'Footwork básico', 'Turns']
+          },
+          tipo: {
+            name: 'TIPO DE FIGURA',
+            color: 'green',
+            tags: ['Dile que no', 'Setenta', 'Vacilala', 'Sombrero', 'Copa']
+          },
+          manos: {
+            name: 'MANOS/TÉCNICA DE AGARRE',
+            color: 'blue',
+            tags: ['Una mano', 'Dos manos', 'Cruzadas', 'Entrelazadas']
+          }
+        }
+      },
+      kizomba: {
+        name: 'KIZOMBA',
+        icon: 'Zap',
+        color: 'yellow',
+        categories: {
+          estilo: {
+            name: 'ESTILO',
+            color: 'yellow',
+            tags: ['Kizomba tradicional', 'Kizomba urbana', 'Tarraxinha', 'Semba']
+          },
+          subestilo: {
+            name: 'SUBESTILO/TÉCNICA',
+            color: 'orange',
+            tags: ['Body movement', 'Hip rolls', 'Footwork', 'Turns']
+          },
+          tipo: {
+            name: 'TIPO DE FIGURA',
+            color: 'green',
+            tags: ['Saída', 'Volta', 'Tarraxinha', 'Semba step']
+          },
+          manos: {
+            name: 'MANOS/TÉCNICA DE AGARRE',
+            color: 'blue',
+            tags: ['Una mano', 'Dos manos', 'Cruzadas', 'Sin contacto']
+          }
+        }
+      },
+      zouk: {
+        name: 'ZOUK',
+        icon: 'Star',
+        color: 'purple',
+        categories: {
+          estilo: {
+            name: 'ESTILO',
+            color: 'purple',
+            tags: ['Zouk brasileño', 'Zouk flow', 'Zouk neofusion', 'Zouk tradicional']
+          },
+          subestilo: {
+            name: 'SUBESTILO/TÉCNICA',
+            color: 'orange',
+            tags: ['Body rolls', 'Head movement', 'Footwork', 'Turns']
+          },
+          tipo: {
+            name: 'TIPO DE FIGURA',
+            color: 'green',
+            tags: ['Lateral', 'Tranca', 'Pião', 'Balanço']
+          },
+          manos: {
+            name: 'MANOS/TÉCNICA DE AGARRE',
+            color: 'blue',
+            tags: ['Una mano', 'Dos manos', 'Cruzadas', 'Entrelazadas']
+          }
+        }
+      },
+      merengue: {
+        name: 'MERENGUE',
+        icon: 'Sun',
+        color: 'orange',
+        categories: {
+          estilo: {
+            name: 'ESTILO',
+            color: 'orange',
+            tags: ['Merengue dominicano', 'Merengue tradicional', 'Merengue moderno']
+          },
+          subestilo: {
+            name: 'SUBESTILO/TÉCNICA',
+            color: 'orange',
+            tags: ['Hip movement', 'Footwork básico', 'Turns simples']
+          },
+          tipo: {
+            name: 'TIPO DE FIGURA',
+            color: 'green',
+            tags: ['Giros simples', 'Cambios de dirección', 'Pasos básicos']
+          },
+          manos: {
+            name: 'MANOS/TÉCNICA DE AGARRE',
+            color: 'blue',
+            tags: ['Una mano', 'Dos manos', 'Sin contacto']
+          }
+        }
+      }
+    }
+  },
+  escuela: {
+    name: 'ESCUELA',
+    icon: 'GraduationCap',
+    styles: {
+      salsa: {
+        name: 'SALSA',
+        icon: 'Music',
+        color: 'pink',
+        categories: {
+          nivel: {
+            name: 'NIVEL',
+            color: 'green',
+            tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+          },
+          tipo: {
+            name: 'TIPO DE CURSO',
+            color: 'blue',
+            tags: ['Básico', 'Técnica', 'Coreografía', 'Ritmo', 'Musicalidad']
+          },
+          duracion: {
+            name: 'DURACIÓN',
+            color: 'orange',
+            tags: ['5-15 min', '10-25 min', '15-45 min', '20-60 min']
+          },
+          instructor: {
+            name: 'INSTRUCTOR',
+            color: 'purple',
+            tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López']
+          }
+        }
+      }
+    }
+  },
+  eventos: {
+    name: 'EVENTOS',
+    icon: 'Calendar',
+    styles: {
+      salsa: {
+        name: 'SALSA',
+        icon: 'Music',
+        color: 'pink',
+        categories: {
+          tipo: {
+            name: 'TIPO DE EVENTO',
+            color: 'blue',
+            tags: ['Congreso', 'Festival', 'Workshop', 'Social', 'Competencia']
+          },
+          ubicacion: {
+            name: 'UBICACIÓN',
+            color: 'green',
+            tags: ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao']
+          },
+          duracion: {
+            name: 'DURACIÓN',
+            color: 'orange',
+            tags: ['1 día', '2 días', '3 días', '1 semana', 'Fines de semana']
+          },
+          organizador: {
+            name: 'ORGANIZADOR',
+            color: 'purple',
+            tags: ['SalsaHacks', 'Dance Studio', 'Eventos Salsa', 'Congresos Pro']
+          }
+        }
+      }
+    }
+  }
+}
 
-  // 🔍 Función de filtrado principal
-  const filterContent = (content) => {
-    return content.filter(item => {
-      // Filtro por estilo de baile
-      const styleMatch = !selectedStyle || item.style === selectedStyle
-      
-      // Filtro por nivel de dificultad
-      const levelMatch = !selectedLevel || item.level === selectedLevel
-      
-      // Filtro por categoría principal
-      const categoryMatch = !selectedMainCategory || item.mainCategory === selectedMainCategory
-      
-      // Filtro por etiquetas técnicas
-      const tagsMatch = selectedTags.length === 0 || 
-        selectedTags.some(tag => item.tags && item.tags.includes(tag))
-      
-      // Filtro por estilo regional
-      const regionalMatch = !selectedRegionalStyle || 
-        (item.regionalStyle && item.regionalStyle === selectedRegionalStyle)
-      
-      // Filtro por instructor
-      const instructorMatch = !selectedInstructor || 
-        (item.instructor && item.instructor === selectedInstructor)
-      
-      // Filtro por ubicación
-      const locationMatch = !selectedLocation || 
-        (item.location && item.location === selectedLocation)
-      
-      // Filtro por búsqueda
-      const searchMatch = !searchTerm || 
-        (item.title && item.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (item.tags && item.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
-      
-      return styleMatch && levelMatch && categoryMatch && tagsMatch && 
-             regionalMatch && instructorMatch && locationMatch && searchMatch
+export const useCategories = (page = 'figuras', style = 'salsa') => {
+  const [selectedPage, setSelectedPage] = useState(page)
+  const [selectedStyle, setSelectedStyle] = useState(style)
+
+  // Obtener categorías para la página y estilo actual
+  const currentCategories = useMemo(() => {
+    const pageData = categoryStructure[selectedPage]
+    if (!pageData) return null
+
+    const styleData = pageData.styles[selectedStyle]
+    if (!styleData) return null
+
+    return styleData.categories
+  }, [selectedPage, selectedStyle])
+
+  // Obtener todos los tags disponibles para la página y estilo actual
+  const availableTags = useMemo(() => {
+    if (!currentCategories) return []
+
+    const allTags = []
+    Object.entries(currentCategories).forEach(([categoryKey, categoryData]) => {
+      categoryData.tags.forEach(tag => {
+        allTags.push({
+          tag,
+          category: categoryKey,
+          categoryName: categoryData.name,
+          color: categoryData.color
+        })
+      })
     })
-  }
 
-  // 📊 Estadísticas de filtros activos
-  const activeFiltersCount = useMemo(() => {
-    let count = 0
-    if (selectedLevel) count++
-    if (selectedMainCategory) count++
-    if (selectedTags.length > 0) count++
-    if (selectedRegionalStyle) count++
-    if (selectedInstructor) count++
-    if (selectedLocation) count++
-    if (searchTerm) count++
-    return count
-  }, [selectedLevel, selectedMainCategory, selectedTags, selectedRegionalStyle, selectedInstructor, selectedLocation, searchTerm])
+    return allTags
+  }, [currentCategories])
 
-  // 🧹 Función para limpiar todos los filtros
-  const clearAllFilters = () => {
-    setSelectedLevel(null)
-    setSelectedMainCategory(null)
-    setSelectedTags([])
-    setSelectedRegionalStyle(null)
-    setSelectedInstructor(null)
-    setSelectedLocation(null)
-    setSearchTerm('')
-  }
+  // Obtener categorías organizadas
+  const categoriesList = useMemo(() => {
+    if (!currentCategories) return []
 
-  // 🏷️ Función para agregar etiqueta
-  const addTag = (tag) => {
-    if (!selectedTags.includes(tag)) {
-      setSelectedTags([...selectedTags, tag])
+    return Object.entries(currentCategories).map(([key, data]) => ({
+      key,
+      name: data.name,
+      color: data.color,
+      tags: data.tags
+    }))
+  }, [currentCategories])
+
+  // Obtener estilos disponibles para la página actual
+  const availableStyles = useMemo(() => {
+    const pageData = categoryStructure[selectedPage]
+    if (!pageData) return []
+
+    return Object.entries(pageData.styles).map(([key, data]) => ({
+      key,
+      name: data.name,
+      color: data.color,
+      icon: data.icon
+    }))
+  }, [selectedPage])
+
+  // Obtener páginas disponibles
+  const availablePages = useMemo(() => {
+    return Object.entries(categoryStructure).map(([key, data]) => ({
+      key,
+      name: data.name,
+      icon: data.icon
+    }))
+  }, [])
+
+  // Función para obtener colores de categorías
+  const getColorClasses = (color) => {
+    const colorMap = {
+      pink: 'bg-pink-100 text-pink-800 border-pink-200',
+      red: 'bg-red-100 text-red-800 border-red-200',
+      orange: 'bg-orange-100 text-orange-800 border-orange-200',
+      yellow: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      green: 'bg-green-100 text-green-800 border-green-200',
+      blue: 'bg-blue-100 text-blue-800 border-blue-200',
+      purple: 'bg-purple-100 text-purple-800 border-purple-200'
     }
+    return colorMap[color] || 'bg-gray-100 text-gray-800 border-gray-200'
   }
 
-  // 🗑️ Función para remover etiqueta
-  const removeTag = (tagToRemove) => {
-    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove))
-  }
-
-  // 🎨 Función para obtener color de categoría
-  const getColorForCategory = (categoryName) => {
-    return getCategoryColor(categoryName)
-  }
-
-  // 🔒 Función para verificar si una categoría es hardcodeada
-  const isCategoryHardcoded = (categoryName) => {
-    return isHardcodedCategory(categoryName)
-  }
-
-  // 📈 Estadísticas de contenido por categoría
-  const getContentStats = (content) => {
-    const stats = {
-      byStyle: {},
-      byLevel: {},
-      byCategory: {},
-      byInstructor: {},
-      byLocation: {},
-      total: content.length
+  // Función para obtener gradientes de categorías
+  const getGradientClasses = (color) => {
+    const gradientMap = {
+      pink: 'from-pink-500 to-rose-500',
+      red: 'from-red-500 to-pink-500',
+      orange: 'from-orange-500 to-red-500',
+      yellow: 'from-yellow-500 to-orange-500',
+      green: 'from-green-500 to-emerald-500',
+      blue: 'from-blue-500 to-cyan-500',
+      purple: 'from-purple-500 to-pink-500'
     }
-
-    content.forEach(item => {
-      // Estadísticas por estilo
-      if (item.style) {
-        stats.byStyle[item.style] = (stats.byStyle[item.style] || 0) + 1
-      }
-      
-      // Estadísticas por nivel
-      if (item.level) {
-        stats.byLevel[item.level] = (stats.byLevel[item.level] || 0) + 1
-      }
-      
-      // Estadísticas por categoría principal
-      if (item.mainCategory) {
-        stats.byCategory[item.mainCategory] = (stats.byCategory[item.mainCategory] || 0) + 1
-      }
-      
-      // Estadísticas por instructor
-      if (item.instructor) {
-        stats.byInstructor[item.instructor] = (stats.byInstructor[item.instructor] || 0) + 1
-      }
-      
-      // Estadísticas por ubicación
-      if (item.location) {
-        stats.byLocation[item.location] = (stats.byLocation[item.location] || 0) + 1
-      }
-    })
-
-    return stats
-  }
-
-  // 🎯 Función para obtener categorías disponibles basadas en contenido
-  const getAvailableCategories = (content) => {
-    const available = {
-      styles: new Set(),
-      levels: new Set(),
-      categories: new Set(),
-      tags: new Set(),
-      regionalStyles: new Set(),
-      instructors: new Set(),
-      locations: new Set()
-    }
-
-    content.forEach(item => {
-      if (item.style) available.styles.add(item.style)
-      if (item.level) available.levels.add(item.level)
-      if (item.mainCategory) available.categories.add(item.mainCategory)
-      if (item.tags) item.tags.forEach(tag => available.tags.add(tag))
-      if (item.regionalStyle) available.regionalStyles.add(item.regionalStyle)
-      if (item.instructor) available.instructors.add(item.instructor)
-      if (item.location) available.locations.add(item.location)
-    })
-
-    return {
-      styles: Array.from(available.styles),
-      levels: Array.from(available.levels),
-      categories: Array.from(available.categories),
-      tags: Array.from(available.tags),
-      regionalStyles: Array.from(available.regionalStyles),
-      instructors: Array.from(available.instructors),
-      locations: Array.from(available.locations)
-    }
-  }
-
-  // 🔄 Función para resetear filtros a valores por defecto
-  const resetToDefaults = () => {
-    setSelectedStyle('SALSA')
-    setSelectedLevel(null)
-    setSelectedMainCategory(null)
-    setSelectedTags([])
-    setSelectedRegionalStyle(null)
-    setSelectedInstructor(null)
-    setSelectedLocation(null)
-    setSearchTerm('')
+    return gradientMap[color] || 'from-gray-500 to-gray-600'
   }
 
   return {
-    // Estados
+    // Estado
+    selectedPage,
     selectedStyle,
+    setSelectedPage,
     setSelectedStyle,
-    selectedLevel,
-    setSelectedLevel,
-    selectedMainCategory,
-    setSelectedMainCategory,
-    selectedTags,
-    setSelectedTags,
-    selectedRegionalStyle,
-    setSelectedRegionalStyle,
-    selectedInstructor,
-    setSelectedInstructor,
-    selectedLocation,
-    setSelectedLocation,
-    searchTerm,
-    setSearchTerm,
-    
-    // Funciones
-    filterContent,
-    clearAllFilters,
-    addTag,
-    removeTag,
-    getColorForCategory,
-    isCategoryHardcoded,
-    getContentStats,
-    getAvailableCategories,
-    resetToDefaults,
-    
-    // Computed values
-    activeFiltersCount,
-    
-    // Constantes disponibles
-    DANCE_STYLES,
-    DIFFICULTY_LEVELS,
-    MAIN_CATEGORIES,
-    TECHNICAL_TAGS,
-    REGIONAL_STYLES,
-    INSTRUCTORS,
-    LOCATIONS
+
+    // Datos
+    currentCategories,
+    availableTags,
+    categoriesList,
+    availableStyles,
+    availablePages,
+    categoryStructure,
+
+    // Utilidades
+    getColorClasses,
+    getGradientClasses
   }
 } 

@@ -112,7 +112,7 @@ export const generateVideoThumbnail = (videoFile) => {
   });
 };
 
-// Función para generar múltiples thumbnails y elegir el mejor
+// Función para generar thumbnail simple (como fig006)
 export const generateBestVideoThumbnail = async (videoFile) => {
   try {
     const videoURL = URL.createObjectURL(videoFile);
@@ -123,60 +123,35 @@ export const generateBestVideoThumbnail = async (videoFile) => {
     
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    // Configurar canvas con proporción 16:9 (como el contenedor de la card)
+    // Configurar canvas con proporción 16:9
     canvas.width = 400;
-    canvas.height = 225; // 400 * 9/16 = 225 (proporción 16:9)
+    canvas.height = 225;
     
     return new Promise((resolve, reject) => {
       video.onloadedmetadata = () => {
         const duration = video.duration;
         
-                 // Intentar diferentes puntos del video para encontrar el mejor frame
-         const timePoints = [
-           duration * 0.25, // 25% - inicio
-           duration * 0.5,  // 50% - medio
-           duration * 0.75  // 75% - final
-         ];
+        // Usar solo el punto medio del video (como fig006)
+        video.currentTime = duration * 0.5;
         
-        let attempts = 0;
-        const maxAttempts = timePoints.length;
-        
-        const tryNextFrame = (index) => {
-          if (index >= maxAttempts) {
-            // Si no se pudo generar ningún thumbnail, usar placeholder
-            URL.revokeObjectURL(videoURL);
-            video.remove();
-            canvas.remove();
+        video.onseeked = () => {
+          try {
+            // Dibujar el frame completo en el canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            resolve({
-              success: true,
-              thumbnailURL: 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=VIDEO',
-              blob: null,
-              error: null
-            });
-            return;
-          }
-          
-          video.currentTime = timePoints[index];
-          
-                     video.onseeked = () => {
-             try {
-               // Dibujar el frame completo en el canvas
-               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-              
-              canvas.toBlob((blob) => {
-                if (blob) {
-                  const thumbnailURL = URL.createObjectURL(blob);
-                  
-                  URL.revokeObjectURL(videoURL);
-                  video.remove();
-                  canvas.remove();
-                  
-                  resolve({
-                    success: true,
-                    thumbnailURL,
-                    blob,
-                    error: null
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const thumbnailURL = URL.createObjectURL(blob);
+                
+                URL.revokeObjectURL(videoURL);
+                video.remove();
+                canvas.remove();
+                
+                resolve({
+                  success: true,
+                  thumbnailURL,
+                  blob,
+                  error: null
                   });
                 } else {
                   tryNextFrame(index + 1);

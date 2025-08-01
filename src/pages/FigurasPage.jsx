@@ -6,7 +6,8 @@ import {
   Heart, 
   Music,
   Trash2,
-  Filter
+  Filter,
+  X
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
@@ -25,14 +26,17 @@ const FigurasPage = () => {
   const [toasts, setToasts] = useState([])
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, video: null })
   const [selectedTags, setSelectedTags] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const { user } = useAuth()
   
+  // Usar el nuevo sistema de categorías
   const { 
     selectedStyle, 
     setSelectedStyle, 
-    DANCE_STYLES,
-    getColorForCategory 
-  } = useCategories()
+    availableStyles,
+    categoriesList,
+    getColorClasses
+  } = useCategories('figuras', 'salsa')
 
   // Cargar videos desde Firestore
   useEffect(() => {
@@ -98,36 +102,59 @@ const FigurasPage = () => {
       addToast(`${video.title} eliminado correctamente`, 'success')
     } catch (error) {
       console.error('Error deleting video:', error)
-      addToast('Error inesperado al eliminar el video', 'error')
+      addToast('Error inesperado al eliminar video', 'error')
     }
   }
 
-  // Función para abrir modal de confirmación
+  // Función para abrir modal de eliminación
   const openDeleteModal = (video) => {
     setDeleteModal({ isOpen: true, video })
   }
 
-  // Función para cerrar modal de confirmación
+  // Función para cerrar modal de eliminación
   const closeDeleteModal = () => {
     setDeleteModal({ isOpen: false, video: null })
   }
 
-  // Función para filtrar videos por tags
-  const filteredVideos = selectedTags.length > 0 
-    ? videos.filter(video => {
-        const videoTags = []
-        if (video.tags) {
-          Object.values(video.tags).forEach(tagArray => {
-            if (Array.isArray(tagArray)) {
-              videoTags.push(...tagArray)
-            }
-          })
-        }
-        return selectedTags.some(tag => videoTags.includes(tag))
-      })
-    : videos
+  // Función para manejar filtros por tags
+  const handleTagFilter = (tag) => {
+    setSelectedTags(prev => {
+      const isSelected = prev.includes(tag)
+      if (isSelected) {
+        return prev.filter(t => t !== tag)
+      } else {
+        return [...prev, tag]
+      }
+    })
+  }
 
-  // Los colores de etiquetas ahora vienen del sistema de categorías
+  // Función para limpiar filtros
+  const clearFilters = () => {
+    setSelectedTags([])
+    setSearchTerm('')
+  }
+
+  // Filtrar videos basado en tags seleccionados y búsqueda
+  const filteredVideos = videos.filter(video => {
+    // Filtro por búsqueda
+    const searchMatch = !searchTerm || 
+      video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      video.description.toLowerCase().includes(searchTerm.toLowerCase())
+
+    // Filtro por tags
+    const tagsMatch = selectedTags.length === 0 || 
+      selectedTags.some(tag => {
+        // Buscar en todas las categorías de tags del video
+        if (video.tags) {
+          return Object.values(video.tags).some(categoryTags => 
+            Array.isArray(categoryTags) && categoryTags.includes(tag)
+          )
+        }
+        return false
+      })
+
+    return searchMatch && tagsMatch
+  })
 
   return (
     <div className="min-h-screen bg-white">
@@ -144,7 +171,7 @@ const FigurasPage = () => {
 
         {/* Style Filters */}
         <div className="flex flex-wrap justify-center gap-3 mb-8">
-          {DANCE_STYLES.map((style) => (
+          {availableStyles.map((style) => (
             <button
               key={style.name}
               onClick={() => setSelectedStyle(style.name)}
@@ -172,10 +199,41 @@ const FigurasPage = () => {
             <input
               type="text"
               placeholder="Buscar videos en salsa..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
             />
           </div>
         </div>
+
+        {/* Tag Filters */}
+        {categoriesList.length > 0 && (
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Filtros por Categorías</h3>
+            <div className="space-y-4">
+              {categoriesList.map((category) => (
+                <div key={category.key} className="space-y-2">
+                  <h4 className="font-medium text-gray-700 text-center">{category.name}</h4>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {category.tags.map(tag => (
+                      <button
+                        key={tag}
+                        onClick={() => handleTagFilter(tag)}
+                        className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                          selectedTags.includes(tag)
+                            ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
+                            : `${getColorClasses(category.color)} hover:bg-opacity-80`
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Firebase Storage Status */}
         <FirebaseStorageStatus />
@@ -209,10 +267,10 @@ const FigurasPage = () => {
             </h2>
             {selectedTags.length > 0 && (
               <button
-                onClick={() => setSelectedTags([])}
+                onClick={clearFilters}
                 className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200"
               >
-                Limpiar filtros
+                Limpiar filtros <X className="h-4 w-4 ml-1" />
               </button>
             )}
           </div>
@@ -247,14 +305,17 @@ const FigurasPage = () => {
                     <p className="text-gray-600 text-sm mb-3">{video.description || 'Sin descripción'}</p>
                     
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {video.tags && video.tags.normales && video.tags.normales.length > 0 ? (
-                        video.tags.normales.map((tag) => (
-                          <CategoryBadge
-                            key={tag}
-                            category={tag}
-                            size="sm"
-                          />
-                        ))
+                      {video.tags && Object.keys(video.tags).length > 0 ? (
+                        Object.entries(video.tags).map(([categoryKey, categoryTags]) => 
+                          Array.isArray(categoryTags) && categoryTags.map((tag) => (
+                            <span
+                              key={`${categoryKey}-${tag}`}
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(categoriesList.find(c => c.key === categoryKey)?.color || 'gray')}`}
+                            >
+                              {tag}
+                            </span>
+                          ))
+                        )
                       ) : (
                         <span className="text-gray-400 text-sm">Sin etiquetas</span>
                       )}
@@ -299,6 +360,8 @@ const FigurasPage = () => {
          isOpen={isUploadModalOpen}
          onClose={() => setIsUploadModalOpen(false)}
          onVideoUploaded={handleVideoUploaded}
+         page="figuras"
+         style="salsa"
        />
 
        {/* Confirm Delete Modal */}
