@@ -538,8 +538,8 @@ export const deleteVideo = async (videoPath, thumbnailPath) => {
       promises.push(deleteObject(videoRef));
     }
     
-    // Eliminar thumbnail
-    if (thumbnailPath) {
+    // Eliminar thumbnail (solo si existe y no es null)
+    if (thumbnailPath && thumbnailPath !== null) {
       const thumbnailRef = ref(storage, thumbnailPath);
       promises.push(deleteObject(thumbnailRef));
     }

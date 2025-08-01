@@ -120,13 +120,13 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         if (uploadResult.success) {
           // Limpiar blob URL temporal
           URL.revokeObjectURL(result.thumbnailURL)
-          return uploadResult.url
+          return { url: uploadResult.url, path: uploadResult.path }
         }
       }
-      return 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO'
+      return { url: 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO', path: null }
     } catch (error) {
       console.error('Error generating thumbnail:', error)
-      return 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO'
+      return { url: 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO', path: null }
     }
   }
 
@@ -140,7 +140,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       }
 
       // Generar thumbnail
-      const thumbnailUrl = await generateThumbnail(file)
+      const thumbnailResult = await generateThumbnail(file)
 
       // Subir video
       const videoPath = `videos/${Date.now()}_${file.name}`
@@ -165,9 +165,9 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         originalTitle: file.name,
         description: videoData[file.name]?.description || '',
         videoUrl: uploadResult.url,
-        thumbnailUrl: thumbnailUrl,
+        thumbnailUrl: thumbnailResult.url,
         videoPath: uploadResult.path,
-        thumbnailPath: `thumbnails/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`,
+        thumbnailPath: thumbnailResult.path,
         fileSize: file.size,
         fileType: file.type,
         duration: 0, // Se puede calcular después

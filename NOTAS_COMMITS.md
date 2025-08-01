@@ -1038,4 +1038,27 @@ PÁGINA (figuras/escuela/eventos) → ESTILO → CATEGORÍA → TAGS
   - Función `normalizeText` para normalización
   - Función `advancedSearch` para búsqueda inteligente
 - **Archivos**: `src/pages/FigurasPage.jsx`
+- **Estado**: ✅ Completado
+
+### **#032 - Commit y Push de Búsqueda Avanzada**
+- **Fecha**: 2024-12-19
+- **Descripción**: Finalización y commit de la funcionalidad de búsqueda avanzada
+- **Cambios**:
+  - Commit exitoso con mensaje descriptivo
+  - Push al repositorio remoto
+  - Actualización de documentación en NOTAS_COMMITS.md
+  - Verificación de estado del repositorio
+- **Archivos**: `src/pages/FigurasPage.jsx`, `NOTAS_COMMITS.md`
+- **Estado**: ✅ Completado
+
+### **#033 - Corrección del Botón Eliminar Videos**
+- **Fecha**: 2024-12-19
+- **Descripción**: Solución del problema con el botón de eliminar videos
+- **Cambios**:
+  - Corrección de inconsistencia en `thumbnailPath` en VideoUploadModal
+  - Manejo robusto de errores en eliminación de archivos
+  - Fallback para eliminar solo video si thumbnail falla
+  - Logs de depuración para monitorear el proceso
+  - Validación mejorada en función `deleteVideo`
+- **Archivos**: `src/pages/FigurasPage.jsx`, `src/components/video/VideoUploadModal.jsx`, `src/services/firebase/storage.js`
 - **Estado**: ✅ Completado 

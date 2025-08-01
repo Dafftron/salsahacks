@@ -110,15 +110,35 @@ const FigurasPage = () => {
   // Función para eliminar video
   const handleDeleteVideo = async (video) => {
     try {
+      console.log('🗑️ Iniciando eliminación de video:', video)
+      console.log('📁 Video path:', video.videoPath)
+      console.log('🖼️ Thumbnail path:', video.thumbnailPath)
+      
       // Eliminar de Firebase Storage
       const storageResult = await deleteVideo(video.videoPath, video.thumbnailPath)
+      console.log('📦 Resultado eliminación Storage:', storageResult)
+      
+      // Si hay error al eliminar archivos, intentar solo eliminar el video
       if (!storageResult.success) {
-        addToast(`Error al eliminar archivos: ${storageResult.error}`, 'error')
-        return
+        console.log('⚠️ Error eliminando archivos, intentando solo eliminar video...')
+        
+        // Intentar eliminar solo el video si el thumbnail falló
+        if (storageResult.error && storageResult.error.includes('thumbnails')) {
+          const videoOnlyResult = await deleteVideo(video.videoPath, null)
+          if (!videoOnlyResult.success) {
+            addToast(`Error al eliminar archivos: ${storageResult.error}`, 'error')
+            return
+          }
+        } else {
+          addToast(`Error al eliminar archivos: ${storageResult.error}`, 'error')
+          return
+        }
       }
 
       // Eliminar de Firestore
       const firestoreResult = await deleteVideoDocument(video.id)
+      console.log('🔥 Resultado eliminación Firestore:', firestoreResult)
+      
       if (!firestoreResult.success) {
         addToast(`Error al eliminar metadatos: ${firestoreResult.error}`, 'error')
         return
@@ -128,13 +148,14 @@ const FigurasPage = () => {
       setVideos(prev => prev.filter(v => v.id !== video.id))
       addToast(`${video.title} eliminado correctamente`, 'success')
     } catch (error) {
-      console.error('Error deleting video:', error)
+      console.error('❌ Error deleting video:', error)
       addToast('Error inesperado al eliminar video', 'error')
     }
   }
 
   // Función para abrir modal de eliminación
   const openDeleteModal = (video) => {
+    console.log('🔘 Botón eliminar clickeado para video:', video)
     setDeleteModal({ isOpen: true, video })
   }
 
