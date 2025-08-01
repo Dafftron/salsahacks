@@ -30,38 +30,18 @@ export const generateVideoThumbnail = (videoFile) => {
       canvas.width = 400;
       canvas.height = 225; // 400 * 9/16 = 225 (proporción 16:9)
       
-      // Función para calcular dimensiones manteniendo proporción original
-      const calculateThumbnailDimensions = (videoWidth, videoHeight, maxWidth, maxHeight) => {
-        const videoRatio = videoWidth / videoHeight;
-        const containerRatio = maxWidth / maxHeight;
-        
-        let thumbnailWidth, thumbnailHeight;
-        
-        if (videoRatio > containerRatio) {
-          // Video más ancho que el contenedor - ajustar por ancho
-          thumbnailWidth = maxWidth;
-          thumbnailHeight = maxWidth / videoRatio;
-        } else {
-          // Video más alto que el contenedor - ajustar por alto
-          thumbnailHeight = maxHeight;
-          thumbnailWidth = maxHeight * videoRatio;
-        }
-        
-        return { width: thumbnailWidth, height: thumbnailHeight };
-      };
-      
       video.onloadedmetadata = () => {
-                 try {
-           // Buscar un frame en el medio del video (como al principio)
-           const duration = video.duration;
-           const targetTime = duration * 0.5; // 50% del video (medio)
-           
-           video.currentTime = targetTime;
+        try {
+          // Buscar un frame en el medio del video (como al principio)
+          const duration = video.duration;
+          const targetTime = duration * 0.5; // 50% del video (medio)
           
-                     video.onseeked = () => {
-             try {
-               // Dibujar el frame completo en el canvas
-               ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          video.currentTime = targetTime;
+          
+          video.onseeked = () => {
+            try {
+              // Dibujar el frame completo en el canvas
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
               
               // Convertir a blob
               canvas.toBlob((blob) => {
@@ -152,23 +132,20 @@ export const generateBestVideoThumbnail = async (videoFile) => {
                   thumbnailURL,
                   blob,
                   error: null
-                  });
-                } else {
-                  tryNextFrame(index + 1);
-                }
-              }, 'image/jpeg', 0.8);
-              
-            } catch (error) {
-              tryNextFrame(index + 1);
-            }
-          };
-          
-          video.onerror = () => {
-            tryNextFrame(index + 1);
-          };
+                });
+              } else {
+                reject(new Error('No se pudo generar el thumbnail'));
+              }
+            }, 'image/jpeg', 0.8);
+            
+          } catch (error) {
+            reject(new Error(`Error al capturar frame: ${error.message}`));
+          }
         };
         
-        tryNextFrame(0);
+        video.onerror = () => {
+          reject(new Error('Error al cargar el video para thumbnail'));
+        };
       };
       
       video.onerror = () => {
@@ -243,88 +220,6 @@ export const uploadVideoSimulated = async (file, path, onProgress) => {
       path: null,
       error: error.message,
       simulated: true
-    };
-  }
-};
-
-// Función de upload que usa un enfoque diferente para evitar CORS
-export const uploadVideoNoCORS = async (file, path, onProgress) => {
-  try {
-    // Validar tipo de archivo
-    if (!file.type.startsWith('video/')) {
-      throw new Error('El archivo debe ser un video');
-    }
-    
-    // Validar tamaño (máximo 100MB)
-    const maxSize = 100 * 1024 * 1024; // 100MB
-    if (file.size > maxSize) {
-      throw new Error('El video es demasiado grande. Máximo 100MB');
-    }
-    
-    const storageRef = ref(storage, path);
-    
-    // Crear metadata específica para videos
-    const metadata = {
-      contentType: file.type,
-      customMetadata: {
-        uploadedAt: new Date().toISOString(),
-        originalName: file.name,
-        fileSize: file.size.toString(),
-        fileType: 'video'
-      }
-    };
-    
-    // Intentar upload con configuración específica para evitar CORS
-    try {
-      // Simular progreso inicial
-      if (onProgress) {
-        onProgress(10);
-      }
-      
-      // Usar uploadBytes con configuración específica
-      const snapshot = await uploadBytes(storageRef, file, metadata);
-      
-      // Simular progreso final
-      if (onProgress) {
-        onProgress(100);
-      }
-      
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      
-      return { 
-        success: true,
-        url: downloadURL, 
-        path: snapshot.ref.fullPath,
-        error: null 
-      };
-      
-    } catch (uploadError) {
-      console.error('Error con upload directo, intentando método alternativo:', uploadError);
-      
-      // Si falla, usar el método simulado como fallback
-      return await uploadVideoSimulated(file, path, onProgress);
-    }
-    
-  } catch (error) {
-    console.error('Error uploading video (no CORS):', error);
-    
-    // Manejar errores específicos
-    let errorMessage = 'Error al subir el video';
-    if (error.code === 'storage/unauthorized') {
-      errorMessage = 'No tienes permisos para subir videos';
-    } else if (error.code === 'storage/quota-exceeded') {
-      errorMessage = 'Se ha excedido la cuota de almacenamiento';
-    } else if (error.code === 'storage/retry-limit-exceeded') {
-      errorMessage = 'Error de conexión. Intenta de nuevo';
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-    
-    return { 
-      success: false,
-      url: null, 
-      path: null,
-      error: errorMessage 
     };
   }
 };
@@ -490,86 +385,6 @@ export const uploadFigureImage = async (file, figureId) => {
   return await uploadImage(file, path);
 };
 
-// Función de upload alternativa para evitar problemas de CORS
-export const uploadVideoAlternative = async (file, path, onProgress) => {
-  try {
-    // Validar tipo de archivo
-    if (!file.type.startsWith('video/')) {
-      throw new Error('El archivo debe ser un video');
-    }
-    
-    // Validar tamaño (máximo 100MB)
-    const maxSize = 100 * 1024 * 1024; // 100MB
-    if (file.size > maxSize) {
-      throw new Error('El video es demasiado grande. Máximo 100MB');
-    }
-    
-    // Crear metadata específica para videos
-    const metadata = {
-      contentType: file.type,
-      customMetadata: {
-        uploadedAt: new Date().toISOString(),
-        originalName: file.name,
-        fileSize: file.size.toString(),
-        fileType: 'video'
-      }
-    };
-    
-    const storageRef = ref(storage, path);
-    
-    // Simular progreso inicial
-    if (onProgress) {
-      onProgress(10);
-    }
-    
-    // Intentar upload con timeout
-    const uploadPromise = uploadBytes(storageRef, file, metadata);
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Timeout: La operación tardó demasiado')), 30000)
-    );
-    
-    const snapshot = await Promise.race([uploadPromise, timeoutPromise]);
-    
-    // Simular progreso final
-    if (onProgress) {
-      onProgress(100);
-    }
-    
-    const downloadURL = await getDownloadURL(snapshot.ref);
-    
-    return { 
-      success: true,
-      url: downloadURL, 
-      path: snapshot.ref.fullPath,
-      error: null 
-    };
-    
-  } catch (error) {
-    console.error('Error uploading video (alternative):', error);
-    
-    // Manejar errores específicos
-    let errorMessage = 'Error al subir el video';
-    if (error.code === 'storage/unauthorized') {
-      errorMessage = 'No tienes permisos para subir videos';
-    } else if (error.code === 'storage/quota-exceeded') {
-      errorMessage = 'Se ha excedido la cuota de almacenamiento';
-    } else if (error.code === 'storage/retry-limit-exceeded') {
-      errorMessage = 'Error de conexión. Intenta de nuevo';
-    } else if (error.message.includes('Timeout')) {
-      errorMessage = 'La operación tardó demasiado. Verifica tu conexión a internet.';
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-    
-    return { 
-      success: false,
-      url: null, 
-      path: null,
-      error: errorMessage 
-    };
-  }
-};
-
 // Subir video con manejo de errores mejorado y progreso
 export const uploadVideo = async (file, path, onProgress) => {
   try {
@@ -706,50 +521,6 @@ export const uploadVideo = async (file, path, onProgress) => {
   }
 };
 
-// Función para verificar si Firebase Storage está disponible
-const checkStorageAvailability = async () => {
-  try {
-    // Como ya tienes el plan Blaze activo, asumimos que Storage está disponible
-    // Solo verificamos que la conexión básica funcione
-    const testRef = ref(storage, 'test-connection');
-    
-    // Usar un timeout para evitar que se quede colgado
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Timeout: Storage no responde')), 3000)
-    );
-    
-    // Intentar una operación simple que siempre debería funcionar
-    await Promise.race([
-      uploadBytes(testRef, new Blob(['test'], { type: 'text/plain' })),
-      timeoutPromise
-    ]);
-    
-    // Limpiar el archivo de prueba
-    try {
-      await deleteObject(testRef);
-    } catch (cleanupError) {
-      // Ignorar errores de limpieza
-    }
-    
-    return true;
-  } catch (error) {
-    console.log('Storage availability check error:', error);
-    
-    // Si el error es específico de Storage no disponible, retornar false
-    if (error.code === 'storage/unauthorized' || 
-        error.code === 'storage/bucket-not-found' ||
-        error.message.includes('billing') ||
-        error.message.includes('plan') ||
-        error.message.includes('quota')) {
-      return false;
-    }
-    
-    // Para otros errores (como timeout), asumir que Storage está disponible
-    // ya que tienes el plan Blaze activo
-    return true;
-  }
-};
-
 // Subir video de figura
 export const uploadFigureVideo = async (file, figureId) => {
   const path = `figures/${figureId}/videos/${Date.now()}_${file.name}`;
@@ -759,31 +530,31 @@ export const uploadFigureVideo = async (file, figureId) => {
 // Eliminar video completo (archivo + thumbnail)
 export const deleteVideo = async (videoPath, thumbnailPath) => {
   try {
-    const promises = []
+    const promises = [];
     
     // Eliminar archivo de video
     if (videoPath) {
-      const videoRef = ref(storage, videoPath)
-      promises.push(deleteObject(videoRef))
+      const videoRef = ref(storage, videoPath);
+      promises.push(deleteObject(videoRef));
     }
     
     // Eliminar thumbnail
     if (thumbnailPath) {
-      const thumbnailRef = ref(storage, thumbnailPath)
-      promises.push(deleteObject(thumbnailRef))
+      const thumbnailRef = ref(storage, thumbnailPath);
+      promises.push(deleteObject(thumbnailRef));
     }
     
-    await Promise.all(promises)
+    await Promise.all(promises);
     
     return { 
       success: true, 
       error: null 
-    }
+    };
   } catch (error) {
-    console.error('Error deleting video:', error)
+    console.error('Error deleting video:', error);
     return { 
       success: false, 
       error: error.message 
-    }
+    };
   }
 }; 

@@ -7,14 +7,16 @@ import {
   Music,
   Trash2,
   Filter,
-  X
+  X,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
 import VideoUploadModal from '../components/video/VideoUploadModal'
 import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
-import FirebaseStorageStatus from '../components/FirebaseStorageStatus'
+
 import { getVideos, deleteVideoDocument } from '../services/firebase/firestore'
 import { deleteVideo } from '../services/firebase/storage'
 import { useAuth } from '../contexts/AuthContext'
@@ -27,6 +29,7 @@ const FigurasPage = () => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, video: null })
   const [selectedTags, setSelectedTags] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
   const { user } = useAuth()
   
   // Usar el nuevo sistema de categorías
@@ -134,6 +137,31 @@ const FigurasPage = () => {
     setSearchTerm('')
   }
 
+  // Función para obtener tags ordenados según el orden de categorías
+  const getOrderedTags = (video) => {
+    if (!video.tags || Object.keys(video.tags).length === 0) {
+      return []
+    }
+
+    // Crear array de tags ordenados según el orden de categoriesList
+    const orderedTags = []
+    
+    categoriesList.forEach(category => {
+      const categoryTags = video.tags[category.key]
+      if (Array.isArray(categoryTags)) {
+        categoryTags.forEach(tag => {
+          orderedTags.push({
+            tag,
+            categoryKey: category.key,
+            color: category.color
+          })
+        })
+      }
+    })
+
+    return orderedTags
+  }
+
   // Filtrar videos basado en tags seleccionados y búsqueda
   const filteredVideos = videos.filter(video => {
     // Filtro por búsqueda
@@ -206,37 +234,53 @@ const FigurasPage = () => {
           </div>
         </div>
 
-        {/* Tag Filters */}
+        {/* Tag Filters - Collapsible */}
         {categoriesList.length > 0 && (
           <div className="mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Filtros por Categorías</h3>
-            <div className="space-y-4">
-              {categoriesList.map((category) => (
-                <div key={category.key} className="space-y-2">
-                  <h4 className="font-medium text-gray-700 text-center">{category.name}</h4>
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {category.tags.map(tag => (
-                      <button
-                        key={tag}
-                        onClick={() => handleTagFilter(tag)}
-                        className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
-                          selectedTags.includes(tag)
-                            ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
-                            : `${getColorClasses(category.color)} hover:bg-opacity-80`
-                        }`}
-                      >
-                        {tag}
-                      </button>
-                    ))}
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center justify-center space-x-2 mx-auto px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+            >
+              <Filter className="h-5 w-5" />
+              <span>Filtros por Categorías</span>
+              {showFilters ? (
+                <ChevronUp className="h-5 w-5" />
+              ) : (
+                <ChevronDown className="h-5 w-5" />
+              )}
+            </button>
+            
+            {/* Collapsible Content */}
+            <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
+              showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}>
+              <div className="space-y-4 bg-gray-50 rounded-lg p-6 border border-gray-200">
+                {categoriesList.map((category) => (
+                  <div key={category.key} className="space-y-2">
+                    <h4 className="font-medium text-gray-700 text-center">{category.name}</h4>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {category.tags.map(tag => (
+                        <button
+                          key={tag}
+                          onClick={() => handleTagFilter(tag)}
+                          className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                            selectedTags.includes(tag)
+                              ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
+                              : `${getColorClasses(category.color)} hover:bg-opacity-80`
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         )}
 
-        {/* Firebase Storage Status */}
-        <FirebaseStorageStatus />
+
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -305,20 +349,21 @@ const FigurasPage = () => {
                     <p className="text-gray-600 text-sm mb-3">{video.description || 'Sin descripción'}</p>
                     
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {video.tags && Object.keys(video.tags).length > 0 ? (
-                        Object.entries(video.tags).map(([categoryKey, categoryTags]) => 
-                          Array.isArray(categoryTags) && categoryTags.map((tag) => (
+                      {(() => {
+                        const orderedTags = getOrderedTags(video)
+                        if (orderedTags.length > 0) {
+                          return orderedTags.map(({ tag, categoryKey, color }) => (
                             <span
                               key={`${categoryKey}-${tag}`}
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(categoriesList.find(c => c.key === categoryKey)?.color || 'gray')}`}
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
                             >
                               {tag}
                             </span>
                           ))
-                        )
-                      ) : (
-                        <span className="text-gray-400 text-sm">Sin etiquetas</span>
-                      )}
+                        } else {
+                          return <span className="text-gray-400 text-sm">Sin etiquetas</span>
+                        }
+                      })()}
                     </div>
                     
                                          <div className="flex items-center justify-between text-sm text-gray-500">
@@ -349,10 +394,7 @@ const FigurasPage = () => {
           )}
         </div>
 
-        {/* Firebase Storage Status */}
-        <div className="mb-8">
-          <FirebaseStorageStatus />
-        </div>
+
       </div>
 
              {/* Video Upload Modal */}
