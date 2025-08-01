@@ -1061,4 +1061,29 @@ PÁGINA (figuras/escuela/eventos) → ESTILO → CATEGORÍA → TAGS
   - Logs de depuración para monitorear el proceso
   - Validación mejorada en función `deleteVideo`
 - **Archivos**: `src/pages/FigurasPage.jsx`, `src/components/video/VideoUploadModal.jsx`, `src/services/firebase/storage.js`
+- **Estado**: ✅ Completado
+
+### **#034 - Sincronización en Tiempo Real y Sistema de Limpieza**
+- **Fecha**: 2024-12-19
+- **Descripción**: Implementación de sincronización en tiempo real entre Firebase y la web, y sistema de limpieza de datos
+- **Cambios**:
+  - **Sincronización en Tiempo Real**:
+    - Implementación de `subscribeToVideos` y `subscribeToVideosByStyle` en Firestore
+    - Reemplazo de carga manual por suscripción en tiempo real en FigurasPage
+    - Indicador visual de estado de sincronización (idle/syncing/error)
+    - Actualización automática de la UI cuando se eliminan videos en Firebase
+  - **Sistema de Limpieza**:
+    - Función `updateVideoThumbnailPaths` para corregir rutas de thumbnails existentes
+    - Función `deleteAllVideos` para eliminar todos los documentos de Firestore
+    - Función `deleteAllVideoFiles` para eliminar archivos de Storage
+    - Función `cleanupOrphanedFiles` para eliminar archivos sin documento en Firestore
+    - UI con botones de limpieza y modal de confirmación
+  - **Mejoras en Storage**:
+    - Funciones de limpieza masiva de archivos
+    - Detección y eliminación de archivos huérfanos
+    - Manejo robusto de errores en operaciones de limpieza
+- **Archivos**: 
+  - `src/services/firebase/firestore.js` (nuevas funciones de sincronización y limpieza)
+  - `src/services/firebase/storage.js` (funciones de limpieza de archivos)
+  - `src/pages/FigurasPage.jsx` (UI de sincronización y controles de limpieza)
 - **Estado**: ✅ Completado 

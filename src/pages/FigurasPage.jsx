@@ -19,8 +19,18 @@ import VideoUploadModal from '../components/video/VideoUploadModal'
 import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
 
-import { getVideos, deleteVideoDocument } from '../services/firebase/firestore'
-import { deleteVideo } from '../services/firebase/storage'
+import { 
+  getVideos, 
+  deleteVideoDocument, 
+  subscribeToVideosByStyle,
+  deleteAllVideos,
+  updateVideoThumbnailPaths
+} from '../services/firebase/firestore'
+import { 
+  deleteVideo, 
+  deleteAllVideoFiles, 
+  cleanupOrphanedFiles 
+} from '../services/firebase/storage'
 import { useAuth } from '../contexts/AuthContext'
 
 const FigurasPage = () => {
@@ -33,6 +43,8 @@ const FigurasPage = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [showFilters, setShowFilters] = useState(false)
   const [activeTab, setActiveTab] = useState('videos')
+  const [syncStatus, setSyncStatus] = useState('idle') // idle, syncing, error
+  const [cleanupModal, setCleanupModal] = useState({ isOpen: false, type: null })
   const { user } = useAuth()
   
   // Usar el nuevo sistema de categorías
@@ -60,24 +72,25 @@ const FigurasPage = () => {
     Zap: Zap
   }
 
-  // Cargar videos desde Firestore
+  // Sincronización en tiempo real con Firebase
   useEffect(() => {
-    const loadVideos = async () => {
-      try {
-        setLoading(true)
-        const videosData = await getVideos()
-        // Filtrar videos por el estilo seleccionado
-        const filteredVideos = filterVideosByStyle(videosData, selectedStyle)
-        setVideos(filteredVideos)
-      } catch (error) {
-        console.error('Error cargando videos:', error)
-      } finally {
-        setLoading(false)
-      }
+    console.log('🔄 Iniciando sincronización en tiempo real para:', selectedStyle)
+    setSyncStatus('syncing')
+    
+    // Suscribirse a cambios en tiempo real para el estilo seleccionado
+    const unsubscribe = subscribeToVideosByStyle(selectedStyle, (videosData) => {
+      console.log(`🔄 Actualización en tiempo real recibida: ${videosData.length} videos para ${selectedStyle}`)
+      setVideos(videosData)
+      setLoading(false)
+      setSyncStatus('idle')
+    })
+    
+    // Cleanup al desmontar o cambiar estilo
+    return () => {
+      console.log('🔄 Desuscribiendo de sincronización en tiempo real')
+      unsubscribe()
     }
-
-    loadVideos()
-  }, [selectedStyle]) // Agregar selectedStyle como dependencia
+  }, [selectedStyle])
 
 
 
@@ -85,15 +98,7 @@ const FigurasPage = () => {
   const handleVideoUploaded = async (video) => {
     console.log('Video subido:', video)
     addToast(`${video.title} subido exitosamente`, 'success')
-    // Recargar la lista de videos filtrados por el estilo actual
-    try {
-      const videosData = await getVideos()
-      const filteredVideos = filterVideosByStyle(videosData, selectedStyle)
-      setVideos(filteredVideos)
-    } catch (error) {
-      console.error('Error recargando videos:', error)
-      addToast('Error al actualizar la galería', 'error')
-    }
+    // La sincronización en tiempo real se encargará de actualizar la lista automáticamente
   }
 
   // Función para añadir notificaciones
@@ -162,6 +167,73 @@ const FigurasPage = () => {
   // Función para cerrar modal de eliminación
   const closeDeleteModal = () => {
     setDeleteModal({ isOpen: false, video: null })
+  }
+
+  // Funciones de limpieza y sincronización
+  const handleCleanupData = async (type) => {
+    try {
+      setSyncStatus('syncing')
+      addToast('Iniciando limpieza de datos...', 'info')
+      
+      if (type === 'update') {
+        // Actualizar rutas de thumbnails existentes
+        const result = await updateVideoThumbnailPaths()
+        if (result.success) {
+          addToast(`✅ ${result.updatedCount} videos actualizados`, 'success')
+        } else {
+          addToast(`❌ Error: ${result.error}`, 'error')
+        }
+      } else if (type === 'cleanup') {
+        // Limpiar archivos huérfanos
+        const videosData = await getVideos()
+        const result = await cleanupOrphanedFiles(videosData)
+        if (result.success) {
+          addToast(`🧹 ${result.orphanedVideosDeleted} videos y ${result.orphanedThumbnailsDeleted} thumbnails huérfanos eliminados`, 'success')
+        } else {
+          addToast(`❌ Error: ${result.error}`, 'error')
+        }
+      } else if (type === 'delete-all') {
+        // Eliminar todos los videos (confirmar primero)
+        const confirmed = window.confirm('¿Estás seguro de que quieres eliminar TODOS los videos? Esta acción no se puede deshacer.')
+        if (!confirmed) {
+          setSyncStatus('idle')
+          return
+        }
+        
+        // Eliminar de Firestore
+        const firestoreResult = await deleteAllVideos()
+        if (!firestoreResult.success) {
+          addToast(`❌ Error eliminando documentos: ${firestoreResult.error}`, 'error')
+          setSyncStatus('idle')
+          return
+        }
+        
+        // Eliminar archivos de Storage
+        const storageResult = await deleteAllVideoFiles()
+        if (!storageResult.success) {
+          addToast(`❌ Error eliminando archivos: ${storageResult.error}`, 'error')
+          setSyncStatus('idle')
+          return
+        }
+        
+        addToast(`🗑️ ${firestoreResult.deletedCount} videos eliminados completamente`, 'success')
+      }
+      
+      setSyncStatus('idle')
+      setCleanupModal({ isOpen: false, type: null })
+    } catch (error) {
+      console.error('Error en limpieza:', error)
+      addToast(`❌ Error inesperado: ${error.message}`, 'error')
+      setSyncStatus('idle')
+    }
+  }
+
+  const openCleanupModal = (type) => {
+    setCleanupModal({ isOpen: true, type })
+  }
+
+  const closeCleanupModal = () => {
+    setCleanupModal({ isOpen: false, type: null })
   }
 
   // Función para manejar filtros por tags
@@ -411,6 +483,50 @@ const FigurasPage = () => {
           </button>
         </div>
 
+        {/* Sync Status and Cleanup Controls */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Sync Status */}
+            <div className="flex items-center space-x-2">
+              <div className={`w-3 h-3 rounded-full ${
+                syncStatus === 'idle' ? 'bg-green-500' : 
+                syncStatus === 'syncing' ? 'bg-yellow-500 animate-pulse' : 
+                'bg-red-500'
+              }`}></div>
+              <span className="text-sm text-gray-600">
+                {syncStatus === 'idle' ? '✅ Sincronizado con Firebase' : 
+                 syncStatus === 'syncing' ? '🔄 Sincronizando...' : 
+                 '❌ Error de sincronización'}
+              </span>
+            </div>
+            
+            {/* Cleanup Buttons */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => openCleanupModal('update')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🔧 Actualizar Rutas
+              </button>
+              <button
+                onClick={() => openCleanupModal('cleanup')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🧹 Limpiar Huérfanos
+              </button>
+              <button
+                onClick={() => openCleanupModal('delete-all')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🗑️ Eliminar Todo
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Gallery Tabs */}
         <div className="flex justify-center gap-4 mb-8">
           <button
@@ -559,6 +675,31 @@ const FigurasPage = () => {
           page="figuras"
           style={selectedStyle}
         />
+
+       {/* Cleanup Confirmation Modal */}
+       <ConfirmModal
+         isOpen={cleanupModal.isOpen}
+         onClose={closeCleanupModal}
+         onConfirm={() => handleCleanupData(cleanupModal.type)}
+         title={
+           cleanupModal.type === 'update' ? 'Actualizar Rutas de Thumbnails' :
+           cleanupModal.type === 'cleanup' ? 'Limpiar Archivos Huérfanos' :
+           'Eliminar Todos los Videos'
+         }
+         message={
+           cleanupModal.type === 'update' ? 
+           '¿Actualizar las rutas de thumbnails de videos existentes? Esto corregirá problemas de eliminación.' :
+           cleanupModal.type === 'cleanup' ? 
+           '¿Limpiar archivos huérfanos? Esto eliminará archivos que no tienen documento en Firestore.' :
+           '¿Eliminar TODOS los videos de Firebase y Storage? Esta acción es IRREVERSIBLE y eliminará todos los datos.'
+         }
+         confirmText={
+           cleanupModal.type === 'update' ? 'Actualizar' :
+           cleanupModal.type === 'cleanup' ? 'Limpiar' :
+           'Eliminar Todo'
+         }
+         cancelText="Cancelar"
+       />
 
        {/* Confirm Delete Modal */}
        <ConfirmModal

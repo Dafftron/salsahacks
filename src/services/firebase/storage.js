@@ -557,4 +557,136 @@ export const deleteVideo = async (videoPath, thumbnailPath) => {
       error: error.message 
     };
   }
-}; 
+};
+
+// ===== FUNCIONES DE LIMPIEZA DE STORAGE =====
+
+// Eliminar todos los archivos de videos
+export const deleteAllVideoFiles = async () => {
+  try {
+    console.log('🗑️ Iniciando eliminación de todos los archivos de videos...')
+    
+    // Eliminar archivos de videos
+    const videosResult = await deleteAllFilesInFolder('videos')
+    console.log(`✅ Archivos de videos eliminados: ${videosResult.deletedCount}`)
+    
+    // Eliminar archivos de thumbnails
+    const thumbnailsResult = await deleteAllFilesInFolder('thumbnails')
+    console.log(`✅ Archivos de thumbnails eliminados: ${thumbnailsResult.deletedCount}`)
+    
+    return {
+      success: true,
+      videosDeleted: videosResult.deletedCount,
+      thumbnailsDeleted: thumbnailsResult.deletedCount,
+      error: null
+    }
+  } catch (error) {
+    console.error('❌ Error al eliminar archivos de videos:', error)
+    return {
+      success: false,
+      videosDeleted: 0,
+      thumbnailsDeleted: 0,
+      error: error.message
+    }
+  }
+}
+
+// Eliminar todos los archivos en una carpeta específica
+export const deleteAllFilesInFolder = async (folderPath) => {
+  try {
+    console.log(`🗑️ Eliminando archivos en carpeta: ${folderPath}`)
+    
+    const folderRef = ref(storage, folderPath)
+    const result = await listAll(folderRef)
+    
+    if (result.items.length === 0) {
+      console.log(`✅ No hay archivos en ${folderPath}`)
+      return { success: true, deletedCount: 0, error: null }
+    }
+    
+    console.log(`📊 Archivos a eliminar en ${folderPath}: ${result.items.length}`)
+    
+    const deletePromises = result.items.map(async (itemRef) => {
+      try {
+        await deleteObject(itemRef)
+        return { success: true, path: itemRef.fullPath }
+      } catch (error) {
+        console.error(`❌ Error eliminando ${itemRef.fullPath}:`, error)
+        return { success: false, path: itemRef.fullPath, error: error.message }
+      }
+    })
+    
+    const results = await Promise.all(deletePromises)
+    const successfulDeletes = results.filter(r => r.success).length
+    const failedDeletes = results.filter(r => !r.success).length
+    
+    console.log(`✅ ${successfulDeletes} archivos eliminados exitosamente en ${folderPath}`)
+    if (failedDeletes > 0) {
+      console.log(`⚠️ ${failedDeletes} archivos fallaron al eliminar en ${folderPath}`)
+    }
+    
+    return {
+      success: true,
+      deletedCount: successfulDeletes,
+      failedCount: failedDeletes,
+      error: null
+    }
+  } catch (error) {
+    console.error(`❌ Error al eliminar archivos en ${folderPath}:`, error)
+    return {
+      success: false,
+      deletedCount: 0,
+      failedCount: 0,
+      error: error.message
+    }
+  }
+}
+
+// Limpiar archivos huérfanos (archivos sin documento en Firestore)
+export const cleanupOrphanedFiles = async (videosFromFirestore) => {
+  try {
+    console.log('🧹 Iniciando limpieza de archivos huérfanos...')
+    
+    // Obtener todos los archivos de videos y thumbnails
+    const videosFolder = await listAll(ref(storage, 'videos'))
+    const thumbnailsFolder = await listAll(ref(storage, 'thumbnails'))
+    
+    // Crear sets de rutas de archivos existentes en Firestore
+    const firestoreVideoPaths = new Set(videosFromFirestore.map(v => v.videoPath).filter(Boolean))
+    const firestoreThumbnailPaths = new Set(videosFromFirestore.map(v => v.thumbnailPath).filter(Boolean))
+    
+    // Encontrar archivos huérfanos
+    const orphanedVideos = videosFolder.items.filter(item => !firestoreVideoPaths.has(item.fullPath))
+    const orphanedThumbnails = thumbnailsFolder.items.filter(item => !firestoreThumbnailPaths.has(item.fullPath))
+    
+    console.log(`📊 Archivos huérfanos encontrados: ${orphanedVideos.length} videos, ${orphanedThumbnails.length} thumbnails`)
+    
+    // Eliminar archivos huérfanos
+    const deletePromises = [
+      ...orphanedVideos.map(item => deleteObject(item)),
+      ...orphanedThumbnails.map(item => deleteObject(item))
+    ]
+    
+    if (deletePromises.length > 0) {
+      await Promise.all(deletePromises)
+      console.log(`✅ ${deletePromises.length} archivos huérfanos eliminados`)
+    } else {
+      console.log('✅ No se encontraron archivos huérfanos')
+    }
+    
+    return {
+      success: true,
+      orphanedVideosDeleted: orphanedVideos.length,
+      orphanedThumbnailsDeleted: orphanedThumbnails.length,
+      error: null
+    }
+  } catch (error) {
+    console.error('❌ Error en limpieza de archivos huérfanos:', error)
+    return {
+      success: false,
+      orphanedVideosDeleted: 0,
+      orphanedThumbnailsDeleted: 0,
+      error: error.message
+    }
+  }
+} 

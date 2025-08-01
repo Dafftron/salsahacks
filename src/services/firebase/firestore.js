@@ -13,7 +13,8 @@ import {
   limit,
   onSnapshot,
   serverTimestamp,
-  setDoc
+  setDoc,
+  writeBatch
 } from 'firebase/firestore';
 import { db } from './config';
 
@@ -563,5 +564,136 @@ export const getVideos = async () => {
   } catch (error) {
     console.error('❌ Error al obtener videos:', error)
     return []
+  }
+}
+
+// ===== SINCRONIZACIÓN EN TIEMPO REAL =====
+
+export const subscribeToVideos = (callback) => {
+  try {
+    console.log('🔄 Iniciando suscripción en tiempo real a videos...')
+    const q = query(
+      collection(db, COLLECTIONS.VIDEOS),
+      orderBy('uploadedAt', 'desc')
+    )
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const videos = []
+      snapshot.forEach((doc) => {
+        videos.push({ id: doc.id, ...doc.data() })
+      })
+      console.log(`🔄 Actualización en tiempo real: ${videos.length} videos`)
+      callback(videos)
+    }, (error) => {
+      console.error('❌ Error en suscripción de videos:', error)
+    })
+    
+    return unsubscribe
+  } catch (error) {
+    console.error('❌ Error al iniciar suscripción de videos:', error)
+    return () => {}
+  }
+}
+
+export const subscribeToVideosByStyle = (style, callback) => {
+  try {
+    console.log(`🔄 Iniciando suscripción en tiempo real a videos de estilo: ${style}`)
+    const q = query(
+      collection(db, COLLECTIONS.VIDEOS),
+      where('style', '==', style),
+      orderBy('uploadedAt', 'desc')
+    )
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const videos = []
+      snapshot.forEach((doc) => {
+        videos.push({ id: doc.id, ...doc.data() })
+      })
+      console.log(`🔄 Actualización en tiempo real para ${style}: ${videos.length} videos`)
+      callback(videos)
+    }, (error) => {
+      console.error(`❌ Error en suscripción de videos de ${style}:`, error)
+    })
+    
+    return unsubscribe
+  } catch (error) {
+    console.error(`❌ Error al iniciar suscripción de videos de ${style}:`, error)
+    return () => {}
+  }
+}
+
+// ===== FUNCIONES DE LIMPIEZA DE DATOS =====
+
+export const deleteAllVideos = async () => {
+  try {
+    console.log('🗑️ Iniciando eliminación de todos los videos...')
+    
+    // Obtener todos los videos
+    const videos = await getVideos()
+    console.log(`📊 Videos a eliminar: ${videos.length}`)
+    
+    if (videos.length === 0) {
+      console.log('✅ No hay videos para eliminar')
+      return { success: true, deletedCount: 0, error: null }
+    }
+    
+    // Eliminar documentos en lotes
+    const batch = writeBatch(db)
+    let deletedCount = 0
+    
+    videos.forEach((video) => {
+      const videoRef = doc(db, COLLECTIONS.VIDEOS, video.id)
+      batch.delete(videoRef)
+      deletedCount++
+    })
+    
+    await batch.commit()
+    console.log(`✅ ${deletedCount} videos eliminados de Firestore`)
+    
+    return { success: true, deletedCount, error: null }
+  } catch (error) {
+    console.error('❌ Error al eliminar todos los videos:', error)
+    return { success: false, deletedCount: 0, error: error.message }
+  }
+}
+
+export const updateVideoThumbnailPaths = async () => {
+  try {
+    console.log('🔧 Iniciando actualización de rutas de thumbnails...')
+    
+    const videos = await getVideos()
+    console.log(`📊 Videos a actualizar: ${videos.length}`)
+    
+    if (videos.length === 0) {
+      console.log('✅ No hay videos para actualizar')
+      return { success: true, updatedCount: 0, error: null }
+    }
+    
+    const batch = writeBatch(db)
+    let updatedCount = 0
+    
+    videos.forEach((video) => {
+      // Si el video no tiene thumbnailPath o es incorrecto, intentar corregirlo
+      if (!video.thumbnailPath || video.thumbnailPath === 'placeholder') {
+        const videoRef = doc(db, COLLECTIONS.VIDEOS, video.id)
+        batch.update(videoRef, {
+          thumbnailPath: null, // Establecer como null para que se maneje en la eliminación
+          updatedAt: serverTimestamp()
+        })
+        updatedCount++
+      }
+    })
+    
+    if (updatedCount > 0) {
+      await batch.commit()
+      console.log(`✅ ${updatedCount} videos actualizados`)
+    } else {
+      console.log('✅ No se requirieron actualizaciones')
+    }
+    
+    return { success: true, updatedCount, error: null }
+  } catch (error) {
+    console.error('❌ Error al actualizar rutas de thumbnails:', error)
+    return { success: false, updatedCount: 0, error: error.message }
   }
 } 
