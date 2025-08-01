@@ -185,31 +185,37 @@
 - [x] **Configuración inicial** - React + Vite + Tailwind CSS
 - [x] **Estructura de carpetas** - Organización modular
 - [x] **Navegación principal** - Routing funcional
-- [x] **Página de Figuras** - Diseño completo y funcional
-- [x] **Sistema de colores** - Paleta definida y aplicada
-- [x] **Componentes base** - Header, filtros, botones
+- [x] **Página de Figuras** - Diseño completo y funcional con sistema de tabs
+- [x] **Sistema de colores** - Paleta definida y aplicada con gradientes unificados
+- [x] **Componentes base** - Header, filtros, botones, tabs
 - [x] **Responsive design** - Mobile-first approach
-- [x] **Iconos y UX** - Lucide React implementado
+- [x] **Iconos y UX** - Lucide React implementado con mapeo correcto
 - [x] **Sistema de autenticación** - Firebase Auth completo
 - [x] **Sistema de roles** - 4 roles principales implementados
 - [x] **Sistema de invitaciones** - Registro por enlace
 - [x] **Panel de administración** - Gestión de usuarios
 - [x] **Perfiles de usuario** - Información y edición
 - [x] **Configuración Firebase** - Auth, Firestore, Storage
+- [x] **Sistema de galerías** - Tabs funcionales como en EscuelaPage
+- [x] **Navegación dinámica** - Estado inicial y cambios de estilo corregidos
+- [x] **Firebase Storage** - Configurado con plan Blaze
+- [x] **Sistema de categorías** - Estructura jerárquica implementada
+- [x] **Componentes de UI** - Toast, ConfirmModal, VideoUploadModal
 
 ### **🔄 EN PROGRESO**
-- [ ] **Página de Escuela** - Preparando réplica de Figuras
-- [ ] **Página de Eventos** - Preparando réplica de Figuras
-- [ ] **Sistema de categorías** - Planificación en curso
-- [ ] **Gestión de contenido** - Estructura base lista
+- [ ] **Página de Escuela** - Preparando réplica de Figuras con sistema de tabs
+- [ ] **Página de Eventos** - Preparando réplica de Figuras con sistema de tabs
+- [ ] **Sistema de video upload** - Conectando con Firebase Storage
+- [ ] **Sistema de secuencias** - Implementación del botón "CREAR SECUENCIA"
 
 ### **⏳ PENDIENTE**
-- [ ] **Gestión de videos** - Upload y reproducción
-- [ ] **Sistema de búsqueda** - Búsqueda inteligente
+- [ ] **Gestión de videos** - Upload, reproducción y eliminación completa
+- [ ] **Sistema de búsqueda** - Búsqueda inteligente por tags
 - [ ] **Testing** - Tests unitarios y E2E
 - [ ] **Deploy** - Firebase Hosting
 - [ ] **Sistema de recomendaciones** - Algoritmos avanzados
 - [ ] **Analytics** - Métricas y estadísticas
+- [ ] **Optimización** - Performance y SEO
 
 ---
 
@@ -487,7 +493,7 @@
 **Fecha:** 2025-01-27
 **Descripción:** Actualización completa de la documentación del proyecto
 **Cambios:**
-- ✅ Estado actual del proyecto con 27 commits
+- ✅ Estado actual del proyecto con 29 commits
 - ✅ Sistema de invitaciones completamente funcional
 - ✅ Página cargando correctamente
 - ✅ Roles y permisos operativos
@@ -539,6 +545,51 @@
 - ✅ Roles asignados correctamente
 - ✅ Sistema de autenticación estable
 
+### **Commit #028 - Sistema de Galerías y Tabs en FigurasPage**
+**Fecha:** 2025-01-27
+**Descripción:** Implementación completa del sistema de galerías con tabs y corrección de colores del botón SALSA
+**Cambios:**
+- ✅ **Sistema de Tabs Funcional** - Galería de Videos y Galería de Secuencias como en EscuelaPage
+- ✅ **Colores del Botón SALSA** - Degradado naranja-rosa (`from-orange-500 to-pink-500`) consistente
+- ✅ **Jerarquía de Botones** - Nivel principal (SUBIR VIDEO, CREAR SECUENCIA) y secundario (Galerías)
+- ✅ **Navegación por Tabs** - Solo una galería visible a la vez con transiciones suaves
+- ✅ **Contador Dinámico** - Número de videos en tiempo real en el tab activo
+- ✅ **Estado de Tabs** - Persistencia del tab seleccionado
+- ✅ **Filtros Colapsados** - Filtros por categorías cerrados por defecto
+- ✅ **Corrección de Navegación** - SALSA pre-seleccionado al entrar a FIGURAS
+- ✅ **Iconos Corregidos** - Mapeo correcto de iconos para todos los estilos
+- ✅ **Gradientes Unificados** - Todos los botones activos usan el degradado de SALSA
+- ✅ **Interfaz Limpia** - Eliminación de componentes FirebaseStorageStatus innecesarios
+- ✅ **Funcionalidad Futura** - Preparado para implementación de secuencias
+
+### **Commit #029 - Corrección de Navegación y Estado Inicial**
+**Fecha:** 2025-01-27
+**Descripción:** Corrección del estado inicial y navegación en FigurasPage
+**Cambios:**
+- ✅ **Estado Inicial Corregido** - SALSA seleccionado por defecto al entrar a FIGURAS
+- ✅ **Navegación por Keys** - Uso de `style.key` en lugar de `style.name` para consistencia
+- ✅ **Filtros Dinámicos** - Los filtros se actualizan correctamente al cambiar de estilo
+- ✅ **Títulos Dinámicos** - Título, descripción y botones se actualizan según el estilo
+- ✅ **VideoUploadModal Dinámico** - Usa el estilo seleccionado actualmente
+- ✅ **Comparación Correcta** - `selectedStyle === style.key` para detección de selección
+- ✅ **Filtros Colapsados** - Estado inicial `showFilters: false` para interfaz limpia
+- ✅ **Eliminación de useEffect** - Removido el efecto que forzaba filtros abiertos
+- ✅ **Interfaz Profesional** - Navegación clara e intuitiva entre estilos
+
+### **Commit #030 - Galerías Independientes por Estilo**
+**Fecha:** 2025-01-27
+**Descripción:** Implementación de galerías de videos independientes por estilo de baile
+**Cambios:**
+- ✅ **Filtrado por Estilo** - Cada pestaña (SALSA, BACHATA, KIZOMBA, ZOUK) muestra solo sus videos
+- ✅ **Función Auxiliar** - `filterVideosByStyle()` para evitar duplicación de código
+- ✅ **useEffect Actualizado** - Recarga videos cuando cambia el estilo seleccionado
+- ✅ **handleVideoUploaded Mejorado** - Recarga videos filtrados por estilo actual
+- ✅ **Mensajes Específicos** - "No hay videos de [estilo] aún" en lugar de mensaje genérico
+- ✅ **Filtrado Inteligente** - Busca en `video.style` y `video.tags.estilo` para compatibilidad
+- ✅ **Dependencias Corregidas** - useEffect depende de `selectedStyle` para recarga automática
+- ✅ **Galerías Vacías** - Las pestañas de otros estilos se muestran vacías hasta que se suban videos
+- ✅ **Preparación para Réplica** - Estructura lista para replicar en EscuelaPage y EventosPage
+
 ---
 
 ## 🔄 PUNTOS DE RESTAURACIÓN
@@ -573,15 +624,15 @@
 ## 🎯 PRÓXIMAS TAREAS
 
 ### **🔥 PRIORIDAD ALTA (Esta semana)**
-1. **Crear usuarios de prueba** - Usar sistema de invitaciones para crear un usuario de cada nivel
-2. **Probar sistema completo** - Verificar funcionamiento de invitaciones y roles
-3. **Limpiar EscuelaPage** - Convertir en réplica exacta de FigurasPage
-4. **Limpiar EventosPage** - Convertir en réplica exacta de FigurasPage
-5. **Unificar navegación** - Asegurar consistencia en todas las páginas
+1. **Implementar sistema de secuencias** - Funcionalidad del botón "CREAR SECUENCIA"
+2. **Unificar EscuelaPage** - Aplicar el mismo sistema de tabs y navegación
+3. **Unificar EventosPage** - Aplicar el mismo sistema de tabs y navegación
+4. **Sistema de video upload** - Conectar completamente con Firebase Storage
+5. **Testing del sistema completo** - Verificar todas las funcionalidades
 
 ### **📋 PRIORIDAD MEDIA (Próximas 2 semanas)**
-1. **Gestión de videos** - Upload y reproducción
-2. **Sistema de búsqueda** - Búsqueda inteligente
+1. **Gestión de videos** - Upload, reproducción y eliminación completa
+2. **Sistema de búsqueda** - Búsqueda inteligente por tags
 3. **Panel de administración** - Dashboard completo
 4. **Testing** - Tests básicos
 5. **Optimización** - Performance y SEO
@@ -806,10 +857,10 @@ const firebaseConfig = {
 ---
 
 **📝 Este documento se actualiza con cada commit y cambio significativo en el proyecto.**
-**🔄 Última actualización:** 2025-01-27 (Sistema de video upload completado)
+**🔄 Última actualización:** 2025-01-27 (Sistema de galerías y tabs completado)
 **👨‍💻 Desarrollador:** David Exile
 **🎯 Versión:** SalsaHacks V2.0 
-**📊 Total de Commits:** 28 commits
+**📊 Total de Commits:** 30 commits
 
 ---
 
@@ -948,6 +999,8 @@ PÁGINA (figuras/escuela/eventos) → ESTILO → CATEGORÍA → TAGS
 - ✅ Videos se suben correctamente
 - ✅ Galería funcional
 - ✅ Gestor de categorías estructurado
+- ✅ Búsqueda avanzada implementada (múltiples palabras, sin tildes)
+- ✅ Galerías independientes por estilo
 - 🔄 Pendiente: Conectar módulos con gestor
 
 ### **🎯 PRÓXIMOS PASOS:**
@@ -955,4 +1008,34 @@ PÁGINA (figuras/escuela/eventos) → ESTILO → CATEGORÍA → TAGS
 2. Conectar VideoUploadModal con `categoryStructure`
 3. Implementar eliminación permanente
 4. Usar thumbnails como fig006
-5. Sincronizar todos los módulos 
+5. Sincronizar todos los módulos
+
+---
+
+## 📝 HISTORIAL DE COMMITS
+
+### **#030 - Galerías Independientes por Estilo**
+- **Fecha**: 2024-12-19
+- **Descripción**: Implementación de galerías independientes por estilo en FigurasPage
+- **Cambios**:
+  - Filtrado de videos por `selectedStyle` en `useEffect`
+  - Función auxiliar `filterVideosByStyle` para reutilización
+  - Actualización de `handleVideoUploaded` para recargar galería filtrada
+  - Mensajes dinámicos según el estilo seleccionado
+  - Dependencia `selectedStyle` en `useEffect` para re-renderizado automático
+- **Archivos**: `src/pages/FigurasPage.jsx`
+- **Estado**: ✅ Completado
+
+### **#031 - Búsqueda Avanzada en FigurasPage**
+- **Fecha**: 2024-12-19
+- **Descripción**: Implementación de búsqueda avanzada moderna
+- **Cambios**:
+  - Búsqueda por múltiples palabras separadas por espacios
+  - Normalización de texto (eliminación de tildes y acentos)
+  - Búsqueda en título, descripción y tags
+  - Indicador visual de búsqueda activa
+  - Placeholder mejorado con instrucciones
+  - Función `normalizeText` para normalización
+  - Función `advancedSearch` para búsqueda inteligente
+- **Archivos**: `src/pages/FigurasPage.jsx`
+- **Estado**: ✅ Completado 

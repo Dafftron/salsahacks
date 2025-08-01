@@ -34,6 +34,30 @@ const NotasPage = () => {
 
         const commits = [
         {
+          id: 29,
+          hash: 'a1b2c3d',
+          date: '2025-01-27',
+          time: '16:20:45',
+          title: 'Commit #029 - Corrección de Navegación y Estado Inicial',
+          description: 'Corrección del estado inicial y navegación en FigurasPage',
+          files: ['src/pages/FigurasPage.jsx', 'NOTAS_COMMITS.md'],
+          notes: 'Estado inicial corregido: SALSA seleccionado por defecto al entrar a FIGURAS. Navegación por keys: uso de style.key en lugar de style.name. Filtros dinámicos que se actualizan correctamente. Títulos dinámicos que se actualizan según el estilo. VideoUploadModal dinámico que usa el estilo seleccionado actualmente. Comparación correcta: selectedStyle === style.key. Filtros colapsados: estado inicial showFilters: false. Eliminación de useEffect que forzaba filtros abiertos. Interfaz profesional con navegación clara e intuitiva.',
+          status: 'Completado',
+          category: 'PÁGINAS'
+        },
+        {
+          id: 28,
+          hash: 'd4e5f6g',
+          date: '2025-01-27',
+          time: '16:18:30',
+          title: 'Commit #028 - Sistema de Galerías y Tabs en FigurasPage',
+          description: 'Implementación completa del sistema de galerías con tabs y corrección de colores del botón SALSA',
+          files: ['src/pages/FigurasPage.jsx', 'NOTAS_COMMITS.md'],
+          notes: 'Sistema de tabs funcional: Galería de Videos y Galería de Secuencias como en EscuelaPage. Colores del botón SALSA: degradado naranja-rosa (from-orange-500 to-pink-500) consistente. Jerarquía de botones: nivel principal (SUBIR VIDEO, CREAR SECUENCIA) y secundario (Galerías). Navegación por tabs con contador dinámico y transiciones suaves. Estado de tabs persistente. Filtros colapsados por defecto para interfaz más limpia. Corrección de navegación: SALSA pre-seleccionado al entrar a FIGURAS. Iconos corregidos con mapeo correcto para todos los estilos. Gradientes unificados: todos los botones activos usan el degradado de SALSA. Interfaz limpia: eliminación de componentes FirebaseStorageStatus innecesarios. Funcionalidad futura: preparado para implementación de secuencias.',
+          status: 'Completado',
+          category: 'PÁGINAS'
+        },
+        {
           id: 27,
           hash: '24f8600',
           date: '2025-01-27',
@@ -89,7 +113,7 @@ const NotasPage = () => {
           title: 'Commit #023 - Actualización Completa de NOTAS_COMMITS.md',
           description: 'Actualización completa de la documentación del proyecto',
           files: ['NOTAS_COMMITS.md'],
-          notes: 'Estado actual del proyecto con 27 commits. Sistema de invitaciones completamente funcional. Página cargando correctamente. Roles y permisos operativos.',
+          notes: 'Estado actual del proyecto con 29 commits. Sistema de invitaciones completamente funcional. Página cargando correctamente. Roles y permisos operativos.',
           status: 'Completado',
           category: 'SISTEMAS'
         },

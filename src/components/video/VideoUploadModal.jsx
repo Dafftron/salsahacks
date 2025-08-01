@@ -153,6 +153,12 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         return null
       }
 
+      // Asegurar que el estilo esté incluido en los tags
+      const tagsWithStyle = {
+        ...selectedTags,
+        estilo: selectedTags.estilo ? [...selectedTags.estilo, style] : [style]
+      }
+
       // Crear documento en Firestore
       const videoDoc = {
         title: file.name.replace(/\.[^/.]+$/, ''),
@@ -165,7 +171,8 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         fileSize: file.size,
         fileType: file.type,
         duration: 0, // Se puede calcular después
-        tags: selectedTags,
+        style: style, // Agregar el estilo del video
+        tags: tagsWithStyle,
         uploadedBy: user?.uid || 'anonymous',
         uploadedAt: new Date().toISOString(),
         views: 0,
