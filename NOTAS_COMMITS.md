@@ -868,55 +868,91 @@ const firebaseConfig = {
 
 ---
 
-## 🎥 SISTEMA DE VIDEO UPLOAD COMPLETADO - [Fecha: 2025-01-27]
+## 🎥 SISTEMA DE VIDEO UPLOAD - PAUTAS DE IMPLEMENTACIÓN - [Fecha: 2025-01-27]
 
-### **✅ Funcionalidades Implementadas:**
+### **📋 ESTRUCTURA JERÁRQUICA DEFINIDA:**
 
-#### **1. Firebase Storage Configurado:**
-- Plan Blaze activo y funcionando
-- Videos se suben correctamente a Firebase Storage
-- 4 videos subidos exitosamente (3.75MB - 4.86MB cada uno)
-- Reglas de Storage configuradas para permitir listAll
+#### **1. Jerarquía de Categorías:**
+```
+PÁGINA (figuras/escuela/eventos) → ESTILO → CATEGORÍA → TAGS
+```
 
-#### **2. Galería de Videos Funcional:**
-- Botones restaurados: "GALERÍA DE VIDEOS" y "GALERÍA DE SECUENCIAS"
-- Carga de videos desde Firestore con `getVideos()`
-- Estado de carga con spinner animado
-- Manejo de galería vacía con mensaje informativo
-- Actualización automática después de subir video
+#### **2. Fuente Única de Verdad:**
+- **Gestor de Categorías** (`CategoriesPage.jsx`) es la fuente única
+- Todos los módulos deben leer de `categoryStructure`
+- NO hardcodear tags en ningún componente
 
-#### **3. Interfaz Mejorada:**
-- Contador dinámico de videos en galería
-- Thumbnails con placeholder para videos sin imagen
-- Información de tamaño de archivo en MB
-- Etiquetas de categorías con sistema de colores
-- Diseño responsive y moderno
+#### **3. Tags Contextuales por Página:**
 
-#### **4. Configuración Técnica:**
-- Puerto fijado en 3000 con `strictPort: true`
-- Eliminados mensajes de actualización de plan
-- Función `checkStorageAvailability()` optimizada
-- Componente `FirebaseStorageStatus` actualizado
+**SALSA - FIGURAS:**
+- **ESTILO:** Salsa, Salsa en línea On1, Salsa cubana, Estilo LA, Estilo NY
+- **SUBESTILO/TÉCNICA:** Pasitos libres, Parejas, Footwork On1, Shines
+- **TIPO DE FIGURA:** Cross Body Lead, Copa, Sombrero, Dile que no, Setenta
+- **MANOS/TÉCNICA DE AGARRE:** Una mano, Dos manos paralelas, Cruzadas
 
-### **🎯 Estado Actual:**
-- ✅ Videos se suben a Firebase Storage
-- ✅ Videos aparecen en galería automáticamente
-- ✅ Botones de galería restaurados
-- ✅ Aplicación corre exclusivamente en puerto 3000
-- ✅ Sistema completamente funcional
+**SALSA - ESCUELA:**
+- **NIVEL:** Principiante, Intermedio, Avanzado, Experto
+- **TIPO DE CURSO:** Básico, Técnica, Coreografía, Ritmo, Musicalidad
+- **DURACIÓN:** 5-15 min, 10-25 min, 15-45 min, 20-60 min
+- **INSTRUCTOR:** Carlos Rodríguez, María González, Juan Pérez, Ana López
 
-### **🔧 Archivos Modificados:**
-- `src/pages/FigurasPage.jsx` - Galería completa y botones restaurados
-- `src/services/firebase/firestore.js` - Función `getVideos()` agregada
-- `src/services/firebase/storage.js` - Optimizada para plan Blaze
-- `src/components/video/VideoUploadModal.jsx` - Eliminados mensajes de plan
-- `src/components/FirebaseStorageStatus.jsx` - Actualizado para plan Blaze
-- `vite.config.js` - Puerto fijado en 3000
-- `storage.rules` - Reglas actualizadas para listAll
+### **🎯 FUNCIONALIDADES A IMPLEMENTAR:**
 
-### **📊 Métricas de Éxito:**
-- **Videos subidos:** 4 videos MP4
-- **Tamaños:** 3.75MB - 4.86MB
-- **Tiempo de carga:** < 3 segundos
-- **Actualización automática:** Funcionando
-- **Puerto estable:** 3000 fijo 
+#### **1. VideoUploadModal:**
+- ✅ Leer tags de `categoryStructure[selectedPage][selectedStyle].categories`
+- ✅ Mostrar solo tags del estilo y página actual
+- ✅ Organizar por categorías con colores del gestor
+- ✅ Thumbnails como fig006 (sistema original)
+- ✅ Notificaciones Toast estilizadas
+
+#### **2. Eliminación de Videos:**
+- ✅ Eliminación permanente (sin papelera)
+- ✅ Modal de confirmación estilizado
+- ✅ Eliminar de Firebase Storage + Firestore
+- ✅ Actualización inmediata de galería
+
+#### **3. Filtros de Galería:**
+- ✅ Filtrar por categorías del gestor
+- ✅ Búsqueda por tags específicos
+- ✅ Agrupar por categorías
+- ✅ Limpiar filtros
+
+#### **4. Editor de Videos:**
+- ✅ Mismo sistema de tags que upload
+- ✅ Modificar categorías existentes
+- ✅ Agregar tags nuevos (solo admin)
+
+### **🔄 SINCRONIZACIÓN AUTOMÁTICA:**
+- Si se añaden/borran tags en gestor → actualizar automáticamente:
+  - VideoUploadModal
+  - Filtros de galería
+  - Editor de videos
+  - Búsquedas
+
+### **🎨 SISTEMA DE DISEÑO:**
+- ✅ Notificaciones Toast con gradientes
+- ✅ Modal de confirmación estilizado
+- ✅ Colores del gestor de categorías
+- ✅ Diseño consistente con la web
+
+### **🔧 ARCHIVOS A MODIFICAR:**
+- `src/components/video/VideoUploadModal.jsx` - Conectar con gestor
+- `src/pages/FigurasPage.jsx` - Filtros y eliminación
+- `src/services/firebase/storage.js` - Thumbnails originales
+- `src/services/firebase/firestore.js` - Eliminación completa
+- `src/components/common/Toast.jsx` - Notificaciones
+- `src/components/common/ConfirmModal.jsx` - Confirmación
+
+### **📊 ESTADO ACTUAL:**
+- ✅ Firebase Storage configurado (plan Blaze)
+- ✅ Videos se suben correctamente
+- ✅ Galería funcional
+- ✅ Gestor de categorías estructurado
+- 🔄 Pendiente: Conectar módulos con gestor
+
+### **🎯 PRÓXIMOS PASOS:**
+1. Revertir cambios actuales si es necesario
+2. Conectar VideoUploadModal con `categoryStructure`
+3. Implementar eliminación permanente
+4. Usar thumbnails como fig006
+5. Sincronizar todos los módulos 
