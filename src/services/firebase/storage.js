@@ -26,9 +26,29 @@ export const generateVideoThumbnail = (videoFile) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      // Configurar canvas
-      canvas.width = 300;
-      canvas.height = 200;
+      // Configurar canvas con proporción 16:9 (como el contenedor de la card)
+      canvas.width = 400;
+      canvas.height = 225; // 400 * 9/16 = 225 (proporción 16:9)
+      
+      // Función para calcular dimensiones manteniendo proporción original
+      const calculateThumbnailDimensions = (videoWidth, videoHeight, maxWidth, maxHeight) => {
+        const videoRatio = videoWidth / videoHeight;
+        const containerRatio = maxWidth / maxHeight;
+        
+        let thumbnailWidth, thumbnailHeight;
+        
+        if (videoRatio > containerRatio) {
+          // Video más ancho que el contenedor - ajustar por ancho
+          thumbnailWidth = maxWidth;
+          thumbnailHeight = maxWidth / videoRatio;
+        } else {
+          // Video más alto que el contenedor - ajustar por alto
+          thumbnailHeight = maxHeight;
+          thumbnailWidth = maxHeight * videoRatio;
+        }
+        
+        return { width: thumbnailWidth, height: thumbnailHeight };
+      };
       
       video.onloadedmetadata = () => {
                  try {
@@ -103,8 +123,9 @@ export const generateBestVideoThumbnail = async (videoFile) => {
     
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = 300;
-    canvas.height = 200;
+    // Configurar canvas con proporción 16:9 (como el contenedor de la card)
+    canvas.width = 400;
+    canvas.height = 225; // 400 * 9/16 = 225 (proporción 16:9)
     
     return new Promise((resolve, reject) => {
       video.onloadedmetadata = () => {
@@ -758,4 +779,36 @@ const checkStorageAvailability = async () => {
 export const uploadFigureVideo = async (file, figureId) => {
   const path = `figures/${figureId}/videos/${Date.now()}_${file.name}`;
   return await uploadVideo(file, path);
+};
+
+// Eliminar video completo (archivo + thumbnail)
+export const deleteVideo = async (videoPath, thumbnailPath) => {
+  try {
+    const promises = []
+    
+    // Eliminar archivo de video
+    if (videoPath) {
+      const videoRef = ref(storage, videoPath)
+      promises.push(deleteObject(videoRef))
+    }
+    
+    // Eliminar thumbnail
+    if (thumbnailPath) {
+      const thumbnailRef = ref(storage, thumbnailPath)
+      promises.push(deleteObject(thumbnailRef))
+    }
+    
+    await Promise.all(promises)
+    
+    return { 
+      success: true, 
+      error: null 
+    }
+  } catch (error) {
+    console.error('Error deleting video:', error)
+    return { 
+      success: false, 
+      error: error.message 
+    }
+  }
 }; 

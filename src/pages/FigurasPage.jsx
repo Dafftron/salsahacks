@@ -4,19 +4,27 @@ import {
   Upload, 
   Plus, 
   Heart, 
-  Music
+  Music,
+  Trash2,
+  Filter
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
 import VideoUploadModal from '../components/video/VideoUploadModal'
+import ConfirmModal from '../components/common/ConfirmModal'
+import Toast from '../components/common/Toast'
 import FirebaseStorageStatus from '../components/FirebaseStorageStatus'
-import { getVideos } from '../services/firebase/firestore'
+import { getVideos, deleteVideoDocument } from '../services/firebase/firestore'
+import { deleteVideo } from '../services/firebase/storage'
 import { useAuth } from '../contexts/AuthContext'
 
 const FigurasPage = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [videos, setVideos] = useState([])
   const [loading, setLoading] = useState(true)
+  const [toasts, setToasts] = useState([])
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, video: null })
+  const [selectedTags, setSelectedTags] = useState([])
   const { user } = useAuth()
   
   const { 
@@ -46,14 +54,78 @@ const FigurasPage = () => {
   // Función para actualizar la lista de videos después de subir uno nuevo
   const handleVideoUploaded = async (video) => {
     console.log('Video subido:', video)
+    addToast(`${video.title} subido exitosamente`, 'success')
     // Recargar la lista de videos
     try {
       const videosData = await getVideos()
       setVideos(videosData)
     } catch (error) {
       console.error('Error recargando videos:', error)
+      addToast('Error al actualizar la galería', 'error')
     }
   }
+
+  // Función para añadir notificaciones
+  const addToast = (message, type = 'success') => {
+    const id = Date.now()
+    setToasts(prev => [...prev, { id, message, type }])
+  }
+
+  // Función para eliminar notificaciones
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id))
+  }
+
+  // Función para eliminar video
+  const handleDeleteVideo = async (video) => {
+    try {
+      // Eliminar de Firebase Storage
+      const storageResult = await deleteVideo(video.videoPath, video.thumbnailPath)
+      if (!storageResult.success) {
+        addToast(`Error al eliminar archivos: ${storageResult.error}`, 'error')
+        return
+      }
+
+      // Eliminar de Firestore
+      const firestoreResult = await deleteVideoDocument(video.id)
+      if (!firestoreResult.success) {
+        addToast(`Error al eliminar metadatos: ${firestoreResult.error}`, 'error')
+        return
+      }
+
+      // Actualizar lista local
+      setVideos(prev => prev.filter(v => v.id !== video.id))
+      addToast(`${video.title} eliminado correctamente`, 'success')
+    } catch (error) {
+      console.error('Error deleting video:', error)
+      addToast('Error inesperado al eliminar el video', 'error')
+    }
+  }
+
+  // Función para abrir modal de confirmación
+  const openDeleteModal = (video) => {
+    setDeleteModal({ isOpen: true, video })
+  }
+
+  // Función para cerrar modal de confirmación
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, video: null })
+  }
+
+  // Función para filtrar videos por tags
+  const filteredVideos = selectedTags.length > 0 
+    ? videos.filter(video => {
+        const videoTags = []
+        if (video.tags) {
+          Object.values(video.tags).forEach(tagArray => {
+            if (Array.isArray(tagArray)) {
+              videoTags.push(...tagArray)
+            }
+          })
+        }
+        return selectedTags.some(tag => videoTags.includes(tag))
+      })
+    : videos
 
   // Los colores de etiquetas ahora vienen del sistema de categorías
 
@@ -131,9 +203,19 @@ const FigurasPage = () => {
 
         {/* Videos Grid */}
         <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-            Videos de salsa ({videos.length})
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Videos de salsa ({filteredVideos.length})
+            </h2>
+            {selectedTags.length > 0 && (
+              <button
+                onClick={() => setSelectedTags([])}
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200"
+              >
+                Limpiar filtros
+              </button>
+            )}
+          </div>
           
           {loading ? (
             <div className="flex justify-center items-center py-12">
@@ -145,15 +227,15 @@ const FigurasPage = () => {
               <p className="text-gray-500 text-lg">No hay videos subidos aún</p>
               <p className="text-gray-400 text-sm mt-2">Sube tu primer video usando el botón de arriba</p>
             </div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-6">
-              {videos.map((video) => (
+                     ) : (
+             <div className="grid md:grid-cols-2 gap-6">
+               {filteredVideos.map((video) => (
                 <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
                   <div className="relative">
                     <img
                       src={video.thumbnailUrl || 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=VIDEO'}
                       alt={video.title}
-                      className="w-full h-48 object-contain bg-gray-100"
+                      className="w-full h-48 object-cover"
                     />
                     <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
                       4K
@@ -178,23 +260,27 @@ const FigurasPage = () => {
                       )}
                     </div>
                     
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span className="font-medium">
-                        {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
-                      </span>
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-1">
-                          <Heart className="h-4 w-4 text-red-500 fill-current" />
-                          <span className="font-medium">0</span>
-                        </div>
-                        <button className="text-gray-400 hover:text-red-500 transition-colors duration-200">
-                          <Heart className="h-4 w-4" />
-                        </button>
-                        <button className="text-gray-400 hover:text-gray-600 transition-colors duration-200">
-                          <Upload className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
+                                         <div className="flex items-center justify-between text-sm text-gray-500">
+                       <span className="font-medium">
+                         {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
+                       </span>
+                       <div className="flex items-center space-x-4">
+                         <div className="flex items-center space-x-1">
+                           <Heart className="h-4 w-4 text-red-500 fill-current" />
+                           <span className="font-medium">{video.likes || 0}</span>
+                         </div>
+                         <button className="text-gray-400 hover:text-red-500 transition-colors duration-200">
+                           <Heart className="h-4 w-4" />
+                         </button>
+                         <button 
+                           onClick={() => openDeleteModal(video)}
+                           className="text-gray-400 hover:text-red-500 transition-colors duration-200"
+                           title="Eliminar video"
+                         >
+                           <Trash2 className="h-4 w-4" />
+                         </button>
+                       </div>
+                     </div>
                   </div>
                 </div>
               ))}
@@ -208,14 +294,35 @@ const FigurasPage = () => {
         </div>
       </div>
 
-      {/* Video Upload Modal */}
-      <VideoUploadModal
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        onVideoUploaded={handleVideoUploaded}
-      />
-    </div>
-  )
-}
+             {/* Video Upload Modal */}
+       <VideoUploadModal
+         isOpen={isUploadModalOpen}
+         onClose={() => setIsUploadModalOpen(false)}
+         onVideoUploaded={handleVideoUploaded}
+       />
+
+       {/* Confirm Delete Modal */}
+       <ConfirmModal
+         isOpen={deleteModal.isOpen}
+         onClose={closeDeleteModal}
+         onConfirm={() => handleDeleteVideo(deleteModal.video)}
+         title="Eliminar Video"
+         message={`¿Estás seguro de que quieres eliminar "${deleteModal.video?.title}"? Esta acción no se puede deshacer.`}
+         confirmText="Eliminar"
+         cancelText="Cancelar"
+       />
+
+       {/* Toasts */}
+       {toasts.map(toast => (
+         <Toast
+           key={toast.id}
+           message={toast.message}
+           type={toast.type}
+           onClose={() => removeToast(toast.id)}
+         />
+       ))}
+     </div>
+   )
+ }
 
 export default FigurasPage 
