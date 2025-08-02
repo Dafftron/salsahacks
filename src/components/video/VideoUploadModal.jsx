@@ -9,16 +9,19 @@ import Toast from '../common/Toast'
 const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', style = 'salsa' }) => {
   const { user } = useAuth()
   const { currentCategories, categoriesList, getColorClasses } = useCategories(page, style)
-  const fileInputRef = useRef(null)
-  const [selectedFiles, setSelectedFiles] = useState([])
-  const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState({})
-  const [currentStep, setCurrentStep] = useState(1)
-  const [videoData, setVideoData] = useState({})
-  const [toasts, setToasts] = useState([])
+     const fileInputRef = useRef(null)
+   const [selectedFiles, setSelectedFiles] = useState([])
+   const [uploading, setUploading] = useState(false)
+   const [uploadProgress, setUploadProgress] = useState({})
+   const [currentStep, setCurrentStep] = useState(1)
+   const [videoData, setVideoData] = useState({})
+   const [toasts, setToasts] = useState([])
 
-  // Estados para tags organizados por categorías
-  const [selectedTags, setSelectedTags] = useState({})
+   // Estados para tags organizados por categorías
+   const [selectedTags, setSelectedTags] = useState({})
+   
+   // Refs para mantener los valores de los campos
+   const fieldRefs = useRef({})
 
   useEffect(() => {
     if (!isOpen) {
@@ -37,20 +40,29 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     }
   }, [currentCategories])
 
-  const resetForm = () => {
-    setSelectedFiles([])
-    setUploading(false)
-    setUploadProgress({})
-    setCurrentStep(1)
-    setVideoData({})
-    if (currentCategories) {
-      const initialTags = {}
-      Object.keys(currentCategories).forEach(categoryKey => {
-        initialTags[categoryKey] = []
-      })
-      setSelectedTags(initialTags)
-    }
-  }
+     const resetForm = () => {
+     // Limpiar URLs de vista previa antes de resetear
+     Object.values(videoData).forEach(data => {
+       if (data.videoPreview) {
+         URL.revokeObjectURL(data.videoPreview)
+       }
+     })
+     
+     setSelectedFiles([])
+     setUploading(false)
+     setUploadProgress({})
+     setCurrentStep(1)
+     setVideoData({})
+     // Limpiar refs
+     fieldRefs.current = {}
+     if (currentCategories) {
+       const initialTags = {}
+       Object.keys(currentCategories).forEach(categoryKey => {
+         initialTags[categoryKey] = []
+       })
+       setSelectedTags(initialTags)
+     }
+   }
 
   const addToast = (message, type = 'success') => {
     const id = Date.now()
@@ -61,34 +73,50 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     setToasts(prev => prev.filter(toast => toast.id !== id))
   }
 
-  const handleFileSelect = (event) => {
-    const files = Array.from(event.target.files)
-    const videoFiles = files.filter(file => file.type.startsWith('video/'))
-    
-    if (videoFiles.length !== files.length) {
-      addToast('Solo se permiten archivos de video', 'error')
-      return
-    }
+     const handleFileSelect = (event) => {
+     const files = Array.from(event.target.files)
+     const videoFiles = files.filter(file => file.type.startsWith('video/'))
+     
+     if (videoFiles.length !== files.length) {
+       addToast('Solo se permiten archivos de video', 'error')
+       return
+     }
 
-    // Verificar duplicados en la selección actual
-    const newFiles = videoFiles.filter(newFile => 
-      !selectedFiles.some(existingFile => 
-        existingFile.name === newFile.name && existingFile.size === newFile.size
-      )
-    )
+     // Verificar duplicados en la selección actual
+     const newFiles = videoFiles.filter(newFile => 
+       !selectedFiles.some(existingFile => 
+         existingFile.name === newFile.name && existingFile.size === newFile.size
+       )
+     )
 
-    if (newFiles.length === 0) {
-      addToast('Algunos archivos ya están seleccionados', 'warning')
-      return
-    }
+     if (newFiles.length === 0) {
+       addToast('Algunos archivos ya están seleccionados', 'warning')
+       return
+     }
 
-    setSelectedFiles(prev => [...prev, ...newFiles])
-    addToast(`${newFiles.length} video(s) seleccionado(s)`, 'success')
-  }
+     // Generar vistas previas para los nuevos archivos
+     newFiles.forEach(file => {
+       const videoPreview = URL.createObjectURL(file)
+       setVideoData(prev => ({
+         ...prev,
+         [file.name]: {
+           ...prev[file.name],
+           videoPreview
+         }
+       }))
+     })
 
-  const removeFile = (index) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
-  }
+     setSelectedFiles(prev => [...prev, ...newFiles])
+     addToast(`${newFiles.length} video(s) seleccionado(s)`, 'success')
+   }
+
+     const removeFile = (index) => {
+     const fileToRemove = selectedFiles[index]
+     if (fileToRemove && videoData[fileToRemove.name]?.videoPreview) {
+       URL.revokeObjectURL(videoData[fileToRemove.name].videoPreview)
+     }
+     setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+   }
 
   const handleTagToggle = (category, tag) => {
     setSelectedTags(prev => {
@@ -109,26 +137,38 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     })
   }
 
-  const generateThumbnail = async (file) => {
-    try {
-      const result = await generateVideoThumbnail(file)
-      if (result.success && result.blob) {
-        // Subir thumbnail a Firebase Storage
-        const thumbnailPath = `thumbnails/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`
-        const uploadResult = await uploadFile(result.blob, thumbnailPath)
-        
-        if (uploadResult.success) {
-          // Limpiar blob URL temporal
-          URL.revokeObjectURL(result.thumbnailURL)
-          return { url: uploadResult.url, path: uploadResult.path }
-        }
-      }
-      return { url: 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO', path: null }
-    } catch (error) {
-      console.error('Error generating thumbnail:', error)
-      return { url: 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO', path: null }
-    }
-  }
+     const generateThumbnail = async (file) => {
+     try {
+       // Si hay un thumbnail personalizado, usarlo
+       if (videoData[file.name]?.customThumbnailFile) {
+         const customThumbnailFile = videoData[file.name].customThumbnailFile
+         const thumbnailPath = `thumbnails/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`
+         const uploadResult = await uploadFile(customThumbnailFile, thumbnailPath)
+         
+         if (uploadResult.success) {
+           return { url: uploadResult.url, path: uploadResult.path }
+         }
+       }
+       
+       // Si no hay thumbnail personalizado, generar uno automáticamente
+       const result = await generateVideoThumbnail(file)
+       if (result.success && result.blob) {
+         // Subir thumbnail a Firebase Storage
+         const thumbnailPath = `thumbnails/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`
+         const uploadResult = await uploadFile(result.blob, thumbnailPath)
+         
+         if (uploadResult.success) {
+           // Limpiar blob URL temporal
+           URL.revokeObjectURL(result.thumbnailURL)
+           return { url: uploadResult.url, path: uploadResult.path }
+         }
+       }
+       return { url: 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO', path: null }
+     } catch (error) {
+       console.error('Error generating thumbnail:', error)
+       return { url: 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO', path: null }
+     }
+   }
 
   const uploadVideoFile = async (file, index) => {
     try {
@@ -159,25 +199,32 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         estilo: selectedTags.estilo ? [...selectedTags.estilo, style] : [style]
       }
 
-      // Crear documento en Firestore
-      const videoDoc = {
-        title: file.name.replace(/\.[^/.]+$/, ''),
-        originalTitle: file.name,
-        description: videoData[file.name]?.description || '',
-        videoUrl: uploadResult.url,
-        thumbnailUrl: thumbnailResult.url,
-        videoPath: uploadResult.path,
-        thumbnailPath: thumbnailResult.path,
-        fileSize: file.size,
-        fileType: file.type,
-        duration: 0, // Se puede calcular después
-        style: style, // Agregar el estilo del video
-        tags: tagsWithStyle,
-        uploadedBy: user?.uid || 'anonymous',
-        uploadedAt: new Date().toISOString(),
-        views: 0,
-        likes: 0
-      }
+                           // Obtener los valores actuales de los campos de entrada usando refs
+        const titleInput = fieldRefs.current[`${file.name}-title`]
+        const descriptionInput = fieldRefs.current[`${file.name}-description`]
+        
+        const currentTitle = titleInput?.value?.trim() || videoData[file.name]?.title || file.name.replace(/\.[^/.]+$/, '')
+        const currentDescription = descriptionInput?.value?.trim() || videoData[file.name]?.description || ''
+       
+       // Crear documento en Firestore
+        const videoDoc = {
+          title: currentTitle,
+          originalTitle: file.name,
+          description: currentDescription,
+          videoUrl: uploadResult.url,
+          thumbnailUrl: thumbnailResult.url,
+          videoPath: uploadResult.path,
+          thumbnailPath: thumbnailResult.path,
+          fileSize: file.size,
+          fileType: file.type,
+          duration: 0, // Se puede calcular después
+          style: style, // Agregar el estilo del video
+          tags: tagsWithStyle,
+          uploadedBy: user?.uid || 'anonymous',
+          uploadedAt: new Date().toISOString(),
+          views: 0,
+          likes: 0
+        }
 
       const docResult = await createVideoDocument(videoDoc)
       if (!docResult.success) {
@@ -227,7 +274,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         <p className="text-gray-600">Selecciona uno o varios videos para subir</p>
       </div>
 
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-pink-400 transition-colors duration-200">
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-pink-400 transition-colors duration-200">
         <input
           ref={fileInputRef}
           type="file"
@@ -238,11 +285,11 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex flex-col items-center space-y-2 text-gray-600 hover:text-pink-500 transition-colors duration-200"
+          className="w-full flex flex-col items-center justify-center space-y-2 text-gray-600 hover:text-pink-500 transition-colors duration-200"
         >
           <Upload className="h-12 w-12" />
-          <span className="font-medium">Haz clic para seleccionar videos</span>
-          <span className="text-sm">MP4, AVI, MOV, etc. (máx. 100MB cada uno)</span>
+          <span className="font-medium text-center">Haz clic para seleccionar videos</span>
+          <span className="text-sm text-center">MP4, AVI, MOV, etc. (máx. 100MB cada uno)</span>
         </button>
       </div>
 
@@ -271,37 +318,233 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
   const TagsStep = () => (
     <div className="space-y-6">
       <div className="text-center">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Configurar Etiquetas</h3>
-        <p className="text-gray-600">Selecciona las etiquetas que describan tus videos</p>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Configurar Videos</h3>
+        <p className="text-gray-600">Personaliza la información de tus videos antes de subirlos</p>
       </div>
 
-             {categoriesList.map((category) => (
-         <div key={category.key} className="space-y-3">
-           <h4 className="font-medium text-gray-900 capitalize">{category.name}</h4>
-           <div className="flex flex-wrap gap-2">
-             {category.tags.map(tag => (
-               <button
-                 key={tag}
-                 onClick={() => handleTagToggle(category.key, tag)}
-                 className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
-                   selectedTags[category.key]?.includes(tag)
-                      ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                 }`}
+      {/* Configuración por video */}
+      {selectedFiles.map((file, fileIndex) => (
+        <div key={fileIndex} className="border border-gray-200 rounded-lg p-4 space-y-4">
+                     <div className="flex items-center space-x-3">
+             <div className="w-16 h-12 bg-gray-100 rounded flex items-center justify-center relative overflow-hidden">
+               {videoData[file.name]?.videoPreview ? (
+                 <video 
+                   src={videoData[file.name].videoPreview} 
+                   className="w-full h-full object-cover"
+                   muted
+                 />
+               ) : (
+                 <span className="text-xs text-gray-500">VIDEO</span>
+               )}
+                               <button
+                  onClick={() => {
+                    // Usar la URL de vista previa existente o crear una nueva
+                    let videoSrc = videoData[file.name]?.videoPreview
+                    let shouldRevokeUrl = false
+                    
+                    // Si no hay vista previa, crear una nueva URL
+                    if (!videoSrc) {
+                      videoSrc = URL.createObjectURL(file)
+                      shouldRevokeUrl = true
+                    }
+                    
+                    const video = document.createElement('video')
+                    video.src = videoSrc
+                    video.controls = true
+                    video.style.width = '100%'
+                    video.style.maxHeight = '400px'
+                    
+                    const modal = document.createElement('div')
+                    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60]'
+                    
+                    const closeModal = () => {
+                      document.body.removeChild(modal)
+                      // Solo revocar la URL si la creamos específicamente para este modal
+                      if (shouldRevokeUrl) {
+                        URL.revokeObjectURL(videoSrc)
+                      }
+                    }
+                    
+                    modal.onclick = closeModal
+                    
+                    const videoContainer = document.createElement('div')
+                    videoContainer.className = 'bg-white rounded-lg p-4 max-w-2xl w-full mx-4'
+                    videoContainer.onclick = (e) => e.stopPropagation()
+                    
+                    const header = document.createElement('div')
+                    header.className = 'flex items-center justify-between mb-4'
+                    header.innerHTML = `
+                      <h3 class="text-lg font-semibold text-gray-900">${file.name}</h3>
+                      <button class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                      </button>
+                    `
+                    header.querySelector('button').onclick = closeModal
+                    
+                    videoContainer.appendChild(header)
+                    videoContainer.appendChild(video)
+                    modal.appendChild(videoContainer)
+                    document.body.appendChild(modal)
+                  }}
+                 className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity duration-200"
                >
-                 {tag}
+                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                   <path d="M8 5v14l11-7z"/>
+                 </svg>
                </button>
-             ))}
+             </div>
+             <div className="flex-1">
+               <h4 className="font-medium text-gray-900">{file.name}</h4>
+               <p className="text-sm text-gray-500">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+             </div>
            </div>
-         </div>
-       ))}
+
+                     {/* Nombre personalizado */}
+           <div className="space-y-2">
+             <label className="block text-sm font-medium text-gray-700">
+               Nombre del video
+             </label>
+             <input
+               type="text"
+               data-file={file.name}
+               data-field="title"
+               ref={(el) => {
+                 if (el) {
+                   fieldRefs.current[`${file.name}-title`] = el
+                   if (!el.value) {
+                     el.value = videoData[file.name]?.title || file.name.replace(/\.[^/.]+$/, '')
+                   }
+                 }
+               }}
+               onBlur={(e) => {
+                 const newTitle = e.target.value.trim()
+                 if (newTitle !== (videoData[file.name]?.title || file.name.replace(/\.[^/.]+$/, ''))) {
+                   setVideoData(prev => ({
+                     ...prev,
+                     [file.name]: {
+                       ...prev[file.name],
+                       title: newTitle
+                     }
+                   }))
+                 }
+               }}
+               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+               placeholder="Ingresa un nombre para el video"
+             />
+           </div>
+
+           {/* Descripción */}
+           <div className="space-y-2">
+             <label className="block text-sm font-medium text-gray-700">
+               Descripción (opcional)
+             </label>
+             <textarea
+               data-file={file.name}
+               data-field="description"
+               ref={(el) => {
+                 if (el) {
+                   fieldRefs.current[`${file.name}-description`] = el
+                   if (!el.value) {
+                     el.value = videoData[file.name]?.description || ''
+                   }
+                 }
+               }}
+               onBlur={(e) => {
+                 const newDescription = e.target.value.trim()
+                 if (newDescription !== (videoData[file.name]?.description || '')) {
+                   setVideoData(prev => ({
+                     ...prev,
+                     [file.name]: {
+                       ...prev[file.name],
+                       description: newDescription
+                     }
+                   }))
+                 }
+               }}
+               rows={2}
+               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+               placeholder="Describe brevemente el contenido del video..."
+             />
+           </div>
+
+          {/* Thumbnail personalizado */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Thumbnail personalizado (opcional)
+            </label>
+            <div className="flex items-center space-x-3">
+              <div className="w-20 h-12 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
+                {videoData[file.name]?.customThumbnail ? (
+                  <img 
+                    src={videoData[file.name].customThumbnail} 
+                    alt="Thumbnail" 
+                    className="w-full h-full object-cover rounded"
+                  />
+                ) : (
+                  <span className="text-xs text-gray-500">IMG</span>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const thumbnailFile = e.target.files[0]
+                  if (thumbnailFile) {
+                    const reader = new FileReader()
+                    reader.onload = (e) => {
+                      setVideoData(prev => ({
+                        ...prev,
+                        [file.name]: {
+                          ...prev[file.name],
+                          customThumbnail: e.target.result,
+                          customThumbnailFile: thumbnailFile
+                        }
+                      }))
+                    }
+                    reader.readAsDataURL(thumbnailFile)
+                  }
+                }}
+                className="flex-1 text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100"
+              />
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* Etiquetas globales */}
+      <div className="border-t pt-6">
+        <h4 className="font-medium text-gray-900 mb-4">Etiquetas para todos los videos</h4>
+        
+        {categoriesList.map((category) => (
+          <div key={category.key} className="space-y-3 mb-4">
+            <h5 className="font-medium text-gray-700 capitalize">{category.name}</h5>
+            <div className="flex flex-wrap gap-2">
+              {category.tags.map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagToggle(category.key, tag)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                    selectedTags[category.key]?.includes(tag)
+                       ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
+                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
 
       <div className="bg-blue-50 p-4 rounded-lg">
         <div className="flex items-start space-x-2">
           <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
           <div>
             <p className="text-sm text-blue-800 font-medium">Información</p>
-            <p className="text-sm text-blue-700">Las etiquetas ayudarán a otros usuarios a encontrar tus videos más fácilmente.</p>
+            <p className="text-sm text-blue-700">Personaliza cada video individualmente y aplica etiquetas que se usarán para todos los videos seleccionados.</p>
           </div>
         </div>
       </div>

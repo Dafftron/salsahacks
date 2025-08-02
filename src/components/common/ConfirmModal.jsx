@@ -64,7 +64,7 @@ const ConfirmModal = ({
 
         {/* Content */}
         <div className="p-6">
-          <p className="text-gray-600 leading-relaxed">{message}</p>
+          <div className="text-gray-600 leading-relaxed whitespace-pre-line">{message}</div>
         </div>
 
         {/* Footer */}

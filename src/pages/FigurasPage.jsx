@@ -24,7 +24,8 @@ import {
   deleteVideoDocument, 
   subscribeToVideosByStyle,
   deleteAllVideos,
-  updateVideoThumbnailPaths
+  updateVideoThumbnailPaths,
+  diagnoseVideos
 } from '../services/firebase/firestore'
 import { 
   deleteVideo, 
@@ -234,6 +235,32 @@ const FigurasPage = () => {
 
   const closeCleanupModal = () => {
     setCleanupModal({ isOpen: false, type: null })
+  }
+
+  // Función para ejecutar diagnóstico de videos
+  const handleDiagnoseVideos = async () => {
+    try {
+      addToast('Ejecutando diagnóstico de videos...', 'info')
+      const result = await diagnoseVideos()
+      
+      if (result.success) {
+        console.log('🔍 Resultado del diagnóstico:', result)
+        
+        let message = `Diagnóstico: ${result.totalVideos} videos total, ${result.salsaVideos} de salsa`
+        if (result.fig003Found) {
+          message += ` ✅ Fig003 encontrado`
+        } else {
+          message += ` ❌ Fig003 NO encontrado`
+        }
+        
+        addToast(message, 'success')
+      } else {
+        addToast(`Error en diagnóstico: ${result.error}`, 'error')
+      }
+    } catch (error) {
+      console.error('Error ejecutando diagnóstico:', error)
+      addToast('Error al ejecutar diagnóstico', 'error')
+    }
   }
 
   // Función para manejar filtros por tags
@@ -503,6 +530,13 @@ const FigurasPage = () => {
             {/* Cleanup Buttons */}
             <div className="flex flex-wrap gap-2">
               <button
+                onClick={handleDiagnoseVideos}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🔍 Diagnóstico
+              </button>
+              <button
                 onClick={() => openCleanupModal('update')}
                 disabled={syncStatus === 'syncing'}
                 className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -538,7 +572,7 @@ const FigurasPage = () => {
             }`}
           >
             <Music className="h-4 w-4" />
-            <span>GALERÍA DE VIDEOS ({filteredVideos.length})</span>
+                            <span>GALERÍA DE VIDEOS</span>
           </button>
           <button
             onClick={() => setActiveTab('secuencias')}
@@ -633,7 +667,7 @@ const FigurasPage = () => {
                          </button>
                          <button 
                            onClick={() => openDeleteModal(video)}
-                           className="text-gray-400 hover:text-red-500 transition-colors duration-200"
+                           className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
                            title="Eliminar video"
                          >
                            <Trash2 className="h-4 w-4" />
@@ -706,10 +740,18 @@ const FigurasPage = () => {
          isOpen={deleteModal.isOpen}
          onClose={closeDeleteModal}
          onConfirm={() => handleDeleteVideo(deleteModal.video)}
-         title="Eliminar Video"
-         message={`¿Estás seguro de que quieres eliminar "${deleteModal.video?.title}"? Esta acción no se puede deshacer.`}
-         confirmText="Eliminar"
+         title="🗑️ Eliminar Video"
+         message={`¿Estás seguro de que quieres eliminar el video "${deleteModal.video?.title}"?
+
+Esta acción eliminará permanentemente:
+• El archivo de video de Firebase Storage
+• El thumbnail del video
+• Los metadatos de Firestore
+
+Esta acción NO se puede deshacer.`}
+         confirmText="Sí, Eliminar"
          cancelText="Cancelar"
+         type="danger"
        />
 
        {/* Toasts */}

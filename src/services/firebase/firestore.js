@@ -598,6 +598,8 @@ export const subscribeToVideos = (callback) => {
 export const subscribeToVideosByStyle = (style, callback) => {
   try {
     console.log(`🔄 Iniciando suscripción en tiempo real a videos de estilo: ${style}`)
+    
+    // Primero intentar con la consulta optimizada (requiere índice)
     const q = query(
       collection(db, COLLECTIONS.VIDEOS),
       where('style', '==', style),
@@ -613,6 +615,35 @@ export const subscribeToVideosByStyle = (style, callback) => {
       callback(videos)
     }, (error) => {
       console.error(`❌ Error en suscripción de videos de ${style}:`, error)
+      
+      // Si falla por falta de índice, usar consulta simple y filtrar en cliente
+      if (error.code === 'failed-precondition' || error.message.includes('index')) {
+        console.log(`⚠️ Usando fallback para ${style} (sin índice)`)
+        
+        const fallbackQuery = query(
+          collection(db, COLLECTIONS.VIDEOS),
+          orderBy('uploadedAt', 'desc')
+        )
+        
+        const fallbackUnsubscribe = onSnapshot(fallbackQuery, (snapshot) => {
+          const allVideos = []
+          snapshot.forEach((doc) => {
+            allVideos.push({ id: doc.id, ...doc.data() })
+          })
+          
+          // Filtrar por estilo en el cliente (solo por el campo style)
+          const filteredVideos = allVideos.filter(video => 
+            video.style === style
+          )
+          
+          console.log(`🔄 Fallback: ${filteredVideos.length} videos de ${style} de ${allVideos.length} total`)
+          callback(filteredVideos)
+        }, (fallbackError) => {
+          console.error(`❌ Error en fallback para ${style}:`, fallbackError)
+        })
+        
+        return fallbackUnsubscribe
+      }
     })
     
     return unsubscribe
@@ -695,5 +726,72 @@ export const updateVideoThumbnailPaths = async () => {
   } catch (error) {
     console.error('❌ Error al actualizar rutas de thumbnails:', error)
     return { success: false, updatedCount: 0, error: error.message }
+  }
+} 
+
+// ===== FUNCIONES DE DIAGNÓSTICO =====
+
+export const diagnoseVideos = async () => {
+  try {
+    console.log('🔍 Iniciando diagnóstico de videos...')
+    
+    // Obtener todos los videos sin filtros
+    const allVideos = await getVideos()
+    console.log(`📊 Total de videos en Firestore: ${allVideos.length}`)
+    
+    // Agrupar por estilo
+    const videosByStyle = {}
+    allVideos.forEach(video => {
+      const style = video.style || 'sin-estilo'
+      if (!videosByStyle[style]) {
+        videosByStyle[style] = []
+      }
+      videosByStyle[style].push(video)
+    })
+    
+    console.log('📊 Videos por estilo:', videosByStyle)
+    
+    // Verificar videos de salsa específicamente
+    const salsaVideos = allVideos.filter(video => 
+      video.style === 'salsa' || 
+      (video.tags && video.tags.estilo && video.tags.estilo.includes('salsa'))
+    )
+    
+    console.log(`📊 Videos de salsa encontrados: ${salsaVideos.length}`)
+    salsaVideos.forEach(video => {
+      console.log(`  - ${video.title} (ID: ${video.id}, Style: ${video.style})`)
+    })
+    
+    // Buscar específicamente el video Fig003
+    const fig003Video = allVideos.find(video => 
+      video.originalTitle && video.originalTitle.includes('Fig003')
+    )
+    
+    if (fig003Video) {
+      console.log('🎯 Video Fig003 encontrado:', fig003Video)
+    } else {
+      console.log('❌ Video Fig003 NO encontrado en Firestore')
+    }
+    
+    return {
+      success: true,
+      totalVideos: allVideos.length,
+      videosByStyle,
+      salsaVideos: salsaVideos.length,
+      fig003Found: !!fig003Video,
+      fig003Video,
+      error: null
+    }
+  } catch (error) {
+    console.error('❌ Error en diagnóstico de videos:', error)
+    return {
+      success: false,
+      totalVideos: 0,
+      videosByStyle: {},
+      salsaVideos: 0,
+      fig003Found: false,
+      fig003Video: null,
+      error: error.message
+    }
   }
 } 
