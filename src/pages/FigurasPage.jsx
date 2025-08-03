@@ -363,9 +363,9 @@ const FigurasPage = () => {
     // Filtro por búsqueda avanzada
     const searchMatch = advancedSearch(video, searchTerms)
 
-    // Filtro por tags
+    // Filtro por tags - EXCLUYENTE (todos los tags seleccionados deben estar presentes)
     const tagsMatch = selectedTags.length === 0 || 
-      selectedTags.some(tag => {
+      selectedTags.every(tag => {
         // Buscar en todas las categorías de tags del video
         if (video.tags) {
           return Object.values(video.tags).some(categoryTags => 
