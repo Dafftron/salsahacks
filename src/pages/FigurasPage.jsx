@@ -774,87 +774,279 @@ const FigurasPage = () => {
                       alt={video.title}
                       className="w-full h-48 object-cover"
                     />
-                    <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
-                      {video.resolution && video.resolution !== 'Unknown' ? 
-                        `${video.resolution}${video.videoWidth && video.videoHeight ? ` (${video.videoWidth}x${video.videoHeight})` : ''}` : 
-                        'HD'
-                      }
-                    </div>
+                              <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
+            {video.resolution && video.resolution !== 'Unknown' ? 
+              video.resolution : 
+              'HD'
+            }
+          </div>
                     
-                    {/* Botón de reproducción */}
-                    <button
-                      onClick={async () => {
-                        try {
-                          // Abrir modal de reproducción
-                          const modal = document.createElement('div')
-                          modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50'
-                          
-                          const videoContainer = document.createElement('div')
-                          videoContainer.className = 'bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto'
-                          videoContainer.onclick = (e) => e.stopPropagation()
-                          
-                          const header = document.createElement('div')
-                          header.className = 'flex items-center justify-between mb-4'
-                          header.innerHTML = `
-                            <h3 class="text-lg font-semibold text-gray-900">${video.title}</h3>
-                            <button class="text-gray-400 hover:text-gray-600 transition-colors">
-                              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                              </svg>
-                            </button>
-                          `
-                          
-                          // Crear el VideoPlayer
-                          const videoPlayerContainer = document.createElement('div')
-                          videoPlayerContainer.id = 'video-player-container'
-                          videoPlayerContainer.className = 'w-full flex justify-center'
-                          
-                          videoContainer.appendChild(header)
-                          videoContainer.appendChild(videoPlayerContainer)
-                          modal.appendChild(videoContainer)
-                          document.body.appendChild(modal)
-                          
-                          // Renderizar el VideoPlayer usando React
-                          const { createRoot } = await import('react-dom/client')
-                          const root = createRoot(videoPlayerContainer)
-                          root.render(React.createElement(VideoPlayer, {
-                            src: video.videoUrl,
-                            size: 'large',
-                            loop: true,
-                            initialShowControls: true,
-                            autoplay: true,
-                            muted: false,
-                            className: 'w-full max-w-3xl',
-                            resolutions: ['auto', '4k', '1080p', '720p', '480p', '360p'],
-                            currentResolution: 'auto',
-                            onResolutionChange: (resolution) => {
-                              console.log(`Resolución cambiada a: ${resolution}`)
-                              // Aquí se implementaría la lógica para cambiar la resolución del video
+                                         {/* Botón de reproducción */}
+                     <button
+                       onClick={async () => {
+                         try {
+                           // Abrir modal de reproducción
+                           const modal = document.createElement('div')
+                           modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50'
+                           
+                           const videoContainer = document.createElement('div')
+                           videoContainer.className = 'bg-white rounded-lg p-6 max-w-5xl w-full mx-4 max-h-[95vh] overflow-y-auto'
+                           videoContainer.onclick = (e) => e.stopPropagation()
+                           
+                           const header = document.createElement('div')
+                           header.className = 'flex items-center justify-between mb-4'
+                           header.innerHTML = `
+                             <h3 class="text-xl font-semibold text-gray-900">${video.title}</h3>
+                             <button class="text-gray-400 hover:text-gray-600 transition-colors">
+                               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                               </svg>
+                             </button>
+                           `
+                           
+                           // Crear el VideoPlayer
+                           const videoPlayerContainer = document.createElement('div')
+                           videoPlayerContainer.id = 'video-player-container'
+                           videoPlayerContainer.className = 'w-full flex justify-center mb-6'
+                           
+                           // Crear contenedor para información del video
+                           const videoInfoContainer = document.createElement('div')
+                           videoInfoContainer.className = 'w-full max-w-3xl mx-auto'
+                           
+                           // Descripción
+                           const description = document.createElement('div')
+                           description.className = 'mb-4'
+                           description.innerHTML = `
+                             <p class="text-gray-600 text-sm">${video.description || 'Sin descripción'}</p>
+                           `
+                           
+                                                       // Stats del video
+                            const stats = document.createElement('div')
+                            stats.className = 'flex items-center justify-between mb-4 p-3 bg-gray-50 rounded-lg'
+                            stats.innerHTML = `
+                              <div class="flex items-center space-x-4 text-sm text-gray-600">
+                                <span class="font-medium">${(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
+                                <span class="text-gray-400">•</span>
+                                <span class="font-medium">${video.resolution && video.resolution !== 'Unknown' ? video.resolution : 'HD'}</span>
+                                <span class="text-gray-400">•</span>
+                                <span class="font-medium">${video.duration ? Math.floor(video.duration / 60) + ':' + String(Math.floor(video.duration % 60)).padStart(2, '0') : 'N/A'}</span>
+                              </div>
+                              <div class="flex items-center space-x-2">
+                                <div class="flex items-center space-x-1">
+                                  <div class="flex items-center space-x-1" title="Puntuación: ${video.rating || 0}/5">
+                                    ${[1, 2, 3, 4, 5].map(star => {
+                                      const isFilled = (video.rating || 0) >= star
+                                      return `<svg class="w-4 h-4 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'}" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                      </svg>`
+                                    }).join('')}
+                                    <span class="text-sm font-medium text-gray-600">${video.rating || 0}</span>
+                                  </div>
+                                </div>
+                                <button class="flex items-center space-x-1 text-gray-400 hover:text-red-500 transition-colors duration-200 p-2 rounded hover:bg-red-50" title="Añadir a favoritos">
+                                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                  </svg>
+                                  <span class="text-sm font-medium">${video.likes || 0}</span>
+                                </button>
+                                <button class="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-2 rounded hover:bg-blue-50" title="Editar video">
+                                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                  </svg>
+                                </button>
+                              </div>
+                            `
+                           
+                           // Tags normales
+                           const tagsContainer = document.createElement('div')
+                           tagsContainer.className = 'mb-4'
+                           const orderedTags = getOrderedTags(video)
+                           if (orderedTags.length > 0) {
+                             const tagsHTML = orderedTags.map(({ tag, categoryKey, color }) => {
+                               const colorClasses = getColorClasses(color)
+                               return `<span class="inline-block px-3 py-1 rounded-full text-sm font-medium ${colorClasses} mr-2 mb-2">${tag}</span>`
+                             }).join('')
+                             tagsContainer.innerHTML = `
+                               <h4 class="text-sm font-medium text-gray-700 mb-2">Etiquetas:</h4>
+                               <div class="flex flex-wrap">${tagsHTML}</div>
+                             `
+                           } else {
+                             tagsContainer.innerHTML = `
+                               <h4 class="text-sm font-medium text-gray-700 mb-2">Etiquetas:</h4>
+                               <span class="text-gray-400 text-sm">Sin etiquetas</span>
+                             `
+                           }
+                           
+                           // Tags iniciales
+                           const tagsInicialesContainer = document.createElement('div')
+                           tagsInicialesContainer.className = 'mb-4'
+                           const tagsIniciales = getOrderedTagsIniciales(video)
+                           if (tagsIniciales.length > 0) {
+                             const tagsHTML = tagsIniciales.map(({ tag }) => 
+                               `<span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-500 text-white mr-2 mb-2">${tag}</span>`
+                             ).join('')
+                             tagsInicialesContainer.innerHTML = `
+                               <h4 class="text-sm font-medium text-blue-600 uppercase tracking-wide mb-2">Etiquetas Iniciales:</h4>
+                               <div class="flex flex-wrap">${tagsHTML}</div>
+                             `
+                           }
+                           
+                           // Tags finales
+                           const tagsFinalesContainer = document.createElement('div')
+                           tagsFinalesContainer.className = 'mb-4'
+                           const tagsFinales = getOrderedTagsFinales(video)
+                           if (tagsFinales.length > 0) {
+                             const tagsHTML = tagsFinales.map(({ tag }) => 
+                               `<span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-green-500 to-teal-500 text-white mr-2 mb-2">${tag}</span>`
+                             ).join('')
+                             tagsFinalesContainer.innerHTML = `
+                               <h4 class="text-sm font-medium text-green-600 uppercase tracking-wide mb-2">Etiquetas Finales:</h4>
+                               <div class="flex flex-wrap">${tagsHTML}</div>
+                             `
+                           }
+                           
+                           // Ensamblar todo
+                           videoInfoContainer.appendChild(description)
+                           videoInfoContainer.appendChild(stats)
+                           videoInfoContainer.appendChild(tagsContainer)
+                           if (tagsIniciales.length > 0) {
+                             videoInfoContainer.appendChild(tagsInicialesContainer)
+                           }
+                           if (tagsFinales.length > 0) {
+                             videoInfoContainer.appendChild(tagsFinalesContainer)
+                           }
+                           
+                           videoContainer.appendChild(header)
+                           videoContainer.appendChild(videoPlayerContainer)
+                           videoContainer.appendChild(videoInfoContainer)
+                           modal.appendChild(videoContainer)
+                           document.body.appendChild(modal)
+                           
+                           // Renderizar el VideoPlayer usando React
+                           const { createRoot } = await import('react-dom/client')
+                           const root = createRoot(videoPlayerContainer)
+                           root.render(React.createElement(VideoPlayer, {
+                             src: video.videoUrl,
+                             size: 'large',
+                             loop: true,
+                             initialShowControls: true,
+                             autoplay: true,
+                             muted: false,
+                             className: 'w-full max-w-3xl',
+                             resolutions: ['auto', '4k', '1080p', '720p', '480p', '360p'],
+                             currentResolution: 'auto',
+                             onResolutionChange: (resolution) => {
+                               console.log(`Resolución cambiada a: ${resolution}`)
+                               // Aquí se implementaría la lógica para cambiar la resolución del video
+                             }
+                           }))
+                           
+                           // Guardar referencia del root para limpieza
+                           modal._root = root
+                           
+                           const closeModal = () => {
+                             if (modal._root) {
+                               modal._root.unmount()
+                             }
+                             if (document.body.contains(modal)) {
+                               document.body.removeChild(modal)
+                             }
+                           }
+                           
+                           header.querySelector('button').onclick = closeModal
+                           modal.onclick = (e) => {
+                             if (e.target === modal) {
+                               closeModal()
+                             }
+                           }
+                           
+                           // Añadir funcionalidad al botón de editar
+                           stats.querySelector('button[title="Editar video"]').onclick = () => {
+                             closeModal()
+                             openEditModal(video)
+                           }
+                           
+                                                       // Añadir funcionalidad al sistema de rating
+                            const ratingContainer = stats.querySelector('div[title*="Puntuación"]')
+                            const stars = ratingContainer.querySelectorAll('svg')
+                            const ratingText = ratingContainer.querySelector('span')
+                            
+                            stars.forEach((star, index) => {
+                              const starValue = index + 1
+                              
+                              // Hover effect
+                              star.addEventListener('mouseenter', () => {
+                                stars.forEach((s, i) => {
+                                  if (i <= index) {
+                                    s.classList.add('text-yellow-400', 'fill-current')
+                                    s.classList.remove('text-gray-300')
+                                  }
+                                })
+                              })
+                              
+                              star.addEventListener('mouseleave', () => {
+                                stars.forEach((s, i) => {
+                                  const currentRating = video.rating || 0
+                                  if (i < currentRating) {
+                                    s.classList.add('text-yellow-400', 'fill-current')
+                                    s.classList.remove('text-gray-300')
+                                  } else {
+                                    s.classList.remove('text-yellow-400', 'fill-current')
+                                    s.classList.add('text-gray-300')
+                                  }
+                                })
+                              })
+                              
+                              // Click to rate
+                              star.addEventListener('click', async () => {
+                                try {
+                                  // Actualizar en Firestore
+                                  await updateVideoDocument(video.id, { rating: starValue })
+                                  
+                                  // Actualizar estado local
+                                  video.rating = starValue
+                                  
+                                  // Actualizar visual
+                                  stars.forEach((s, i) => {
+                                    if (i < starValue) {
+                                      s.classList.add('text-yellow-400', 'fill-current')
+                                      s.classList.remove('text-gray-300')
+                                    } else {
+                                      s.classList.remove('text-yellow-400', 'fill-current')
+                                      s.classList.add('text-gray-300')
+                                    }
+                                  })
+                                  
+                                  ratingText.textContent = starValue
+                                  ratingContainer.title = `Puntuación: ${starValue}/5`
+                                  
+                                  console.log(`Video "${video.title}" puntuado con ${starValue} estrellas`)
+                                } catch (error) {
+                                  console.error('Error al actualizar puntuación:', error)
+                                }
+                              })
+                            })
+                            
+                            // Añadir funcionalidad al botón de favoritos
+                            const favButton = stats.querySelector('button[title="Añadir a favoritos"]')
+                            favButton.onclick = () => {
+                              // Aquí se implementaría la lógica para añadir/quitar de favoritos
+                              console.log('Toggle favorito para:', video.title)
+                              // Cambiar el estado visual del botón
+                              const icon = favButton.querySelector('svg')
+                              const isFavorited = icon.classList.contains('fill-current')
+                              if (isFavorited) {
+                                icon.classList.remove('fill-current', 'text-red-500')
+                                icon.classList.add('text-gray-400')
+                              } else {
+                                icon.classList.add('fill-current', 'text-red-500')
+                                icon.classList.remove('text-gray-400')
+                              }
                             }
-                          }))
-                          
-                          // Guardar referencia del root para limpieza
-                          modal._root = root
-                          
-                          const closeModal = () => {
-                            if (modal._root) {
-                              modal._root.unmount()
-                            }
-                            if (document.body.contains(modal)) {
-                              document.body.removeChild(modal)
-                            }
-                          }
-                          
-                          header.querySelector('button').onclick = closeModal
-                          modal.onclick = (e) => {
-                            if (e.target === modal) {
-                              closeModal()
-                            }
-                          }
-                        } catch (error) {
-                          console.error('Error al abrir modal de video:', error)
-                        }
-                      }}
+                         } catch (error) {
+                           console.error('Error al abrir modal de video:', error)
+                         }
+                       }}
                       className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                     >
                       <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -937,41 +1129,57 @@ const FigurasPage = () => {
                      })()}
                     
                                                              <div className="flex items-center justify-between text-sm text-gray-500">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-medium">
-                          {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
-                        </span>
-                        <span className="text-gray-400">•</span>
-                        <span className="text-gray-600">
-                          {video.resolution && video.resolution !== 'Unknown' ? 
-                            `${video.resolution}${video.videoWidth && video.videoHeight ? ` (${video.videoWidth}x${video.videoHeight})` : ''}` : 
-                            'HD'
-                          }
-                        </span>
-                      </div>
-                                               <div className="flex items-center space-x-4">
-                          <div className="flex items-center space-x-1">
-                            <Heart className="h-4 w-4 text-red-500 fill-current" />
-                            <span className="font-medium">{video.likes || 0}</span>
-                          </div>
-                          <button className="text-gray-400 hover:text-red-500 transition-colors duration-200">
-                            <Heart className="h-4 w-4" />
-                          </button>
-                          <button 
-                            onClick={() => openEditModal(video)}
-                            className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
-                            title="Editar video"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button 
-                            onClick={() => openDeleteModal(video)}
-                            className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
-                            title="Eliminar video"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
+                                             <div className="flex items-center space-x-2">
+                         <span className="font-medium">
+                           {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
+                         </span>
+                         <span className="text-gray-400">•</span>
+                         <span className="text-gray-600">
+                           {video.resolution && video.resolution !== 'Unknown' ? 
+                             video.resolution : 
+                             'HD'
+                           }
+                         </span>
+                       </div>
+                       <div className="flex items-center space-x-4">
+                         <div className="flex items-center space-x-1">
+                           {[1, 2, 3, 4, 5].map(star => {
+                             const isFilled = (video.rating || 0) >= star
+                             return (
+                               <svg 
+                                 key={star}
+                                 className={`h-3 w-3 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
+                                 fill="currentColor" 
+                                 viewBox="0 0 24 24"
+                               >
+                                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                               </svg>
+                             )
+                           })}
+                           <span className="text-xs font-medium text-gray-500">({video.rating || 0})</span>
+                         </div>
+                         <div className="flex items-center space-x-1">
+                           <Heart className="h-4 w-4 text-red-500 fill-current" />
+                           <span className="font-medium">{video.likes || 0}</span>
+                         </div>
+                         <button className="text-gray-400 hover:text-red-500 transition-colors duration-200">
+                           <Heart className="h-4 w-4" />
+                         </button>
+                         <button 
+                           onClick={() => openEditModal(video)}
+                           className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                           title="Editar video"
+                         >
+                           <Edit className="h-4 w-4" />
+                         </button>
+                         <button 
+                           onClick={() => openDeleteModal(video)}
+                           className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
+                           title="Eliminar video"
+                         >
+                           <Trash2 className="h-4 w-4" />
+                         </button>
+                       </div>
                      </div>
                   </div>
                 </div>
