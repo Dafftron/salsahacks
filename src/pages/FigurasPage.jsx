@@ -12,7 +12,8 @@ import {
   ChevronUp,
   Star,
   Zap,
-  Edit
+  Edit,
+  Download
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
@@ -849,6 +850,11 @@ const FigurasPage = () => {
                                   </svg>
                                   <span class="text-sm font-medium">${video.likes || 0}</span>
                                 </button>
+                                <button class="text-gray-400 hover:text-green-500 transition-colors duration-200 p-2 rounded hover:bg-green-50" title="Descargar video">
+                                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                  </svg>
+                                </button>
                                 <button class="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-2 rounded hover:bg-blue-50" title="Editar video">
                                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -935,6 +941,7 @@ const FigurasPage = () => {
                              className: 'w-full max-w-3xl',
                              resolutions: ['auto', '4k', '1080p', '720p', '480p', '360p'],
                              currentResolution: 'auto',
+                             videoTitle: video.title || 'video',
                              onResolutionChange: (resolution) => {
                                console.log(`Resolución cambiada a: ${resolution}`)
                                // Aquí se implementaría la lógica para cambiar la resolución del video
@@ -958,6 +965,17 @@ const FigurasPage = () => {
                              if (e.target === modal) {
                                closeModal()
                              }
+                           }
+                           
+                           // Añadir funcionalidad al botón de descarga
+                           stats.querySelector('button[title="Descargar video"]').onclick = () => {
+                             const link = document.createElement('a')
+                             link.href = video.videoUrl
+                             link.download = video.title || 'video'
+                             link.target = '_blank'
+                             document.body.appendChild(link)
+                             link.click()
+                             document.body.removeChild(link)
                            }
                            
                            // Añadir funcionalidad al botón de editar
@@ -1219,6 +1237,21 @@ const FigurasPage = () => {
                            title="Eliminar video"
                          >
                            <Trash2 className="h-4 w-4" />
+                         </button>
+                         <button 
+                           onClick={() => {
+                             const link = document.createElement('a')
+                             link.href = video.videoUrl
+                             link.download = video.title || 'video'
+                             link.target = '_blank'
+                             document.body.appendChild(link)
+                             link.click()
+                             document.body.removeChild(link)
+                           }}
+                           className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
+                           title="Descargar video"
+                         >
+                           <Download className="h-4 w-4" />
                          </button>
                        </div>
                      </div>

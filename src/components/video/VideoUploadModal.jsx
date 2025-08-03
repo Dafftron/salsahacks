@@ -468,6 +468,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
                       className="w-full max-w-2xl"
                       resolutions={['auto', '4k', '1080p', '720p', '480p', '360p']}
                       currentResolution="auto"
+                      videoTitle={videoData[file.name]?.title || file.name.replace(/\.[^/.]+$/, '')}
                       onResolutionChange={(resolution) => {
                         console.log(`Resolución cambiada a: ${resolution}`)
                         // Aquí se implementaría la lógica para cambiar la resolución del video

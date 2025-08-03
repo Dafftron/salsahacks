@@ -12,7 +12,8 @@ import {
   SkipForward,
   Settings,
   Minus,
-  Zap
+  Zap,
+  Download
 } from 'lucide-react'
 
 const VideoPlayer = ({ 
@@ -28,7 +29,8 @@ const VideoPlayer = ({
   className = '',
   resolutions = null, // Array de resoluciones disponibles
   currentResolution = null, // Resolución actual seleccionada
-  onResolutionChange = null // Callback para cambio de resolución
+  onResolutionChange = null, // Callback para cambio de resolución
+  videoTitle = 'video' // Título del video para la descarga
 }) => {
   const videoRef = useRef(null)
   const containerRef = useRef(null)
@@ -718,6 +720,24 @@ const VideoPlayer = ({
                   </div>
                 )}
               </div>
+
+              {/* Botón de descarga */}
+              <button
+                onClick={() => {
+                  const link = document.createElement('a')
+                  link.href = src
+                  link.download = videoTitle
+                  link.target = '_blank'
+                  document.body.appendChild(link)
+                  link.click()
+                  document.body.removeChild(link)
+                }}
+                onTouchStart={activateControls}
+                className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
+                title="Descargar video"
+              >
+                <Download className="w-4 h-4" />
+              </button>
 
               {/* Controles de volumen */}
               <div className="relative">
