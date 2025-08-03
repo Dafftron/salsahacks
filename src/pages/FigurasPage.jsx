@@ -702,66 +702,70 @@ const FigurasPage = () => {
                     
                     {/* Botón de reproducción */}
                     <button
-                      onClick={() => {
-                        // Abrir modal de reproducción
-                        const modal = document.createElement('div')
-                        modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50'
-                        
-                        const videoContainer = document.createElement('div')
-                        videoContainer.className = 'bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto'
-                        videoContainer.onclick = (e) => e.stopPropagation()
-                        
-                        const header = document.createElement('div')
-                        header.className = 'flex items-center justify-between mb-4'
-                        header.innerHTML = `
-                          <h3 class="text-lg font-semibold text-gray-900">${video.title}</h3>
-                          <button class="text-gray-400 hover:text-gray-600 transition-colors">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                          </button>
-                        `
-                        
-                        // Crear el VideoPlayer
-                        const videoPlayerContainer = document.createElement('div')
-                        videoPlayerContainer.id = 'video-player-container'
-                        videoPlayerContainer.className = 'w-full flex justify-center'
-                        
-                        videoContainer.appendChild(header)
-                        videoContainer.appendChild(videoPlayerContainer)
-                        modal.appendChild(videoContainer)
-                        document.body.appendChild(modal)
-                        
-                        // Renderizar el VideoPlayer usando React
-                        const { createRoot } = require('react-dom/client')
-                        const root = createRoot(videoPlayerContainer)
-                        root.render(React.createElement(VideoPlayer, {
-                          src: video.videoUrl,
-                          size: 'large',
-                          loop: true,
-                          showControls: true,
-                          autoplay: true,
-                          muted: false,
-                          className: 'w-full max-w-3xl'
-                        }))
-                        
-                        // Guardar referencia del root para limpieza
-                        modal._root = root
-                        
-                        const closeModal = () => {
-                          if (modal._root) {
-                            modal._root.unmount()
+                      onClick={async () => {
+                        try {
+                          // Abrir modal de reproducción
+                          const modal = document.createElement('div')
+                          modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50'
+                          
+                          const videoContainer = document.createElement('div')
+                          videoContainer.className = 'bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto'
+                          videoContainer.onclick = (e) => e.stopPropagation()
+                          
+                          const header = document.createElement('div')
+                          header.className = 'flex items-center justify-between mb-4'
+                          header.innerHTML = `
+                            <h3 class="text-lg font-semibold text-gray-900">${video.title}</h3>
+                            <button class="text-gray-400 hover:text-gray-600 transition-colors">
+                              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                              </svg>
+                            </button>
+                          `
+                          
+                          // Crear el VideoPlayer
+                          const videoPlayerContainer = document.createElement('div')
+                          videoPlayerContainer.id = 'video-player-container'
+                          videoPlayerContainer.className = 'w-full flex justify-center'
+                          
+                          videoContainer.appendChild(header)
+                          videoContainer.appendChild(videoPlayerContainer)
+                          modal.appendChild(videoContainer)
+                          document.body.appendChild(modal)
+                          
+                          // Renderizar el VideoPlayer usando React
+                          const { createRoot } = await import('react-dom/client')
+                          const root = createRoot(videoPlayerContainer)
+                          root.render(React.createElement(VideoPlayer, {
+                            src: video.videoUrl,
+                            size: 'large',
+                            loop: true,
+                            initialShowControls: true,
+                            autoplay: true,
+                            muted: false,
+                            className: 'w-full max-w-3xl'
+                          }))
+                          
+                          // Guardar referencia del root para limpieza
+                          modal._root = root
+                          
+                          const closeModal = () => {
+                            if (modal._root) {
+                              modal._root.unmount()
+                            }
+                            if (document.body.contains(modal)) {
+                              document.body.removeChild(modal)
+                            }
                           }
-                          if (document.body.contains(modal)) {
-                            document.body.removeChild(modal)
+                          
+                          header.querySelector('button').onclick = closeModal
+                          modal.onclick = (e) => {
+                            if (e.target === modal) {
+                              closeModal()
+                            }
                           }
-                        }
-                        
-                        header.querySelector('button').onclick = closeModal
-                        modal.onclick = (e) => {
-                          if (e.target === modal) {
-                            closeModal()
-                          }
+                        } catch (error) {
+                          console.error('Error al abrir modal de video:', error)
                         }
                       }}
                       className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"

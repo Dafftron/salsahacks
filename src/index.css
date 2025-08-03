@@ -92,6 +92,64 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Estilos para el slider de volumen */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.slider::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.slider::-webkit-slider-track {
+  background: transparent;
+  border: none;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.slider::-moz-range-track {
+  background: transparent;
+  border: none;
+  height: 6px;
+  border-radius: 3px;
+}
+
+/* Mejorar la interactividad del slider */
+.slider {
+  cursor: pointer;
+  outline: none;
+}
+
+.slider:focus {
+  outline: none;
+}
+
 /* Componentes base */
 .btn-primary {
   background-color: var(--salsa-primary);
