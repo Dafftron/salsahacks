@@ -201,21 +201,32 @@
 - [x] **Firebase Storage** - Configurado con plan Blaze
 - [x] **Sistema de categorías** - Estructura jerárquica implementada
 - [x] **Componentes de UI** - Toast, ConfirmModal, VideoUploadModal
+- [x] **Sistema de video upload** - Con thumbnails automáticos y categorías
+- [x] **Sistema de edición de videos** - Modal dedicado con tags iniciales/finales
+- [x] **VideoPlayer profesional** - Controles avanzados, resoluciones, navegación intuitiva
+- [x] **Sincronización en tiempo real** - Firebase y web sincronizados
+- [x] **Sistema de limpieza** - Gestión de archivos y datos
+- [x] **Búsqueda avanzada** - Múltiples palabras, sin tildes, filtrado inteligente
+- [x] **Galerías independientes** - Por estilo de baile
+- [x] **Filtrado exclusivo** - AND logic para categorías
+- [x] **Tags iniciales y finales** - Sistema para secuencias lógicas
+- [x] **Sistema de resoluciones** - Detección automática y filtrado inteligente
+- [x] **Navegación por doble clic** - Saltos de ±10 segundos
+- [x] **Controles estilo Disney+/YouTube** - Botones centrales rediseñados
 
 ### **🔄 EN PROGRESO**
 - [ ] **Página de Escuela** - Preparando réplica de Figuras con sistema de tabs
 - [ ] **Página de Eventos** - Preparando réplica de Figuras con sistema de tabs
-- [ ] **Sistema de video upload** - Conectando con Firebase Storage
 - [ ] **Sistema de secuencias** - Implementación del botón "CREAR SECUENCIA"
+- [ ] **Adaptación de orientación móvil** - Última funcionalidad del VideoPlayer
 
 ### **⏳ PENDIENTE**
-- [ ] **Gestión de videos** - Upload, reproducción y eliminación completa
-- [ ] **Sistema de búsqueda** - Búsqueda inteligente por tags
 - [ ] **Testing** - Tests unitarios y E2E
 - [ ] **Deploy** - Firebase Hosting
 - [ ] **Sistema de recomendaciones** - Algoritmos avanzados
 - [ ] **Analytics** - Métricas y estadísticas
 - [ ] **Optimización** - Performance y SEO
+- [ ] **Vista previa de videos al hacer hover** - En tarjetas de video
 
 ---
 
@@ -860,7 +871,7 @@ const firebaseConfig = {
 **🔄 Última actualización:** 2025-01-27 (Sistema de galerías y tabs completado)
 **👨‍💻 Desarrollador:** David Exile
 **🎯 Versión:** SalsaHacks V2.0 
-**📊 Total de Commits:** 30 commits
+**📊 Total de Commits:** 40 commits
 
 ---
 
@@ -1086,4 +1097,172 @@ PÁGINA (figuras/escuela/eventos) → ESTILO → CATEGORÍA → TAGS
   - `src/services/firebase/firestore.js` (nuevas funciones de sincronización y limpieza)
   - `src/services/firebase/storage.js` (funciones de limpieza de archivos)
   - `src/pages/FigurasPage.jsx` (UI de sincronización y controles de limpieza)
-- **Estado**: ✅ Completado 
+- **Estado**: ✅ Completado
+
+### **Commit #035 - Sistema de Video Upload con Thumbnails y Categorías**
+- **Fecha**: 2024-12-19
+- **Descripción**: Implementación completa del sistema de video upload con thumbnails automáticos y sistema de categorías
+- **Cambios**:
+  - **VideoUploadModal Mejorado**:
+    - Videos aparecen plegados por defecto
+    - Thumbnails duplicados en tamaño cuando se despliegan
+    - Sistema de categorías integrado con el gestor central
+    - Filtrado por estilo seleccionado actualmente
+    - Notificaciones Toast estilizadas con gradientes
+  - **Sistema de Categorías**:
+    - Integración con `categoryStructure` del gestor
+    - Tags contextuales por página y estilo
+    - Colores específicos para cada categoría
+    - Protección de categorías hardcodeadas
+  - **Thumbnails Automáticos**:
+    - Generación automática de thumbnails al subir video
+    - Sistema de rutas consistente
+    - Fallback para videos sin thumbnail
+  - **Filtrado Inteligente**:
+    - Filtrado exclusivo por categorías (AND logic)
+    - Búsqueda avanzada por múltiples palabras
+    - Normalización de texto (sin tildes)
+- **Archivos**: 
+  - `src/components/video/VideoUploadModal.jsx` (sistema completo)
+  - `src/pages/FigurasPage.jsx` (filtrado y categorías)
+  - `src/services/firebase/storage.js` (thumbnails)
+  - `src/constants/categories.js` (estructura de categorías)
+- **Estado**: ✅ Completado
+
+### **Commit #036 - Sistema de Edición de Videos Completo**
+- **Fecha**: 2024-12-19
+- **Descripción**: Implementación del sistema completo de edición de videos con modal dedicado
+- **Cambios**:
+  - **VideoEditModal**:
+    - Modal dedicado para edición de videos existentes
+    - Edición de título, descripción y thumbnail personalizado
+    - Sistema de tags normal, iniciales y finales
+    - Secciones colapsables para mejor organización
+    - Integración con VideoPlayer para previsualización
+  - **Tags Iniciales y Finales**:
+    - Sistema para marcar cómo empieza y termina una figura
+    - Colores específicos: azul-morado para iniciales, verde-azul para finales
+    - Visualización en tarjetas de video
+    - Preparación para sistema de secuencias
+  - **Integración en FigurasPage**:
+    - Botón "Edit" en cada tarjeta de video
+    - Filtrado exclusivo por categorías (AND logic)
+    - Visualización de tags iniciales y finales
+    - Sistema de búsqueda mejorado
+  - **Funcionalidades Avanzadas**:
+    - Eliminación permanente de videos
+    - Modal de confirmación estilizado
+    - Actualización en tiempo real de la galería
+    - Manejo robusto de errores
+- **Archivos**: 
+  - `src/components/video/VideoEditModal.jsx` (nuevo componente)
+  - `src/pages/FigurasPage.jsx` (integración completa)
+  - `src/services/firebase/firestore.js` (funciones de actualización)
+  - `src/services/firebase/storage.js` (gestión de archivos)
+- **Estado**: ✅ Completado
+
+### **Commit #037 - VideoPlayer Avanzado con Controles Profesionales**
+- **Fecha**: 2024-12-19
+- **Descripción**: Implementación de un reproductor de video profesional con controles avanzados
+- **Cambios**:
+  - **Controles Básicos**:
+    - Play/pause, progreso, volumen, pantalla completa
+    - Auto-hide de controles con timeout
+    - Controles responsivos para móvil y desktop
+    - Keyboard shortcuts (espacio, flechas, F)
+  - **Funcionalidades Avanzadas**:
+    - Bucle completo de video
+    - Bucle A-B de segmentos específicos
+    - Marcadores visuales en barra de progreso
+    - Controles intuitivos para puntos A y B
+  - **Sistema de Resoluciones**:
+    - Detección automática de resolución máxima del video
+    - Opciones de resolución (360p, 480p, 720p, 1080p, 4K)
+    - Indicador "Auto (resolución actual)"
+    - Deshabilitación de resoluciones no disponibles
+  - **Navegación Intuitiva**:
+    - Doble clic para saltar ±10 segundos
+    - Botones centrales estilo Disney+/YouTube
+    - Botones de navegación ocultos en móvil
+    - Controles reorganizados para mejor UX
+- **Archivos**: 
+  - `src/components/video/VideoPlayer.jsx` (reproductor completo)
+  - `src/index.css` (estilos para controles)
+  - `src/pages/FigurasPage.jsx` (integración en galería)
+  - `src/components/video/VideoUploadModal.jsx` (previsualización)
+  - `src/components/video/VideoEditModal.jsx` (edición)
+- **Estado**: ✅ Completado
+
+### **Commit #038 - Mejoras y Correcciones del VideoPlayer**
+- **Fecha**: 2024-12-19
+- **Descripción**: Corrección de bugs y mejoras en la funcionalidad del VideoPlayer
+- **Cambios**:
+  - **Correcciones de Bugs**:
+    - Volumen no funcionaba correctamente
+    - Controles no eran clickeables en modales
+    - A-B loop no guardaba posiciones
+    - Indicadores A-B no se mostraban correctamente
+  - **Mejoras de UX**:
+    - Volumen control movido arriba de la barra de progreso
+    - Slider de volumen vertical para mejor control
+    - Bucle desactivado por defecto
+    - Indicador de orientación removido
+  - **Optimizaciones**:
+    - Mejor sincronización de estado de volumen
+    - Controles más responsivos
+    - Mejor manejo de eventos
+    - Performance mejorada
+- **Archivos**: 
+  - `src/components/video/VideoPlayer.jsx` (correcciones y mejoras)
+  - `src/index.css` (estilos de volumen vertical)
+- **Estado**: ✅ Completado
+
+### **Commit #039 - Sistema de Resoluciones Inteligente**
+- **Fecha**: 2024-12-19
+- **Descripción**: Implementación del sistema de resoluciones inteligente con detección automática
+- **Cambios**:
+  - **Detección Automática**:
+    - Detección de resolución máxima del video (videoWidth/videoHeight)
+    - Mapeo automático a resoluciones estándar (360p, 480p, 720p, 1080p, 4K)
+    - Logs de debugging para verificar detección
+  - **Sistema Inteligente**:
+    - Resoluciones no disponibles aparecen semi-transparentes
+    - Texto "(no disponible)" para resoluciones no soportadas
+    - Indicador "Auto (resolución actual)" cuando está en automático
+    - Función `isResolutionAvailable` para validación
+  - **Mejoras Visuales**:
+    - Botón de resolución en controles principales
+    - Dropdown con todas las opciones disponibles
+    - Estados visuales claros para cada resolución
+    - Integración con controles existentes
+- **Archivos**: 
+  - `src/components/video/VideoPlayer.jsx` (sistema de resoluciones)
+- **Estado**: ✅ Completado
+
+### **Commit #040 - Mejorar VideoPlayer: doble clic para navegación, botones estilo Disney+/YouTube, sistema de resoluciones inteligente**
+- **Fecha**: 2024-12-19
+- **Descripción**: Mejoras finales del VideoPlayer con navegación intuitiva y sistema de resoluciones completo
+- **Cambios**:
+  - **Navegación por Doble Clic**:
+    - Doble clic en mitad izquierda: retroceder 10s
+    - Doble clic en mitad derecha: avanzar 10s
+    - Detección de doble clic mejorada
+    - Integración con controles existentes
+  - **Botones Estilo Disney+/YouTube**:
+    - Botones centrales rediseñados con círculos y flechas
+    - Texto "10" junto a los botones
+    - Layout: [círculo con flecha] 10 para retroceder, 10 [círculo con flecha] para avanzar
+    - Ocultos en móvil para mejor UX
+  - **Sistema de Resoluciones Completo**:
+    - Detección automática de resolución máxima
+    - Filtrado de resoluciones no disponibles
+    - Indicador "Auto (resolución actual)"
+    - Estados visuales para resoluciones no soportadas
+  - **Optimizaciones Finales**:
+    - Controles reorganizados y responsivos
+    - Mejor experiencia móvil
+    - Interfaz limpia y profesional
+    - Performance optimizada
+- **Archivos**: 
+  - `src/components/video/VideoPlayer.jsx` (mejoras finales)
+- **Estado**: ✅ Completado
