@@ -51,6 +51,8 @@ const VideoPlayer = ({
   const [controlsTimeout, setControlsTimeout] = useState(null)
   const [showResolutionMenu, setShowResolutionMenu] = useState(false)
   const [selectedResolution, setSelectedResolution] = useState(currentResolution || 'auto')
+  const [videoMaxResolution, setVideoMaxResolution] = useState(null)
+  const [currentAutoResolution, setCurrentAutoResolution] = useState(null)
 
   // Manejar bucle de segmento
   useEffect(() => {
@@ -131,6 +133,13 @@ const VideoPlayer = ({
     }
   }, [volume, isMuted])
 
+  // Detectar resolución actual cuando se selecciona Auto
+  useEffect(() => {
+    if (selectedResolution === 'auto' && videoMaxResolution) {
+      setCurrentAutoResolution(videoMaxResolution)
+    }
+  }, [selectedResolution, videoMaxResolution])
+
   // Cerrar menú de resoluciones al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -148,6 +157,35 @@ const VideoPlayer = ({
     setShowControls(true)
     if (controlsTimeout) {
       clearTimeout(controlsTimeout)
+    }
+  }
+
+  // Manejar doble clic para adelantar/retroceder
+  const [lastClickTime, setLastClickTime] = useState(0)
+  const [clickCount, setClickCount] = useState(0)
+
+  const handleVideoDoubleClick = (e) => {
+    const currentTime = Date.now()
+    const timeDiff = currentTime - lastClickTime
+    
+    if (timeDiff < 300) { // Doble clic detectado
+      const rect = e.currentTarget.getBoundingClientRect()
+      const clickX = e.clientX - rect.left
+      const videoWidth = rect.width
+      
+      // Si el clic es en la mitad izquierda, retroceder 10s
+      // Si el clic es en la mitad derecha, adelantar 10s
+      if (clickX < videoWidth / 2) {
+        skip(-10)
+      } else {
+        skip(10)
+      }
+      
+      setClickCount(0)
+      setLastClickTime(0)
+    } else {
+      setClickCount(1)
+      setLastClickTime(currentTime)
     }
   }
 
@@ -181,8 +219,28 @@ const VideoPlayer = ({
   const handleLoadedMetadata = () => {
     if (videoRef.current) {
       setDuration(videoRef.current.duration)
+      
+      // Detectar resolución máxima del video
+      const video = videoRef.current
+      const width = video.videoWidth
+      const height = video.videoHeight
+      
+      if (width && height) {
+        const maxDimension = Math.max(width, height)
+        let maxRes = '480p'
+        
+        if (maxDimension >= 3840) maxRes = '4k'
+        else if (maxDimension >= 1920) maxRes = '1080p'
+        else if (maxDimension >= 1280) maxRes = '720p'
+        else if (maxDimension >= 854) maxRes = '480p'
+        else maxRes = '360p'
+        
+        setVideoMaxResolution(maxRes)
+        console.log(`Resolución máxima del video: ${maxRes} (${width}x${height})`)
+      }
+      
       if (autoplay) {
-        videoRef.current.play()
+        video.play()
         setIsPlaying(true)
       }
     }
@@ -319,13 +377,21 @@ const VideoPlayer = ({
   const handleResolutionChange = (resolution) => {
     setSelectedResolution(resolution)
     setShowResolutionMenu(false)
+    
+    // Si se selecciona Auto, simular la detección de resolución actual
+    if (resolution === 'auto' && videoMaxResolution) {
+      setCurrentAutoResolution(videoMaxResolution)
+    } else if (resolution !== 'auto') {
+      setCurrentAutoResolution(null)
+    }
+    
     onResolutionChange?.(resolution)
   }
 
   const getResolutionLabel = (resolution) => {
     switch (resolution) {
       case 'auto':
-        return 'Auto'
+        return currentAutoResolution ? `Auto (${currentAutoResolution})` : 'Auto'
       case '4k':
         return '4K'
       case '1080p':
@@ -339,6 +405,16 @@ const VideoPlayer = ({
       default:
         return resolution
     }
+  }
+
+  const isResolutionAvailable = (resolution) => {
+    if (!videoMaxResolution) return true // Si no sabemos la resolución máxima, mostrar todas
+    
+    const resolutionOrder = ['360p', '480p', '720p', '1080p', '4k']
+    const maxIndex = resolutionOrder.indexOf(videoMaxResolution)
+    const resIndex = resolutionOrder.indexOf(resolution)
+    
+    return resIndex <= maxIndex
   }
 
   const getSizeClasses = () => {
@@ -375,6 +451,7 @@ const VideoPlayer = ({
         }
       }}
       onClick={handleVideoClick}
+      onDoubleClick={handleVideoDoubleClick}
     >
       <video
         ref={videoRef}
@@ -388,6 +465,7 @@ const VideoPlayer = ({
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onClick={handleVideoClick}
+        onDoubleClick={handleVideoDoubleClick}
       />
 
       {/* Overlay de controles */}
@@ -406,14 +484,20 @@ const VideoPlayer = ({
             </div>
           </div>
 
-          {/* Controles centrales */}
+          {/* Controles centrales - solo play/pause para móviles */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="flex items-center space-x-4">
+              {/* Botón de retroceder 10s - estilo Disney+/YouTube */}
               <button
                 onClick={() => skip(-10)}
-                className="p-3 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
+                className="p-3 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors z-10 hidden md:flex items-center justify-center"
               >
-                <SkipBack className="w-6 h-6" />
+                <div className="flex items-center space-x-1">
+                  <div className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center">
+                    <SkipBack className="w-3 h-3" />
+                  </div>
+                  <span className="text-sm font-medium">10</span>
+                </div>
               </button>
 
               <button
@@ -423,11 +507,17 @@ const VideoPlayer = ({
                 {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8" />}
               </button>
 
+              {/* Botón de adelantar 10s - estilo Disney+/YouTube */}
               <button
                 onClick={() => skip(10)}
-                className="p-3 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
+                className="p-3 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors z-10 hidden md:flex items-center justify-center"
               >
-                <SkipForward className="w-6 h-6" />
+                <div className="flex items-center space-x-1">
+                  <span className="text-sm font-medium">10</span>
+                  <div className="w-6 h-6 rounded-full border-2 border-white flex items-center justify-center">
+                    <SkipForward className="w-3 h-3" />
+                  </div>
+                </div>
               </button>
             </div>
           </div>
@@ -494,23 +584,34 @@ const VideoPlayer = ({
                     </div>
                   </button>
                   
-                  {showResolutionMenu && (
-                    <div className="absolute bottom-full right-0 mb-2 bg-black/90 rounded-lg p-2 z-20 min-w-[80px]">
-                      {resolutions.map((resolution) => (
-                        <button
-                          key={resolution}
-                          onClick={() => handleResolutionChange(resolution)}
-                          className={`w-full text-left px-3 py-1 rounded text-xs transition-colors ${
-                            selectedResolution === resolution 
-                              ? 'bg-blue-500 text-white' 
-                              : 'text-white hover:bg-white/20'
-                          }`}
-                        >
-                          {getResolutionLabel(resolution)}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                                     {showResolutionMenu && (
+                     <div className="absolute bottom-full right-0 mb-2 bg-black/90 rounded-lg p-2 z-20 min-w-[80px]">
+                       {resolutions.map((resolution) => {
+                         const isAvailable = isResolutionAvailable(resolution)
+                         return (
+                           <button
+                             key={resolution}
+                             onClick={() => isAvailable && handleResolutionChange(resolution)}
+                             className={`w-full text-left px-3 py-1 rounded text-xs transition-colors ${
+                               !isAvailable 
+                                 ? 'text-gray-500 cursor-not-allowed opacity-50'
+                                 : selectedResolution === resolution 
+                                   ? 'bg-blue-500 text-white' 
+                                   : 'text-white hover:bg-white/20'
+                             }`}
+                             disabled={!isAvailable}
+                           >
+                             {getResolutionLabel(resolution)}
+                             {!isAvailable && (
+                               <span className="ml-1 text-[10px] opacity-75">
+                                 (no disponible)
+                               </span>
+                             )}
+                           </button>
+                         )
+                       })}
+                     </div>
+                   )}
                 </div>
               )}
 
