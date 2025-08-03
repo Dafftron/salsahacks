@@ -18,7 +18,7 @@ const VideoPlayer = ({
   size = 'medium', 
   loop = false, 
   loopSegment = null, // { start: number, end: number }
-  showControls = true, 
+  showControls: initialShowControls = true, 
   autoplay = false, 
   muted = true,
   onTimeUpdate = null,
@@ -39,7 +39,7 @@ const VideoPlayer = ({
   const [loopEnd, setLoopEnd] = useState(loopSegment?.end || 0)
   const [isLoopSegmentMode, setIsLoopSegmentMode] = useState(!!loopSegment)
   const [isVertical, setIsVertical] = useState(false)
-  const [showControls, setShowControls] = useState(showControls)
+  const [showControls, setShowControls] = useState(initialShowControls)
   const [controlsTimeout, setControlsTimeout] = useState(null)
 
   // Detectar orientación del video

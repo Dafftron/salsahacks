@@ -250,15 +250,17 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                              {/* Reproductor de video */}
                <div className="space-y-4">
                  <h4 className="font-medium text-gray-900">Vista previa del video</h4>
-                 <VideoPlayer
-                   src={video.videoUrl}
-                   size="medium"
-                   loop={true}
-                   showControls={true}
-                   autoplay={false}
-                   muted={true}
-                   className="w-full"
-                 />
+                 <div className="flex justify-center">
+                   <VideoPlayer
+                     src={video.videoUrl}
+                     size="medium"
+                     loop={true}
+                     showControls={true}
+                     autoplay={false}
+                     muted={true}
+                     className="w-full max-w-2xl"
+                   />
+                 </div>
                  <div className="flex items-center justify-between text-sm text-gray-600">
                    <span>{video.originalTitle}</span>
                    <span>{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
