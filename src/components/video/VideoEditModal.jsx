@@ -5,6 +5,7 @@ import { uploadFile } from '../../services/firebase/storage'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCategories } from '../../hooks/useCategories'
 import Toast from '../common/Toast'
+import VideoPlayer from './VideoPlayer'
 
 const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figuras', style = 'salsa' }) => {
   const { user } = useAuth()
@@ -246,24 +247,23 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
           {/* Content */}
           <div className="p-6 overflow-y-auto max-h-[60vh]">
             <div className="space-y-6">
-              {/* Vista previa del video */}
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                <div className="w-32 h-24 bg-gray-100 rounded flex items-center justify-center relative overflow-hidden">
-                  {customThumbnail ? (
-                    <img 
-                      src={customThumbnail} 
-                      alt="Thumbnail" 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-xs text-gray-500">VIDEO</span>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-medium text-gray-900">{video.originalTitle}</h4>
-                  <p className="text-sm text-gray-500">{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</p>
-                </div>
-              </div>
+                             {/* Reproductor de video */}
+               <div className="space-y-4">
+                 <h4 className="font-medium text-gray-900">Vista previa del video</h4>
+                 <VideoPlayer
+                   src={video.videoUrl}
+                   size="medium"
+                   loop={true}
+                   showControls={true}
+                   autoplay={false}
+                   muted={true}
+                   className="w-full"
+                 />
+                 <div className="flex items-center justify-between text-sm text-gray-600">
+                   <span>{video.originalTitle}</span>
+                   <span>{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
+                 </div>
+               </div>
 
               {/* Título */}
               <div className="space-y-2">

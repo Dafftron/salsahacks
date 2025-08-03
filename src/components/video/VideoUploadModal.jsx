@@ -5,6 +5,7 @@ import { createVideoDocument, checkVideoDuplicate } from '../../services/firebas
 import { useAuth } from '../../contexts/AuthContext'
 import { useCategories } from '../../hooks/useCategories'
 import Toast from '../common/Toast'
+import VideoPlayer from './VideoPlayer'
 
 const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', style = 'salsa' }) => {
   const { user } = useAuth()
@@ -421,80 +422,21 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
             {/* Contenido del video (condicionalmente visible) */}
             {!isCollapsed && (
               <div className="p-4 space-y-4">
-                {/* Vista previa del video con botón de reproducción - THUMBNAIL DOBLE DE GRANDE */}
-                <div className="flex items-center space-x-4">
-                  <div className="w-32 h-24 bg-gray-100 rounded flex items-center justify-center relative overflow-hidden">
-                    {videoData[file.name]?.videoPreview ? (
-                      <video 
-                        src={videoData[file.name].videoPreview} 
-                        className="w-full h-full object-cover"
-                        muted
-                      />
-                    ) : (
-                      <span className="text-xs text-gray-500">VIDEO</span>
-                    )}
-                    <button
-                      onClick={() => {
-                        // Usar la URL de vista previa existente o crear una nueva
-                        let videoSrc = videoData[file.name]?.videoPreview
-                        let shouldRevokeUrl = false
-                        
-                        // Si no hay vista previa, crear una nueva URL
-                        if (!videoSrc) {
-                          videoSrc = URL.createObjectURL(file)
-                          shouldRevokeUrl = true
-                        }
-                        
-                        const video = document.createElement('video')
-                        video.src = videoSrc
-                        video.controls = true
-                        video.style.width = '100%'
-                        video.style.maxHeight = '400px'
-                        
-                        const modal = document.createElement('div')
-                        modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60]'
-                        
-                        const closeModal = () => {
-                          document.body.removeChild(modal)
-                          // Solo revocar la URL si la creamos específicamente para este modal
-                          if (shouldRevokeUrl) {
-                            URL.revokeObjectURL(videoSrc)
-                          }
-                        }
-                        
-                        modal.onclick = closeModal
-                        
-                        const videoContainer = document.createElement('div')
-                        videoContainer.className = 'bg-white rounded-lg p-4 max-w-2xl w-full mx-4'
-                        videoContainer.onclick = (e) => e.stopPropagation()
-                        
-                        const header = document.createElement('div')
-                        header.className = 'flex items-center justify-between mb-4'
-                        header.innerHTML = `
-                          <h3 class="text-lg font-semibold text-gray-900">${file.name}</h3>
-                          <button class="text-gray-400 hover:text-gray-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                          </button>
-                        `
-                        header.querySelector('button').onclick = closeModal
-                        
-                        videoContainer.appendChild(header)
-                        videoContainer.appendChild(video)
-                        modal.appendChild(videoContainer)
-                        document.body.appendChild(modal)
-                      }}
-                      className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity duration-200"
-                    >
-                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                      </svg>
-                    </button>
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">{file.name}</h4>
-                    <p className="text-sm text-gray-500">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                {/* Reproductor de video */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-gray-900">Vista previa del video</h4>
+                  <VideoPlayer
+                    src={videoData[file.name]?.videoPreview || URL.createObjectURL(file)}
+                    size="medium"
+                    loop={true}
+                    showControls={true}
+                    autoplay={false}
+                    muted={true}
+                    className="w-full"
+                  />
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span>{file.name}</span>
+                    <span>{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
                   </div>
                 </div>
 

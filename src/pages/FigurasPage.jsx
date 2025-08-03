@@ -18,6 +18,7 @@ import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
 import VideoUploadModal from '../components/video/VideoUploadModal'
 import VideoEditModal from '../components/video/VideoEditModal'
+import VideoPlayer from '../components/video/VideoPlayer'
 import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
 
@@ -689,7 +690,7 @@ const FigurasPage = () => {
              <div className="grid md:grid-cols-2 gap-6">
                {filteredVideos.map((video) => (
                 <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
-                  <div className="relative">
+                  <div className="relative group">
                     <img
                       src={video.thumbnailUrl || 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=VIDEO'}
                       alt={video.title}
@@ -698,6 +699,63 @@ const FigurasPage = () => {
                     <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
                       4K
                     </div>
+                    
+                    {/* Botón de reproducción */}
+                    <button
+                      onClick={() => {
+                        // Abrir modal de reproducción
+                        const modal = document.createElement('div')
+                        modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50'
+                        
+                        const closeModal = () => {
+                          document.body.removeChild(modal)
+                        }
+                        
+                        modal.onclick = closeModal
+                        
+                        const videoContainer = document.createElement('div')
+                        videoContainer.className = 'bg-white rounded-lg p-4 max-w-4xl w-full mx-4'
+                        videoContainer.onclick = (e) => e.stopPropagation()
+                        
+                        const header = document.createElement('div')
+                        header.className = 'flex items-center justify-between mb-4'
+                        header.innerHTML = `
+                          <h3 class="text-lg font-semibold text-gray-900">${video.title}</h3>
+                          <button class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                          </button>
+                        `
+                        header.querySelector('button').onclick = closeModal
+                        
+                        // Crear el VideoPlayer
+                        const videoPlayerContainer = document.createElement('div')
+                        videoPlayerContainer.id = 'video-player-container'
+                        
+                        videoContainer.appendChild(header)
+                        videoContainer.appendChild(videoPlayerContainer)
+                        modal.appendChild(videoContainer)
+                        document.body.appendChild(modal)
+                        
+                        // Renderizar el VideoPlayer usando React
+                        const { createRoot } = require('react-dom/client')
+                        const root = createRoot(videoPlayerContainer)
+                        root.render(React.createElement(VideoPlayer, {
+                          src: video.videoUrl,
+                          size: 'large',
+                          loop: true,
+                          showControls: true,
+                          autoplay: true,
+                          muted: false
+                        }))
+                      }}
+                      className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    >
+                      <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </button>
                   </div>
                   
                   <div className="p-4">
