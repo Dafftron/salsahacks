@@ -26,13 +26,145 @@ const NotasPage = () => {
   const [expandedCommits, setExpandedCommits] = useState(new Set())
 
   const categories = [
-            { name: 'TODAS', icon: FileText, count: 46 },
-        { name: 'PÁGINAS', icon: Home, count: 9 },
-        { name: 'SISTEMAS', icon: Settings, count: 22 },
-        { name: 'CONTENIDO', icon: Video, count: 15 }
+            { name: 'TODAS', icon: FileText, count: 56 },
+        { name: 'PÁGINAS', icon: Home, count: 10 },
+        { name: 'SISTEMAS', icon: Settings, count: 25 },
+        { name: 'CONTENIDO', icon: Video, count: 21 }
   ]
 
         const commits = [
+        {
+          id: 40,
+          hash: 'k9l8m7n',
+          date: '2025-01-27',
+          time: '18:45:30',
+          title: 'Commit #040 - Mejorar VideoPlayer: doble clic para navegación, botones estilo Disney+/YouTube, sistema de resoluciones inteligente',
+          description: 'Mejoras finales del VideoPlayer con navegación intuitiva y sistema de resoluciones inteligente',
+          files: ['src/components/video/VideoPlayer.jsx', 'src/index.css', 'NOTAS_COMMITS.md', 'PLAN_COMPLETO.md'],
+          notes: 'Doble-clic para navegación: izquierda (-10s), derecha (+10s). Botones centrales estilo Disney+/YouTube: "10" + círculo con flecha, ocultos en móvil. Sistema de resoluciones inteligente: detección automática de resolución máxima del video, indicación de resolución actual en "Auto", deshabilitación de resoluciones no disponibles. Eliminación del indicador de orientación vertical/horizontal. Controles reorganizados: fullscreen arriba-derecha, play/pause y skip en centro, loop/A-B/resolución/volumen agrupados abajo-derecha. Volumen vertical sobre la barra de progreso. Actualización completa de documentación con todos los commits y estado del proyecto.',
+          status: 'Completado',
+          category: 'CONTENIDO'
+        },
+        {
+          id: 39,
+          hash: 'j6i5h4g',
+          date: '2025-01-27',
+          time: '18:30:15',
+          title: 'Commit #039 - Sistema de Resoluciones Inteligente',
+          description: 'Implementación de sistema de resoluciones inteligente hasta 4K',
+          files: ['src/components/video/VideoPlayer.jsx', 'src/index.css'],
+          notes: 'Sistema de resoluciones: 360p, 480p, 720p, 1080p, 4K. Detección automática de resolución máxima del video. Indicación de resolución actual en modo "Auto". Deshabilitación visual de resoluciones no disponibles. Botón de resolución en controles principales. Dropdown con todas las opciones disponibles.',
+          status: 'Completado',
+          category: 'CONTENIDO'
+        },
+        {
+          id: 38,
+          hash: 'f3e2d1c',
+          date: '2025-01-27',
+          time: '18:15:45',
+          title: 'Commit #038 - Mejoras y Correcciones del VideoPlayer',
+          description: 'Correcciones y mejoras del sistema de controles del VideoPlayer',
+          files: ['src/components/video/VideoPlayer.jsx', 'src/index.css'],
+          notes: 'Volumen vertical sobre la barra de progreso. Slider vertical con gradiente azul y porcentaje. Controles reorganizados: fullscreen arriba-derecha, play/pause y skip en centro, loop/A-B/resolución/volumen agrupados abajo-derecha. Eliminación del indicador de orientación vertical/horizontal. Botones centrales ocultos en móvil (hidden md:block).',
+          status: 'Completado',
+          category: 'CONTENIDO'
+        },
+        {
+          id: 37,
+          hash: 'b9a8z7y',
+          date: '2025-01-27',
+          time: '18:00:20',
+          title: 'Commit #037 - VideoPlayer Avanzado con Controles Profesionales',
+          description: 'Implementación de VideoPlayer completo con controles A-B y volumen',
+          files: ['src/components/video/VideoPlayer.jsx', 'src/index.css'],
+          notes: 'VideoPlayer completo: play/pause, progress bar, volume control, fullscreen, skip, full loop, A-B segment loop. Controles auto-ocultos con delay. A-B functionality: click A/B para marcar puntos, botón principal para activar/desactivar. Volumen con slider vertical y porcentaje. Controles reorganizados y responsive.',
+          status: 'Completado',
+          category: 'CONTENIDO'
+        },
+        {
+          id: 36,
+          hash: 'x6w5v4u',
+          date: '2025-01-27',
+          time: '17:45:10',
+          title: 'Commit #036 - Sistema de Edición de Videos Completo',
+          description: 'Implementación completa del sistema de edición de videos',
+          files: ['src/components/video/VideoEditModal.jsx', 'src/pages/FigurasPage.jsx', 'src/services/firebase/firestore.js'],
+          notes: 'VideoEditModal completo: edición de título, descripción, thumbnail, tags normales, tags iniciales y finales. Secciones colapsables. Integración con VideoPlayer para visualización. Botón de edición en cada video card. Tags iniciales (azul-morado) y finales (verde-turquesa) visibles en cards. Filtrado exclusivo por categorías (AND logic).',
+          status: 'Completado',
+          category: 'CONTENIDO'
+        },
+        {
+          id: 35,
+          hash: 't3s2r1q',
+          date: '2025-01-27',
+          time: '17:30:00',
+          title: 'Commit #035 - Sistema de Video Upload con Thumbnails y Categorías',
+          description: 'Implementación del sistema completo de subida de videos',
+          files: ['src/components/video/VideoUploadModal.jsx', 'src/pages/FigurasPage.jsx', 'src/services/firebase/storage.js', 'src/services/firebase/firestore.js'],
+          notes: 'VideoUploadModal completo: subida de videos con thumbnails automáticos y personalizados. Categorización con tags múltiples. Integración con VideoPlayer para preview. Videos colapsados por defecto con thumbnails grandes al expandir. Sistema de notificaciones con Toast. Almacenamiento en Firebase Storage y metadatos en Firestore.',
+          status: 'Completado',
+          category: 'CONTENIDO'
+        },
+        {
+          id: 34,
+          hash: 'p9o8n7m',
+          date: '2025-01-27',
+          time: '17:15:30',
+          title: 'Commit #034 - Integración de VideoPlayer en Modales',
+          description: 'Integración del VideoPlayer en modales de subida y edición',
+          files: ['src/components/video/VideoUploadModal.jsx', 'src/components/video/VideoEditModal.jsx', 'src/pages/FigurasPage.jsx'],
+          notes: 'VideoPlayer integrado en VideoUploadModal y VideoEditModal. Centrado en modales. Integración en reproducción dinámica de cards. Controles funcionales en todos los contextos. Modal de reproducción con VideoPlayer completo.',
+          status: 'Completado',
+          category: 'CONTENIDO'
+        },
+        {
+          id: 33,
+          hash: 'l6k5j4i',
+          date: '2025-01-27',
+          time: '17:00:15',
+          title: 'Commit #033 - VideoPlayer Componente Base',
+          description: 'Creación del componente VideoPlayer base con controles básicos',
+          files: ['src/components/video/VideoPlayer.jsx'],
+          notes: 'VideoPlayer base: play/pause, progress bar, volume, fullscreen, skip, loop. Controles auto-ocultos. Responsive design. Integración con HTML5 video element. Preparado para funcionalidades avanzadas.',
+          status: 'Completado',
+          category: 'CONTENIDO'
+        },
+        {
+          id: 32,
+          hash: 'h3g2f1e',
+          date: '2025-01-27',
+          time: '16:45:00',
+          title: 'Commit #032 - Preparación para Sistema de Videos',
+          description: 'Preparación de la infraestructura para el sistema de videos',
+          files: ['src/services/firebase/storage.js', 'src/services/firebase/firestore.js'],
+          notes: 'Configuración de Firebase Storage para videos. Funciones de upload y download. Estructura de Firestore para metadatos de videos. Preparación para sistema completo de gestión de videos.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 31,
+          hash: 'd9c8b7a',
+          date: '2025-01-27',
+          time: '16:30:45',
+          title: 'Commit #031 - Sistema de Tags Iniciales y Finales',
+          description: 'Implementación del sistema de tags para secuencias lógicas',
+          files: ['src/components/video/VideoUploadModal.jsx', 'src/pages/FigurasPage.jsx'],
+          notes: 'Tags iniciales y finales para construcción de secuencias lógicas. Selección desde categorías existentes. Filtrado exclusivo por categorías (AND logic). Preparación para sistema de secuencias.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 30,
+          hash: 'a6z5y4x',
+          date: '2025-01-27',
+          time: '16:15:20',
+          title: 'Commit #030 - Galerías Independientes por Estilo',
+          description: 'Implementación de galerías independientes para cada estilo de baile',
+          files: ['src/pages/FigurasPage.jsx'],
+          notes: 'Galerías independientes por estilo: SALSA, BACHATA, KIZOMBA, ZOUK, MERENGUE. Filtros dinámicos que se actualizan según el estilo seleccionado. Navegación fluida entre estilos. Preparación para contenido específico por estilo.',
+          status: 'Completado',
+          category: 'PÁGINAS'
+        },
         {
           id: 29,
           hash: 'a1b2c3d',
