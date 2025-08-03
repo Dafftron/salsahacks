@@ -1,0 +1,470 @@
+import { useState, useRef, useEffect } from 'react'
+import { X, Edit, Tag, Save, AlertCircle, ChevronDown, ChevronUp, ChevronsDown, ChevronsUp } from 'lucide-react'
+import { updateVideoDocument } from '../../services/firebase/firestore'
+import { uploadFile } from '../../services/firebase/storage'
+import { useAuth } from '../../contexts/AuthContext'
+import { useCategories } from '../../hooks/useCategories'
+import Toast from '../common/Toast'
+
+const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figuras', style = 'salsa' }) => {
+  const { user } = useAuth()
+  const { currentCategories, categoriesList, getColorClasses } = useCategories(page, style)
+  const [loading, setLoading] = useState(false)
+  const [toasts, setToasts] = useState([])
+  
+  // Estados para el formulario
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [customThumbnail, setCustomThumbnail] = useState(null)
+  const [customThumbnailFile, setCustomThumbnailFile] = useState(null)
+  
+  // Estados para tags organizados por categorías
+  const [selectedTags, setSelectedTags] = useState({})
+  const [tagsIniciales, setTagsIniciales] = useState({})
+  const [tagsFinales, setTagsFinales] = useState({})
+  
+  // Estado para secciones plegadas/desplegadas
+  const [collapsedSections, setCollapsedSections] = useState(new Set(['tags-iniciales', 'tags-finales']))
+
+  useEffect(() => {
+    if (!isOpen || !video) return
+    
+    // Inicializar datos del video
+    setTitle(video.title || '')
+    setDescription(video.description || '')
+    setCustomThumbnail(video.thumbnailUrl || null)
+    
+    // Inicializar tags
+    if (currentCategories) {
+      const initialTags = {}
+      const initialTagsIniciales = {}
+      const initialTagsFinales = {}
+      
+      Object.keys(currentCategories).forEach(categoryKey => {
+        initialTags[categoryKey] = video.tags?.[categoryKey] || []
+        initialTagsIniciales[categoryKey] = video.tagsIniciales?.[categoryKey] || []
+        initialTagsFinales[categoryKey] = video.tagsFinales?.[categoryKey] || []
+      })
+      
+      setSelectedTags(initialTags)
+      setTagsIniciales(initialTagsIniciales)
+      setTagsFinales(initialTagsFinales)
+    }
+  }, [isOpen, video, currentCategories])
+
+  const addToast = (message, type = 'success') => {
+    const id = Date.now()
+    setToasts(prev => [...prev, { id, message, type }])
+  }
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id))
+  }
+
+  // Función para alternar el estado plegado/desplegado de una sección
+  const toggleSectionCollapse = (sectionName) => {
+    setCollapsedSections(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(sectionName)) {
+        newSet.delete(sectionName)
+      } else {
+        newSet.add(sectionName)
+      }
+      return newSet
+    })
+  }
+
+  const handleTagToggle = (category, tag) => {
+    setSelectedTags(prev => {
+      const currentTags = prev[category] || []
+      const isSelected = currentTags.includes(tag)
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          [category]: currentTags.filter(t => t !== tag)
+        }
+      } else {
+        return {
+          ...prev,
+          [category]: [...currentTags, tag]
+        }
+      }
+    })
+  }
+
+  const handleTagInicialToggle = (category, tag) => {
+    setTagsIniciales(prev => {
+      const currentTags = prev[category] || []
+      const isSelected = currentTags.includes(tag)
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          [category]: currentTags.filter(t => t !== tag)
+        }
+      } else {
+        return {
+          ...prev,
+          [category]: [...currentTags, tag]
+        }
+      }
+    })
+  }
+
+  const handleTagFinalToggle = (category, tag) => {
+    setTagsFinales(prev => {
+      const currentTags = prev[category] || []
+      const isSelected = currentTags.includes(tag)
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          [category]: [...currentTags, tag]
+        }
+      } else {
+        return {
+          ...prev,
+          [category]: currentTags.filter(t => t !== tag)
+        }
+      }
+    })
+  }
+
+  const handleThumbnailChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setCustomThumbnail(e.target.result)
+        setCustomThumbnailFile(file)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleSave = async () => {
+    if (!video) return
+    
+    setLoading(true)
+    
+    try {
+      // Subir nuevo thumbnail si se seleccionó uno
+      let thumbnailUrl = video.thumbnailUrl
+      let thumbnailPath = video.thumbnailPath
+      
+      if (customThumbnailFile) {
+        const thumbnailPath = `thumbnails/${Date.now()}_${video.originalTitle.replace(/\.[^/.]+$/, '.jpg')}`
+        const uploadResult = await uploadFile(customThumbnailFile, thumbnailPath)
+        
+        if (uploadResult.success) {
+          thumbnailUrl = uploadResult.url
+          thumbnailPath = uploadResult.path
+        } else {
+          addToast('Error al subir el nuevo thumbnail', 'error')
+          setLoading(false)
+          return
+        }
+      }
+
+      // Asegurar que el estilo esté incluido en los tags
+      const tagsWithStyle = {
+        ...selectedTags,
+        estilo: selectedTags.estilo ? [...selectedTags.estilo, style] : [style]
+      }
+
+      // Preparar datos actualizados
+      const updatedData = {
+        title: title.trim(),
+        description: description.trim(),
+        thumbnailUrl,
+        thumbnailPath,
+        tags: tagsWithStyle,
+        tagsIniciales,
+        tagsFinales,
+        updatedBy: user?.uid || 'anonymous',
+        updatedAt: new Date().toISOString()
+      }
+
+      // Actualizar en Firestore
+      const result = await updateVideoDocument(video.id, updatedData)
+      
+      if (result.success) {
+        addToast('Video actualizado exitosamente', 'success')
+        onVideoUpdated({ ...video, ...updatedData })
+        onClose()
+      } else {
+        addToast(`Error al actualizar video: ${result.error}`, 'error')
+      }
+    } catch (error) {
+      console.error('Error updating video:', error)
+      addToast('Error inesperado al actualizar video', 'error')
+    }
+    
+    setLoading(false)
+  }
+
+  if (!isOpen || !video) return null
+
+  return (
+    <>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full">
+                <Edit className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">Editar Video</h2>
+                <p className="text-sm text-gray-500">{video.title}</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 overflow-y-auto max-h-[60vh]">
+            <div className="space-y-6">
+              {/* Vista previa del video */}
+              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                <div className="w-32 h-24 bg-gray-100 rounded flex items-center justify-center relative overflow-hidden">
+                  {customThumbnail ? (
+                    <img 
+                      src={customThumbnail} 
+                      alt="Thumbnail" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-xs text-gray-500">VIDEO</span>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium text-gray-900">{video.originalTitle}</h4>
+                  <p className="text-sm text-gray-500">{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</p>
+                </div>
+              </div>
+
+              {/* Título */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Título del video
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Ingresa un título para el video"
+                />
+              </div>
+
+              {/* Descripción */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Descripción
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Describe brevemente el contenido del video..."
+                />
+              </div>
+
+              {/* Thumbnail personalizado */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Thumbnail personalizado
+                </label>
+                <div className="flex items-center space-x-3">
+                  <div className="w-40 h-24 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
+                    {customThumbnail ? (
+                      <img 
+                        src={customThumbnail} 
+                        alt="Thumbnail" 
+                        className="w-full h-full object-cover rounded"
+                      />
+                    ) : (
+                      <span className="text-xs text-gray-500">IMG</span>
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleThumbnailChange}
+                    className="flex-1 text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                </div>
+              </div>
+
+              {/* Tags Normales */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-900">Tags Normales</h4>
+                {categoriesList.map((category) => (
+                  <div key={category.key} className="space-y-3">
+                    <h5 className="font-medium text-gray-700 capitalize">{category.name}</h5>
+                    <div className="flex flex-wrap gap-2">
+                      {category.tags.map(tag => (
+                        <button
+                          key={tag}
+                          onClick={() => handleTagToggle(category.key, tag)}
+                          className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                            selectedTags[category.key]?.includes(tag)
+                              ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Tags Iniciales */}
+              <div className="border-t pt-6">
+                <button
+                  onClick={() => toggleSectionCollapse('tags-iniciales')}
+                  className="flex items-center justify-between w-full p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg hover:from-blue-100 hover:to-purple-100 transition-all duration-200"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Tag className="h-5 w-5 text-blue-600" />
+                    <h4 className="font-medium text-gray-900">Tags Iniciales (cómo empieza la figura)</h4>
+                  </div>
+                  {collapsedSections.has('tags-iniciales') ? (
+                    <ChevronDown className="h-5 w-5 text-gray-500" />
+                  ) : (
+                    <ChevronUp className="h-5 w-5 text-gray-500" />
+                  )}
+                </button>
+                
+                <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
+                  collapsedSections.has('tags-iniciales') ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'
+                }`}>
+                  <div className="space-y-4 bg-blue-50 rounded-lg p-4">
+                    {categoriesList.map((category) => (
+                      <div key={`inicial-${category.key}`} className="space-y-2">
+                        <h6 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category.name}</h6>
+                        <div className="flex flex-wrap gap-2">
+                          {category.tags.map(tag => (
+                            <button
+                              key={`inicial-${tag}`}
+                              onClick={() => handleTagInicialToggle(category.key, tag)}
+                              className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                                tagsIniciales[category.key]?.includes(tag)
+                                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                                  : 'bg-white text-gray-700 hover:bg-blue-100'
+                              }`}
+                            >
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Tags Finales */}
+              <div className="border-t pt-6">
+                <button
+                  onClick={() => toggleSectionCollapse('tags-finales')}
+                  className="flex items-center justify-between w-full p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg hover:from-green-100 hover:to-teal-100 transition-all duration-200"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Tag className="h-5 w-5 text-green-600" />
+                    <h4 className="font-medium text-gray-900">Tags Finales (cómo termina la figura)</h4>
+                  </div>
+                  {collapsedSections.has('tags-finales') ? (
+                    <ChevronDown className="h-5 w-5 text-gray-500" />
+                  ) : (
+                    <ChevronUp className="h-5 w-5 text-gray-500" />
+                  )}
+                </button>
+                
+                <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
+                  collapsedSections.has('tags-finales') ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'
+                }`}>
+                  <div className="space-y-4 bg-green-50 rounded-lg p-4">
+                    {categoriesList.map((category) => (
+                      <div key={`final-${category.key}`} className="space-y-2">
+                        <h6 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category.name}</h6>
+                        <div className="flex flex-wrap gap-2">
+                          {category.tags.map(tag => (
+                            <button
+                              key={`final-${tag}`}
+                              onClick={() => handleTagFinalToggle(category.key, tag)}
+                              className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                                tagsFinales[category.key]?.includes(tag)
+                                  ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg'
+                                  : 'bg-white text-gray-700 hover:bg-green-100'
+                              }`}
+                            >
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Información */}
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-blue-800 font-medium">Información</p>
+                    <p className="text-sm text-blue-700">Los tags iniciales y finales ayudarán a crear secuencias lógicas conectando figuras.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between p-6 border-t border-gray-200">
+            <button
+              onClick={onClose}
+              disabled={loading}
+              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancelar
+            </button>
+            
+            <button
+              onClick={handleSave}
+              disabled={loading || !title.trim()}
+              className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            >
+              {loading ? 'Guardando...' : 'Guardar Cambios'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Toasts */}
+      {toasts.map(toast => (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+        />
+      ))}
+    </>
+  )
+}
+
+export default VideoEditModal 
