@@ -972,7 +972,6 @@ const FigurasPage = () => {
                              const link = document.createElement('a')
                              link.href = video.videoUrl
                              link.download = video.title || 'video'
-                             link.target = '_blank'
                              document.body.appendChild(link)
                              link.click()
                              document.body.removeChild(link)
@@ -1243,7 +1242,6 @@ const FigurasPage = () => {
                              const link = document.createElement('a')
                              link.href = video.videoUrl
                              link.download = video.title || 'video'
-                             link.target = '_blank'
                              document.body.appendChild(link)
                              link.click()
                              document.body.removeChild(link)

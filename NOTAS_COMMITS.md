@@ -1266,3 +1266,31 @@ PÁGINA (figuras/escuela/eventos) → ESTILO → CATEGORÍA → TAGS
 - **Archivos**: 
   - `src/components/video/VideoPlayer.jsx` (mejoras finales)
 - **Estado**: ✅ Completado
+
+### **Commit #041 - Botones de Descarga en Tarjetas y Modal de Reproducción**
+- **Fecha**: 2025-01-27
+- **Descripción**: Implementación de botones de descarga en tarjetas de video y modal de reproducción
+- **Cambios**:
+  - **Botones de Descarga en Tarjetas**:
+    - Botón de descarga en cada tarjeta de video en FigurasPage
+    - Icono Download de Lucide React
+    - Descarga directa del video con título como nombre de archivo
+    - Hover effects con transiciones suaves
+  - **Botón de Descarga en Modal de Reproducción**:
+    - Botón de descarga en la sección de estadísticas del modal
+    - Integrado con el sistema de favoritos y edición existente
+    - Funcionalidad JavaScript para descarga automática
+  - **Botón de Descarga en VideoPlayer**:
+    - Botón de descarga en los controles del reproductor
+    - Prop `videoTitle` para nombre personalizado del archivo
+    - Integrado con controles existentes (play, volumen, pantalla completa)
+  - **Integración Completa**:
+    - VideoPlayer actualizado en VideoEditModal y VideoUploadModal
+    - Sistema de descarga consistente en toda la aplicación
+    - Manejo de errores y fallbacks
+- **Archivos**: 
+  - `src/pages/FigurasPage.jsx` (botones en tarjetas y modal)
+  - `src/components/video/VideoPlayer.jsx` (botón en controles)
+  - `src/components/video/VideoEditModal.jsx` (integración)
+  - `src/components/video/VideoUploadModal.jsx` (integración)
+- **Estado**: ✅ Completado
