@@ -28,7 +28,8 @@ import {
   subscribeToVideosByStyle,
   deleteAllVideos,
   updateVideoThumbnailPaths,
-  diagnoseVideos
+  diagnoseVideos,
+  updateVideoDocument
 } from '../services/firebase/firestore'
 import { 
   deleteVideo, 
@@ -272,6 +273,9 @@ const FigurasPage = () => {
         } else {
           message += ` ❌ Fig003 NO encontrado`
         }
+        if (result.videosWithoutResolution > 0) {
+          message += ` ⚠️ ${result.videosWithoutResolution} sin resolución`
+        }
         
         addToast(message, 'success')
       } else {
@@ -280,6 +284,69 @@ const FigurasPage = () => {
     } catch (error) {
       console.error('Error ejecutando diagnóstico:', error)
       addToast('Error al ejecutar diagnóstico', 'error')
+    }
+  }
+
+  // Función para actualizar resoluciones de todos los videos
+  const handleUpdateAllResolutions = async () => {
+    try {
+      addToast('🔄 Actualizando resoluciones de videos...', 'info')
+      
+      // Obtener todos los videos
+      const allVideos = await getVideos()
+      const videosToUpdate = allVideos.filter(video => 
+        !video.resolution || video.resolution === 'Unknown'
+      )
+      
+      if (videosToUpdate.length === 0) {
+        addToast('✅ Todos los videos ya tienen resolución detectada', 'success')
+        return
+      }
+      
+      let updatedCount = 0
+      
+      for (const video of videosToUpdate) {
+        try {
+          // Detectar resolución del video
+          const videoElement = document.createElement('video')
+          videoElement.crossOrigin = 'anonymous'
+          
+          await new Promise((resolve, reject) => {
+            videoElement.onloadedmetadata = () => {
+              const videoWidth = videoElement.videoWidth
+              const videoHeight = videoElement.videoHeight
+              const maxDimension = Math.max(videoWidth, videoHeight)
+              
+              let resolution = 'Unknown'
+              if (maxDimension >= 3840) resolution = '4K'
+              else if (maxDimension >= 1920) resolution = '1080p'
+              else if (maxDimension >= 1280) resolution = '720p'
+              else if (maxDimension >= 854) resolution = '480p'
+              else resolution = '360p'
+              
+              // Actualizar en Firestore
+              updateVideoDocument(video.id, { resolution })
+              updatedCount++
+              resolve()
+            }
+            
+            videoElement.onerror = reject
+            videoElement.src = video.videoUrl
+          })
+          
+          // Limpiar el elemento de video
+          videoElement.remove()
+          
+        } catch (error) {
+          console.error(`Error actualizando resolución para video ${video.id}:`, error)
+        }
+      }
+      
+      addToast(`✅ Resoluciones actualizadas: ${updatedCount} videos`, 'success')
+      
+    } catch (error) {
+      console.error('Error al actualizar resoluciones:', error)
+      addToast('Error al actualizar resoluciones', 'error')
     }
   }
 
@@ -607,6 +674,13 @@ const FigurasPage = () => {
                 🔍 Diagnóstico
               </button>
               <button
+                onClick={handleUpdateAllResolutions}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                📐 Actualizar Resoluciones
+              </button>
+              <button
                 onClick={() => openCleanupModal('update')}
                 disabled={syncStatus === 'syncing'}
                 className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -697,7 +771,7 @@ const FigurasPage = () => {
                       className="w-full h-48 object-cover"
                     />
                     <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
-                      4K
+                      {video.resolution && video.resolution !== 'Unknown' ? video.resolution : 'HD'}
                     </div>
                     
                     {/* Botón de reproducción */}
@@ -855,10 +929,16 @@ const FigurasPage = () => {
                        return null
                      })()}
                     
-                                         <div className="flex items-center justify-between text-sm text-gray-500">
-                       <span className="font-medium">
-                         {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
-                       </span>
+                                                             <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium">
+                          {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
+                        </span>
+                        <span className="text-gray-400">•</span>
+                        <span className="text-gray-600">
+                          {video.resolution && video.resolution !== 'Unknown' ? video.resolution : 'HD'}
+                        </span>
+                      </div>
                                                <div className="flex items-center space-x-4">
                           <div className="flex items-center space-x-1">
                             <Heart className="h-4 w-4 text-red-500 fill-current" />

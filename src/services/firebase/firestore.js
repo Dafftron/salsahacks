@@ -773,6 +773,16 @@ export const diagnoseVideos = async () => {
       console.log('❌ Video Fig003 NO encontrado en Firestore')
     }
     
+    // Verificar videos sin resolución
+    const videosWithoutResolution = allVideos.filter(video => 
+      !video.resolution || video.resolution === 'Unknown'
+    )
+    
+    console.log(`📊 Videos sin resolución: ${videosWithoutResolution.length}`)
+    videosWithoutResolution.forEach(video => {
+      console.log(`  - ${video.title} (ID: ${video.id})`)
+    })
+    
     return {
       success: true,
       totalVideos: allVideos.length,
@@ -780,6 +790,7 @@ export const diagnoseVideos = async () => {
       salsaVideos: salsaVideos.length,
       fig003Found: !!fig003Video,
       fig003Video,
+      videosWithoutResolution: videosWithoutResolution.length,
       error: null
     }
   } catch (error) {
@@ -791,6 +802,7 @@ export const diagnoseVideos = async () => {
       salsaVideos: 0,
       fig003Found: false,
       fig003Video: null,
+      videosWithoutResolution: 0,
       error: error.message
     }
   }

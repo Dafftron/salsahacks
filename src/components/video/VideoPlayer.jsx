@@ -11,7 +11,8 @@ import {
   SkipBack,
   SkipForward,
   Settings,
-  Minus
+  Minus,
+  Zap
 } from 'lucide-react'
 
 const VideoPlayer = ({ 
@@ -53,6 +54,12 @@ const VideoPlayer = ({
   const [selectedResolution, setSelectedResolution] = useState(currentResolution || 'auto')
   const [videoMaxResolution, setVideoMaxResolution] = useState(null)
   const [currentAutoResolution, setCurrentAutoResolution] = useState(null)
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false)
+  const [playbackSpeed, setPlaybackSpeed] = useState(1)
+  const [videoOrientation, setVideoOrientation] = useState('horizontal') // 'horizontal' o 'vertical'
+
+  // Velocidades disponibles
+  const availableSpeeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2]
 
   // Manejar bucle de segmento
   useEffect(() => {
@@ -99,19 +106,26 @@ const VideoPlayer = ({
           e.preventDefault()
           setIsLoopEnabled(!isLoopEnabled)
           break
+        case 'KeyS':
+          e.preventDefault()
+          // Ciclar entre velocidades: 0.5x -> 1x -> 1.5x -> 2x -> 0.5x
+          const currentIndex = availableSpeeds.indexOf(playbackSpeed)
+          const nextIndex = (currentIndex + 1) % availableSpeeds.length
+          handleSpeedChange(availableSpeeds[nextIndex])
+          break
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [currentTime, isLoopEnabled])
+  }, [currentTime, isLoopEnabled, playbackSpeed])
 
   // Auto-hide controles
   useEffect(() => {
     if (showControls && isPlaying) {
       const timeout = setTimeout(() => {
         setShowControls(false)
-      }, 3000)
+      }, 4000) // Cambiado a 4 segundos
       setControlsTimeout(timeout)
       return () => clearTimeout(timeout)
     }
@@ -125,13 +139,14 @@ const VideoPlayer = ({
     }
   }, [])
 
-  // Inicializar volumen cuando el video se carga
+  // Inicializar volumen y velocidad cuando el video se carga
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.volume = volume
       videoRef.current.muted = isMuted
+      videoRef.current.playbackRate = playbackSpeed
     }
-  }, [volume, isMuted])
+  }, [volume, isMuted, playbackSpeed])
 
   // Detectar resolución actual cuando se selecciona Auto
   useEffect(() => {
@@ -140,24 +155,32 @@ const VideoPlayer = ({
     }
   }, [selectedResolution, videoMaxResolution])
 
-  // Cerrar menú de resoluciones al hacer clic fuera
+  // Cerrar menús al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showResolutionMenu) {
         setShowResolutionMenu(false)
       }
+      if (showSpeedMenu) {
+        setShowSpeedMenu(false)
+      }
     }
 
     document.addEventListener('click', handleClickOutside)
     return () => document.removeEventListener('click', handleClickOutside)
-  }, [showResolutionMenu])
+  }, [showResolutionMenu, showSpeedMenu])
 
-  // Mostrar controles al hacer clic en el video
-  const handleVideoClick = () => {
+  // Función helper para activar controles
+  const activateControls = () => {
     setShowControls(true)
     if (controlsTimeout) {
       clearTimeout(controlsTimeout)
     }
+  }
+
+  // Mostrar controles al hacer clic en el video
+  const handleVideoClick = () => {
+    activateControls()
   }
 
   // Manejar doble clic para adelantar/retroceder
@@ -226,6 +249,12 @@ const VideoPlayer = ({
       const height = video.videoHeight
       
       if (width && height) {
+        // Detectar orientación del video
+        const isVertical = height > width
+        setVideoOrientation(isVertical ? 'vertical' : 'horizontal')
+        console.log(`Orientación del video: ${isVertical ? 'vertical' : 'horizontal'} (${width}x${height})`)
+        console.log(`Aspect ratio: ${width}:${height} = ${(width/height).toFixed(2)}`)
+        
         const maxDimension = Math.max(width, height)
         let maxRes = '480p'
         
@@ -388,6 +417,19 @@ const VideoPlayer = ({
     onResolutionChange?.(resolution)
   }
 
+  const handleSpeedChange = (speed) => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = speed
+      setPlaybackSpeed(speed)
+    }
+    setShowSpeedMenu(false)
+  }
+
+  const getSpeedLabel = (speed) => {
+    if (speed === 1) return 'Normal'
+    return `${speed}x`
+  }
+
   const getResolutionLabel = (resolution) => {
     switch (resolution) {
       case 'auto':
@@ -418,38 +460,44 @@ const VideoPlayer = ({
   }
 
   const getSizeClasses = () => {
+    let sizeClass = ''
     switch (size) {
       case 'small':
-        return 'max-w-xs'
+        sizeClass = 'max-w-xs'
+        break
       case 'medium':
-        return 'max-w-md'
+        sizeClass = 'max-w-md'
+        break
       case 'large':
-        return 'max-w-2xl'
+        sizeClass = 'max-w-2xl'
+        break
       case 'fullscreen':
         return 'w-full h-full'
       default:
-        return 'max-w-md'
+        sizeClass = 'max-w-md'
     }
+    
+    // Ajustar el aspect ratio según la orientación del video
+    const aspectClass = videoOrientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'
+    
+    return `${sizeClass} ${aspectClass}`
   }
 
   return (
     <div 
       ref={containerRef}
-      className={`relative bg-black rounded-lg overflow-hidden ${getSizeClasses()} ${className} aspect-video`}
-      onMouseMove={() => {
-        setShowControls(true)
-        if (controlsTimeout) {
-          clearTimeout(controlsTimeout)
-        }
-      }}
+      className={`relative bg-black rounded-lg overflow-hidden video-player-container ${getSizeClasses()} ${className} ${videoOrientation === 'vertical' ? 'video-player-vertical' : ''}`}
+      onMouseMove={activateControls}
       onMouseLeave={() => {
         if (isPlaying) {
           const timeout = setTimeout(() => {
             setShowControls(false)
-          }, 3000)
+          }, 4000)
           setControlsTimeout(timeout)
         }
       }}
+      onTouchStart={activateControls}
+      onTouchMove={activateControls}
       onClick={handleVideoClick}
       onDoubleClick={handleVideoDoubleClick}
     >
@@ -466,17 +514,27 @@ const VideoPlayer = ({
         onPause={() => setIsPlaying(false)}
         onClick={handleVideoClick}
         onDoubleClick={handleVideoDoubleClick}
+        onTouchStart={activateControls}
+        onTouchMove={activateControls}
       />
+
+
 
       {/* Overlay de controles */}
       {showControls && (
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
+        <div 
+          className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"
+          onMouseMove={activateControls}
+          onTouchStart={activateControls}
+          onTouchMove={activateControls}
+        >
           {/* Controles superiores - solo pantalla completa */}
           <div className="absolute top-0 left-0 right-0 p-4 flex justify-end items-center">
             <div className="flex items-center space-x-2">
               {/* Botón de pantalla completa */}
               <button
                 onClick={toggleFullscreen}
+                onTouchStart={activateControls}
                 className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
               >
                 {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
@@ -490,6 +548,7 @@ const VideoPlayer = ({
               {/* Botón de retroceder 10s - estilo Disney+/YouTube */}
               <button
                 onClick={() => skip(-10)}
+                onTouchStart={activateControls}
                 className="p-3 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors z-10 hidden md:flex items-center justify-center"
               >
                 <div className="flex items-center space-x-1">
@@ -502,6 +561,7 @@ const VideoPlayer = ({
 
               <button
                 onClick={togglePlay}
+                onTouchStart={activateControls}
                 className="p-4 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
               >
                 {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8" />}
@@ -510,6 +570,7 @@ const VideoPlayer = ({
               {/* Botón de adelantar 10s - estilo Disney+/YouTube */}
               <button
                 onClick={() => skip(10)}
+                onTouchStart={activateControls}
                 className="p-3 rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors z-10 hidden md:flex items-center justify-center"
               >
                 <div className="flex items-center space-x-1">
@@ -529,6 +590,7 @@ const VideoPlayer = ({
               {/* Botón de bucle */}
               <button
                 onClick={() => setIsLoopEnabled(!isLoopEnabled)}
+                onTouchStart={activateControls}
                 className={`p-2 rounded-full transition-colors z-10 ${
                   isLoopEnabled ? 'bg-blue-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'
                 }`}
@@ -561,6 +623,7 @@ const VideoPlayer = ({
                   }
                   console.log(`Modo A-B ${newMode ? 'activado' : 'desactivado'}`)
                 }}
+                onTouchStart={activateControls}
                 className={`p-2 rounded-full transition-colors z-10 ${
                   isLoopSegmentMode ? 'bg-green-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'
                 }`}
@@ -576,6 +639,7 @@ const VideoPlayer = ({
                 <div className="relative">
                   <button
                     onClick={() => setShowResolutionMenu(!showResolutionMenu)}
+                    onTouchStart={activateControls}
                     className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
                     title="Resolución"
                   >
@@ -584,8 +648,12 @@ const VideoPlayer = ({
                     </div>
                   </button>
                   
-                                     {showResolutionMenu && (
-                     <div className="absolute bottom-full right-0 mb-2 bg-black/90 rounded-lg p-2 z-20 min-w-[80px]">
+                                                       {showResolutionMenu && (
+                    <div 
+                      className="absolute bottom-full right-0 mb-2 bg-black/90 rounded-lg p-2 z-20 min-w-[80px]"
+                      onTouchStart={activateControls}
+                      onTouchMove={activateControls}
+                    >
                        {resolutions.map((resolution) => {
                          const isAvailable = isResolutionAvailable(resolution)
                          return (
@@ -615,10 +683,47 @@ const VideoPlayer = ({
                 </div>
               )}
 
+              {/* Botón de velocidades */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+                  onTouchStart={activateControls}
+                  className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
+                  title="Velocidad de reproducción"
+                >
+                  <div className="flex items-center justify-center w-4 h-4 text-[10px] font-bold leading-none">
+                    {playbackSpeed === 1 ? '1x' : `${playbackSpeed}x`}
+                  </div>
+                </button>
+                
+                {showSpeedMenu && (
+                  <div 
+                    className="absolute bottom-full right-0 mb-2 bg-black/90 rounded-lg p-2 z-20 min-w-[80px]"
+                    onTouchStart={activateControls}
+                    onTouchMove={activateControls}
+                  >
+                    {availableSpeeds.map((speed) => (
+                      <button
+                        key={speed}
+                        onClick={() => handleSpeedChange(speed)}
+                        className={`w-full text-left px-3 py-1 rounded text-xs transition-colors ${
+                          playbackSpeed === speed 
+                            ? 'bg-blue-500 text-white' 
+                            : 'text-white hover:bg-white/20'
+                        }`}
+                      >
+                        {getSpeedLabel(speed)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Controles de volumen */}
               <div className="relative">
                 <button
                   onClick={toggleMute}
+                  onTouchStart={activateControls}
                   className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
                   onMouseEnter={() => setShowVolumeSlider(true)}
                   onMouseLeave={() => {
@@ -629,34 +734,38 @@ const VideoPlayer = ({
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 </button>
                 
-                {showVolumeSlider && (
-                  <div 
-                    className="absolute bottom-full right-0 mb-2 bg-black/80 rounded-lg p-3 z-20"
-                    onMouseEnter={() => {
-                      if (volumeSliderTimeout) {
-                        clearTimeout(volumeSliderTimeout)
-                        setVolumeSliderTimeout(null)
-                      }
-                    }}
-                    onMouseLeave={() => {
-                      const timeout = setTimeout(() => setShowVolumeSlider(false), 1000)
-                      setVolumeSliderTimeout(timeout)
-                    }}
-                  >
+                                 {showVolumeSlider && (
+                   <div 
+                     className="absolute bottom-full right-0 mb-2 bg-black/80 rounded-lg p-3 z-20"
+                     onMouseEnter={() => {
+                       if (volumeSliderTimeout) {
+                         clearTimeout(volumeSliderTimeout)
+                         setVolumeSliderTimeout(null)
+                       }
+                     }}
+                     onMouseLeave={() => {
+                       const timeout = setTimeout(() => setShowVolumeSlider(false), 1000)
+                       setVolumeSliderTimeout(timeout)
+                     }}
+                     onTouchStart={activateControls}
+                     onTouchMove={activateControls}
+                   >
                     <div className="flex flex-col items-center space-y-2">
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.01"
-                        value={volume}
-                        onChange={handleVolumeChange}
-                        className="w-2 h-20 bg-gray-600 rounded-lg appearance-none cursor-pointer slider-vertical"
-                        style={{
-                          background: `linear-gradient(to top, #3b82f6 0%, #3b82f6 ${volume * 100}%, #4b5563 ${volume * 100}%, #4b5563 100%)`
-                        }}
-                        orient="vertical"
-                      />
+                                             <input
+                         type="range"
+                         min="0"
+                         max="1"
+                         step="0.01"
+                         value={volume}
+                         onChange={handleVolumeChange}
+                         onTouchStart={activateControls}
+                         onTouchMove={activateControls}
+                         className="w-2 h-20 bg-gray-600 rounded-lg appearance-none cursor-pointer slider-vertical"
+                         style={{
+                           background: `linear-gradient(to top, #3b82f6 0%, #3b82f6 ${volume * 100}%, #4b5563 ${volume * 100}%, #4b5563 100%)`
+                         }}
+                         orient="vertical"
+                       />
                       <span className="text-white text-xs">{Math.round(volume * 100)}%</span>
                     </div>
                   </div>
@@ -669,6 +778,8 @@ const VideoPlayer = ({
               <div
                 className="w-full h-2 bg-white/20 rounded-full cursor-pointer relative"
                 onClick={handleSeek}
+                onTouchStart={activateControls}
+                onTouchMove={activateControls}
               >
                 <div
                   className="h-full bg-blue-500 rounded-full"
@@ -695,11 +806,17 @@ const VideoPlayer = ({
             <div className="flex items-center justify-between text-white text-sm">
               <div className="flex items-center space-x-4">
                 <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+                {playbackSpeed !== 1 && (
+                  <span className="text-blue-400 font-medium">
+                    {playbackSpeed}x
+                  </span>
+                )}
                 
                 {isLoopSegmentMode && (
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => setLoopPoint('start')}
+                      onTouchStart={activateControls}
                       className={`px-2 py-1 rounded text-xs transition-colors ${
                         hasPointA ? 'bg-green-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
                       }`}
@@ -708,6 +825,7 @@ const VideoPlayer = ({
                     </button>
                     <button
                       onClick={() => setLoopPoint('end')}
+                      onTouchStart={activateControls}
                       className={`px-2 py-1 rounded text-xs transition-colors ${
                         hasPointB ? 'bg-red-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
                       }`}

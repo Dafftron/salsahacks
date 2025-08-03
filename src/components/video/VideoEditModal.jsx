@@ -158,6 +158,36 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
     }
   }
 
+  // Función para detectar resolución del video
+  const detectVideoResolution = async (videoUrl) => {
+    try {
+      const video = document.createElement('video')
+      video.src = videoUrl
+      await new Promise((resolve, reject) => {
+        video.onloadedmetadata = () => {
+          const width = video.videoWidth
+          const height = video.videoHeight
+          const maxDimension = Math.max(width, height)
+          
+          let resolution = 'Unknown'
+          if (maxDimension >= 3840) resolution = '4K'
+          else if (maxDimension >= 1920) resolution = '1080p'
+          else if (maxDimension >= 1280) resolution = '720p'
+          else if (maxDimension >= 854) resolution = '480p'
+          else resolution = '360p'
+          
+          resolve(resolution)
+        }
+        video.onerror = reject
+        // Timeout por si el video no carga
+        setTimeout(() => reject(new Error('Timeout')), 10000)
+      })
+    } catch (error) {
+      console.warn('No se pudo detectar la resolución del video:', error)
+      return 'Unknown'
+    }
+  }
+
   const handleSave = async () => {
     if (!video) return
     
@@ -188,12 +218,25 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
         estilo: selectedTags.estilo ? [...selectedTags.estilo, style] : [style]
       }
 
+      // Detectar resolución si no existe
+      let resolution = video.resolution
+      if (!resolution || resolution === 'Unknown') {
+        try {
+          resolution = await detectVideoResolution(video.videoUrl)
+          console.log(`Resolución detectada: ${resolution}`)
+        } catch (error) {
+          console.warn('No se pudo detectar la resolución:', error)
+          resolution = 'Unknown'
+        }
+      }
+
       // Preparar datos actualizados
       const updatedData = {
         title: title.trim(),
         description: description.trim(),
         thumbnailUrl,
         thumbnailPath,
+        resolution, // Incluir la resolución detectada
         tags: tagsWithStyle,
         tagsIniciales,
         tagsFinales,
@@ -268,8 +311,17 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                    />
                  </div>
                  <div className="flex items-center justify-between text-sm text-gray-600">
-                   <span>{video.originalTitle}</span>
-                   <span>{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
+                   <div className="flex items-center space-x-2">
+                     <span>{video.originalTitle}</span>
+                     <span className="text-gray-400">•</span>
+                     <span>{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
+                     {video.resolution && video.resolution !== 'Unknown' && (
+                       <>
+                         <span className="text-gray-400">•</span>
+                         <span>{video.resolution}</span>
+                       </>
+                     )}
+                   </div>
                  </div>
                </div>
 

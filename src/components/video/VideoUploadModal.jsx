@@ -248,6 +248,33 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       const currentTitle = titleInput?.value?.trim() || videoData[file.name]?.title || file.name.replace(/\.[^/.]+$/, '')
       const currentDescription = descriptionInput?.value?.trim() || videoData[file.name]?.description || ''
      
+      // Detectar resolución del video
+      let videoResolution = null
+      try {
+        const video = document.createElement('video')
+        video.src = URL.createObjectURL(file)
+        await new Promise((resolve, reject) => {
+          video.onloadedmetadata = () => {
+            const width = video.videoWidth
+            const height = video.videoHeight
+            const maxDimension = Math.max(width, height)
+            
+            if (maxDimension >= 3840) videoResolution = '4K'
+            else if (maxDimension >= 1920) videoResolution = '1080p'
+            else if (maxDimension >= 1280) videoResolution = '720p'
+            else if (maxDimension >= 854) videoResolution = '480p'
+            else videoResolution = '360p'
+            
+            URL.revokeObjectURL(video.src)
+            resolve()
+          }
+          video.onerror = reject
+        })
+      } catch (error) {
+        console.warn('No se pudo detectar la resolución del video:', error)
+        videoResolution = 'Unknown'
+      }
+
       // Crear documento en Firestore
       const videoDoc = {
         title: currentTitle,
@@ -260,6 +287,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         fileSize: file.size,
         fileType: file.type,
         duration: 0, // Se puede calcular después
+        resolution: videoResolution, // Resolución detectada
         style: style, // Agregar el estilo del video
         tags: tagsWithStyle,
         uploadedBy: user?.uid || 'anonymous',
