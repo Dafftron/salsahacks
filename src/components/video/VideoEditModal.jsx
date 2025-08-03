@@ -259,6 +259,12 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                      autoplay={false}
                      muted={true}
                      className="w-full max-w-2xl"
+                     resolutions={['auto', '4k', '1080p', '720p', '480p', '360p']}
+                     currentResolution="auto"
+                     onResolutionChange={(resolution) => {
+                       console.log(`Resolución cambiada a: ${resolution}`)
+                       // Aquí se implementaría la lógica para cambiar la resolución del video
+                     }}
                    />
                  </div>
                  <div className="flex items-center justify-between text-sm text-gray-600">

@@ -24,7 +24,10 @@ const VideoPlayer = ({
   muted = true,
   onTimeUpdate = null,
   onEnded = null,
-  className = ''
+  className = '',
+  resolutions = null, // Array de resoluciones disponibles
+  currentResolution = null, // Resolución actual seleccionada
+  onResolutionChange = null // Callback para cambio de resolución
 }) => {
   const videoRef = useRef(null)
   const containerRef = useRef(null)
@@ -44,24 +47,10 @@ const VideoPlayer = ({
   const [hasPointB, setHasPointB] = useState(false)
   const [savedPointA, setSavedPointA] = useState(0)
   const [savedPointB, setSavedPointB] = useState(0)
-  const [isVertical, setIsVertical] = useState(false)
   const [showControls, setShowControls] = useState(initialShowControls)
   const [controlsTimeout, setControlsTimeout] = useState(null)
-
-  // Detectar orientación del video
-  useEffect(() => {
-    if (videoRef.current) {
-      const video = videoRef.current
-      const checkOrientation = () => {
-        if (video.videoWidth && video.videoHeight) {
-          setIsVertical(video.videoWidth < video.videoHeight)
-        }
-      }
-      
-      video.addEventListener('loadedmetadata', checkOrientation)
-      return () => video.removeEventListener('loadedmetadata', checkOrientation)
-    }
-  }, [src])
+  const [showResolutionMenu, setShowResolutionMenu] = useState(false)
+  const [selectedResolution, setSelectedResolution] = useState(currentResolution || 'auto')
 
   // Manejar bucle de segmento
   useEffect(() => {
@@ -141,6 +130,18 @@ const VideoPlayer = ({
       videoRef.current.muted = isMuted
     }
   }, [volume, isMuted])
+
+  // Cerrar menú de resoluciones al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showResolutionMenu) {
+        setShowResolutionMenu(false)
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
+  }, [showResolutionMenu])
 
   // Mostrar controles al hacer clic en el video
   const handleVideoClick = () => {
@@ -315,6 +316,31 @@ const VideoPlayer = ({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
+  const handleResolutionChange = (resolution) => {
+    setSelectedResolution(resolution)
+    setShowResolutionMenu(false)
+    onResolutionChange?.(resolution)
+  }
+
+  const getResolutionLabel = (resolution) => {
+    switch (resolution) {
+      case 'auto':
+        return 'Auto'
+      case '4k':
+        return '4K'
+      case '1080p':
+        return '1080p'
+      case '720p':
+        return '720p'
+      case '480p':
+        return '480p'
+      case '360p':
+        return '360p'
+      default:
+        return resolution
+    }
+  }
+
   const getSizeClasses = () => {
     switch (size) {
       case 'small':
@@ -333,9 +359,7 @@ const VideoPlayer = ({
   return (
     <div 
       ref={containerRef}
-      className={`relative bg-black rounded-lg overflow-hidden ${getSizeClasses()} ${className} ${
-        isVertical ? 'aspect-[9/16]' : 'aspect-video'
-      }`}
+      className={`relative bg-black rounded-lg overflow-hidden ${getSizeClasses()} ${className} aspect-video`}
       onMouseMove={() => {
         setShowControls(true)
         if (controlsTimeout) {
@@ -369,64 +393,17 @@ const VideoPlayer = ({
       {/* Overlay de controles */}
       {showControls && (
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent">
-          {/* Controles superiores */}
-          <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center">
+          {/* Controles superiores - solo pantalla completa */}
+          <div className="absolute top-0 left-0 right-0 p-4 flex justify-end items-center">
             <div className="flex items-center space-x-2">
-              {/* Botón de bucle */}
+              {/* Botón de pantalla completa */}
               <button
-                onClick={() => setIsLoopEnabled(!isLoopEnabled)}
-                className={`p-2 rounded-full transition-colors z-10 ${
-                  isLoopEnabled ? 'bg-blue-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'
-                }`}
-                title="Bucle"
+                onClick={toggleFullscreen}
+                className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
               >
-                <RotateCcw className="w-4 h-4" />
+                {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
               </button>
-
-                             {/* Botón de segmento A-B */}
-               <button
-                 onClick={() => {
-                   const newMode = !isLoopSegmentMode
-                   setIsLoopSegmentMode(newMode)
-                   if (!newMode) {
-                     // Al desactivar, limpiar todos los puntos
-                     setHasPointA(false)
-                     setHasPointB(false)
-                     setLoopStart(0)
-                     setLoopEnd(0)
-                   } else {
-                     // Al reactivar, restaurar los puntos guardados si existen
-                     if (savedPointA > 0) {
-                       setHasPointA(true)
-                       setLoopStart(savedPointA)
-                     }
-                     if (savedPointB > 0) {
-                       setHasPointB(true)
-                       setLoopEnd(savedPointB)
-                     }
-                   }
-                   console.log(`Modo A-B ${newMode ? 'activado' : 'desactivado'}`)
-                 }}
-                 className={`p-2 rounded-full transition-colors z-10 ${
-                   isLoopSegmentMode ? 'bg-green-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'
-                 }`}
-                 title="Segmento A-B"
-               >
-                 <div className="flex items-center justify-center w-4 h-4 text-[10px] font-bold leading-none">
-                   A-B
-                 </div>
-               </button>
             </div>
-
-                         <div className="flex items-center space-x-2">
-               {/* Botón de pantalla completa */}
-               <button
-                 onClick={toggleFullscreen}
-                 className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
-               >
-                 {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
-               </button>
-             </div>
           </div>
 
           {/* Controles centrales */}
@@ -455,125 +432,198 @@ const VideoPlayer = ({
             </div>
           </div>
 
-                     {/* Controles inferiores */}
-           <div className="absolute bottom-0 left-0 right-0 p-4">
-             {/* Controles de volumen - por encima de la barra de progreso */}
-             <div className="flex justify-end mb-2">
-               <div className="relative">
-                 <button
-                   onClick={toggleMute}
-                   className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
-                   onMouseEnter={() => setShowVolumeSlider(true)}
-                   onMouseLeave={() => {
-                     const timeout = setTimeout(() => setShowVolumeSlider(false), 1000)
-                     setVolumeSliderTimeout(timeout)
-                   }}
-                 >
-                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                 </button>
-                 
-                 {showVolumeSlider && (
-                   <div 
-                     className="absolute bottom-full right-0 mb-2 bg-black/80 rounded-lg p-3 z-20"
-                     onMouseEnter={() => {
-                       if (volumeSliderTimeout) {
-                         clearTimeout(volumeSliderTimeout)
-                         setVolumeSliderTimeout(null)
-                       }
-                     }}
-                     onMouseLeave={() => {
-                       const timeout = setTimeout(() => setShowVolumeSlider(false), 1000)
-                       setVolumeSliderTimeout(timeout)
-                     }}
-                   >
-                     <div className="flex flex-col items-center space-y-2">
-                       <input
-                         type="range"
-                         min="0"
-                         max="1"
-                         step="0.01"
-                         value={volume}
-                         onChange={handleVolumeChange}
-                         className="w-20 h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
-                         style={{
-                           background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${volume * 100}%, #4b5563 ${volume * 100}%, #4b5563 100%)`
-                         }}
-                       />
-                       <span className="text-white text-xs">{Math.round(volume * 100)}%</span>
-                     </div>
-                   </div>
-                 )}
-               </div>
-             </div>
+          {/* Controles inferiores */}
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            {/* Controles de volumen, bucle, A-B y resoluciones - por encima de la barra de progreso */}
+            <div className="flex justify-end mb-2 space-x-2">
+              {/* Botón de bucle */}
+              <button
+                onClick={() => setIsLoopEnabled(!isLoopEnabled)}
+                className={`p-2 rounded-full transition-colors z-10 ${
+                  isLoopEnabled ? 'bg-blue-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'
+                }`}
+                title="Bucle"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
 
-             {/* Barra de progreso */}
-             <div className="relative mb-4">
-               <div
-                 className="w-full h-2 bg-white/20 rounded-full cursor-pointer relative"
-                 onClick={handleSeek}
-               >
-                 <div
-                   className="h-full bg-blue-500 rounded-full"
-                   style={{ width: `${(currentTime / duration) * 100}%` }}
-                 />
-                 
-                 {/* Marcadores de bucle A-B - fuera del progreso para que siempre sean visibles */}
-                 {isLoopSegmentMode && hasPointA && (
-                   <div
-                     className="absolute top-0 w-1 h-full bg-green-500 z-10"
-                     style={{ left: `${(loopStart / duration) * 100}%` }}
-                   />
-                 )}
-                 {isLoopSegmentMode && hasPointB && (
-                   <div
-                     className="absolute top-0 w-1 h-full bg-red-500 z-10"
-                     style={{ left: `${(loopEnd / duration) * 100}%` }}
-                   />
-                 )}
-               </div>
-             </div>
+              {/* Botón de segmento A-B */}
+              <button
+                onClick={() => {
+                  const newMode = !isLoopSegmentMode
+                  setIsLoopSegmentMode(newMode)
+                  if (!newMode) {
+                    // Al desactivar, limpiar todos los puntos
+                    setHasPointA(false)
+                    setHasPointB(false)
+                    setLoopStart(0)
+                    setLoopEnd(0)
+                  } else {
+                    // Al reactivar, restaurar los puntos guardados si existen
+                    if (savedPointA > 0) {
+                      setHasPointA(true)
+                      setLoopStart(savedPointA)
+                    }
+                    if (savedPointB > 0) {
+                      setHasPointB(true)
+                      setLoopEnd(savedPointB)
+                    }
+                  }
+                  console.log(`Modo A-B ${newMode ? 'activado' : 'desactivado'}`)
+                }}
+                className={`p-2 rounded-full transition-colors z-10 ${
+                  isLoopSegmentMode ? 'bg-green-500 text-white' : 'bg-white/20 text-white hover:bg-white/30'
+                }`}
+                title="Segmento A-B"
+              >
+                <div className="flex items-center justify-center w-4 h-4 text-[10px] font-bold leading-none">
+                  A-B
+                </div>
+              </button>
 
-             {/* Información de tiempo y controles de bucle */}
-             <div className="flex items-center justify-between text-white text-sm">
-               <div className="flex items-center space-x-4">
-                 <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
-                 
-                 {isLoopSegmentMode && (
-                   <div className="flex items-center space-x-2">
-                     <button
-                       onClick={() => setLoopPoint('start')}
-                       className={`px-2 py-1 rounded text-xs transition-colors ${
-                         hasPointA ? 'bg-green-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                       }`}
-                     >
-                       A: {hasPointA ? formatTime(loopStart) : '--:--'}
-                     </button>
-                     <button
-                       onClick={() => setLoopPoint('end')}
-                       className={`px-2 py-1 rounded text-xs transition-colors ${
-                         hasPointB ? 'bg-red-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-                       }`}
-                     >
-                       B: {hasPointB ? formatTime(loopEnd) : '--:--'}
-                     </button>
-                   </div>
-                 )}
-               </div>
+              {/* Botón de resoluciones */}
+              {resolutions && resolutions.length > 0 && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowResolutionMenu(!showResolutionMenu)}
+                    className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
+                    title="Resolución"
+                  >
+                    <div className="flex items-center justify-center w-4 h-4 text-[10px] font-bold leading-none">
+                      {getResolutionLabel(selectedResolution)}
+                    </div>
+                  </button>
+                  
+                  {showResolutionMenu && (
+                    <div className="absolute bottom-full right-0 mb-2 bg-black/90 rounded-lg p-2 z-20 min-w-[80px]">
+                      {resolutions.map((resolution) => (
+                        <button
+                          key={resolution}
+                          onClick={() => handleResolutionChange(resolution)}
+                          className={`w-full text-left px-3 py-1 rounded text-xs transition-colors ${
+                            selectedResolution === resolution 
+                              ? 'bg-blue-500 text-white' 
+                              : 'text-white hover:bg-white/20'
+                          }`}
+                        >
+                          {getResolutionLabel(resolution)}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
-               <div className="flex items-center space-x-2">
-                 <div className="text-xs opacity-75">
-                   {isLoopEnabled && (isLoopSegmentMode && hasPointA && hasPointB ? 'Bucle A-B' : 'Bucle completo')}
-                 </div>
-               </div>
-             </div>
-           </div>
-        </div>
-      )}
+              {/* Controles de volumen */}
+              <div className="relative">
+                <button
+                  onClick={toggleMute}
+                  className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
+                  onMouseEnter={() => setShowVolumeSlider(true)}
+                  onMouseLeave={() => {
+                    const timeout = setTimeout(() => setShowVolumeSlider(false), 1000)
+                    setVolumeSliderTimeout(timeout)
+                  }}
+                >
+                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                </button>
+                
+                {showVolumeSlider && (
+                  <div 
+                    className="absolute bottom-full right-0 mb-2 bg-black/80 rounded-lg p-3 z-20"
+                    onMouseEnter={() => {
+                      if (volumeSliderTimeout) {
+                        clearTimeout(volumeSliderTimeout)
+                        setVolumeSliderTimeout(null)
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      const timeout = setTimeout(() => setShowVolumeSlider(false), 1000)
+                      setVolumeSliderTimeout(timeout)
+                    }}
+                  >
+                    <div className="flex flex-col items-center space-y-2">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value={volume}
+                        onChange={handleVolumeChange}
+                        className="w-2 h-20 bg-gray-600 rounded-lg appearance-none cursor-pointer slider-vertical"
+                        style={{
+                          background: `linear-gradient(to top, #3b82f6 0%, #3b82f6 ${volume * 100}%, #4b5563 ${volume * 100}%, #4b5563 100%)`
+                        }}
+                        orient="vertical"
+                      />
+                      <span className="text-white text-xs">{Math.round(volume * 100)}%</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
-      {/* Overlay de información de orientación */}
-      {isVertical && (
-        <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-          Vertical
+            {/* Barra de progreso */}
+            <div className="relative mb-4">
+              <div
+                className="w-full h-2 bg-white/20 rounded-full cursor-pointer relative"
+                onClick={handleSeek}
+              >
+                <div
+                  className="h-full bg-blue-500 rounded-full"
+                  style={{ width: `${(currentTime / duration) * 100}%` }}
+                />
+                
+                {/* Marcadores de bucle A-B - fuera del progreso para que siempre sean visibles */}
+                {isLoopSegmentMode && hasPointA && (
+                  <div
+                    className="absolute top-0 w-1 h-full bg-green-500 z-10"
+                    style={{ left: `${(loopStart / duration) * 100}%` }}
+                  />
+                )}
+                {isLoopSegmentMode && hasPointB && (
+                  <div
+                    className="absolute top-0 w-1 h-full bg-red-500 z-10"
+                    style={{ left: `${(loopEnd / duration) * 100}%` }}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Información de tiempo y controles de bucle */}
+            <div className="flex items-center justify-between text-white text-sm">
+              <div className="flex items-center space-x-4">
+                <span>{formatTime(currentTime)} / {formatTime(duration)}</span>
+                
+                {isLoopSegmentMode && (
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => setLoopPoint('start')}
+                      className={`px-2 py-1 rounded text-xs transition-colors ${
+                        hasPointA ? 'bg-green-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                      }`}
+                    >
+                      A: {hasPointA ? formatTime(loopStart) : '--:--'}
+                    </button>
+                    <button
+                      onClick={() => setLoopPoint('end')}
+                      className={`px-2 py-1 rounded text-xs transition-colors ${
+                        hasPointB ? 'bg-red-500 text-white' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                      }`}
+                    >
+                      B: {hasPointB ? formatTime(loopEnd) : '--:--'}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <div className="text-xs opacity-75">
+                  {isLoopEnabled && (isLoopSegmentMode && hasPointA && hasPointB ? 'Bucle A-B' : 'Bucle completo')}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

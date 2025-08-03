@@ -743,7 +743,13 @@ const FigurasPage = () => {
                             initialShowControls: true,
                             autoplay: true,
                             muted: false,
-                            className: 'w-full max-w-3xl'
+                            className: 'w-full max-w-3xl',
+                            resolutions: ['auto', '4k', '1080p', '720p', '480p', '360p'],
+                            currentResolution: 'auto',
+                            onResolutionChange: (resolution) => {
+                              console.log(`Resolución cambiada a: ${resolution}`)
+                              // Aquí se implementaría la lógica para cambiar la resolución del video
+                            }
                           }))
                           
                           // Guardar referencia del root para limpieza
