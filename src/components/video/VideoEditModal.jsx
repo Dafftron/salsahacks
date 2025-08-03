@@ -176,7 +176,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
           else if (maxDimension >= 854) resolution = '480p'
           else resolution = '360p'
           
-          resolve(resolution)
+          resolve({ resolution, videoWidth: width, videoHeight: height })
         }
         video.onerror = reject
         // Timeout por si el video no carga
@@ -184,7 +184,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
       })
     } catch (error) {
       console.warn('No se pudo detectar la resolución del video:', error)
-      return 'Unknown'
+      return { resolution: 'Unknown', videoWidth: null, videoHeight: null }
     }
   }
 
@@ -220,10 +220,16 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
 
       // Detectar resolución si no existe
       let resolution = video.resolution
+      let videoWidth = video.videoWidth
+      let videoHeight = video.videoHeight
+      
       if (!resolution || resolution === 'Unknown') {
         try {
-          resolution = await detectVideoResolution(video.videoUrl)
-          console.log(`Resolución detectada: ${resolution}`)
+          const resolutionData = await detectVideoResolution(video.videoUrl)
+          resolution = resolutionData.resolution
+          videoWidth = resolutionData.videoWidth
+          videoHeight = resolutionData.videoHeight
+          console.log(`Resolución detectada: ${resolution} (${videoWidth}x${videoHeight})`)
         } catch (error) {
           console.warn('No se pudo detectar la resolución:', error)
           resolution = 'Unknown'
@@ -237,6 +243,8 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
         thumbnailUrl,
         thumbnailPath,
         resolution, // Incluir la resolución detectada
+        videoWidth, // Incluir dimensiones del video
+        videoHeight,
         tags: tagsWithStyle,
         tagsIniciales,
         tagsFinales,

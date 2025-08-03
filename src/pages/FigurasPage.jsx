@@ -311,24 +311,28 @@ const FigurasPage = () => {
           const videoElement = document.createElement('video')
           videoElement.crossOrigin = 'anonymous'
           
-          await new Promise((resolve, reject) => {
-            videoElement.onloadedmetadata = () => {
-              const videoWidth = videoElement.videoWidth
-              const videoHeight = videoElement.videoHeight
-              const maxDimension = Math.max(videoWidth, videoHeight)
-              
-              let resolution = 'Unknown'
-              if (maxDimension >= 3840) resolution = '4K'
-              else if (maxDimension >= 1920) resolution = '1080p'
-              else if (maxDimension >= 1280) resolution = '720p'
-              else if (maxDimension >= 854) resolution = '480p'
-              else resolution = '360p'
-              
-              // Actualizar en Firestore
-              updateVideoDocument(video.id, { resolution })
-              updatedCount++
-              resolve()
-            }
+                     await new Promise((resolve, reject) => {
+             videoElement.onloadedmetadata = () => {
+               const videoWidth = videoElement.videoWidth
+               const videoHeight = videoElement.videoHeight
+               const maxDimension = Math.max(videoWidth, videoHeight)
+               
+               let resolution = 'Unknown'
+               if (maxDimension >= 3840) resolution = '4K'
+               else if (maxDimension >= 1920) resolution = '1080p'
+               else if (maxDimension >= 1280) resolution = '720p'
+               else if (maxDimension >= 854) resolution = '480p'
+               else resolution = '360p'
+               
+               // Actualizar en Firestore con resolución y dimensiones
+               updateVideoDocument(video.id, { 
+                 resolution,
+                 videoWidth,
+                 videoHeight
+               })
+               updatedCount++
+               resolve()
+             }
             
             videoElement.onerror = reject
             videoElement.src = video.videoUrl
@@ -771,7 +775,10 @@ const FigurasPage = () => {
                       className="w-full h-48 object-cover"
                     />
                     <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
-                      {video.resolution && video.resolution !== 'Unknown' ? video.resolution : 'HD'}
+                      {video.resolution && video.resolution !== 'Unknown' ? 
+                        `${video.resolution}${video.videoWidth && video.videoHeight ? ` (${video.videoWidth}x${video.videoHeight})` : ''}` : 
+                        'HD'
+                      }
                     </div>
                     
                     {/* Botón de reproducción */}
@@ -936,7 +943,10 @@ const FigurasPage = () => {
                         </span>
                         <span className="text-gray-400">•</span>
                         <span className="text-gray-600">
-                          {video.resolution && video.resolution !== 'Unknown' ? video.resolution : 'HD'}
+                          {video.resolution && video.resolution !== 'Unknown' ? 
+                            `${video.resolution}${video.videoWidth && video.videoHeight ? ` (${video.videoWidth}x${video.videoHeight})` : ''}` : 
+                            'HD'
+                          }
                         </span>
                       </div>
                                                <div className="flex items-center space-x-4">

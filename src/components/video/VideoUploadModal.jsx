@@ -250,14 +250,16 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
      
       // Detectar resolución del video
       let videoResolution = null
+      let videoWidth = null
+      let videoHeight = null
       try {
         const video = document.createElement('video')
         video.src = URL.createObjectURL(file)
         await new Promise((resolve, reject) => {
           video.onloadedmetadata = () => {
-            const width = video.videoWidth
-            const height = video.videoHeight
-            const maxDimension = Math.max(width, height)
+            videoWidth = video.videoWidth
+            videoHeight = video.videoHeight
+            const maxDimension = Math.max(videoWidth, videoHeight)
             
             if (maxDimension >= 3840) videoResolution = '4K'
             else if (maxDimension >= 1920) videoResolution = '1080p'
@@ -288,6 +290,8 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         fileType: file.type,
         duration: 0, // Se puede calcular después
         resolution: videoResolution, // Resolución detectada
+        videoWidth, // Dimensiones del video
+        videoHeight,
         style: style, // Agregar el estilo del video
         tags: tagsWithStyle,
         uploadedBy: user?.uid || 'anonymous',
