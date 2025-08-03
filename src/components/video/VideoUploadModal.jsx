@@ -19,11 +19,13 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
 
   // Estados para tags organizados por categorías
   const [selectedTags, setSelectedTags] = useState({})
+  const [tagsIniciales, setTagsIniciales] = useState({})
+  const [tagsFinales, setTagsFinales] = useState({})
   
   // Refs para mantener los valores de los campos
   const fieldRefs = useRef({})
   
-  // Estado para videos plegados/desplegados
+  // Estado para videos plegados/desplegados - TODOS PLEGADOS POR DEFECTO
   const [collapsedVideos, setCollapsedVideos] = useState(new Set())
 
   useEffect(() => {
@@ -36,10 +38,16 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     // Inicializar selectedTags con las categorías disponibles
     if (currentCategories) {
       const initialTags = {}
+      const initialTagsIniciales = {}
+      const initialTagsFinales = {}
       Object.keys(currentCategories).forEach(categoryKey => {
         initialTags[categoryKey] = []
+        initialTagsIniciales[categoryKey] = []
+        initialTagsFinales[categoryKey] = []
       })
       setSelectedTags(initialTags)
+      setTagsIniciales(initialTagsIniciales)
+      setTagsFinales(initialTagsFinales)
     }
   }, [currentCategories])
 
@@ -62,10 +70,16 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     setCollapsedVideos(new Set())
     if (currentCategories) {
       const initialTags = {}
+      const initialTagsIniciales = {}
+      const initialTagsFinales = {}
       Object.keys(currentCategories).forEach(categoryKey => {
         initialTags[categoryKey] = []
+        initialTagsIniciales[categoryKey] = []
+        initialTagsFinales[categoryKey] = []
       })
       setSelectedTags(initialTags)
+      setTagsIniciales(initialTagsIniciales)
+      setTagsFinales(initialTagsFinales)
     }
   }
 
@@ -133,7 +147,13 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       }))
     })
 
+    // Agregar nuevos archivos y marcarlos como plegados por defecto
     setSelectedFiles(prev => [...prev, ...newFiles])
+    setCollapsedVideos(prev => {
+      const newSet = new Set(prev)
+      newFiles.forEach(file => newSet.add(file.name))
+      return newSet
+    })
     addToast(`${newFiles.length} video(s) seleccionado(s)`, 'success')
   }
 
@@ -153,6 +173,44 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
 
   const handleTagToggle = (category, tag) => {
     setSelectedTags(prev => {
+      const currentTags = prev[category] || []
+      const isSelected = currentTags.includes(tag)
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          [category]: currentTags.filter(t => t !== tag)
+        }
+      } else {
+        return {
+          ...prev,
+          [category]: [...currentTags, tag]
+        }
+      }
+    })
+  }
+
+  const handleTagInicialToggle = (category, tag) => {
+    setTagsIniciales(prev => {
+      const currentTags = prev[category] || []
+      const isSelected = currentTags.includes(tag)
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          [category]: currentTags.filter(t => t !== tag)
+        }
+      } else {
+        return {
+          ...prev,
+          [category]: [...currentTags, tag]
+        }
+      }
+    })
+  }
+
+  const handleTagFinalToggle = (category, tag) => {
+    setTagsFinales(prev => {
       const currentTags = prev[category] || []
       const isSelected = currentTags.includes(tag)
       
@@ -253,6 +311,8 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         duration: 0, // Se puede calcular después
         style: style, // Agregar el estilo del video
         tags: tagsWithStyle,
+        tagsIniciales: tagsIniciales,
+        tagsFinales: tagsFinales,
         uploadedBy: user?.uid || 'anonymous',
         uploadedAt: new Date().toISOString(),
         views: 0,
@@ -413,9 +473,9 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
             {/* Contenido del video (condicionalmente visible) */}
             {!isCollapsed && (
               <div className="p-4 space-y-4">
-                {/* Vista previa del video con botón de reproducción */}
-                <div className="flex items-center space-x-3">
-                  <div className="w-16 h-12 bg-gray-100 rounded flex items-center justify-center relative overflow-hidden">
+                {/* Vista previa del video con botón de reproducción - THUMBNAIL DOBLE DE GRANDE */}
+                <div className="flex items-center space-x-4">
+                  <div className="w-32 h-24 bg-gray-100 rounded flex items-center justify-center relative overflow-hidden">
                     {videoData[file.name]?.videoPreview ? (
                       <video 
                         src={videoData[file.name].videoPreview} 
@@ -558,47 +618,101 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
                   />
                 </div>
 
-                {/* Thumbnail personalizado */}
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Thumbnail personalizado (opcional)
-                  </label>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-20 h-12 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
-                      {videoData[file.name]?.customThumbnail ? (
-                        <img 
-                          src={videoData[file.name].customThumbnail} 
-                          alt="Thumbnail" 
-                          className="w-full h-full object-cover rounded"
-                        />
-                      ) : (
-                        <span className="text-xs text-gray-500">IMG</span>
-                      )}
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const thumbnailFile = e.target.files[0]
-                        if (thumbnailFile) {
-                          const reader = new FileReader()
-                          reader.onload = (e) => {
-                            setVideoData(prev => ({
-                              ...prev,
-                              [file.name]: {
-                                ...prev[file.name],
-                                customThumbnail: e.target.result,
-                                customThumbnailFile: thumbnailFile
-                              }
-                            }))
-                          }
-                          reader.readAsDataURL(thumbnailFile)
-                        }
-                      }}
-                      className="flex-1 text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100"
-                    />
-                  </div>
-                </div>
+                                 {/* Thumbnail personalizado - TAMBIÉN DOBLE DE GRANDE */}
+                 <div className="space-y-2">
+                   <label className="block text-sm font-medium text-gray-700">
+                     Thumbnail personalizado (opcional)
+                   </label>
+                   <div className="flex items-center space-x-3">
+                     <div className="w-40 h-24 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
+                       {videoData[file.name]?.customThumbnail ? (
+                         <img 
+                           src={videoData[file.name].customThumbnail} 
+                           alt="Thumbnail" 
+                           className="w-full h-full object-cover rounded"
+                         />
+                       ) : (
+                         <span className="text-xs text-gray-500">IMG</span>
+                       )}
+                     </div>
+                     <input
+                       type="file"
+                       accept="image/*"
+                       onChange={(e) => {
+                         const thumbnailFile = e.target.files[0]
+                         if (thumbnailFile) {
+                           const reader = new FileReader()
+                           reader.onload = (e) => {
+                             setVideoData(prev => ({
+                               ...prev,
+                               [file.name]: {
+                                 ...prev[file.name],
+                                 customThumbnail: e.target.result,
+                                 customThumbnailFile: thumbnailFile
+                               }
+                             }))
+                           }
+                           reader.readAsDataURL(thumbnailFile)
+                         }
+                       }}
+                       className="flex-1 text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-pink-50 file:text-pink-700 hover:file:bg-pink-100"
+                     />
+                   </div>
+                 </div>
+
+                 {/* Tags Iniciales */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">
+                     Tags Iniciales (cómo empieza la figura)
+                   </label>
+                   {categoriesList.map((category) => (
+                     <div key={`inicial-${category.key}`} className="space-y-2">
+                       <h6 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category.name}</h6>
+                       <div className="flex flex-wrap gap-2">
+                         {category.tags.map(tag => (
+                           <button
+                             key={`inicial-${tag}`}
+                             onClick={() => handleTagInicialToggle(category.key, tag)}
+                             className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                               tagsIniciales[category.key]?.includes(tag)
+                                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                             }`}
+                           >
+                             {tag}
+                           </button>
+                         ))}
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+
+                 {/* Tags Finales */}
+                 <div className="space-y-3">
+                   <label className="block text-sm font-medium text-gray-700">
+                     Tags Finales (cómo termina la figura)
+                   </label>
+                   {categoriesList.map((category) => (
+                     <div key={`final-${category.key}`} className="space-y-2">
+                       <h6 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category.name}</h6>
+                       <div className="flex flex-wrap gap-2">
+                         {category.tags.map(tag => (
+                           <button
+                             key={`final-${tag}`}
+                             onClick={() => handleTagFinalToggle(category.key, tag)}
+                             className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                               tagsFinales[category.key]?.includes(tag)
+                                  ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-md'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                             }`}
+                           >
+                             {tag}
+                           </button>
+                         ))}
+                       </div>
+                     </div>
+                   ))}
+                 </div>
               </div>
             )}
           </div>
@@ -631,15 +745,15 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         ))}
       </div>
 
-      <div className="bg-blue-50 p-4 rounded-lg">
-        <div className="flex items-start space-x-2">
-          <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
-          <div>
-            <p className="text-sm text-blue-800 font-medium">Información</p>
-            <p className="text-sm text-blue-700">Personaliza cada video individualmente y aplica etiquetas que se usarán para todos los videos seleccionados.</p>
-          </div>
-        </div>
-      </div>
+             <div className="bg-blue-50 p-4 rounded-lg">
+         <div className="flex items-start space-x-2">
+           <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
+           <div>
+             <p className="text-sm text-blue-800 font-medium">Información</p>
+             <p className="text-sm text-blue-700">Personaliza cada video individualmente. Los tags iniciales y finales ayudarán a crear secuencias lógicas conectando figuras.</p>
+           </div>
+         </div>
+       </div>
     </div>
   )
 
