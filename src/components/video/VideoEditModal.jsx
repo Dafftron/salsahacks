@@ -26,31 +26,45 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
   // Estado para secciones plegadas/desplegadas
   const [collapsedSections, setCollapsedSections] = useState(new Set(['tags-iniciales', 'tags-finales']))
 
-  useEffect(() => {
-    if (!isOpen || !video) return
-    
-    // Inicializar datos del video
-    setTitle(video.title || '')
-    setDescription(video.description || '')
-    setCustomThumbnail(video.thumbnailUrl || null)
-    
-    // Inicializar tags
-    if (currentCategories) {
-      const initialTags = {}
-      const initialTagsIniciales = {}
-      const initialTagsFinales = {}
-      
-      Object.keys(currentCategories).forEach(categoryKey => {
-        initialTags[categoryKey] = video.tags?.[categoryKey] || []
-        initialTagsIniciales[categoryKey] = video.tagsIniciales?.[categoryKey] || []
-        initialTagsFinales[categoryKey] = video.tagsFinales?.[categoryKey] || []
-      })
-      
-      setSelectedTags(initialTags)
-      setTagsIniciales(initialTagsIniciales)
-      setTagsFinales(initialTagsFinales)
-    }
-  }, [isOpen, video, currentCategories])
+     useEffect(() => {
+     if (!isOpen || !video) return
+     
+     // Inicializar datos del video
+     setTitle(video.title || '')
+     setDescription(video.description || '')
+     setCustomThumbnail(video.thumbnailUrl || null)
+     setCustomThumbnailFile(null) // Resetear archivo de thumbnail
+     
+     // Inicializar tags
+     if (currentCategories) {
+       const initialTags = {}
+       const initialTagsIniciales = {}
+       const initialTagsFinales = {}
+       
+       Object.keys(currentCategories).forEach(categoryKey => {
+         initialTags[categoryKey] = video.tags?.[categoryKey] || []
+         initialTagsIniciales[categoryKey] = video.tagsIniciales?.[categoryKey] || []
+         initialTagsFinales[categoryKey] = video.tagsFinales?.[categoryKey] || []
+       })
+       
+       setSelectedTags(initialTags)
+       setTagsIniciales(initialTagsIniciales)
+       setTagsFinales(initialTagsFinales)
+     }
+   }, [isOpen, video, currentCategories])
+
+   // Resetear estados cuando se cierra el modal
+   useEffect(() => {
+     if (!isOpen) {
+       setTitle('')
+       setDescription('')
+       setCustomThumbnail(null)
+       setCustomThumbnailFile(null)
+       setSelectedTags({})
+       setTagsIniciales({})
+       setTagsFinales({})
+     }
+   }, [isOpen])
 
   const addToast = (message, type = 'success') => {
     const id = Date.now()
@@ -120,12 +134,12 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
       if (isSelected) {
         return {
           ...prev,
-          [category]: [...currentTags, tag]
+          [category]: currentTags.filter(t => t !== tag)
         }
       } else {
         return {
           ...prev,
-          [category]: currentTags.filter(t => t !== tag)
+          [category]: [...currentTags, tag]
         }
       }
     })
@@ -149,23 +163,23 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
     setLoading(true)
     
     try {
-      // Subir nuevo thumbnail si se seleccionó uno
-      let thumbnailUrl = video.thumbnailUrl
-      let thumbnailPath = video.thumbnailPath
-      
-      if (customThumbnailFile) {
-        const thumbnailPath = `thumbnails/${Date.now()}_${video.originalTitle.replace(/\.[^/.]+$/, '.jpg')}`
-        const uploadResult = await uploadFile(customThumbnailFile, thumbnailPath)
-        
-        if (uploadResult.success) {
-          thumbnailUrl = uploadResult.url
-          thumbnailPath = uploadResult.path
-        } else {
-          addToast('Error al subir el nuevo thumbnail', 'error')
-          setLoading(false)
-          return
-        }
-      }
+             // Subir nuevo thumbnail si se seleccionó uno
+       let thumbnailUrl = video.thumbnailUrl
+       let thumbnailPath = video.thumbnailPath
+       
+       if (customThumbnailFile) {
+         const newThumbnailPath = `thumbnails/${Date.now()}_${video.originalTitle.replace(/\.[^/.]+$/, '.jpg')}`
+         const uploadResult = await uploadFile(customThumbnailFile, newThumbnailPath)
+         
+         if (uploadResult.success) {
+           thumbnailUrl = uploadResult.url
+           thumbnailPath = uploadResult.path
+         } else {
+           addToast('Error al subir el nuevo thumbnail', 'error')
+           setLoading(false)
+           return
+         }
+       }
 
       // Asegurar que el estilo esté incluido en los tags
       const tagsWithStyle = {
@@ -256,13 +270,13 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                 <label className="block text-sm font-medium text-gray-700">
                   Título del video
                 </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Ingresa un título para el video"
-                />
+                                 <input
+                   type="text"
+                   value={title}
+                   onChange={(e) => setTitle(e.target.value)}
+                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                   placeholder="Ingresa un título para el video"
+                 />
               </div>
 
               {/* Descripción */}
@@ -270,13 +284,13 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                 <label className="block text-sm font-medium text-gray-700">
                   Descripción
                 </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Describe brevemente el contenido del video..."
-                />
+                                 <textarea
+                   value={description}
+                   onChange={(e) => setDescription(e.target.value)}
+                   rows={3}
+                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                   placeholder="Describe brevemente el contenido del video..."
+                 />
               </div>
 
               {/* Thumbnail personalizado */}
