@@ -15,6 +15,7 @@ import {
   Zap,
   Download
 } from 'lucide-react'
+import { getFileURL } from '../../services/firebase/storage'
 
 const VideoPlayer = ({ 
   src, 
@@ -82,6 +83,17 @@ const VideoPlayer = ({
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!videoRef.current) return
+      
+      // No procesar eventos de teclado si el foco está en un campo de entrada
+      const activeElement = document.activeElement
+      if (activeElement && (
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'TEXTAREA' || 
+        activeElement.contentEditable === 'true' ||
+        activeElement.classList.contains('ql-editor') // Para editores de texto enriquecido
+      )) {
+        return
+      }
       
       switch (e.code) {
         case 'Space':
@@ -485,6 +497,64 @@ const VideoPlayer = ({
     return `${sizeClass} ${aspectClass}`
   }
 
+  // Función para descargar video usando Firebase Storage
+  const downloadVideo = async () => {
+    try {
+      // Si tenemos una ruta de Firebase Storage, usarla
+      if (src && src.includes('firebase')) {
+        // Extraer la ruta del video desde la URL
+        const urlParts = src.split('/')
+        const videoPath = urlParts.slice(urlParts.indexOf('o') + 1).join('/')
+        
+        // Obtener la URL de descarga directa
+        const { url, error } = await getFileURL(decodeURIComponent(videoPath))
+        
+        if (error) {
+          console.error('Error al obtener URL de descarga:', error)
+          return
+        }
+        
+        // Descargar el archivo como blob para evitar ventanas del navegador
+        const response = await fetch(url)
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+        
+        const blob = await response.blob()
+        
+        // Crear URL local del blob
+        const blobUrl = URL.createObjectURL(blob)
+        
+        // Crear enlace de descarga
+        const link = document.createElement('a')
+        link.href = blobUrl
+        link.download = videoTitle
+        link.style.display = 'none'
+        
+        // Agregar al DOM y hacer clic
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        // Limpiar la URL del blob después de un momento
+        setTimeout(() => {
+          URL.revokeObjectURL(blobUrl)
+        }, 1000)
+      } else {
+        // Para URLs que no son de Firebase, usar el método original
+        const link = document.createElement('a')
+        link.href = src
+        link.download = videoTitle
+        link.style.display = 'none'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+      }
+    } catch (error) {
+      console.error('Error en descarga:', error)
+    }
+  }
+
   return (
     <div 
       ref={containerRef}
@@ -723,14 +793,7 @@ const VideoPlayer = ({
 
               {/* Botón de descarga */}
               <button
-                onClick={() => {
-                  const link = document.createElement('a')
-                  link.href = src
-                  link.download = videoTitle
-                  document.body.appendChild(link)
-                  link.click()
-                  document.body.removeChild(link)
-                }}
+                onClick={downloadVideo}
                 onTouchStart={activateControls}
                 className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
                 title="Descargar video"

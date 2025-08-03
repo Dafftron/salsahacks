@@ -35,7 +35,8 @@ import {
 import { 
   deleteVideo, 
   deleteAllVideoFiles, 
-  cleanupOrphanedFiles 
+  cleanupOrphanedFiles,
+  getFileURL
 } from '../services/firebase/storage'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -520,6 +521,54 @@ const FigurasPage = () => {
     return searchMatch && tagsMatch
   })
 
+  // Función para descargar video usando Firebase Storage
+  const downloadVideo = async (video) => {
+    try {
+      addToast('Preparando descarga...', 'info')
+      
+      // Obtener la URL de descarga directa desde Firebase Storage
+      const { url, error } = await getFileURL(video.videoPath)
+      
+      if (error) {
+        console.error('Error al obtener URL de descarga:', error)
+        addToast('Error al preparar la descarga', 'error')
+        return
+      }
+      
+      // Descargar el archivo como blob para evitar ventanas del navegador
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const blob = await response.blob()
+      
+      // Crear URL local del blob
+      const blobUrl = URL.createObjectURL(blob)
+      
+      // Crear enlace de descarga
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = video.title || 'video'
+      link.style.display = 'none'
+      
+      // Agregar al DOM y hacer clic
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      // Limpiar la URL del blob después de un momento
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl)
+      }, 1000)
+      
+      addToast('Descarga iniciada', 'success')
+    } catch (error) {
+      console.error('Error en descarga:', error)
+      addToast('Error al descargar el video', 'error')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Main Content */}
@@ -969,12 +1018,7 @@ const FigurasPage = () => {
                            
                            // Añadir funcionalidad al botón de descarga
                            stats.querySelector('button[title="Descargar video"]').onclick = () => {
-                             const link = document.createElement('a')
-                             link.href = video.videoUrl
-                             link.download = video.title || 'video'
-                             document.body.appendChild(link)
-                             link.click()
-                             document.body.removeChild(link)
+                             downloadVideo(video)
                            }
                            
                            // Añadir funcionalidad al botón de editar
@@ -1239,12 +1283,7 @@ const FigurasPage = () => {
                          </button>
                          <button 
                            onClick={() => {
-                             const link = document.createElement('a')
-                             link.href = video.videoUrl
-                             link.download = video.title || 'video'
-                             document.body.appendChild(link)
-                             link.click()
-                             document.body.removeChild(link)
+                             downloadVideo(video)
                            }}
                            className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
                            title="Descargar video"
