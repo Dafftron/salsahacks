@@ -843,8 +843,8 @@ const FigurasPage = () => {
                                     <span class="text-sm font-medium text-gray-600">${video.rating || 0}</span>
                                   </div>
                                 </div>
-                                <button class="flex items-center space-x-1 text-gray-400 hover:text-red-500 transition-colors duration-200 p-2 rounded hover:bg-red-50" title="Añadir a favoritos">
-                                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <button class="flex items-center space-x-1 ${video.favorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'} transition-colors duration-200 p-2 rounded hover:bg-red-50" title="${video.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
+                                  <svg class="w-5 h-5 ${video.favorite ? 'fill-current' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                                   </svg>
                                   <span class="text-sm font-medium">${video.likes || 0}</span>
@@ -1028,19 +1028,33 @@ const FigurasPage = () => {
                             })
                             
                             // Añadir funcionalidad al botón de favoritos
-                            const favButton = stats.querySelector('button[title="Añadir a favoritos"]')
-                            favButton.onclick = () => {
-                              // Aquí se implementaría la lógica para añadir/quitar de favoritos
-                              console.log('Toggle favorito para:', video.title)
-                              // Cambiar el estado visual del botón
-                              const icon = favButton.querySelector('svg')
-                              const isFavorited = icon.classList.contains('fill-current')
-                              if (isFavorited) {
-                                icon.classList.remove('fill-current', 'text-red-500')
-                                icon.classList.add('text-gray-400')
-                              } else {
-                                icon.classList.add('fill-current', 'text-red-500')
-                                icon.classList.remove('text-gray-400')
+                            const favButton = stats.querySelector('button[title*="favoritos"]')
+                            favButton.onclick = async () => {
+                              try {
+                                const newFavoriteState = !video.favorite
+                                await updateVideoDocument(video.id, { favorite: newFavoriteState })
+                                video.favorite = newFavoriteState
+                                
+                                // Cambiar el estado visual del botón
+                                const icon = favButton.querySelector('svg')
+                                const button = favButton
+                                if (newFavoriteState) {
+                                  icon.classList.add('fill-current', 'text-red-500')
+                                  icon.classList.remove('text-gray-400')
+                                  button.classList.add('text-red-500')
+                                  button.classList.remove('text-gray-400')
+                                  button.title = 'Quitar de favoritos'
+                                } else {
+                                  icon.classList.remove('fill-current', 'text-red-500')
+                                  icon.classList.add('text-gray-400')
+                                  button.classList.remove('text-red-500')
+                                  button.classList.add('text-gray-400')
+                                  button.title = 'Añadir a favoritos'
+                                }
+                                
+                                console.log(`Video "${video.title}" ${newFavoriteState ? 'añadido a' : 'removido de'} favoritos`)
+                              } catch (error) {
+                                console.error('Error al actualizar favorito:', error)
                               }
                             }
                          } catch (error) {
@@ -1055,9 +1069,37 @@ const FigurasPage = () => {
                     </button>
                   </div>
                   
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-800 mb-2 text-lg">{video.title}</h3>
-                    <p className="text-gray-600 text-sm mb-3">{video.description || 'Sin descripción'}</p>
+                                     <div className="p-4">
+                     <div className="flex items-center justify-between mb-2">
+                       <h3 className="font-semibold text-gray-800 text-lg">{video.title}</h3>
+                       <div className="flex items-center space-x-1">
+                         {[1, 2, 3, 4, 5].map(star => {
+                           const isFilled = (video.rating || 0) >= star
+                           return (
+                             <svg 
+                               key={star}
+                               className={`h-4 w-4 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} 
+                               fill="currentColor" 
+                               viewBox="0 0 24 24"
+                               onClick={async () => {
+                                 try {
+                                   const newRating = star
+                                   await updateVideoDocument(video.id, { rating: newRating })
+                                   video.rating = newRating
+                                   console.log(`Video "${video.title}" rated ${newRating} stars`)
+                                 } catch (error) {
+                                   console.error('Error updating rating:', error)
+                                 }
+                               }}
+                             >
+                               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                             </svg>
+                           )
+                         })}
+                         <span className="text-xs font-medium text-gray-500 ml-1">({video.rating || 0})</span>
+                       </div>
+                     </div>
+                     <p className="text-gray-600 text-sm mb-3">{video.description || 'Sin descripción'}</p>
                     
                                          {/* Tags Normales */}
                      <div className="flex flex-wrap gap-2 mb-3">
@@ -1143,27 +1185,26 @@ const FigurasPage = () => {
                        </div>
                        <div className="flex items-center space-x-4">
                          <div className="flex items-center space-x-1">
-                           {[1, 2, 3, 4, 5].map(star => {
-                             const isFilled = (video.rating || 0) >= star
-                             return (
-                               <svg 
-                                 key={star}
-                                 className={`h-3 w-3 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                                 fill="currentColor" 
-                                 viewBox="0 0 24 24"
-                               >
-                                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                               </svg>
-                             )
-                           })}
-                           <span className="text-xs font-medium text-gray-500">({video.rating || 0})</span>
-                         </div>
-                         <div className="flex items-center space-x-1">
                            <Heart className="h-4 w-4 text-red-500 fill-current" />
                            <span className="font-medium">{video.likes || 0}</span>
                          </div>
-                         <button className="text-gray-400 hover:text-red-500 transition-colors duration-200">
-                           <Heart className="h-4 w-4" />
+                         <button 
+                           onClick={async () => {
+                             try {
+                               const newFavoriteState = !video.favorite
+                               await updateVideoDocument(video.id, { favorite: newFavoriteState })
+                               video.favorite = newFavoriteState
+                               console.log(`Video "${video.title}" ${newFavoriteState ? 'añadido a' : 'removido de'} favoritos`)
+                             } catch (error) {
+                               console.error('Error al actualizar favorito:', error)
+                             }
+                           }}
+                           className={`transition-colors duration-200 p-1 rounded hover:bg-red-50 ${
+                             video.favorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                           }`}
+                           title={video.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+                         >
+                           <Heart className={`h-4 w-4 ${video.favorite ? 'fill-current' : ''}`} />
                          </button>
                          <button 
                            onClick={() => openEditModal(video)}
