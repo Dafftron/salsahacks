@@ -500,27 +500,20 @@ const VideoPlayer = ({
   // Función para descargar video usando Firebase Storage
   const downloadVideo = async () => {
     try {
-      // Si tenemos una ruta de Firebase Storage, usarla
-      if (src && src.includes('firebase')) {
-        // Extraer la ruta del video desde la URL
-        const urlParts = src.split('/')
-        const videoPath = urlParts.slice(urlParts.indexOf('o') + 1).join('/')
-        
-        // Obtener la URL de descarga directa
-        const { url, error } = await getFileURL(decodeURIComponent(videoPath))
-        
-        if (error) {
-          console.error('Error al obtener URL de descarga:', error)
-          return
-        }
+      console.log('Iniciando descarga de video:', videoTitle)
+      
+      // Si tenemos una URL de Firebase Storage, descargar directamente
+      if (src && (src.includes('firebase') || src.includes('googleapis'))) {
+        console.log('Detectada URL de Firebase Storage, descargando...')
         
         // Descargar el archivo como blob para evitar ventanas del navegador
-        const response = await fetch(url)
+        const response = await fetch(src)
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
         
         const blob = await response.blob()
+        console.log('Blob descargado:', blob.size, 'bytes')
         
         // Crear URL local del blob
         const blobUrl = URL.createObjectURL(blob)
@@ -528,7 +521,7 @@ const VideoPlayer = ({
         // Crear enlace de descarga
         const link = document.createElement('a')
         link.href = blobUrl
-        link.download = videoTitle
+        link.download = videoTitle || 'video.mp4'
         link.style.display = 'none'
         
         // Agregar al DOM y hacer clic
@@ -540,11 +533,14 @@ const VideoPlayer = ({
         setTimeout(() => {
           URL.revokeObjectURL(blobUrl)
         }, 1000)
+        
+        console.log('Descarga completada exitosamente')
       } else {
         // Para URLs que no son de Firebase, usar el método original
+        console.log('Usando método de descarga directa para URL no-Firebase')
         const link = document.createElement('a')
         link.href = src
-        link.download = videoTitle
+        link.download = videoTitle || 'video.mp4'
         link.style.display = 'none'
         document.body.appendChild(link)
         link.click()
@@ -552,6 +548,7 @@ const VideoPlayer = ({
       }
     } catch (error) {
       console.error('Error en descarga:', error)
+      alert(`Error al descargar el video: ${error.message}`)
     }
   }
 
