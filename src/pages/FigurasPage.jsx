@@ -13,7 +13,9 @@ import {
   Star,
   Zap,
   Edit,
-  Download
+  Download,
+  Maximize2,
+  Minimize2
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
@@ -53,6 +55,7 @@ const FigurasPage = () => {
   const [activeTab, setActiveTab] = useState('videos')
   const [syncStatus, setSyncStatus] = useState('idle') // idle, syncing, error
   const [cleanupModal, setCleanupModal] = useState({ isOpen: false, type: null })
+  const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
   const { user } = useAuth()
   
   // Usar el nuevo sistema de categorías
@@ -572,7 +575,7 @@ const FigurasPage = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className={`${isFullWidth ? 'w-full px-4' : 'max-w-6xl mx-auto px-6'} py-8`}>
         {/* Title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">
@@ -794,14 +797,36 @@ const FigurasPage = () => {
               <h2 className="text-2xl font-semibold text-gray-800">
                 Videos de {selectedStyle.toLowerCase()} ({filteredVideos.length})
               </h2>
-              {selectedTags.length > 0 && (
+              <div className="flex items-center space-x-4">
+                {/* Botón de modo ancho completo */}
                 <button
-                  onClick={clearFilters}
-                  className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                  onClick={() => setIsFullWidth(!isFullWidth)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    isFullWidth
+                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                      : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                  }`}
+                  title={isFullWidth ? "Modo compacto" : "Modo ancho completo"}
                 >
-                  Limpiar filtros <X className="h-4 w-4 ml-1" />
+                  {isFullWidth ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {isFullWidth ? "Compacto" : "Ancho completo"}
+                  </span>
                 </button>
-              )}
+                
+                {selectedTags.length > 0 && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200"
+                  >
+                    Limpiar filtros <X className="h-4 w-4 ml-1" />
+                  </button>
+                )}
+              </div>
             </div>
           
           {loading ? (
@@ -815,7 +840,11 @@ const FigurasPage = () => {
               <p className="text-gray-400 text-sm mt-2">Sube tu primer video de {selectedStyle.toLowerCase()} usando el botón de arriba</p>
             </div>
                      ) : (
-             <div className="grid md:grid-cols-2 gap-6">
+             <div className={`grid gap-6 ${
+               isFullWidth 
+                 ? 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' 
+                 : 'md:grid-cols-2'
+             }`}>
                {filteredVideos.map((video) => (
                 <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
                   <div className="relative group">
