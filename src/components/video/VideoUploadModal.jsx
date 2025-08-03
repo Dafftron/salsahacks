@@ -19,8 +19,6 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
 
   // Estados para tags organizados por categorías
   const [selectedTags, setSelectedTags] = useState({})
-  const [tagsIniciales, setTagsIniciales] = useState({})
-  const [tagsFinales, setTagsFinales] = useState({})
   
   // Refs para mantener los valores de los campos
   const fieldRefs = useRef({})
@@ -38,16 +36,10 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     // Inicializar selectedTags con las categorías disponibles
     if (currentCategories) {
       const initialTags = {}
-      const initialTagsIniciales = {}
-      const initialTagsFinales = {}
       Object.keys(currentCategories).forEach(categoryKey => {
         initialTags[categoryKey] = []
-        initialTagsIniciales[categoryKey] = []
-        initialTagsFinales[categoryKey] = []
       })
       setSelectedTags(initialTags)
-      setTagsIniciales(initialTagsIniciales)
-      setTagsFinales(initialTagsFinales)
     }
   }, [currentCategories])
 
@@ -70,16 +62,10 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     setCollapsedVideos(new Set())
     if (currentCategories) {
       const initialTags = {}
-      const initialTagsIniciales = {}
-      const initialTagsFinales = {}
       Object.keys(currentCategories).forEach(categoryKey => {
         initialTags[categoryKey] = []
-        initialTagsIniciales[categoryKey] = []
-        initialTagsFinales[categoryKey] = []
       })
       setSelectedTags(initialTags)
-      setTagsIniciales(initialTagsIniciales)
-      setTagsFinales(initialTagsFinales)
     }
   }
 
@@ -190,43 +176,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     })
   }
 
-  const handleTagInicialToggle = (category, tag) => {
-    setTagsIniciales(prev => {
-      const currentTags = prev[category] || []
-      const isSelected = currentTags.includes(tag)
-      
-      if (isSelected) {
-        return {
-          ...prev,
-          [category]: currentTags.filter(t => t !== tag)
-        }
-      } else {
-        return {
-          ...prev,
-          [category]: [...currentTags, tag]
-        }
-      }
-    })
-  }
 
-  const handleTagFinalToggle = (category, tag) => {
-    setTagsFinales(prev => {
-      const currentTags = prev[category] || []
-      const isSelected = currentTags.includes(tag)
-      
-      if (isSelected) {
-        return {
-          ...prev,
-          [category]: currentTags.filter(t => t !== tag)
-        }
-      } else {
-        return {
-          ...prev,
-          [category]: [...currentTags, tag]
-        }
-      }
-    })
-  }
 
   const generateThumbnail = async (file) => {
     try {
@@ -311,8 +261,6 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         duration: 0, // Se puede calcular después
         style: style, // Agregar el estilo del video
         tags: tagsWithStyle,
-        tagsIniciales: tagsIniciales,
-        tagsFinales: tagsFinales,
         uploadedBy: user?.uid || 'anonymous',
         uploadedAt: new Date().toISOString(),
         views: 0,
@@ -660,59 +608,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
                    </div>
                  </div>
 
-                 {/* Tags Iniciales */}
-                 <div className="space-y-3">
-                   <label className="block text-sm font-medium text-gray-700">
-                     Tags Iniciales (cómo empieza la figura)
-                   </label>
-                   {categoriesList.map((category) => (
-                     <div key={`inicial-${category.key}`} className="space-y-2">
-                       <h6 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category.name}</h6>
-                       <div className="flex flex-wrap gap-2">
-                         {category.tags.map(tag => (
-                           <button
-                             key={`inicial-${tag}`}
-                             onClick={() => handleTagInicialToggle(category.key, tag)}
-                             className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                               tagsIniciales[category.key]?.includes(tag)
-                                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                             }`}
-                           >
-                             {tag}
-                           </button>
-                         ))}
-                       </div>
-                     </div>
-                   ))}
-                 </div>
-
-                 {/* Tags Finales */}
-                 <div className="space-y-3">
-                   <label className="block text-sm font-medium text-gray-700">
-                     Tags Finales (cómo termina la figura)
-                   </label>
-                   {categoriesList.map((category) => (
-                     <div key={`final-${category.key}`} className="space-y-2">
-                       <h6 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category.name}</h6>
-                       <div className="flex flex-wrap gap-2">
-                         {category.tags.map(tag => (
-                           <button
-                             key={`final-${tag}`}
-                             onClick={() => handleTagFinalToggle(category.key, tag)}
-                             className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                               tagsFinales[category.key]?.includes(tag)
-                                  ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-md'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                             }`}
-                           >
-                             {tag}
-                           </button>
-                         ))}
-                       </div>
-                     </div>
-                   ))}
-                 </div>
+                 
               </div>
             )}
           </div>
@@ -750,7 +646,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
            <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
            <div>
              <p className="text-sm text-blue-800 font-medium">Información</p>
-             <p className="text-sm text-blue-700">Personaliza cada video individualmente. Los tags iniciales y finales ayudarán a crear secuencias lógicas conectando figuras.</p>
+                           <p className="text-sm text-blue-700">Personaliza cada video individualmente y aplica etiquetas que se usarán para todos los videos seleccionados.</p>
            </div>
          </div>
        </div>
