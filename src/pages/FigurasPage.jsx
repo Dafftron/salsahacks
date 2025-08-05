@@ -17,7 +17,9 @@ import {
   Maximize2,
   Minimize2,
   Play,
-  Shuffle
+  Shuffle,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
@@ -73,7 +75,6 @@ const FigurasPage = () => {
   // Estados para secuencias
   const [sequences, setSequences] = useState([])
   const [sequencesLoading, setSequencesLoading] = useState(true)
-  const [showAllVideos, setShowAllVideos] = useState(false)
   
   const { user } = useAuth()
   
@@ -82,7 +83,11 @@ const FigurasPage = () => {
     addVideoToSequence,
     isVideoInSequence,
     isBuilderOpen,
-    toggleBuilder
+    toggleBuilder,
+    isVideoCompatible,
+    getFilteredVideos,
+    showAllVideos,
+    toggleShowAllVideos
   } = useSequenceBuilderContext()
   
   // Usar el nuevo sistema de categorías
@@ -233,9 +238,7 @@ const FigurasPage = () => {
     addToast('Funcionalidad de edición en desarrollo')
   }
 
-  const toggleShowAllVideos = () => {
-    setShowAllVideos(prev => !prev)
-  }
+
 
   // Función para eliminar video
   const handleDeleteVideo = async (video) => {
@@ -610,7 +613,7 @@ const FigurasPage = () => {
   }
 
   // Filtrar videos basado en tags seleccionados y búsqueda avanzada
-  const filteredVideos = videos.filter(video => {
+  const baseFilteredVideos = videos.filter(video => {
     // Dividir términos de búsqueda por espacios y filtrar vacíos
     const searchTerms = searchTerm
       .split(' ')
@@ -634,6 +637,9 @@ const FigurasPage = () => {
 
     return searchMatch && tagsMatch
   })
+
+  // Aplicar filtro de compatibilidad sobre los videos ya filtrados
+  const filteredVideos = getFilteredVideos(baseFilteredVideos)
 
   // Función para descargar video usando Firebase Storage
   const downloadVideo = async (video) => {
@@ -956,6 +962,31 @@ const FigurasPage = () => {
                   </span>
                 </button>
                 
+                {/* Botón para mostrar todos los videos vs solo compatibles */}
+                {isBuilderOpen && (
+                  <button
+                    onClick={toggleShowAllVideos}
+                    className={`flex items-center space-x-2 px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                      showAllVideos 
+                        ? 'bg-blue-100 text-blue-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}
+                    title={showAllVideos ? 'Mostrar solo videos compatibles' : 'Mostrar todos los videos'}
+                  >
+                    {showAllVideos ? (
+                      <>
+                        <EyeOff className="h-4 w-4" />
+                        <span>Ocultar Incompatibles</span>
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="h-4 w-4" />
+                        <span>Mostrar Todos</span>
+                      </>
+                    )}
+                  </button>
+                )}
+                
                 {selectedTags.length > 0 && (
                   <button
                     onClick={clearFilters}
@@ -984,7 +1015,14 @@ const FigurasPage = () => {
                  : 'md:grid-cols-2'
              }`}>
                {filteredVideos.map((video) => (
-                <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
+                <div 
+                  key={video.id} 
+                  className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${
+                    isBuilderOpen && !isVideoCompatible(video)
+                      ? 'border-red-200 opacity-75'
+                      : 'border-gray-100'
+                  }`}
+                >
                   <div className="relative group">
                     <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
                       {video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? (
@@ -1008,6 +1046,17 @@ const FigurasPage = () => {
                       <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
                         {video.resolution && video.resolution !== 'Unknown' ? video.resolution : 'HD'}
                       </div>
+                      
+                      {/* Indicador de compatibilidad */}
+                      {isBuilderOpen && (
+                        <div className={`absolute top-2 right-2 p-1 rounded-full text-xs font-bold ${
+                          isVideoCompatible(video)
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-red-500 text-white'
+                        }`}>
+                          {isVideoCompatible(video) ? '✅' : '❌'}
+                        </div>
+                      )}
                     </div>
                     
                                          {/* Botón de reproducción */}
@@ -1466,9 +1515,17 @@ const FigurasPage = () => {
                            className={`transition-colors duration-200 p-1 rounded ${
                              isVideoInSequence(video)
                                ? 'text-gray-300 cursor-not-allowed'
+                               : isBuilderOpen && !isVideoCompatible(video)
+                               ? 'text-red-400 hover:text-red-500 hover:bg-red-50'
                                : 'text-gray-400 hover:text-purple-500 hover:bg-purple-50'
                            }`}
-                           title={isVideoInSequence(video) ? 'Ya en secuencia' : 'Añadir a secuencia'}
+                           title={
+                             isVideoInSequence(video) 
+                               ? 'Ya en secuencia' 
+                               : isBuilderOpen && !isVideoCompatible(video)
+                               ? 'Añadir forzadamente (incompatible)'
+                               : 'Añadir a secuencia'
+                           }
                          >
                            <Plus className="h-4 w-4" />
                          </button>

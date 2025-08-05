@@ -1,6 +1,6 @@
 // 🎬 CONTEXTO PARA CONSTRUCTOR DE SECUENCIAS - SALSAHACKS V2.0
 
-import React, { createContext, useContext, useState, useCallback } from 'react'
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react'
 
 const SequenceBuilderContext = createContext()
 
@@ -32,7 +32,7 @@ export const SequenceBuilderProvider = ({ children }) => {
     )
   }, [])
 
-  // Función para añadir un video a la secuencia
+  // Función para añadir un video a la secuencia (ahora permite repetidos)
   const addVideoToSequence = useCallback((video) => {
     setSequence(prev => [...prev, video])
   }, [])
@@ -124,9 +124,27 @@ export const SequenceBuilderProvider = ({ children }) => {
     return checkCompatibility(lastVideo, video)
   }, [sequence, checkCompatibility])
 
-  // Verificar si un video ya está en la secuencia
+  // Función para obtener videos compatibles (para filtrado)
+  const getCompatibleVideos = useCallback((allVideos) => {
+    if (sequence.length === 0) return allVideos
+    
+    const lastVideo = sequence[sequence.length - 1]
+    return allVideos.filter(video => checkCompatibility(lastVideo, video))
+  }, [sequence, checkCompatibility])
+
+  // Función para filtrar videos según el estado actual
+  const getFilteredVideos = useCallback((allVideos) => {
+    if (showAllVideos) {
+      return allVideos
+    }
+    return getCompatibleVideos(allVideos)
+  }, [showAllVideos, getCompatibleVideos])
+
+  // Función para verificar si un video ya está en la secuencia (ahora siempre false para permitir repetidos)
   const isVideoInSequence = useCallback((video) => {
-    return sequence.some(seqVideo => seqVideo.id === video.id)
+    // Comentado para permitir videos repetidos
+    // return sequence.some(seqVideo => seqVideo.id === video.id)
+    return false
   }, [sequence])
 
   const value = {
@@ -155,7 +173,9 @@ export const SequenceBuilderProvider = ({ children }) => {
     // Funciones de utilidad
     checkCompatibility,
     isVideoCompatible,
-    isVideoInSequence
+    isVideoInSequence,
+    getCompatibleVideos,
+    getFilteredVideos
   }
 
   return (
