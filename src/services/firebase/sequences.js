@@ -79,10 +79,10 @@ export const getSequences = async () => {
 // Obtener secuencias por estilo
 export const getSequencesByStyle = async (style) => {
   try {
+    // Consulta temporal sin orderBy para evitar el error de índice
     const q = query(
       collection(db, SEQUENCES_COLLECTION),
-      where('style', '==', style),
-      orderBy('createdAt', 'desc')
+      where('style', '==', style)
     )
     
     const querySnapshot = await getDocs(q)
@@ -96,6 +96,13 @@ export const getSequencesByStyle = async (style) => {
         createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
         updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt
       })
+    })
+    
+    // Ordenar localmente por fecha de creación (más reciente primero)
+    sequences.sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0)
+      const dateB = new Date(b.createdAt || 0)
+      return dateB - dateA
     })
     
     return sequences
@@ -174,10 +181,10 @@ export const subscribeToSequencesByStyle = (style, callback) => {
   console.log('🎬 Firebase: Suscribiéndose a secuencias para estilo:', style)
   
   try {
+    // Consulta temporal sin orderBy para evitar el error de índice
     const q = query(
       collection(db, SEQUENCES_COLLECTION),
-      where('style', '==', style),
-      orderBy('createdAt', 'desc')
+      where('style', '==', style)
     )
     
     return onSnapshot(q, (querySnapshot) => {
@@ -195,6 +202,13 @@ export const subscribeToSequencesByStyle = (style, callback) => {
         }
         sequences.push(sequence)
         console.log(`📋 Secuencia cargada: ${sequence.name} (${sequence.videos?.length || 0} videos)`)
+      })
+      
+      // Ordenar localmente por fecha de creación (más reciente primero)
+      sequences.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0)
+        const dateB = new Date(b.createdAt || 0)
+        return dateB - dateA
       })
       
       console.log(`🎉 Total de secuencias cargadas: ${sequences.length}`)
