@@ -200,14 +200,7 @@ const SequenceBuilder = ({
               {sequence.length} videos
             </span>
           </div>
-          {onClose && (
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          )}
+
         </div>
 
         <div className="flex-1 flex overflow-hidden">
@@ -316,14 +309,7 @@ const SequenceBuilder = ({
                 <Save className="w-4 h-4" />
                 <span>Guardar Secuencia</span>
               </button>
-              {onClose && (
-                <button
-                  onClick={onClose}
-                  className="px-6 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  Cerrar
-                </button>
-              )}
+
             </div>
           </div>
 

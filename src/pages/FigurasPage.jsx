@@ -798,13 +798,15 @@ const FigurasPage = () => {
             className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
           >
             <Shuffle className="h-5 w-5" />
-            <span>{isSequenceBuilderOpen ? 'OCULTAR' : 'CREAR'} SECUENCIA</span>
+            <span>{isSequenceBuilderOpen ? 'OCULTAR' : 'MOSTRAR'} CREADOR DE SECUENCIAS</span>
           </button>
         </div>
 
         {/* Sequence Builder - Integrated */}
-        {isSequenceBuilderOpen && (
-          <div className="mb-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+        <div className={`mb-6 transition-all duration-300 ease-in-out overflow-hidden ${
+          isSequenceBuilderOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+        }`}>
+          <div className="p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
             <div className="text-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Creador de Secuencias</h3>
               <p className="text-sm text-gray-600">Crea secuencias personalizadas de videos</p>
@@ -815,10 +817,9 @@ const FigurasPage = () => {
               onSave={handleSaveSequence}
               style={selectedStyle}
               isIntegrated={true}
-              onClose={() => setIsSequenceBuilderOpen(false)}
             />
           </div>
-        )}
+        </div>
 
         {/* Sync Status and Cleanup Controls */}
         <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
