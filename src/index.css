@@ -285,7 +285,7 @@ body {
 .video-player-container video {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 /* Para videos verticales en móviles */
@@ -293,4 +293,21 @@ body {
   .video-player-container.aspect-\[9\/16\] {
     max-height: 80vh;
   }
+}
+
+/* Estilos para thumbnails en cards */
+.video-thumbnail-container {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.video-thumbnail-container img {
+  transition: transform 0.3s ease;
+}
+
+.video-thumbnail-container:hover img {
+  transform: scale(1.05);
 } 

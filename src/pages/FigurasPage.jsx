@@ -869,11 +869,13 @@ const FigurasPage = () => {
                {filteredVideos.map((video) => (
                 <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
                   <div className="relative group">
-                    <img
-                      src={video.thumbnailUrl || 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=VIDEO'}
-                      alt={video.title}
-                      className="w-full h-48 object-cover"
-                    />
+                    <div className="w-full h-48 video-thumbnail-container">
+                      <img
+                        src={video.thumbnailUrl || 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=VIDEO'}
+                        alt={video.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                               <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
             {video.resolution && video.resolution !== 'Unknown' ? 
               video.resolution : 

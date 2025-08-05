@@ -2,6 +2,33 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🎬 **CORRECCIÓN DE THUMBNAILS DE VIDEOS** - 2024-12-19
+- **Problema**: Los thumbnails mostraban columnas blancas en los laterales para videos verticales
+- **Solución**: 
+  - Revertido `object-contain` a `object-cover` en thumbnails de cards
+  - Los thumbnails ahora llenan el espacio horizontal sin mostrar espacios vacíos
+  - Se mantienen las proporciones recortando verticalmente si es necesario
+  - El contenedor `video-thumbnail-container` con `overflow-hidden` maneja el recorte
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Thumbnails de videos (object-cover)
+  - `src/pages/EscuelaPage.jsx` - Thumbnails de cursos (object-cover)
+  - `src/pages/EventosPage.jsx` - Thumbnails de eventos (object-cover)
+
+### 🎬 **ARREGLO DE THUMBNAILS DE VIDEOS** - 2024-12-19
+- **Problema**: Los thumbnails de videos se distorsionaban al rellenar el espacio del card
+- **Solución**: 
+  - Cambiado `object-cover` a `object-contain` en thumbnails de cards
+  - Mantenido `object-cover` en VideoPlayer para hacer zoom sin distorsión
+  - Agregado contenedor con fondo degradado para thumbnails
+  - Aplicado ratio 9:16 para videos verticales
+  - Añadido efecto hover suave en thumbnails
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Thumbnails de videos
+  - `src/pages/EscuelaPage.jsx` - Thumbnails de cursos
+  - `src/pages/EventosPage.jsx` - Thumbnails de eventos
+  - `src/components/video/VideoPlayer.jsx` - Video player principal
+  - `src/index.css` - Estilos CSS para thumbnails
+
 ---
 
 ## 📋 ÍNDICE

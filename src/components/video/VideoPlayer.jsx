@@ -573,7 +573,7 @@ const VideoPlayer = ({
       <video
         ref={videoRef}
         src={src}
-        className="w-full h-full object-contain cursor-pointer"
+        className="w-full h-full object-cover cursor-pointer"
         muted={isMuted}
         loop={isLoopEnabled && !isLoopSegmentMode}
         onTimeUpdate={handleTimeUpdate}
