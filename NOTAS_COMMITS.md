@@ -23,14 +23,24 @@
 ### 🎬 **CORRECCIÓN DE THUMBNAILS VERTICALES - ZOOM SIN ACHATAMIENTO** - 2024-12-19
 - **Problema**: Los thumbnails verticales se achataban al intentar caber en el espacio horizontal de la card
 - **Solución**:
-  - Cambiado `object-contain` a `object-cover` en SmartThumbnail para hacer zoom/recorte
-  - Modificado CSS para que thumbnails verticales ocupen 100% del ancho de la card
-  - Eliminado `max-width: 300px` y `margin: 0 auto` que limitaban el ancho
-  - Los thumbnails verticales ahora mantienen su ratio 9:16 y se extienden más allá de la card
-  - Se muestra una parte del thumbnail (zoom) sin espacios blancos laterales
+    - Cambiado `object-contain` a `object-cover` en SmartThumbnail para hacer zoom/recorte
+    - Modificado CSS para que thumbnails verticales ocupen 100% del ancho de la card
+    - Eliminado `max-width: 300px` y `margin: 0 auto` que limitaban el ancho
+    - Los thumbnails verticales ahora mantienen su ratio 9:16 y se extienden más allá de la card
+    - Se muestra una parte del thumbnail (zoom) sin espacios blancos laterales
 - **Archivos modificados**:
-  - `src/components/common/SmartThumbnail.jsx` - Cambiado object-fit a cover
-  - `src/index.css` - Ajustado CSS para thumbnails verticales
+    - `src/components/common/SmartThumbnail.jsx` - Cambiado object-fit a cover
+    - `src/index.css` - Ajustado CSS para thumbnails verticales
+
+### 🎬 **SOLUCIÓN DEFINITIVA ACHATAMIENTO VERTICAL DE THUMBNAILS** - 2024-12-19
+- **Problema**: Los thumbnails verticales seguían viéndose "achatados" por arriba y por abajo a pesar de object-cover
+- **Causa**: La regla CSS `max-height: 100%` en `.video-thumbnail-container img` limitaba la expansión vertical
+- **Solución**:
+    - Eliminado `max-height: 100%` de las imágenes para permitir que object-cover funcione correctamente
+    - Agregado `overflow: visible` a thumbnails verticales para permitir expansión más allá de la card
+    - Ahora los thumbnails verticales mantienen su ratio 9:16 y se extienden verticalmente sin achatamiento
+- **Archivos modificados**:
+    - `src/index.css` - Eliminada limitación de altura y agregado overflow visible
 
 ### 🎬 **CORRECCIÓN DE THUMBNAILS DE VIDEOS** - 2024-12-19
 - **Problema**: Los thumbnails mostraban columnas blancas en los laterales para videos verticales
