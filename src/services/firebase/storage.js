@@ -30,28 +30,28 @@ export const generateVideoThumbnail = (videoFile) => {
       const maxWidth = 400;
       const maxHeight = 400;
       
-      // Calcular las dimensiones manteniendo las proporciones
-      const videoAspectRatio = video.videoWidth / video.videoHeight;
-      let canvasWidth, canvasHeight;
-      
-      if (videoAspectRatio > 1) {
-        // Video horizontal
-        canvasWidth = maxWidth;
-        canvasHeight = maxWidth / videoAspectRatio;
-      } else {
-        // Video vertical
-        canvasHeight = maxHeight;
-        canvasWidth = maxHeight * videoAspectRatio;
-      }
-      
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-      
       video.onloadedmetadata = () => {
         try {
+          // Calcular las dimensiones manteniendo las proporciones
+          const videoAspectRatio = video.videoWidth / video.videoHeight;
+          let canvasWidth, canvasHeight;
+          
+          if (videoAspectRatio > 1) {
+            // Video horizontal
+            canvasWidth = maxWidth;
+            canvasHeight = maxWidth / videoAspectRatio;
+          } else {
+            // Video vertical
+            canvasHeight = maxHeight;
+            canvasWidth = maxHeight * videoAspectRatio;
+          }
+          
+          canvas.width = canvasWidth;
+          canvas.height = canvasHeight;
+          
           // Buscar un frame en el medio del video (como al principio)
           const duration = video.duration;
-          const targetTime = duration * 0.5; // 50% del video (medio)
+          const targetTime = Math.min(duration * 0.5, 1); // 50% del video o máximo 1 segundo
           
           video.currentTime = targetTime;
           
@@ -97,6 +97,10 @@ export const generateVideoThumbnail = (videoFile) => {
       };
       
       video.onerror = () => {
+        // Limpiar recursos en caso de error
+        URL.revokeObjectURL(videoURL);
+        video.remove();
+        canvas.remove();
         reject(new Error('Error al cargar el video'));
       };
       
@@ -146,8 +150,8 @@ export const generateBestVideoThumbnail = async (videoFile) => {
         
         const duration = video.duration;
         
-        // Usar solo el punto medio del video (como fig006)
-        video.currentTime = duration * 0.5;
+        // Usar solo el punto medio del video (como fig006) o máximo 1 segundo
+        video.currentTime = Math.min(duration * 0.5, 1);
         
         video.onseeked = () => {
           try {

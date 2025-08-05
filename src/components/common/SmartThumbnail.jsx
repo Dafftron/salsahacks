@@ -7,7 +7,7 @@ const SmartThumbnail = ({
   src, 
   alt, 
   className = '', 
-  fallbackSrc = '/placeholder-video.jpg',
+  fallbackSrc = '/placeholder-video.svg',
   showPlayIcon = false,
   ...props 
 }) => {
@@ -26,6 +26,8 @@ const SmartThumbnail = ({
 
   // Si no hay src o es una URL placeholder, mostrar fallback directamente
   const shouldShowFallback = !src || 
+    src === null ||
+    src === undefined ||
     src === 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ||
     src === 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=EVENTO'
   

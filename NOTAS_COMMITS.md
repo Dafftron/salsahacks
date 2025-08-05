@@ -37,6 +37,28 @@
   - `src/components/sequence/SequenceBuilder.jsx` - Corregida propiedad thumbnailUrl e importación
   - `public/placeholder-video.jpg` - Agregado archivo placeholder
 
+### 🎬 **IMPROVEMENT: MEJORA EN GENERACIÓN DE THUMBNAILS PARA VIDEOS** - 2024-12-19
+- **Problema**: El modal de subida de video no generaba thumbnails automáticamente
+- **Causa**: La función de generación de thumbnails fallaba en algunos casos sin fallback robusto
+- **Solución**:
+  - Implementado sistema de fallback múltiple para generación de thumbnails
+  - Agregada función `generateDefaultThumbnail` que captura frame al inicio del video (0.1 segundos)
+  - Mejorada función `generateVideoThumbnail` con mejor manejo de errores y limpieza de recursos
+  - Creado archivo SVG placeholder (`placeholder-video.svg`) como fallback visual
+  - Actualizado SmartThumbnail para usar SVG placeholder por defecto
+  - Agregado timeout de 10 segundos para evitar bloqueos en generación de thumbnails
+  - Mejorado manejo de casos donde `src` es null o undefined
+- **Archivos modificados**:
+  - `src/components/video/VideoUploadModal.jsx` - Agregada función generateDefaultThumbnail y mejorado sistema de fallback
+  - `src/components/common/SmartThumbnail.jsx` - Mejorado manejo de valores null/undefined y cambiado fallback a SVG
+  - `src/services/firebase/storage.js` - Mejoradas funciones generateVideoThumbnail y generateBestVideoThumbnail
+  - `public/placeholder-video.svg` - Creado nuevo placeholder SVG para videos
+- **Funcionalidades**:
+  - Generación automática de thumbnails al subir videos
+  - Fallback a captura de frame al inicio del video si falla la generación principal
+  - Placeholder visual elegante cuando no hay thumbnail disponible
+  - Mejor manejo de errores y timeouts
+
 ### 🎬 **NUEVO ENFOQUE ROBUSTO PARA THUMBNAILS** - 2024-12-19
 - **Problema**: Los thumbnails no se mostraban correctamente, ni al cargar videos ni en las cards
 - **Solución**: Implementado enfoque completamente nuevo y más robusto

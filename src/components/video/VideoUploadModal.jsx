@@ -209,12 +209,99 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         // Continuar sin thumbnail
       }
       
-      // Fallback: no thumbnail, se mostrará el placeholder en la UI
+      // Fallback: usar thumbnail por defecto de Windows o generar uno simple
+      try {
+        // Intentar usar el thumbnail nativo del archivo (si está disponible)
+        const defaultThumbnail = await generateDefaultThumbnail(file)
+        if (defaultThumbnail) {
+          const thumbnailPath = `thumbnails/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`
+          const uploadResult = await uploadFile(defaultThumbnail, thumbnailPath)
+          
+          if (uploadResult.success) {
+            return { url: uploadResult.url, path: uploadResult.path }
+          }
+        }
+      } catch (defaultError) {
+        console.warn('Error generando thumbnail por defecto:', defaultError)
+      }
+      
+      // Fallback final: no thumbnail, se mostrará el placeholder en la UI
       return { url: null, path: null }
     } catch (error) {
       console.error('Error en generateThumbnail:', error)
       return { url: null, path: null }
     }
+  }
+
+  // Función para generar thumbnail por defecto usando el video
+  const generateDefaultThumbnail = async (file) => {
+    return new Promise((resolve, reject) => {
+      try {
+        const videoURL = URL.createObjectURL(file)
+        const video = document.createElement('video')
+        video.crossOrigin = 'anonymous'
+        video.muted = true
+        video.playsInline = true
+        
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        
+        // Configurar canvas con tamaño fijo para thumbnail
+        canvas.width = 400
+        canvas.height = 225 // Proporción 16:9
+        
+        video.onloadedmetadata = () => {
+          try {
+            // Intentar capturar frame al inicio del video (0.1 segundos)
+            video.currentTime = 0.1
+            
+            video.onseeked = () => {
+              try {
+                // Dibujar el frame en el canvas
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+                
+                // Convertir a blob
+                canvas.toBlob((blob) => {
+                  if (blob) {
+                    // Limpiar recursos
+                    URL.revokeObjectURL(videoURL)
+                    video.remove()
+                    canvas.remove()
+                    
+                    resolve(blob)
+                  } else {
+                    reject(new Error('No se pudo generar el thumbnail por defecto'))
+                  }
+                }, 'image/jpeg', 0.8)
+                
+              } catch (error) {
+                reject(new Error(`Error al capturar frame por defecto: ${error.message}`))
+              }
+            }
+            
+            video.onerror = () => {
+              reject(new Error('Error al cargar el video para thumbnail por defecto'))
+            }
+            
+          } catch (error) {
+            reject(new Error(`Error al procesar metadata por defecto: ${error.message}`))
+          }
+        }
+        
+        video.onerror = () => {
+          URL.revokeObjectURL(videoURL)
+          video.remove()
+          canvas.remove()
+          reject(new Error('Error al cargar el video por defecto'))
+        }
+        
+        // Cargar el video
+        video.src = videoURL
+        
+      } catch (error) {
+        reject(new Error(`Error al generar thumbnail por defecto: ${error.message}`))
+      }
+    })
   }
 
   const uploadVideoFile = async (file, index) => {
