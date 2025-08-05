@@ -28,6 +28,7 @@ import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
 import SequenceBuilder from '../components/sequence/SequenceBuilder'
 import SequenceGallery from '../components/sequence/SequenceGallery'
+import { useSequenceBuilderContext } from '../contexts/SequenceBuilderContext'
 
 import { 
   getVideos, 
@@ -72,10 +73,17 @@ const FigurasPage = () => {
   // Estados para secuencias
   const [sequences, setSequences] = useState([])
   const [sequencesLoading, setSequencesLoading] = useState(true)
-  const [isSequenceBuilderOpen, setIsSequenceBuilderOpen] = useState(false)
   const [showAllVideos, setShowAllVideos] = useState(false)
   
   const { user } = useAuth()
+  
+  // Usar el contexto de constructor de secuencias
+  const {
+    addVideoToSequence,
+    isVideoInSequence,
+    isBuilderOpen,
+    toggleBuilder
+  } = useSequenceBuilderContext()
   
   // Usar el nuevo sistema de categorías
   const { 
@@ -92,6 +100,14 @@ const FigurasPage = () => {
     return videos.filter(video => 
       video.style === style || video.tags?.estilo?.includes(style)
     )
+  }
+
+  // Función para añadir video al constructor
+  const handleAddVideoToSequence = (video) => {
+    addVideoToSequence(video)
+    if (!isBuilderOpen) {
+      toggleBuilder()
+    }
   }
 
   // Mapeo de iconos para los estilos
@@ -794,36 +810,29 @@ const FigurasPage = () => {
             <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
           </button>
           <button 
-            onClick={() => setIsSequenceBuilderOpen(!isSequenceBuilderOpen)}
+            onClick={toggleBuilder}
             className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 ${
-              isSequenceBuilderOpen 
+              isBuilderOpen 
                 ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
                 : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
             }`}
           >
             <Shuffle className="h-5 w-5" />
-            <span>{isSequenceBuilderOpen ? 'OCULTAR SECUENCIA' : 'CREAR SECUENCIA'}</span>
+            <span>{isBuilderOpen ? 'OCULTAR SECUENCIA' : 'CREAR SECUENCIA'}</span>
           </button>
         </div>
 
         {/* Sequence Builder - Collapsible */}
-        {isSequenceBuilderOpen && (
-          <div className="mb-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200 shadow-lg">
-            <div className="mb-4">
-              <h3 className="text-xl font-semibold text-purple-800 mb-2">🎬 Constructor de Secuencias</h3>
-              <p className="text-purple-600 text-sm">Crea secuencias de videos arrastrando y soltando los videos en el orden deseado</p>
-            </div>
-            <SequenceBuilder
-              isOpen={true}
-              onClose={() => setIsSequenceBuilderOpen(false)}
-              videos={videos}
-              onSaveSequence={handleSaveSequence}
-              onToggleShowAll={toggleShowAllVideos}
-              showAllVideos={showAllVideos}
-              style={selectedStyle}
-              isIntegrated={true}
-            />
-          </div>
+        {isBuilderOpen && (
+          <SequenceBuilder
+            isOpen={true}
+            videos={videos}
+            onSaveSequence={handleSaveSequence}
+            onToggleShowAll={toggleShowAllVideos}
+            showAllVideos={showAllVideos}
+            style={selectedStyle}
+            onToggleBuilder={toggleBuilder}
+          />
         )}
 
         {/* Sync Status and Cleanup Controls */}
@@ -1452,6 +1461,18 @@ const FigurasPage = () => {
                            <Trash2 className="h-4 w-4" />
                          </button>
                          <button 
+                           onClick={() => handleAddVideoToSequence(video)}
+                           disabled={isVideoInSequence(video)}
+                           className={`transition-colors duration-200 p-1 rounded ${
+                             isVideoInSequence(video)
+                               ? 'text-gray-300 cursor-not-allowed'
+                               : 'text-gray-400 hover:text-purple-500 hover:bg-purple-50'
+                           }`}
+                           title={isVideoInSequence(video) ? 'Ya en secuencia' : 'Añadir a secuencia'}
+                         >
+                           <Plus className="h-4 w-4" />
+                         </button>
+                         <button 
                            onClick={() => {
                              downloadVideo(video)
                            }}
@@ -1478,7 +1499,7 @@ const FigurasPage = () => {
                 Secuencias de {selectedStyle.toLowerCase()} ({sequences.length})
               </h2>
               <button
-                onClick={() => setIsSequenceBuilderOpen(true)}
+                onClick={toggleBuilder}
                 className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
                 <Shuffle className="h-4 w-4" />

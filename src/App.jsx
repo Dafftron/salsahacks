@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider } from './contexts/AuthContext'
+import { SequenceBuilderProvider } from './contexts/SequenceBuilderContext'
 import Navigation from './components/layout/Navigation'
 import HomePage from './pages/HomePage'
 import NotasPage from './pages/NotasPage'
@@ -45,9 +46,11 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
+        <SequenceBuilderProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </SequenceBuilderProvider>
       </AuthProvider>
     </ThemeProvider>
   )
