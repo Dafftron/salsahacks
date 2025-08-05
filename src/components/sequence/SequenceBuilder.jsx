@@ -189,16 +189,12 @@ const SequenceBuilder = ({
   // Si es modo modal y no está abierto, no renderizar
   if (!isIntegrated && !isOpen) return null
 
-    // En modo integrado, solo renderizar el contenido interno
+  // En modo integrado, solo renderizar el contenido interno
   if (isIntegrated) {
     return (
       <div className="flex-1 flex overflow-hidden">
         {/* Panel izquierdo - Constructor de secuencia */}
         <div className="w-1/2 border-r p-6 flex flex-col">
-
-        <div className="flex-1 flex overflow-hidden">
-          {/* Panel izquierdo - Constructor de secuencia */}
-          <div className="w-1/2 border-r p-6 flex flex-col">
             {/* Controles superiores */}
             <div className="space-y-4 mb-6">
               {/* Nombre y descripción */}
