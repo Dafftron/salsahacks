@@ -20,6 +20,7 @@ import {
   Shuffle
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
+import { useSequenceBuilder } from '../hooks/useSequenceBuilder'
 import CategoryBadge from '../components/common/CategoryBadge'
 import VideoUploadModal from '../components/video/VideoUploadModal'
 import VideoEditModal from '../components/video/VideoEditModal'
@@ -77,6 +78,17 @@ const FigurasPage = () => {
   
   const { user } = useAuth()
   
+  // Usar el hook de secuencias
+  const {
+    sequence,
+    sequenceDescription,
+    addToSequence,
+    removeFromSequence,
+    moveVideoInSequence,
+    clearSequence,
+    updateSequenceDescription
+  } = useSequenceBuilder()
+  
   // Usar el nuevo sistema de categorías
   const { 
     selectedStyle, 
@@ -86,6 +98,12 @@ const FigurasPage = () => {
     getColorClasses,
     getGradientClasses
   } = useCategories('figuras', 'salsa')
+
+  // Función para agregar video desde la galería principal al creador de secuencias
+  const handleAddVideoToSequence = (video) => {
+    addToSequence(video)
+    addToast(`${video.title || video.name} añadido a la secuencia`, 'success')
+  }
 
   // Función auxiliar para filtrar videos por estilo
   const filterVideosByStyle = (videos, style) => {
@@ -178,19 +196,39 @@ const FigurasPage = () => {
   }
 
   // Funciones para manejar secuencias
-  const handleSaveSequence = async (sequenceData) => {
+  const handleSaveSequence = async () => {
     try {
-      const sequenceWithStyle = {
-        ...sequenceData,
-        style: selectedStyle
+      if (!user) {
+        addToast('Debes iniciar sesión para guardar secuencias', 'error')
+        return
+      }
+
+      if (sequence.length === 0) {
+        addToast('La secuencia debe tener al menos un video', 'error')
+        return
+      }
+
+      if (!sequenceDescription.trim()) {
+        addToast('Debes agregar una descripción a la secuencia', 'error')
+        return
+      }
+
+      const sequenceData = {
+        userId: user.uid,
+        title: sequenceDescription,
+        description: sequenceDescription,
+        videos: sequence,
+        style: selectedStyle,
+        createdAt: new Date().toISOString()
       }
       
-      await createSequence(sequenceWithStyle)
+      await createSequence(sequenceData)
       addToast('Secuencia guardada exitosamente')
+      clearSequence()
+      setIsSequenceBuilderOpen(false)
     } catch (error) {
       console.error('Error al guardar secuencia:', error)
       addToast('Error al guardar la secuencia', 'error')
-      throw error
     }
   }
 
@@ -785,29 +823,21 @@ const FigurasPage = () => {
 
 
         {/* Action Buttons - Main Level */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-          <button 
+        <div className="flex flex-wrap gap-4 mb-6">
+          <button
             onClick={() => setIsUploadModalOpen(true)}
-            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
           >
             <Upload className="h-5 w-5" />
             <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
           </button>
-        </div>
-
-        {/* Sequence Builder - Integrated */}
-        <div className="mb-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-          <div className="text-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Creador de Secuencias</h3>
-            <p className="text-sm text-gray-600">Crea secuencias personalizadas de videos</p>
-          </div>
-          
-          <SequenceBuilder
-            videos={filteredVideos}
-            onSave={handleSaveSequence}
-            style={selectedStyle}
-            isIntegrated={true}
-          />
+          <button
+            onClick={() => setIsSequenceBuilderOpen(true)}
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          >
+            <Shuffle className="h-5 w-5" />
+            <span>CREAR SECUENCIA</span>
+          </button>
         </div>
 
         {/* Sync Status and Cleanup Controls */}
@@ -1429,6 +1459,13 @@ const FigurasPage = () => {
                            <Edit className="h-4 w-4" />
                          </button>
                          <button 
+                           onClick={() => handleAddVideoToSequence(video)}
+                           className="text-gray-400 hover:text-purple-500 transition-colors duration-200 p-1 rounded hover:bg-purple-50"
+                           title="Añadir a secuencia"
+                         >
+                           <Shuffle className="h-4 w-4" />
+                         </button>
+                         <button 
                            onClick={() => openDeleteModal(video)}
                            className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
                            title="Eliminar video"
@@ -1511,11 +1548,9 @@ const FigurasPage = () => {
         {/* Sequence Builder Modal */}
         <SequenceBuilder
           isOpen={isSequenceBuilderOpen}
-          onClose={() => setIsSequenceBuilderOpen(false)}
-          videos={videos}
           onSaveSequence={handleSaveSequence}
-          onToggleShowAll={toggleShowAllVideos}
-          showAllVideos={showAllVideos}
+          onClose={() => setIsSequenceBuilderOpen(false)}
+          style={selectedStyle}
         />
 
        {/* Cleanup Confirmation Modal */}
