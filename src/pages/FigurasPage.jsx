@@ -20,7 +20,6 @@ import {
   Shuffle
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
-import { useSequenceBuilder } from '../hooks/useSequenceBuilder'
 import CategoryBadge from '../components/common/CategoryBadge'
 import VideoUploadModal from '../components/video/VideoUploadModal'
 import VideoEditModal from '../components/video/VideoEditModal'
@@ -73,21 +72,10 @@ const FigurasPage = () => {
   // Estados para secuencias
   const [sequences, setSequences] = useState([])
   const [sequencesLoading, setSequencesLoading] = useState(true)
-  const [showSequenceBuilder, setShowSequenceBuilder] = useState(false)
+  const [isSequenceBuilderOpen, setIsSequenceBuilderOpen] = useState(false)
   const [showAllVideos, setShowAllVideos] = useState(false)
   
   const { user } = useAuth()
-  
-  // Usar el hook de secuencias
-  const {
-    sequence,
-    sequenceDescription,
-    addToSequence,
-    removeFromSequence,
-    moveVideoInSequence,
-    clearSequence,
-    updateSequenceDescription
-  } = useSequenceBuilder()
   
   // Usar el nuevo sistema de categorías
   const { 
@@ -98,12 +86,6 @@ const FigurasPage = () => {
     getColorClasses,
     getGradientClasses
   } = useCategories('figuras', 'salsa')
-
-  // Función para agregar video desde la galería principal al creador de secuencias
-  const handleAddVideoToSequence = (video) => {
-    addToSequence(video)
-    addToast(`${video.title || video.name} añadido a la secuencia`, 'success')
-  }
 
   // Función auxiliar para filtrar videos por estilo
   const filterVideosByStyle = (videos, style) => {
@@ -196,39 +178,19 @@ const FigurasPage = () => {
   }
 
   // Funciones para manejar secuencias
-  const handleSaveSequence = async () => {
+  const handleSaveSequence = async (sequenceData) => {
     try {
-      if (!user) {
-        addToast('Debes iniciar sesión para guardar secuencias', 'error')
-        return
-      }
-
-      if (sequence.length === 0) {
-        addToast('La secuencia debe tener al menos un video', 'error')
-        return
-      }
-
-      if (!sequenceDescription.trim()) {
-        addToast('Debes agregar una descripción a la secuencia', 'error')
-        return
-      }
-
-      const sequenceData = {
-        userId: user.uid,
-        title: sequenceDescription,
-        description: sequenceDescription,
-        videos: sequence,
-        style: selectedStyle,
-        createdAt: new Date().toISOString()
+      const sequenceWithStyle = {
+        ...sequenceData,
+        style: selectedStyle
       }
       
-      await createSequence(sequenceData)
+      await createSequence(sequenceWithStyle)
       addToast('Secuencia guardada exitosamente')
-      clearSequence()
-      setShowSequenceBuilder(false)
     } catch (error) {
       console.error('Error al guardar secuencia:', error)
       addToast('Error al guardar la secuencia', 'error')
+      throw error
     }
   }
 
@@ -823,25 +785,25 @@ const FigurasPage = () => {
 
 
         {/* Action Buttons - Main Level */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <button
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+          <button 
             onClick={() => setIsUploadModalOpen(true)}
-            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
           >
             <Upload className="h-5 w-5" />
             <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
           </button>
-          <button
-            onClick={() => setShowSequenceBuilder(!showSequenceBuilder)}
+          <button 
+            onClick={() => setIsSequenceBuilderOpen(!isSequenceBuilderOpen)}
             className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
           >
             <Shuffle className="h-5 w-5" />
-            <span>{showSequenceBuilder ? 'OCULTAR CREADOR' : 'CREAR SECUENCIA'}</span>
+            <span>{isSequenceBuilderOpen ? 'OCULTAR' : 'CREAR'} SECUENCIA</span>
           </button>
         </div>
 
-        {/* Sequence Builder - Integrated Section */}
-        {showSequenceBuilder && (
+        {/* Sequence Builder - Integrated */}
+        {isSequenceBuilderOpen && (
           <div className="mb-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
             <div className="text-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Creador de Secuencias</h3>
@@ -849,10 +811,11 @@ const FigurasPage = () => {
             </div>
             
             <SequenceBuilder
-              onSaveSequence={handleSaveSequence}
-              onClose={() => setShowSequenceBuilder(false)}
+              videos={filteredVideos}
+              onSave={handleSaveSequence}
               style={selectedStyle}
               isIntegrated={true}
+              onClose={() => setIsSequenceBuilderOpen(false)}
             />
           </div>
         )}
@@ -1476,13 +1439,6 @@ const FigurasPage = () => {
                            <Edit className="h-4 w-4" />
                          </button>
                          <button 
-                           onClick={() => handleAddVideoToSequence(video)}
-                           className="text-gray-400 hover:text-purple-500 transition-colors duration-200 p-1 rounded hover:bg-purple-50"
-                           title="Añadir a secuencia"
-                         >
-                           <Shuffle className="h-4 w-4" />
-                         </button>
-                         <button 
                            onClick={() => openDeleteModal(video)}
                            className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
                            title="Eliminar video"
@@ -1516,11 +1472,11 @@ const FigurasPage = () => {
                 Secuencias de {selectedStyle.toLowerCase()} ({sequences.length})
               </h2>
               <button
-                onClick={() => setShowSequenceBuilder(!showSequenceBuilder)}
+                onClick={() => setIsSequenceBuilderOpen(true)}
                 className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
                 <Shuffle className="h-4 w-4" />
-                <span>{showSequenceBuilder ? 'OCULTAR CREADOR' : 'CREAR SECUENCIA'}</span>
+                <span>CREAR SECUENCIA</span>
               </button>
             </div>
             
@@ -1562,7 +1518,17 @@ const FigurasPage = () => {
           style={selectedStyle}
         />
 
-        {/* Cleanup Confirmation Modal */}
+        {/* Sequence Builder Modal */}
+        <SequenceBuilder
+          isOpen={isSequenceBuilderOpen}
+          onClose={() => setIsSequenceBuilderOpen(false)}
+          videos={videos}
+          onSaveSequence={handleSaveSequence}
+          onToggleShowAll={toggleShowAllVideos}
+          showAllVideos={showAllVideos}
+        />
+
+       {/* Cleanup Confirmation Modal */}
        <ConfirmModal
          isOpen={cleanupModal.isOpen}
          onClose={closeCleanupModal}
