@@ -145,20 +145,34 @@ const FigurasPage = () => {
 
   // Sincronización en tiempo real para secuencias
   useEffect(() => {
+    console.log('🎬 FigurasPage: useEffect de secuencias ejecutándose')
+    console.log('🎬 selectedStyle actual:', selectedStyle)
+    console.log('🎬 subscribeToSequencesByStyle disponible:', typeof subscribeToSequencesByStyle)
+    
+    if (!selectedStyle) {
+      console.log('⚠️ No hay selectedStyle, saltando suscripción')
+      return
+    }
+    
     console.log('🎬 Iniciando sincronización de secuencias para:', selectedStyle)
     setSequencesLoading(true)
     
-    // Suscribirse a cambios en tiempo real para las secuencias del estilo seleccionado
-    const unsubscribe = subscribeToSequencesByStyle(selectedStyle, (sequencesData) => {
-      console.log(`🎬 Actualización de secuencias recibida: ${sequencesData.length} secuencias para ${selectedStyle}`)
-      setSequences(sequencesData)
+    try {
+      // Suscribirse a cambios en tiempo real para las secuencias del estilo seleccionado
+      const unsubscribe = subscribeToSequencesByStyle(selectedStyle, (sequencesData) => {
+        console.log(`🎬 Actualización de secuencias recibida: ${sequencesData.length} secuencias para ${selectedStyle}`)
+        setSequences(sequencesData)
+        setSequencesLoading(false)
+      })
+      
+      // Cleanup al desmontar o cambiar estilo
+      return () => {
+        console.log('🎬 Desuscribiendo de sincronización de secuencias')
+        unsubscribe()
+      }
+    } catch (error) {
+      console.error('❌ Error al suscribirse a secuencias:', error)
       setSequencesLoading(false)
-    })
-    
-    // Cleanup al desmontar o cambiar estilo
-    return () => {
-      console.log('🎬 Desuscribiendo de sincronización de secuencias')
-      unsubscribe()
     }
   }, [selectedStyle])
 
