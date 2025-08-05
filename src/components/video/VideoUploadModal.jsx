@@ -50,6 +50,9 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       if (data.videoPreview) {
         URL.revokeObjectURL(data.videoPreview)
       }
+      if (data.thumbnailPreview) {
+        URL.revokeObjectURL(data.thumbnailPreview)
+      }
     })
     
     setSelectedFiles([])
@@ -112,16 +115,33 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     // Actualizar archivos seleccionados
     setSelectedFiles(prev => [...prev, ...newFiles])
 
-    // Generar vistas previas para los nuevos archivos
-    newFiles.forEach(file => {
+    // Generar vistas previas y thumbnails para los nuevos archivos
+    newFiles.forEach(async (file) => {
       const videoPreview = URL.createObjectURL(file)
-      setVideoData(prev => ({
-        ...prev,
-        [file.name]: {
-          ...prev[file.name],
-          videoPreview
-        }
-      }))
+      
+      // Generar thumbnail para la vista previa del modal
+      try {
+        const thumbnailBlob = await generateDefaultThumbnail(file)
+        const thumbnailURL = URL.createObjectURL(thumbnailBlob)
+        
+        setVideoData(prev => ({
+          ...prev,
+          [file.name]: {
+            ...prev[file.name],
+            videoPreview,
+            thumbnailPreview: thumbnailURL
+          }
+        }))
+      } catch (error) {
+        console.warn('Error generando thumbnail para vista previa:', error)
+        setVideoData(prev => ({
+          ...prev,
+          [file.name]: {
+            ...prev[file.name],
+            videoPreview
+          }
+        }))
+      }
     })
 
     addToast(`${newFiles.length} video(s) agregado(s)`, 'success')
@@ -129,8 +149,13 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
 
   const removeFile = (index) => {
     const fileToRemove = selectedFiles[index]
-    if (fileToRemove && videoData[fileToRemove.name]?.videoPreview) {
-      URL.revokeObjectURL(videoData[fileToRemove.name].videoPreview)
+    if (fileToRemove && videoData[fileToRemove.name]) {
+      if (videoData[fileToRemove.name].videoPreview) {
+        URL.revokeObjectURL(videoData[fileToRemove.name].videoPreview)
+      }
+      if (videoData[fileToRemove.name].thumbnailPreview) {
+        URL.revokeObjectURL(videoData[fileToRemove.name].thumbnailPreview)
+      }
     }
     
     setSelectedFiles(prev => prev.filter((_, i) => i !== index))
@@ -517,15 +542,20 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
             <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-9 bg-gray-100 rounded flex items-center justify-center relative overflow-hidden">
-                  {videoData[file.name]?.videoPreview ? (
+                  {videoData[file.name]?.thumbnailPreview ? (
                     <img 
-                      src={videoData[file.name].videoPreview} 
+                      src={videoData[file.name].thumbnailPreview} 
                       alt="Vista previa del video"
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none'
+                        e.target.nextSibling.style.display = 'flex'
+                      }}
                     />
-                  ) : (
-                    <span className="text-xs text-gray-500">VIDEO</span>
-                  )}
+                  ) : null}
+                  <span className="text-xs text-gray-500" style={{ display: videoData[file.name]?.thumbnailPreview ? 'none' : 'flex' }}>
+                    VIDEO
+                  </span>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-900">{file.name}</h4>
