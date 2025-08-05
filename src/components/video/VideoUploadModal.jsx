@@ -46,10 +46,13 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
   }, [currentCategories])
 
   const resetForm = () => {
-    // Limpiar URLs de vista previa antes de resetear
+    // Limpiar URLs de vista previa y thumbnails antes de resetear
     Object.values(videoData).forEach(data => {
       if (data.videoPreview) {
         URL.revokeObjectURL(data.videoPreview)
+      }
+      if (data.thumbnailBlob) {
+        URL.revokeObjectURL(data.thumbnailBlob)
       }
     })
     
@@ -102,7 +105,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     }
   }
 
-  const handleFileSelect = (event) => {
+  const handleFileSelect = async (event) => {
     const files = Array.from(event.target.files)
     const videoFiles = files.filter(file => file.type.startsWith('video/'))
     
@@ -123,17 +126,43 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       return
     }
 
-    // Generar vistas previas para los nuevos archivos
-    newFiles.forEach(file => {
-      const videoPreview = URL.createObjectURL(file)
-      setVideoData(prev => ({
-        ...prev,
-        [file.name]: {
-          ...prev[file.name],
-          videoPreview
+    // Generar thumbnails para los nuevos archivos
+    for (const file of newFiles) {
+      try {
+        const result = await generateVideoThumbnail(file)
+        if (result.success && result.thumbnailURL) {
+          setVideoData(prev => ({
+            ...prev,
+            [file.name]: {
+              ...prev[file.name],
+              videoPreview: result.thumbnailURL,
+              thumbnailBlob: result.blob
+            }
+          }))
+        } else {
+          // Fallback: usar URL del video si falla la generación del thumbnail
+          const videoPreview = URL.createObjectURL(file)
+          setVideoData(prev => ({
+            ...prev,
+            [file.name]: {
+              ...prev[file.name],
+              videoPreview
+            }
+          }))
         }
-      }))
-    })
+      } catch (error) {
+        console.error('Error generando thumbnail para', file.name, error)
+        // Fallback: usar URL del video si falla la generación del thumbnail
+        const videoPreview = URL.createObjectURL(file)
+        setVideoData(prev => ({
+          ...prev,
+          [file.name]: {
+            ...prev[file.name],
+            videoPreview
+          }
+        }))
+      }
+    }
 
     // Agregar nuevos archivos y marcarlos como plegados por defecto
     setSelectedFiles(prev => [...prev, ...newFiles])
@@ -147,8 +176,14 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
 
   const removeFile = (index) => {
     const fileToRemove = selectedFiles[index]
-    if (fileToRemove && videoData[fileToRemove.name]?.videoPreview) {
-      URL.revokeObjectURL(videoData[fileToRemove.name].videoPreview)
+    if (fileToRemove && videoData[fileToRemove.name]) {
+      const data = videoData[fileToRemove.name]
+      if (data.videoPreview) {
+        URL.revokeObjectURL(data.videoPreview)
+      }
+      if (data.thumbnailBlob) {
+        URL.revokeObjectURL(data.thumbnailBlob)
+      }
     }
     // Limpiar del estado de plegado
     setCollapsedVideos(prev => {

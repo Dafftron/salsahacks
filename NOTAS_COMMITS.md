@@ -42,6 +42,17 @@
 - **Archivos modificados**:
     - `src/index.css` - Eliminada limitación de altura y agregado overflow visible
 
+### 🎬 **CORRECCIÓN DE VISTAS PREVIAS "BLANCAS COMO ROTAS"** - 2024-12-19
+- **Problema**: Después de integrar SmartThumbnail en el modal de subida, las vistas previas aparecían "blancas como rotas"
+- **Causa**: Se estaba pasando URLs de video directamente a SmartThumbnail, que está diseñado para mostrar imágenes
+- **Solución**:
+    - Modificada la función `handleFileSelect` para generar thumbnails reales usando `generateVideoThumbnail`
+    - Ahora se crean imágenes reales del video en lugar de usar URLs de video directamente
+    - Actualizadas las funciones `resetForm` y `removeFile` para limpiar correctamente los thumbnails generados
+    - Implementado fallback a URL de video si falla la generación del thumbnail
+- **Archivos modificados**:
+    - `src/components/video/VideoUploadModal.jsx` - Generación de thumbnails reales en lugar de URLs de video
+
 ### 🎬 **VISTA PREVIA DE THUMBNAIL EN SUBIDA DE VIDEOS** - 2024-12-19
 - **Problema**: Al subir un video, no se veía una vista previa del thumbnail o se veía comprimida/distorsionada
 - **Causa**: Las vistas previas en el modal de subida usaban `object-cover` directamente sin manejar proporciones
@@ -1643,6 +1654,18 @@ SequenceBuilder/
 - **Botón "Mostrar Todos"**: Desactiva filtro de compatibilidad
 - **Filtros Combinables**: Se pueden aplicar múltiples filtros simultáneamente
 
+#### **D.1. Indicadores Visuales de Compatibilidad**
+- **Botón "Mostrar Todos"**: Toggle para activar/desactivar filtro de compatibilidad
+- **Indicadores en Tarjetas**:
+  - **Videos Compatibles**: ✅ Verde suave o check verde
+  - **Videos No Compatibles**: ❌ Rojo suave o X roja
+  - **Nota de Compatibilidad**: Texto pequeño indicando "Compatible" o "No compatible"
+- **Estados Visuales en Modo "Mostrar Todos"**:
+  - **Videos Compatibles**: Normal (opacidad 100%)
+  - **Videos No Compatibles**: Opacidad reducida (50-60%) o marco rojo sutil
+  - **Diferencia Clara**: Fácil distinción visual entre compatibles y no compatibles
+- **Tooltip Informativo**: Al hacer hover sobre videos no compatibles, explicar por qué no son compatibles
+
 #### **E. Generación Aleatoria**
 - **Botón "Generar Aleatoria"**: Crea secuencia de 5 videos automáticamente
 - **Lógica Aleatoria**: 
@@ -1667,11 +1690,18 @@ SequenceBuilder/
 #### **G. Selección de Videos desde Galería**
 - **Botones de Selección**: En cada tarjeta de video de la galería
 - **Estados Visuales**:
-  - "Añadir" (video compatible)
-  - "Añadir Forzado" (video no compatible)
-  - "Ya en Secuencia" (video ya añadido)
-- **Filtrado Visual**: Videos no compatibles con opacidad reducida
-- **Contador**: Número de videos compatibles disponibles
+  - "Añadir" (video compatible) - Botón verde
+  - "Añadir Forzado" (video no compatible) - Botón rojo con advertencia
+  - "Ya en Secuencia" (video ya añadido) - Botón gris deshabilitado
+- **Indicadores de Compatibilidad**:
+  - ✅ **Compatible**: Check verde + texto "Compatible"
+  - ❌ **No Compatible**: X roja + texto "No compatible" + explicación
+  - **Tooltip**: Al hover, muestra qué tags no coinciden
+- **Estados en Modo "Mostrar Todos"**:
+  - **Videos Compatibles**: Opacidad 100%, sin marco
+  - **Videos No Compatibles**: Opacidad 60%, marco rojo sutil
+  - **Diferencia Visual Clara**: Fácil identificación a simple vista
+- **Contador Dinámico**: Número de videos compatibles vs total disponibles
 
 #### **H. Guardado y Gestión**
 - **Botón "Guardar Secuencia"**: Guarda la secuencia en Firebase
@@ -1712,10 +1742,21 @@ SequenceBuilder/
 
 #### **Colores y Estilos**
 - **Container Principal**: Fondo blanco con borde suave
-- **Videos Compatibles**: Verde suave para indicar compatibilidad
-- **Videos No Compatibles**: Gris con opacidad reducida
+- **Videos Compatibles**: 
+  - Check verde: `text-green-500`
+  - Texto: "Compatible" en verde suave
+  - Opacidad: 100% en modo "Mostrar Todos"
+- **Videos No Compatibles**: 
+  - X roja: `text-red-500`
+  - Texto: "No compatible" en rojo suave
+  - Opacidad: 60% en modo "Mostrar Todos"
+  - Marco rojo sutil: `border-red-200`
 - **Secuencia en Construcción**: Azul suave para destacar
-- **Botones de Acción**: Gradientes consistentes con la web
+- **Botones de Acción**: 
+  - Verde para compatibles: `bg-green-500 hover:bg-green-600`
+  - Rojo para no compatibles: `bg-red-500 hover:bg-red-600`
+  - Gradientes consistentes con la web
+- **Tooltips**: Fondo oscuro con texto claro, explicación detallada
 
 #### **Animaciones y Transiciones**
 - **Apertura del Constructor**: Slide down suave
@@ -1748,6 +1789,7 @@ src/
 - **useSequenceBuilder**: Gestión del estado de la secuencia
 - **useVideoCompatibility**: Lógica de filtrado por compatibilidad
 - **useDragAndDrop**: Funcionalidad de reordenamiento
+- **useCompatibilityToggle**: Gestión del botón "Mostrar Todos" y estados visuales
 
 #### **Servicios Firebase**
 - **createSequence**: Crear nueva secuencia
@@ -1783,6 +1825,8 @@ src/
 - [ ] Implementar lógica de compatibilidad de tags
 - [ ] Integrar en FigurasPage
 - [ ] Sistema de filtrado básico
+- [ ] Botón "Mostrar Todos" con toggle funcional
+- [ ] Indicadores visuales de compatibilidad (✅/❌)
 
 #### **Semana 2: Funcionalidades Principales**
 - [ ] Drag & drop para reordenar
@@ -1792,6 +1836,8 @@ src/
 
 #### **Semana 3: Mejoras y Pulido**
 - [ ] Filtros avanzados
+- [ ] Estados visuales en modo "Mostrar Todos" (opacidad, marcos)
+- [ ] Tooltips informativos para videos no compatibles
 - [ ] Animaciones y transiciones
 - [ ] Responsive design
 - [ ] Testing y corrección de bugs
