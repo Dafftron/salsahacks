@@ -14,8 +14,7 @@ const SequenceBuilder = ({
   onSaveSequence,
   onClose,
   style = 'salsa',
-  isIntegrated = false,
-  isOpen = false
+  isIntegrated = false
 }) => {
   const {
     sequence,
@@ -118,225 +117,106 @@ const SequenceBuilder = ({
     dragOverItem.current = null
   }
 
-  // Si es modo modal y no está abierto, no renderizar
-  if (!isIntegrated && !isOpen) return null
+  // Solo renderizar en modo integrado
+  if (!isIntegrated) return null
 
-  if (isIntegrated) {
-    return (
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">Creador de Secuencias</h3>
-          <div className="flex items-center space-x-2">
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Creador de Secuencias</h3>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={handleSaveSequence}
+            disabled={sequence.length === 0 || !sequenceDescription.trim()}
+            className="flex items-center space-x-2 px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white rounded-lg transition-colors"
+          >
+            <Save className="w-4 h-4" />
+            <span>Guardar</span>
+          </button>
+          {onClose && (
             <button
-              onClick={handleSaveSequence}
-              disabled={sequence.length === 0 || !sequenceDescription.trim()}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white rounded-lg transition-colors"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
             >
-              <Save className="w-4 h-4" />
-              <span>Guardar</span>
+              Cerrar
             </button>
-          </div>
-        </div>
-
-        {/* Descripción de la secuencia */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Descripción de la secuencia
-          </label>
-          <textarea
-            value={sequenceDescription}
-            onChange={(e) => updateSequenceDescription(e.target.value)}
-            placeholder="Describe tu secuencia..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-            rows={3}
-          />
-        </div>
-
-        {/* Lista de videos en la secuencia */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-md font-medium text-gray-900">
-              Videos en la secuencia ({sequence.length})
-            </h4>
-            {sequence.length > 0 && (
-              <button
-                onClick={() => setConfirmModal({ isOpen: true, type: 'clear' })}
-                className="flex items-center space-x-1 text-red-500 hover:text-red-700 text-sm"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Limpiar</span>
-              </button>
-            )}
-          </div>
-
-          {sequence.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Shuffle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-              <p>No hay videos en la secuencia</p>
-              <p className="text-sm">Añade videos desde la galería principal</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {sequence.map((video, index) => (
-                <div
-                  key={`${video.id}-${index}`}
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, index)}
-                  onDragOver={handleDragOver}
-                  onDragEnter={(e) => handleDragEnter(e, index)}
-                  onDrop={handleDrop}
-                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border cursor-move hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-medium text-sm">
-                    {index + 1}
-                  </div>
-                  <div className="flex-shrink-0 w-16 h-12 bg-gray-200 rounded overflow-hidden">
-                    <SmartThumbnail video={video} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {video.title || video.name || 'Sin título'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {video.style} • {video.category}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => removeFromSequence(index)}
-                    className="flex-shrink-0 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
           )}
         </div>
       </div>
-    )
-  }
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <div className="flex items-center space-x-3">
-            <Shuffle className="w-6 h-6 text-purple-500" />
-            <span className="text-xl font-semibold text-gray-900">Creador de Secuencias</span>
-          </div>
-          {!isIntegrated && onClose && (
+      {/* Descripción de la secuencia */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Descripción de la secuencia
+        </label>
+        <textarea
+          value={sequenceDescription}
+          onChange={(e) => updateSequenceDescription(e.target.value)}
+          placeholder="Describe tu secuencia..."
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+          rows={3}
+        />
+      </div>
+
+      {/* Lista de videos en la secuencia */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-md font-medium text-gray-900">
+            Videos en la secuencia ({sequence.length})
+          </h4>
+          {sequence.length > 0 && (
             <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={() => setConfirmModal({ isOpen: true, type: 'clear' })}
+              className="flex items-center space-x-1 text-red-500 hover:text-red-700 text-sm"
             >
-              <X className="w-6 h-6" />
+              <Trash2 className="w-4 h-4" />
+              <span>Limpiar</span>
             </button>
           )}
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {/* Descripción de la secuencia */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Descripción de la secuencia
-            </label>
-            <textarea
-              value={sequenceDescription}
-              onChange={(e) => updateSequenceDescription(e.target.value)}
-              placeholder="Describe tu secuencia..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-              rows={3}
-            />
+        {sequence.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <Shuffle className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            <p>No hay videos en la secuencia</p>
+            <p className="text-sm">Añade videos desde la galería principal usando el botón con icono de shuffle</p>
           </div>
-
-          {/* Lista de videos en la secuencia */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Videos en la secuencia ({sequence.length})
-              </h3>
-              {sequence.length > 0 && (
+        ) : (
+          <div className="space-y-2">
+            {sequence.map((video, index) => (
+              <div
+                key={`${video.id}-${index}`}
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={handleDragOver}
+                onDragEnter={(e) => handleDragEnter(e, index)}
+                onDrop={handleDrop}
+                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border cursor-move hover:bg-gray-100 transition-colors"
+              >
+                <div className="flex-shrink-0 w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-medium text-sm">
+                  {index + 1}
+                </div>
+                <div className="flex-shrink-0 w-16 h-12 bg-gray-200 rounded overflow-hidden">
+                  <SmartThumbnail video={video} className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {video.title || video.name || 'Sin título'}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {video.style} • {video.category}
+                  </p>
+                </div>
                 <button
-                  onClick={() => setConfirmModal({ isOpen: true, type: 'clear' })}
-                  className="flex items-center space-x-2 px-3 py-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                  onClick={() => removeFromSequence(index)}
+                  className="flex-shrink-0 p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
-                  <span>Limpiar secuencia</span>
                 </button>
-              )}
-            </div>
-
-            {sequence.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <Shuffle className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <p className="text-lg font-medium mb-2">No hay videos en la secuencia</p>
-                <p className="text-sm">Añade videos desde la galería principal</p>
               </div>
-            ) : (
-              <div className="space-y-3">
-                {sequence.map((video, index) => (
-                  <div
-                    key={`${video.id}-${index}`}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, index)}
-                    onDragOver={handleDragOver}
-                    onDragEnter={(e) => handleDragEnter(e, index)}
-                    onDrop={handleDrop}
-                    className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg border cursor-move hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-medium">
-                      {index + 1}
-                    </div>
-                    <div className="flex-shrink-0 w-20 h-15 bg-gray-200 rounded overflow-hidden">
-                      <SmartThumbnail video={video} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {video.title || video.name || 'Sin título'}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {video.style} • {video.category}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => removeFromSequence(index)}
-                      className="flex-shrink-0 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            ))}
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t bg-gray-50">
-          <div className="text-sm text-gray-600">
-            {sequence.length} video{sequence.length !== 1 ? 's' : ''} en la secuencia
-          </div>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={handleSaveSequence}
-              disabled={sequence.length === 0 || !sequenceDescription.trim()}
-              className="flex items-center space-x-2 px-6 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white rounded-lg transition-colors"
-            >
-              <Save className="w-4 h-4" />
-              <span>Guardar Secuencia</span>
-            </button>
-            {!isIntegrated && (
-              <button
-                onClick={handleCancel}
-                className="px-6 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                Cancelar
-              </button>
-            )}
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Confirm Modal */}

@@ -73,7 +73,7 @@ const FigurasPage = () => {
   // Estados para secuencias
   const [sequences, setSequences] = useState([])
   const [sequencesLoading, setSequencesLoading] = useState(true)
-  const [isSequenceBuilderOpen, setIsSequenceBuilderOpen] = useState(false)
+  const [showSequenceBuilder, setShowSequenceBuilder] = useState(false)
   const [showAllVideos, setShowAllVideos] = useState(false)
   
   const { user } = useAuth()
@@ -225,7 +225,7 @@ const FigurasPage = () => {
       await createSequence(sequenceData)
       addToast('Secuencia guardada exitosamente')
       clearSequence()
-      setIsSequenceBuilderOpen(false)
+      setShowSequenceBuilder(false)
     } catch (error) {
       console.error('Error al guardar secuencia:', error)
       addToast('Error al guardar la secuencia', 'error')
@@ -832,13 +832,30 @@ const FigurasPage = () => {
             <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
           </button>
           <button
-            onClick={() => setIsSequenceBuilderOpen(true)}
+            onClick={() => setShowSequenceBuilder(!showSequenceBuilder)}
             className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
           >
             <Shuffle className="h-5 w-5" />
-            <span>CREAR SECUENCIA</span>
+            <span>{showSequenceBuilder ? 'OCULTAR CREADOR' : 'CREAR SECUENCIA'}</span>
           </button>
         </div>
+
+        {/* Sequence Builder - Integrated Section */}
+        {showSequenceBuilder && (
+          <div className="mb-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+            <div className="text-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Creador de Secuencias</h3>
+              <p className="text-sm text-gray-600">Crea secuencias personalizadas de videos</p>
+            </div>
+            
+            <SequenceBuilder
+              onSaveSequence={handleSaveSequence}
+              onClose={() => setShowSequenceBuilder(false)}
+              style={selectedStyle}
+              isIntegrated={true}
+            />
+          </div>
+        )}
 
         {/* Sync Status and Cleanup Controls */}
         <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -1499,11 +1516,11 @@ const FigurasPage = () => {
                 Secuencias de {selectedStyle.toLowerCase()} ({sequences.length})
               </h2>
               <button
-                onClick={() => setIsSequenceBuilderOpen(true)}
+                onClick={() => setShowSequenceBuilder(!showSequenceBuilder)}
                 className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
                 <Shuffle className="h-4 w-4" />
-                <span>CREAR SECUENCIA</span>
+                <span>{showSequenceBuilder ? 'OCULTAR CREADOR' : 'CREAR SECUENCIA'}</span>
               </button>
             </div>
             
@@ -1545,15 +1562,7 @@ const FigurasPage = () => {
           style={selectedStyle}
         />
 
-        {/* Sequence Builder Modal */}
-        <SequenceBuilder
-          isOpen={isSequenceBuilderOpen}
-          onSaveSequence={handleSaveSequence}
-          onClose={() => setIsSequenceBuilderOpen(false)}
-          style={selectedStyle}
-        />
-
-       {/* Cleanup Confirmation Modal */}
+        {/* Cleanup Confirmation Modal */}
        <ConfirmModal
          isOpen={cleanupModal.isOpen}
          onClose={closeCleanupModal}
