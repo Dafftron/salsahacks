@@ -408,9 +408,9 @@ const SequenceBuilder = ({
           onClose={() => removeToast(toast.id)}
         />
       ))}
-        </>
-      )
-    }
+      </>
+    )
+  }
 
   // Modo modal
   return (
