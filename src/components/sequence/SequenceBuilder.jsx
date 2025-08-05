@@ -25,7 +25,9 @@ const SequenceBuilder = ({
   videos, 
   onSaveSequence,
   onToggleShowAll,
-  showAllVideos 
+  showAllVideos,
+  style = 'salsa',
+  isIntegrated = false
 }) => {
   const {
     sequence,
@@ -81,12 +83,15 @@ const SequenceBuilder = ({
         name: sequenceName,
         description: sequenceDescription,
         videos: sequence,
+        style: style,
         createdAt: new Date().toISOString()
       })
       
       addToast('Secuencia guardada exitosamente')
       clearSequence()
-      onClose()
+      if (!isIntegrated && onClose) {
+        onClose()
+      }
     } catch (error) {
       addToast('Error al guardar la secuencia', 'error')
     }
@@ -96,7 +101,9 @@ const SequenceBuilder = ({
     if (sequence.length > 0 || sequenceName.trim() || sequenceDescription.trim()) {
       setConfirmModal({ isOpen: true, type: 'cancel' })
     } else {
-      onClose()
+      if (!isIntegrated && onClose) {
+        onClose()
+      }
     }
   }
 
@@ -107,7 +114,9 @@ const SequenceBuilder = ({
   const handleConfirmAction = () => {
     if (confirmModal.type === 'cancel') {
       clearSequence()
-      onClose()
+      if (!isIntegrated && onClose) {
+        onClose()
+      }
     } else if (confirmModal.type === 'clear') {
       clearSequence()
     }
@@ -177,11 +186,12 @@ const SequenceBuilder = ({
     }
   }
 
-  if (!isOpen) return null
+  // Si es modo modal y no está abierto, no renderizar
+  if (!isIntegrated && !isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-7xl h-[90vh] flex flex-col">
+    <div className={`${isIntegrated ? '' : 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'}`}>
+      <div className={`bg-white rounded-lg shadow-xl ${isIntegrated ? 'w-full' : 'w-full max-w-7xl h-[90vh]'} flex flex-col`}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center space-x-4">
@@ -190,12 +200,14 @@ const SequenceBuilder = ({
               {sequence.length} videos
             </span>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          {!isIntegrated && onClose && (
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          )}
         </div>
 
         <div className="flex-1 flex overflow-hidden">
@@ -304,12 +316,14 @@ const SequenceBuilder = ({
                 <Save className="w-4 h-4" />
                 <span>Guardar Secuencia</span>
               </button>
-              <button
-                onClick={handleCancel}
-                className="px-6 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-              >
-                Cancelar
-              </button>
+              {!isIntegrated && (
+                <button
+                  onClick={handleCancel}
+                  className="px-6 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+              )}
             </div>
           </div>
 
@@ -323,17 +337,19 @@ const SequenceBuilder = ({
                   ({filteredVideos.length} videos)
                 </span>
               </h3>
-              <button
-                onClick={onToggleShowAll}
-                className={`flex items-center space-x-2 px-3 py-1 rounded-lg transition-colors ${
-                  showAllVideos 
-                    ? 'bg-blue-100 text-blue-800' 
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {showAllVideos ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                <span>{showAllVideos ? 'Ocultar Incompatibles' : 'Mostrar Todos'}</span>
-              </button>
+              {onToggleShowAll && (
+                <button
+                  onClick={onToggleShowAll}
+                  className={`flex items-center space-x-2 px-3 py-1 rounded-lg transition-colors ${
+                    showAllVideos 
+                      ? 'bg-blue-100 text-blue-800' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {showAllVideos ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  <span>{showAllVideos ? 'Ocultar Incompatibles' : 'Mostrar Todos'}</span>
+                </button>
+              )}
             </div>
 
             {/* Grid de videos */}
