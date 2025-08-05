@@ -218,12 +218,10 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
          }
        }
 
-      // Solo incluir el estilo si se han seleccionado tags manualmente
+      // Usar solo los tags seleccionados por el usuario, sin agregar automáticamente el style
       const tagsWithStyle = {
         ...selectedTags,
-        estilo: selectedTags.estilo && selectedTags.estilo.length > 0 ? 
-          [...new Set([...selectedTags.estilo, style])] : 
-          []
+        estilo: selectedTags.estilo || []
       }
 
       // Detectar resolución si no existe

@@ -1456,3 +1456,43 @@ video: {
 - ✅ El tag "salsa" solo aparece si se selecciona manualmente
 - ✅ Selección de tags más intuitiva y consistente
 - ✅ Mejor experiencia de usuario al editar videos
+
+---
+
+### **🏷️ Arreglo Definitivo de Tags Automáticos - [Fecha Actual]**
+
+#### **Problema Persistente**
+- El tag "salsa" seguía apareciendo automáticamente cuando se seleccionaba cualquier tag de estilo
+- Si se seleccionaba "salsa" explícitamente, aparecía duplicado
+- La lógica anterior seguía agregando el `style` automáticamente a los tags seleccionados
+
+#### **Causa Raíz**
+- En `VideoEditModal.jsx` y `VideoUploadModal.jsx`, la lógica de `tagsWithStyle` agregaba automáticamente el `style` (salsa) cuando había tags de estilo seleccionados
+- Esto causaba que "salsa" apareciera incluso sin selección manual
+
+#### **Solución Definitiva**
+1. **Eliminación Completa de Asignación Automática:**
+   - Removida la lógica que agregaba `style` automáticamente
+   - Los tags de estilo ahora son exactamente los que el usuario selecciona
+
+2. **Código Corregido:**
+   ```javascript
+   // ANTES (problemático):
+   estilo: selectedTags.estilo && selectedTags.estilo.length > 0 ? 
+     [...new Set([...selectedTags.estilo, style])] : 
+     []
+   
+   // DESPUÉS (corregido):
+   estilo: selectedTags.estilo || []
+   ```
+
+#### **Archivos Modificados**
+- `src/components/video/VideoEditModal.jsx` (líneas 218-222)
+- `src/components/video/VideoUploadModal.jsx` (líneas 238-242)
+
+#### **Resultado Final**
+- ✅ El tag "salsa" NO aparece automáticamente al seleccionar otros tags de estilo
+- ✅ Solo aparecen los tags que el usuario selecciona explícitamente
+- ✅ No más duplicados del tag "salsa"
+- ✅ Comportamiento consistente en ambos modales (editar y subir)
+- ✅ Control total del usuario sobre los tags de estilo
