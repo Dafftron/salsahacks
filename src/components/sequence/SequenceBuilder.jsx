@@ -193,9 +193,9 @@ const SequenceBuilder = ({
   if (isIntegrated) {
     return (
       <>
-        <div className="flex-1 flex overflow-hidden">
-        {/* Panel izquierdo - Constructor de secuencia */}
-        <div className="w-1/2 border-r p-6 flex flex-col">
+        <div className="flex-1 flex overflow-hidden bg-white rounded-lg border border-gray-200">
+          {/* Panel izquierdo - Constructor de secuencia */}
+          <div className="w-1/2 border-r border-gray-200 p-4 flex flex-col">
             {/* Controles superiores */}
             <div className="space-y-4 mb-6">
               {/* Nombre y descripción */}
@@ -299,12 +299,11 @@ const SequenceBuilder = ({
                 <Save className="w-4 h-4" />
                 <span>Guardar Secuencia</span>
               </button>
-
             </div>
           </div>
 
           {/* Panel derecho - Galería de videos */}
-          <div className="w-1/2 p-6 flex flex-col">
+          <div className="w-1/2 p-4 flex flex-col">
             {/* Header de la galería */}
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-700">
@@ -378,39 +377,38 @@ const SequenceBuilder = ({
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Modales */}
-      <ConfirmModal
-        isOpen={confirmModal.isOpen}
-        onClose={() => setConfirmModal({ isOpen: false, type: null })}
-        onConfirm={handleConfirmAction}
-        title={
-          confirmModal.type === 'cancel' 
-            ? '¿Cancelar secuencia?' 
-            : '¿Limpiar secuencia?'
-        }
-        message={
-          confirmModal.type === 'cancel'
-            ? '¿Estás seguro de que quieres cancelar? Se perderán todos los cambios.'
-            : '¿Estás seguro de que quieres limpiar la secuencia actual?'
-        }
-        confirmText="Confirmar"
-        cancelText="Cancelar"
-      />
-
-      {/* Toasts */}
-      {toasts.map(toast => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          onClose={() => removeToast(toast.id)}
+        {/* Modales */}
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          onClose={() => setConfirmModal({ isOpen: false, type: null })}
+          onConfirm={handleConfirmAction}
+          title={
+            confirmModal.type === 'cancel' 
+              ? '¿Cancelar secuencia?' 
+              : '¿Limpiar secuencia?'
+          }
+          message={
+            confirmModal.type === 'cancel'
+              ? '¿Estás seguro de que quieres cancelar? Se perderán todos los cambios.'
+              : '¿Estás seguro de que quieres limpiar la secuencia actual?'
+          }
+          confirmText="Confirmar"
+          cancelText="Cancelar"
         />
-      ))}
-        </>
-      )
-    }
+
+        {/* Toasts */}
+        {toasts.map(toast => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </>
+    )
+  }
 
   // Modo modal
   return (
