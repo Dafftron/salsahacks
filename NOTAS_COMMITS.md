@@ -4,7 +4,7 @@
 
 ### 🎬 **FIX: CORRECCIÓN ERROR IMPORTACIÓN SMARTTHUMBNAIL Y SISTEMA DE SECUENCIAS** - 2024-12-19
 - **Problema**: Error de importación en SequenceGallery.jsx - Vite no podía resolver la ruta de SmartThumbnail
-- **Solución**: 
+- **Solución**:
   - Corregido error de importación agregando extensión `.jsx` explícita: `import SmartThumbnail from '../common/SmartThumbnail.jsx'`
   - Agregado componente SmartThumbnail para miniaturas inteligentes con fallback
   - Implementado sistema completo de secuencias con SequenceBuilder y SequenceGallery
@@ -21,6 +21,21 @@
 - **Archivos modificados**:
   - `src/pages/FigurasPage.jsx` - Integración de nuevas funcionalidades
   - `src/components/sequence/SequenceGallery.jsx` - Corregida importación de SmartThumbnail
+
+### 🖼️ **FIX: CORRECCIÓN PROBLEMA THUMBNAILS NO VISIBLES** - 2024-12-19
+- **Problema**: Los thumbnails no se mostraban en los componentes de secuencias
+- **Causa**: Inconsistencia en el nombre de la propiedad (thumbnailURL vs thumbnailUrl)
+- **Solución**:
+  - Corregida inconsistencia en nombre de propiedad: cambiado `thumbnailURL` por `thumbnailUrl` en todos los componentes
+  - Mejorado componente SmartThumbnail con mejor manejo de fallbacks
+  - Agregada detección automática de URLs placeholder para mostrar fallback
+  - Corregidas importaciones en SequenceBuilder.jsx agregando extensión `.jsx`
+  - Agregado fallback visual mejorado con gradiente y icono de reproducción
+- **Archivos modificados**:
+  - `src/components/common/SmartThumbnail.jsx` - Mejorado manejo de fallbacks y detección de placeholders
+  - `src/components/sequence/SequenceGallery.jsx` - Corregida propiedad thumbnailUrl
+  - `src/components/sequence/SequenceBuilder.jsx` - Corregida propiedad thumbnailUrl e importación
+  - `public/placeholder-video.jpg` - Agregado archivo placeholder
 
 ### 🎬 **NUEVO ENFOQUE ROBUSTO PARA THUMBNAILS** - 2024-12-19
 - **Problema**: Los thumbnails no se mostraban correctamente, ni al cargar videos ni en las cards
