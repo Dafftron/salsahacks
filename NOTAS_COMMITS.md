@@ -13,6 +13,7 @@
 6. [Configuración Firebase](#configuración-firebase)
 7. [Firebase Storage Setup](#firebase-storage-setup)
 8. [Sistema de Video Upload](#sistema-de-video-upload)
+9. [Sistema de Tags y Categorías](#sistema-de-tags-y-categorías)
 
 ---
 
@@ -295,6 +296,19 @@
 - ✅ Transiciones de color en iconos y elementos
 - ✅ Mejor contraste y legibilidad
 - ✅ Efectos visuales más pulidos y profesionales
+
+### **Commit #006 - Corrección de Tags Duplicados**
+**Fecha:** 2025-01-27
+**Descripción:** Solución del problema de tags duplicados en la galería de videos
+**Cambios:**
+- ✅ **Diagnóstico del problema:** Identificación de duplicación en tags de estilo "Salsa"
+- ✅ **Corrección en VideoEditModal:** Prevención de duplicación al añadir estilo
+- ✅ **Corrección en VideoUploadModal:** Prevención de duplicación al subir videos
+- ✅ **Función de limpieza:** `cleanupDuplicateTags()` para eliminar duplicados existentes
+- ✅ **Botón de limpieza:** Interfaz para ejecutar limpieza de tags duplicados
+- ✅ **Modal de confirmación:** Actualizado para incluir limpieza de tags
+- ✅ **Eliminación de logs de debug:** Limpieza del código de diagnóstico
+- ✅ **Prevención futura:** Verificación de existencia antes de añadir tags
 
 ### **Commit #006 - Unificación de Estructura en Escuela y Eventos**
 **Fecha:** 2025-01-27
@@ -1294,3 +1308,106 @@ PÁGINA (figuras/escuela/eventos) → ESTILO → CATEGORÍA → TAGS
   - `src/components/video/VideoEditModal.jsx` (integración)
   - `src/components/video/VideoUploadModal.jsx` (integración)
 - **Estado**: ✅ Completado
+
+---
+
+## 🏷️ SISTEMA DE TAGS Y CATEGORÍAS
+
+### **📋 Estructura del Sistema**
+
+#### **Jerarquía de Categorías**
+```
+PÁGINA → ESTILO → CATEGORÍA → TAGS
+```
+
+**Ejemplo:**
+- **Página:** Figuras
+- **Estilo:** Salsa
+- **Categoría:** Estilo, Subestilo, Tipo, Manos
+- **Tags:** Salsa, Salsa en línea On1, Cross Body Lead, Una mano
+
+#### **Tipos de Tags**
+1. **Tags Normales** (`video.tags`): Etiquetas generales del video
+2. **Tags Iniciales** (`video.tagsIniciales`): Etiquetas del inicio de la secuencia
+3. **Tags Finales** (`video.tagsFinales`): Etiquetas del final de la secuencia
+
+### **🔧 Implementación Técnica**
+
+#### **Estructura de Datos en Firebase**
+```javascript
+video: {
+  tags: {
+    estilo: ['Salsa', 'Salsa en línea On1'],
+    subestilo: ['Pasitos libres', 'Parejas'],
+    tipo: ['Cross Body Lead', 'Copa'],
+    manos: ['Una mano', 'Dos manos paralelas']
+  },
+  tagsIniciales: {
+    estilo: ['Salsa'],
+    subestilo: ['Pasitos libres'],
+    tipo: ['Cross Body Lead'],
+    manos: ['Una mano']
+  },
+  tagsFinales: {
+    estilo: ['Salsa'],
+    subestilo: ['Pasitos libres'],
+    tipo: ['Cross Body Lead'],
+    manos: ['Una mano']
+  }
+}
+```
+
+#### **Funciones de Procesamiento**
+- `getOrderedTags(video)`: Ordena tags normales según categorías
+- `getOrderedTagsIniciales(video)`: Ordena tags iniciales
+- `getOrderedTagsFinales(video)`: Ordena tags finales
+
+### **🎨 Sistema de Colores**
+
+#### **Colores por Categoría**
+- **Estilo:** `pink` (rosa)
+- **Subestilo:** `orange` (naranja)
+- **Tipo:** `green` (verde)
+- **Manos:** `blue` (azul)
+
+#### **Gradientes Especiales**
+- **Tags Iniciales:** `from-blue-500 to-purple-500`
+- **Tags Finales:** `from-green-500 to-teal-500`
+
+### **🛠️ Gestión y Mantenimiento**
+
+#### **Prevención de Duplicados**
+- Verificación antes de añadir tags: `selectedTags.estilo.includes(style)`
+- Función de limpieza: `cleanupDuplicateTags()`
+- Botón de limpieza en interfaz: "🏷️ Limpiar Tags"
+
+#### **Fuente Única de Verdad**
+- `CategoriesPage.jsx`: Define todas las categorías y tags disponibles
+- `useCategories.js`: Hook para acceder a categorías
+- `constants/categories.js`: Datos hardcodeados
+
+### **🔍 Diagnóstico y Debugging**
+
+#### **Problemas Comunes**
+1. **Tags Duplicados:** Múltiples instancias del mismo tag
+2. **Inconsistencia de Capitalización:** "Salsa" vs "salsa"
+3. **Estructura Inconsistente:** Tags en propiedades separadas
+
+#### **Herramientas de Diagnóstico**
+- Console logs detallados en funciones de ordenamiento
+- Función `cleanupDuplicateTags()` para limpieza automática
+- Verificación de estructura en modales de edición
+
+### **📝 Notas de Desarrollo**
+
+#### **Buenas Prácticas**
+- ✅ Siempre verificar existencia antes de añadir tags
+- ✅ Usar `Set` para eliminar duplicados automáticamente
+- ✅ Mantener consistencia en capitalización
+- ✅ Documentar cambios en estructura de datos
+
+#### **Evitar**
+- ❌ Hardcodear tags fuera de `CategoriesPage.jsx`
+- ❌ Duplicar lógica de procesamiento de tags
+- ❌ Ignorar warnings de React sobre keys duplicadas
+- ❌ Modificar estructura sin actualizar documentación

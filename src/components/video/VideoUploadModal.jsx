@@ -235,10 +235,14 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         return null
       }
 
-      // Asegurar que el estilo esté incluido en los tags
+      // Asegurar que el estilo esté incluido en los tags (sin duplicar)
       const tagsWithStyle = {
         ...selectedTags,
-        estilo: selectedTags.estilo ? [...selectedTags.estilo, style] : [style]
+        estilo: selectedTags.estilo ? 
+          selectedTags.estilo.includes(style) ? 
+            selectedTags.estilo : 
+            [...selectedTags.estilo, style]
+          : [style]
       }
 
       // Obtener los valores actuales de los campos de entrada usando refs

@@ -212,10 +212,14 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
          }
        }
 
-      // Asegurar que el estilo esté incluido en los tags
+      // Asegurar que el estilo esté incluido en los tags (sin duplicar)
       const tagsWithStyle = {
         ...selectedTags,
-        estilo: selectedTags.estilo ? [...selectedTags.estilo, style] : [style]
+        estilo: selectedTags.estilo ? 
+          selectedTags.estilo.includes(style) ? 
+            selectedTags.estilo : 
+            [...selectedTags.estilo, style]
+          : [style]
       }
 
       // Detectar resolución si no existe

@@ -32,7 +32,8 @@ import {
   deleteAllVideos,
   updateVideoThumbnailPaths,
   diagnoseVideos,
-  updateVideoDocument
+  updateVideoDocument,
+  cleanupDuplicateTags
 } from '../services/firebase/firestore'
 import { 
   deleteVideo, 
@@ -219,6 +220,14 @@ const FigurasPage = () => {
         } else {
           addToast(`❌ Error: ${result.error}`, 'error')
         }
+      } else if (type === 'cleanup-tags') {
+        // Limpiar tags duplicados
+        const result = await cleanupDuplicateTags()
+        if (result.success) {
+          addToast(`🏷️ ${result.updatedCount} videos actualizados con tags limpios`, 'success')
+        } else {
+          addToast(`❌ Error: ${result.error}`, 'error')
+        }
       } else if (type === 'delete-all') {
         // Eliminar todos los videos (confirmar primero)
         const confirmed = window.confirm('¿Estás seguro de que quieres eliminar TODOS los videos? Esta acción no se puede deshacer.')
@@ -383,6 +392,8 @@ const FigurasPage = () => {
       return []
     }
 
+
+
     // Crear array de tags ordenados según el orden de categoriesList
     const orderedTags = []
     
@@ -398,6 +409,7 @@ const FigurasPage = () => {
         })
       }
     })
+
 
     return orderedTags
   }
@@ -424,6 +436,7 @@ const FigurasPage = () => {
       }
     })
 
+
     return orderedTags
   }
 
@@ -448,6 +461,7 @@ const FigurasPage = () => {
         })
       }
     })
+
 
     return orderedTags
   }
@@ -750,6 +764,13 @@ const FigurasPage = () => {
                 className="px-3 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 🧹 Limpiar Huérfanos
+              </button>
+              <button
+                onClick={() => openCleanupModal('cleanup-tags')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🏷️ Limpiar Tags
               </button>
               <button
                 onClick={() => openCleanupModal('delete-all')}
@@ -1375,6 +1396,7 @@ const FigurasPage = () => {
          title={
            cleanupModal.type === 'update' ? 'Actualizar Rutas de Thumbnails' :
            cleanupModal.type === 'cleanup' ? 'Limpiar Archivos Huérfanos' :
+           cleanupModal.type === 'cleanup-tags' ? 'Limpiar Tags Duplicados' :
            'Eliminar Todos los Videos'
          }
          message={
@@ -1382,11 +1404,14 @@ const FigurasPage = () => {
            '¿Actualizar las rutas de thumbnails de videos existentes? Esto corregirá problemas de eliminación.' :
            cleanupModal.type === 'cleanup' ? 
            '¿Limpiar archivos huérfanos? Esto eliminará archivos que no tienen documento en Firestore.' :
+           cleanupModal.type === 'cleanup-tags' ? 
+           '¿Limpiar tags duplicados? Esto eliminará etiquetas repetidas en todos los videos manteniendo solo una instancia de cada tag.' :
            '¿Eliminar TODOS los videos de Firebase y Storage? Esta acción es IRREVERSIBLE y eliminará todos los datos.'
          }
          confirmText={
            cleanupModal.type === 'update' ? 'Actualizar' :
            cleanupModal.type === 'cleanup' ? 'Limpiar' :
+           cleanupModal.type === 'cleanup-tags' ? 'Limpiar Tags' :
            'Eliminar Todo'
          }
          cancelText="Cancelar"

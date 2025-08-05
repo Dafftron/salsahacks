@@ -807,3 +807,104 @@ export const diagnoseVideos = async () => {
     }
   }
 } 
+
+// ===== FUNCIÓN PARA LIMPIAR TAGS DUPLICADOS =====
+
+export const cleanupDuplicateTags = async () => {
+  try {
+    console.log('🧹 Iniciando limpieza de tags duplicados...')
+    
+    const videos = await getVideos()
+    console.log(`📊 Videos a revisar: ${videos.length}`)
+    
+    if (videos.length === 0) {
+      console.log('✅ No hay videos para revisar')
+      return { success: true, updatedCount: 0, error: null }
+    }
+    
+    const batch = writeBatch(db)
+    let updatedCount = 0
+    
+    videos.forEach((video) => {
+      let hasChanges = false
+      const updatedTags = {}
+      const updatedTagsIniciales = {}
+      const updatedTagsFinales = {}
+      
+      // Limpiar tags normales
+      if (video.tags) {
+        Object.keys(video.tags).forEach(category => {
+          if (Array.isArray(video.tags[category])) {
+            // Eliminar duplicados manteniendo el orden
+            const uniqueTags = [...new Set(video.tags[category])]
+            if (uniqueTags.length !== video.tags[category].length) {
+              updatedTags[category] = uniqueTags
+              hasChanges = true
+              console.log(`🔄 ${video.title}: Eliminados ${video.tags[category].length - uniqueTags.length} tags duplicados en ${category}`)
+            }
+          }
+        })
+      }
+      
+      // Limpiar tags iniciales
+      if (video.tagsIniciales) {
+        Object.keys(video.tagsIniciales).forEach(category => {
+          if (Array.isArray(video.tagsIniciales[category])) {
+            const uniqueTags = [...new Set(video.tagsIniciales[category])]
+            if (uniqueTags.length !== video.tagsIniciales[category].length) {
+              updatedTagsIniciales[category] = uniqueTags
+              hasChanges = true
+              console.log(`🔄 ${video.title}: Eliminados ${video.tagsIniciales[category].length - uniqueTags.length} tags iniciales duplicados en ${category}`)
+            }
+          }
+        })
+      }
+      
+      // Limpiar tags finales
+      if (video.tagsFinales) {
+        Object.keys(video.tagsFinales).forEach(category => {
+          if (Array.isArray(video.tagsFinales[category])) {
+            const uniqueTags = [...new Set(video.tagsFinales[category])]
+            if (uniqueTags.length !== video.tagsFinales[category].length) {
+              updatedTagsFinales[category] = uniqueTags
+              hasChanges = true
+              console.log(`🔄 ${video.title}: Eliminados ${video.tagsFinales[category].length - uniqueTags.length} tags finales duplicados en ${category}`)
+            }
+          }
+        })
+      }
+      
+      if (hasChanges) {
+        const videoRef = doc(db, COLLECTIONS.VIDEOS, video.id)
+        const updates = {
+          updatedAt: serverTimestamp()
+        }
+        
+        if (Object.keys(updatedTags).length > 0) {
+          updates.tags = { ...video.tags, ...updatedTags }
+        }
+        if (Object.keys(updatedTagsIniciales).length > 0) {
+          updates.tagsIniciales = { ...video.tagsIniciales, ...updatedTagsIniciales }
+        }
+        if (Object.keys(updatedTagsFinales).length > 0) {
+          updates.tagsFinales = { ...video.tagsFinales, ...updatedTagsFinales }
+        }
+        
+        batch.update(videoRef, updates)
+        updatedCount++
+      }
+    })
+    
+    if (updatedCount > 0) {
+      await batch.commit()
+      console.log(`✅ ${updatedCount} videos actualizados con tags limpios`)
+    } else {
+      console.log('✅ No se encontraron tags duplicados')
+    }
+    
+    return { success: true, updatedCount, error: null }
+  } catch (error) {
+    console.error('❌ Error al limpiar tags duplicados:', error)
+    return { success: false, updatedCount: 0, error: error.message }
+  }
+} 
