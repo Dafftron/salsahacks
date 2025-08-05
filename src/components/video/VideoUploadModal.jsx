@@ -57,7 +57,6 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     setCollapsedVideos(new Set())
     setUploadProgress({})
     setUploading(false)
-    setCurrentUploadIndex(0)
   }
 
   const addToast = (message, type = 'success') => {

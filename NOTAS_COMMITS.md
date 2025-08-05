@@ -2,6 +2,20 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🎬 **CORRECCIÓN DE ERRORES CRÍTICOS POST-SIMPLIFICACIÓN** - 2024-12-19
+- **Problema**: Después de la simplificación del sistema de thumbnails, aparecieron errores críticos:
+  - Error `setCurrentUploadIndex is not defined` en VideoUploadModal
+  - Advertencia de deprecación `slider-vertical` en CSS
+  - Página de figuras se mostraba en blanco debido a errores de JavaScript
+- **Solución**:
+  - Eliminada referencia a `setCurrentUploadIndex(0)` en `resetForm()` que no estaba definida
+  - Actualizado CSS de slider vertical para usar sintaxis moderna: `writing-mode: vertical-lr; direction: rtl`
+  - Eliminada propiedad deprecada `-webkit-appearance: slider-vertical`
+  - Aplicación ahora funciona correctamente sin errores
+- **Archivos modificados**:
+  - `src/components/video/VideoUploadModal.jsx` - Eliminada referencia a variable no definida
+  - `src/index.css` - Actualizado slider vertical a sintaxis moderna
+
 ### 🎬 **SIMPLIFICACIÓN DEFINITIVA DEL SISTEMA DE THUMBNAILS** - 2024-12-19
 - **Problema**: El sistema de thumbnails se había vuelto demasiado complejo con SmartThumbnail y useImageOrientation, causando que los thumbnails se vieran "rotos" y no se mostraran correctamente
 - **Solución**: Volver a una implementación simple y directa
