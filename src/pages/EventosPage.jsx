@@ -19,6 +19,7 @@ import {
   Clock,
   Users
 } from 'lucide-react'
+import SmartThumbnail from '../components/common/SmartThumbnail'
 
 const EventosPage = () => {
   const [selectedStyle, setSelectedStyle] = useState('SALSA')
@@ -161,13 +162,10 @@ const EventosPage = () => {
             {eventos.map((evento) => (
               <div key={evento.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
                 <div className="relative">
-                  <div className="w-full h-48 video-thumbnail-container">
-                    <img
-                      src={evento.thumbnail}
-                      alt={evento.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                  <SmartThumbnail
+                    src={evento.thumbnail}
+                    alt={evento.title}
+                  />
                   <div className="absolute top-2 right-2 bg-pink-500 text-white px-2 py-1 rounded text-sm font-medium">
                     {evento.type}
                   </div>

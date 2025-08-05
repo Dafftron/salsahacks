@@ -2,6 +2,24 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🎬 **SOLUCIÓN DEFINITIVA DE THUMBNAILS CON ASPECT RATIO DINÁMICO** - 2024-12-19
+- **Problema**: Los thumbnails no respetaban las proporciones de los videos verticales (9:16) y causaban distorsión
+- **Solución**: 
+  - Creado hook `useImageOrientation` para detectar orientación de imágenes
+  - Creado componente `SmartThumbnail` que aplica aspect ratio dinámico
+  - Videos verticales: `aspect-[9/16]` (ratio 9:16)
+  - Videos horizontales: `aspect-video` (ratio 16:9)
+  - Uso de `object-contain` para mantener proporciones sin recortar
+  - Eliminación de altura fija `h-48` para permitir aspect ratios dinámicos
+- **Archivos creados**:
+  - `src/hooks/useImageOrientation.js` - Hook para detectar orientación
+  - `src/components/common/SmartThumbnail.jsx` - Componente de thumbnail inteligente
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Implementado SmartThumbnail
+  - `src/pages/EscuelaPage.jsx` - Implementado SmartThumbnail
+  - `src/pages/EventosPage.jsx` - Implementado SmartThumbnail
+  - `src/index.css` - Estilos mejorados para aspect ratios dinámicos
+
 ### 🎬 **CORRECCIÓN DE THUMBNAILS DE VIDEOS** - 2024-12-19
 - **Problema**: Los thumbnails mostraban columnas blancas en los laterales para videos verticales
 - **Solución**: 

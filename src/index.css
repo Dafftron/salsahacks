@@ -302,12 +302,25 @@ body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  position: relative;
 }
 
 .video-thumbnail-container img {
   transition: transform 0.3s ease;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .video-thumbnail-container:hover img {
   transform: scale(1.05);
+}
+
+/* Aspect ratios específicos para thumbnails */
+.video-thumbnail-container.aspect-\[9\/16\] {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.video-thumbnail-container.aspect-video {
+  max-width: 100%;
 } 
