@@ -108,6 +108,11 @@ const SequenceBuilder = ({
   }
 
   const handleSaveSequence = async () => {
+    console.log('💾 Intentando guardar secuencia...')
+    console.log('📝 Nombre:', sequenceName)
+    console.log('📋 Videos en secuencia:', sequence.length)
+    console.log('🎨 Estilo:', style)
+    
     if (!sequenceName.trim()) {
       addToast('Por favor, añade un nombre a la secuencia', 'error')
       return
@@ -119,20 +124,24 @@ const SequenceBuilder = ({
     }
 
     try {
-      await onSaveSequence({
+      const sequenceData = {
         name: sequenceName,
         description: sequenceDescription,
         videos: sequence,
         style: style,
         createdAt: new Date().toISOString()
-      })
+      }
       
-      addToast('Secuencia guardada exitosamente')
+      console.log('📦 Datos de secuencia a guardar:', sequenceData)
+      await onSaveSequence(sequenceData)
+      
+      addToast('✅ Secuencia guardada exitosamente. Ve a "GALERÍA DE SECUENCIAS" para verla.')
       clearSequence()
       if (onToggleBuilder) {
         onToggleBuilder()
       }
     } catch (error) {
+      console.error('❌ Error al guardar secuencia:', error)
       addToast('Error al guardar la secuencia', 'error')
     }
   }
@@ -193,13 +202,20 @@ const SequenceBuilder = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             {/* Nombre y descripción */}
             <div className="md:col-span-2 space-y-3">
-              <input
-                type="text"
-                placeholder="Nombre de la secuencia..."
-                value={sequenceName}
-                onChange={(e) => setSequenceName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
+              <div className="space-y-1">
+                <input
+                  type="text"
+                  placeholder="Nombre de la secuencia..."
+                  value={sequenceName}
+                  onChange={(e) => setSequenceName(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                {!sequenceName.trim() && sequence.length > 0 && (
+                  <p className="text-xs text-orange-600">
+                    ⚠️ Añade un nombre para poder guardar la secuencia
+                  </p>
+                )}
+              </div>
               <textarea
                 placeholder="Descripción (opcional)..."
                 value={sequenceDescription}

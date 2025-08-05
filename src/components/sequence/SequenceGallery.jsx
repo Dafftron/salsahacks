@@ -80,8 +80,18 @@ const SequenceGallery = ({
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <Play className="w-8 h-8 text-gray-400" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay secuencias</h3>
-        <p className="text-gray-500">Crea tu primera secuencia usando el constructor</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No hay secuencias guardadas</h3>
+        <p className="text-gray-500 mb-4">Crea tu primera secuencia usando el constructor de secuencias</p>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+          <h4 className="font-medium text-blue-900 mb-2">¿Cómo crear una secuencia?</h4>
+          <ol className="text-sm text-blue-800 space-y-1 text-left">
+            <li>1. Haz clic en "CREAR SECUENCIA"</li>
+            <li>2. Añade videos con el botón "+" de la galería</li>
+            <li>3. Escribe un nombre para la secuencia</li>
+            <li>4. Haz clic en "Guardar Secuencia"</li>
+            <li>5. ¡Listo! Aparecerá aquí automáticamente</li>
+          </ol>
+        </div>
       </div>
     )
   }

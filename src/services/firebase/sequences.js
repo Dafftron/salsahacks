@@ -19,6 +19,9 @@ const SEQUENCES_COLLECTION = 'sequences'
 
 // Crear una nueva secuencia
 export const createSequence = async (sequenceData) => {
+  console.log('🔥 Firebase: Creando secuencia...')
+  console.log('📦 Datos de secuencia:', sequenceData)
+  
   try {
     const sequenceWithTimestamp = {
       ...sequenceData,
@@ -26,16 +29,21 @@ export const createSequence = async (sequenceData) => {
       updatedAt: serverTimestamp()
     }
     
+    console.log('⏰ Secuencia con timestamps:', sequenceWithTimestamp)
     const docRef = await addDoc(collection(db, SEQUENCES_COLLECTION), sequenceWithTimestamp)
+    console.log('📄 Documento creado con ID:', docRef.id)
     
-    return {
+    const result = {
       id: docRef.id,
       ...sequenceData,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     }
+    
+    console.log('✅ Secuencia creada exitosamente:', result)
+    return result
   } catch (error) {
-    console.error('Error al crear secuencia:', error)
+    console.error('❌ Error al crear secuencia:', error)
     throw new Error('No se pudo crear la secuencia')
   }
 }
@@ -163,6 +171,8 @@ export const subscribeToSequences = (callback) => {
 
 // Suscribirse a cambios en tiempo real de secuencias por estilo
 export const subscribeToSequencesByStyle = (style, callback) => {
+  console.log('🎬 Firebase: Suscribiéndose a secuencias para estilo:', style)
+  
   try {
     const q = query(
       collection(db, SEQUENCES_COLLECTION),
@@ -171,22 +181,27 @@ export const subscribeToSequencesByStyle = (style, callback) => {
     )
     
     return onSnapshot(q, (querySnapshot) => {
+      console.log(`🎬 Firebase: Actualización recibida - ${querySnapshot.size} secuencias para ${style}`)
+      
       const sequences = []
       
       querySnapshot.forEach((doc) => {
         const data = doc.data()
-        sequences.push({
+        const sequence = {
           id: doc.id,
           ...data,
           createdAt: data.createdAt?.toDate?.()?.toISOString() || data.createdAt,
           updatedAt: data.updatedAt?.toDate?.()?.toISOString() || data.updatedAt
-        })
+        }
+        sequences.push(sequence)
+        console.log(`📋 Secuencia cargada: ${sequence.name} (${sequence.videos?.length || 0} videos)`)
       })
       
+      console.log(`🎉 Total de secuencias cargadas: ${sequences.length}`)
       callback(sequences)
     })
   } catch (error) {
-    console.error('Error al suscribirse a secuencias por estilo:', error)
+    console.error('❌ Error al suscribirse a secuencias por estilo:', error)
     throw new Error('No se pudo suscribir a las secuencias')
   }
 }

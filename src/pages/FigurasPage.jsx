@@ -200,16 +200,22 @@ const FigurasPage = () => {
 
   // Funciones para manejar secuencias
   const handleSaveSequence = async (sequenceData) => {
+    console.log('🎬 FigurasPage: Recibida solicitud de guardar secuencia')
+    console.log('📦 Datos recibidos:', sequenceData)
+    
     try {
       const sequenceWithStyle = {
         ...sequenceData,
         style: selectedStyle
       }
       
-      await createSequence(sequenceWithStyle)
-      addToast('Secuencia guardada exitosamente')
+      console.log('🎨 Secuencia con estilo:', sequenceWithStyle)
+      const result = await createSequence(sequenceWithStyle)
+      console.log('✅ Secuencia creada exitosamente:', result)
+      
+      addToast('✅ Secuencia guardada exitosamente. Ve a "GALERÍA DE SECUENCIAS" para verla.')
     } catch (error) {
-      console.error('Error al guardar secuencia:', error)
+      console.error('❌ Error al guardar secuencia:', error)
       addToast('Error al guardar la secuencia', 'error')
       throw error
     }
