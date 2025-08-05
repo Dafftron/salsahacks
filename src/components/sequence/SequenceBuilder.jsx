@@ -192,7 +192,8 @@ const SequenceBuilder = ({
   // En modo integrado, solo renderizar el contenido interno
   if (isIntegrated) {
     return (
-      <div className="flex-1 flex overflow-hidden">
+      <>
+        <div className="flex-1 flex overflow-hidden">
         {/* Panel izquierdo - Constructor de secuencia */}
         <div className="w-1/2 border-r p-6 flex flex-col">
             {/* Controles superiores */}
@@ -407,8 +408,9 @@ const SequenceBuilder = ({
           onClose={() => removeToast(toast.id)}
         />
       ))}
-    </div>
-  }
+        </>
+      )
+    }
 
   // Modo modal
   return (
