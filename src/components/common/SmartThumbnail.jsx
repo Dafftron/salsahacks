@@ -25,7 +25,7 @@ const SmartThumbnail = ({
       <img
         src={src || fallbackSrc}
         alt={alt}
-        className="w-full h-full object-contain"
+        className="w-full h-full object-cover"
         loading="lazy"
       />
       

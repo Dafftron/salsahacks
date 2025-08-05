@@ -4,7 +4,7 @@
 
 ### 🎬 **SOLUCIÓN DEFINITIVA DE THUMBNAILS CON ASPECT RATIO DINÁMICO** - 2024-12-19
 - **Problema**: Los thumbnails no respetaban las proporciones de los videos verticales (9:16) y causaban distorsión
-- **Solución**: 
+- **Solución**:
   - Creado hook `useImageOrientation` para detectar orientación de imágenes
   - Creado componente `SmartThumbnail` que aplica aspect ratio dinámico
   - Videos verticales: `aspect-[9/16]` (ratio 9:16)
@@ -19,6 +19,18 @@
   - `src/pages/EscuelaPage.jsx` - Implementado SmartThumbnail
   - `src/pages/EventosPage.jsx` - Implementado SmartThumbnail
   - `src/index.css` - Estilos mejorados para aspect ratios dinámicos
+
+### 🎬 **CORRECCIÓN DE THUMBNAILS VERTICALES - ZOOM SIN ACHATAMIENTO** - 2024-12-19
+- **Problema**: Los thumbnails verticales se achataban al intentar caber en el espacio horizontal de la card
+- **Solución**:
+  - Cambiado `object-contain` a `object-cover` en SmartThumbnail para hacer zoom/recorte
+  - Modificado CSS para que thumbnails verticales ocupen 100% del ancho de la card
+  - Eliminado `max-width: 300px` y `margin: 0 auto` que limitaban el ancho
+  - Los thumbnails verticales ahora mantienen su ratio 9:16 y se extienden más allá de la card
+  - Se muestra una parte del thumbnail (zoom) sin espacios blancos laterales
+- **Archivos modificados**:
+  - `src/components/common/SmartThumbnail.jsx` - Cambiado object-fit a cover
+  - `src/index.css` - Ajustado CSS para thumbnails verticales
 
 ### 🎬 **CORRECCIÓN DE THUMBNAILS DE VIDEOS** - 2024-12-19
 - **Problema**: Los thumbnails mostraban columnas blancas en los laterales para videos verticales
