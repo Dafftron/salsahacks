@@ -15,7 +15,9 @@ import {
   Edit,
   Download,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Play,
+  Shuffle
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
@@ -24,6 +26,8 @@ import VideoEditModal from '../components/video/VideoEditModal'
 import VideoPlayer from '../components/video/VideoPlayer'
 import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
+import SequenceBuilder from '../components/sequence/SequenceBuilder'
+import SequenceGallery from '../components/sequence/SequenceGallery'
 
 import { 
   getVideos, 
@@ -35,6 +39,12 @@ import {
   updateVideoDocument,
   cleanupDuplicateTags
 } from '../services/firebase/firestore'
+import {
+  createSequence,
+  getSequencesByStyle,
+  deleteSequence,
+  subscribeToSequencesByStyle
+} from '../services/firebase/sequences'
 import { 
   deleteVideo, 
   deleteAllVideoFiles, 
@@ -58,6 +68,13 @@ const FigurasPage = () => {
   const [syncStatus, setSyncStatus] = useState('idle') // idle, syncing, error
   const [cleanupModal, setCleanupModal] = useState({ isOpen: false, type: null })
   const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
+  
+  // Estados para secuencias
+  const [sequences, setSequences] = useState([])
+  const [sequencesLoading, setSequencesLoading] = useState(true)
+  const [isSequenceBuilderOpen, setIsSequenceBuilderOpen] = useState(false)
+  const [showAllVideos, setShowAllVideos] = useState(false)
+  
   const { user } = useAuth()
   
   // Usar el nuevo sistema de categorías
@@ -105,6 +122,25 @@ const FigurasPage = () => {
     }
   }, [selectedStyle])
 
+  // Sincronización en tiempo real para secuencias
+  useEffect(() => {
+    console.log('🎬 Iniciando sincronización de secuencias para:', selectedStyle)
+    setSequencesLoading(true)
+    
+    // Suscribirse a cambios en tiempo real para las secuencias del estilo seleccionado
+    const unsubscribe = subscribeToSequencesByStyle(selectedStyle, (sequencesData) => {
+      console.log(`🎬 Actualización de secuencias recibida: ${sequencesData.length} secuencias para ${selectedStyle}`)
+      setSequences(sequencesData)
+      setSequencesLoading(false)
+    })
+    
+    // Cleanup al desmontar o cambiar estilo
+    return () => {
+      console.log('🎬 Desuscribiendo de sincronización de secuencias')
+      unsubscribe()
+    }
+  }, [selectedStyle])
+
 
 
   // Función para actualizar la lista de videos después de subir uno nuevo
@@ -139,6 +175,50 @@ const FigurasPage = () => {
   // Función para eliminar notificaciones
   const removeToast = (id) => {
     setToasts(prev => prev.filter(toast => toast.id !== id))
+  }
+
+  // Funciones para manejar secuencias
+  const handleSaveSequence = async (sequenceData) => {
+    try {
+      const sequenceWithStyle = {
+        ...sequenceData,
+        style: selectedStyle
+      }
+      
+      await createSequence(sequenceWithStyle)
+      addToast('Secuencia guardada exitosamente')
+    } catch (error) {
+      console.error('Error al guardar secuencia:', error)
+      addToast('Error al guardar la secuencia', 'error')
+      throw error
+    }
+  }
+
+  const handleDeleteSequence = async (sequenceId) => {
+    try {
+      await deleteSequence(sequenceId)
+      addToast('Secuencia eliminada exitosamente')
+    } catch (error) {
+      console.error('Error al eliminar secuencia:', error)
+      addToast('Error al eliminar la secuencia', 'error')
+      throw error
+    }
+  }
+
+  const handlePlaySequence = (sequence) => {
+    // TODO: Implementar reproducción de secuencia
+    console.log('Reproduciendo secuencia:', sequence)
+    addToast('Funcionalidad de reproducción en desarrollo')
+  }
+
+  const handleEditSequence = (sequence) => {
+    // TODO: Implementar edición de secuencia
+    console.log('Editando secuencia:', sequence)
+    addToast('Funcionalidad de edición en desarrollo')
+  }
+
+  const toggleShowAllVideos = () => {
+    setShowAllVideos(prev => !prev)
   }
 
   // Función para eliminar video
@@ -713,8 +793,11 @@ const FigurasPage = () => {
             <Upload className="h-5 w-5" />
             <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
           </button>
-          <button className="flex items-center justify-center space-x-2 px-6 py-3 bg-green-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
-            <Plus className="h-5 w-5" />
+          <button 
+            onClick={() => setIsSequenceBuilderOpen(true)}
+            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          >
+            <Shuffle className="h-5 w-5" />
             <span>CREAR SECUENCIA</span>
           </button>
         </div>
@@ -806,7 +889,7 @@ const FigurasPage = () => {
             }`}
           >
             <Plus className="h-4 w-4" />
-            <span>GALERÍA DE SECUENCIAS (0)</span>
+            <span>GALERÍA DE SECUENCIAS ({sequences.length})</span>
           </button>
         </div>
 
@@ -1368,14 +1451,30 @@ const FigurasPage = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-semibold text-gray-800">
-                Secuencias de {selectedStyle.toLowerCase()} (0)
+                Secuencias de {selectedStyle.toLowerCase()} ({sequences.length})
               </h2>
+              <button
+                onClick={() => setIsSequenceBuilderOpen(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              >
+                <Shuffle className="h-4 w-4" />
+                <span>CREAR SECUENCIA</span>
+              </button>
             </div>
             
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">No hay secuencias creadas aún</p>
-              <p className="text-gray-400 text-sm mt-2">Crea tu primera secuencia usando el botón "CREAR SECUENCIA"</p>
-            </div>
+            {sequencesLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+                <span className="ml-3 text-gray-600">Cargando secuencias...</span>
+              </div>
+            ) : (
+              <SequenceGallery
+                sequences={sequences}
+                onDeleteSequence={handleDeleteSequence}
+                onPlaySequence={handlePlaySequence}
+                onEditSequence={handleEditSequence}
+              />
+            )}
           </div>
         )}
 
@@ -1399,6 +1498,16 @@ const FigurasPage = () => {
           onVideoUpdated={handleVideoUpdated}
           page="figuras"
           style={selectedStyle}
+        />
+
+        {/* Sequence Builder Modal */}
+        <SequenceBuilder
+          isOpen={isSequenceBuilderOpen}
+          onClose={() => setIsSequenceBuilderOpen(false)}
+          videos={videos}
+          onSaveSequence={handleSaveSequence}
+          onToggleShowAll={toggleShowAllVideos}
+          showAllVideos={showAllVideos}
         />
 
        {/* Cleanup Confirmation Modal */}
