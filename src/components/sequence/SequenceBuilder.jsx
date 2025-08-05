@@ -17,7 +17,7 @@ import { useSequenceBuilder } from '../../hooks/useSequenceBuilder'
 import { useDragAndDrop } from '../../hooks/useDragAndDrop'
 import ConfirmModal from '../common/ConfirmModal'
 import Toast from '../common/Toast'
-import SmartThumbnail from '../common/SmartThumbnail'
+import SmartThumbnail from '../common/SmartThumbnail.jsx'
 
 const SequenceBuilder = ({ 
   isOpen, 
@@ -269,7 +269,7 @@ const SequenceBuilder = ({
                       <div className="flex-1 flex items-center space-x-3">
                         <div className="w-16 h-12 rounded overflow-hidden flex-shrink-0">
                           <SmartThumbnail
-                            src={video.thumbnailURL}
+                            src={video.thumbnailUrl}
                             alt={video.title}
                             className="w-full h-full object-cover"
                           />
@@ -352,7 +352,7 @@ const SequenceBuilder = ({
                       
                       <div className="aspect-video rounded-t-lg overflow-hidden">
                         <SmartThumbnail
-                          src={video.thumbnailURL}
+                          src={video.thumbnailUrl}
                           alt={video.title}
                           className="w-full h-full object-cover"
                         />

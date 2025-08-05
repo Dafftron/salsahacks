@@ -133,7 +133,7 @@ const SequenceGallery = ({
                   <div key={video.id} className="relative">
                     <div className="aspect-video rounded overflow-hidden">
                       <SmartThumbnail
-                        src={video.thumbnailURL}
+                        src={video.thumbnailUrl}
                         alt={video.title}
                         className="w-full h-full object-cover"
                       />

@@ -24,7 +24,12 @@ const SmartThumbnail = ({
     setImageError(true)
   }
 
-  const imageSrc = imageError ? fallbackSrc : src
+  // Si no hay src o es una URL placeholder, mostrar fallback directamente
+  const shouldShowFallback = !src || 
+    src === 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ||
+    src === 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=EVENTO'
+  
+  const imageSrc = shouldShowFallback || imageError ? fallbackSrc : src
 
   return (
     <div className={`relative ${className}`} {...props}>
@@ -56,11 +61,16 @@ const SmartThumbnail = ({
       )}
 
       {/* Fallback cuando no hay imagen */}
-      {imageError && !isLoading && (
-        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
+      {(imageError || shouldShowFallback) && !isLoading && (
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
           <div className="text-center">
             <Image className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-            <p className="text-xs text-gray-500">Sin miniatura</p>
+            <p className="text-xs text-gray-500 font-medium">Sin miniatura</p>
+            {showPlayIcon && (
+              <div className="mt-2 w-6 h-6 bg-white bg-opacity-90 rounded-full flex items-center justify-center mx-auto">
+                <Play className="w-3 h-3 text-gray-600 fill-current" />
+              </div>
+            )}
           </div>
         </div>
       )}
