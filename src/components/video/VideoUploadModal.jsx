@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useCategories } from '../../hooks/useCategories'
 import Toast from '../common/Toast'
 import VideoPlayer from './VideoPlayer'
+import SmartThumbnail from '../common/SmartThumbnail'
 
 const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', style = 'salsa' }) => {
   const { user } = useAuth()
@@ -428,10 +429,10 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-9 bg-gray-100 rounded flex items-center justify-center relative overflow-hidden">
                   {videoData[file.name]?.videoPreview ? (
-                    <video 
-                      src={videoData[file.name].videoPreview} 
-                      className="w-full h-full object-cover"
-                      muted
+                    <SmartThumbnail
+                      src={videoData[file.name].videoPreview}
+                      alt="Vista previa del video"
+                      className="w-full h-full"
                     />
                   ) : (
                     <span className="text-xs text-gray-500">VIDEO</span>
@@ -557,12 +558,12 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
                      Thumbnail personalizado (opcional)
                    </label>
                    <div className="flex items-center space-x-3">
-                     <div className="w-40 h-24 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
+                     <div className="w-40 h-24 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
                        {videoData[file.name]?.customThumbnail ? (
-                         <img 
-                           src={videoData[file.name].customThumbnail} 
-                           alt="Thumbnail" 
-                           className="w-full h-full object-cover rounded"
+                         <SmartThumbnail
+                           src={videoData[file.name].customThumbnail}
+                           alt="Thumbnail personalizado"
+                           className="w-full h-full rounded"
                          />
                        ) : (
                          <span className="text-xs text-gray-500">IMG</span>

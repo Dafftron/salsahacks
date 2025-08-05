@@ -42,6 +42,18 @@
 - **Archivos modificados**:
     - `src/index.css` - Eliminada limitación de altura y agregado overflow visible
 
+### 🎬 **VISTA PREVIA DE THUMBNAIL EN SUBIDA DE VIDEOS** - 2024-12-19
+- **Problema**: Al subir un video, no se veía una vista previa del thumbnail o se veía comprimida/distorsionada
+- **Causa**: Las vistas previas en el modal de subida usaban `object-cover` directamente sin manejar proporciones
+- **Solución**:
+    - Integrado `SmartThumbnail` en el modal de subida de videos para manejar proporciones correctamente
+    - Modificadas las funciones `generateVideoThumbnail` y `generateBestVideoThumbnail` para mantener proporciones originales
+    - Ahora los thumbnails generados respetan las proporciones del video original (vertical/horizontal)
+    - Las vistas previas en el header y en la sección de thumbnail personalizado usan el componente inteligente
+- **Archivos modificados**:
+    - `src/components/video/VideoUploadModal.jsx` - Integrado SmartThumbnail para vistas previas
+    - `src/services/firebase/storage.js` - Modificadas funciones de generación de thumbnails para mantener proporciones
+
 ### 🎬 **CORRECCIÓN DE THUMBNAILS DE VIDEOS** - 2024-12-19
 - **Problema**: Los thumbnails mostraban columnas blancas en los laterales para videos verticales
 - **Solución**: 
@@ -1563,3 +1575,243 @@ video: {
 - ✅ No más duplicados del tag "salsa"
 - ✅ Comportamiento consistente en ambos modales (editar y subir)
 - ✅ Control total del usuario sobre los tags de estilo
+
+---
+
+## 🎬 HOJA DE RUTA: CREADOR DE SECUENCIAS - [Fecha: 2025-01-27]
+
+### **🎯 CONCEPTO GENERAL**
+Sistema inteligente para crear secuencias de baile lógicas basadas en los tags de inicio y fin de cada figura. El objetivo es que las figuras se conecten de forma fluida y lógica, creando rutinas de baile coherentes.
+
+### **🏗️ ARQUITECTURA DEL SISTEMA**
+
+#### **1. Interfaz Principal**
+- **Ubicación**: Espacio encima de la galería de videos en FigurasPage
+- **Activación**: Botón "CREAR SECUENCIA" existente
+- **Estado**: Expandible/colapsable con animación suave
+- **Diseño**: Consistente con el aspecto actual de la web
+
+#### **2. Componentes Principales**
+```
+SequenceBuilder/
+├── SequenceBuilder.jsx          # Componente principal
+├── SequenceContainer.jsx        # Container de la secuencia en construcción
+├── VideoSelector.jsx            # Selector de videos filtrados
+├── SequenceControls.jsx         # Controles (generar, guardar, cancelar)
+└── SequenceCard.jsx             # Tarjeta individual de video en secuencia
+```
+
+### **🎮 FUNCIONALIDADES DETALLADAS**
+
+#### **A. Activación y Espacio de Trabajo**
+- **Botón "CREAR SECUENCIA"**: Abre el espacio de trabajo encima de la galería
+- **Espacio Expandible**: Área que se despliega con animación suave
+- **Estado Persistente**: Mantiene la secuencia en construcción aunque se navegue
+- **Diseño Responsive**: Adaptable a móvil y desktop
+
+#### **B. Constructor de Secuencias**
+- **Container Principal**: Área donde se construye la secuencia
+- **Videos en Secuencia**: Lista ordenada de videos seleccionados
+- **Información de Secuencia**:
+  - Nombre de la secuencia (editable)
+  - Descripción (opcional, editable)
+  - Duración total calculada
+  - Número de videos
+- **Controles de Secuencia**:
+  - Añadir video desde galería
+  - Eliminar video de la secuencia
+  - Reordenar videos (drag & drop)
+  - Generar secuencia aleatoria
+
+#### **C. Lógica de Filtrado Inteligente**
+- **Primer Video**: Se puede seleccionar cualquier video de la galería
+- **Videos Siguientes**: Se filtran automáticamente por compatibilidad
+- **Criterio de Filtrado**: Tags finales del último video = Tags iniciales del siguiente
+- **Ejemplo**:
+  ```
+  Video 1 (tags finales): ["Una mano", "Salsa"]
+  Videos disponibles: Solo videos con tags iniciales ["Una mano", "Salsa"]
+  ```
+
+#### **D. Sistema de Filtros Avanzados**
+- **Filtro Principal**: Por compatibilidad de tags (automático)
+- **Filtros Secundarios**: 
+  - Búsqueda por texto
+  - Filtros por categorías (estilo, subestilo, tipo, manos)
+  - Filtros por duración
+  - Filtros por instructor
+- **Botón "Mostrar Todos"**: Desactiva filtro de compatibilidad
+- **Filtros Combinables**: Se pueden aplicar múltiples filtros simultáneamente
+
+#### **E. Generación Aleatoria**
+- **Botón "Generar Aleatoria"**: Crea secuencia de 5 videos automáticamente
+- **Lógica Aleatoria**: 
+  - Selecciona primer video aleatorio
+  - Para cada video siguiente, elige entre los compatibles
+  - Si no hay compatibles, selecciona aleatoriamente
+- **Parámetros Configurables**:
+  - Número de videos (por defecto 5)
+  - Duración máxima
+  - Estilos preferidos
+
+#### **F. Gestión de Videos en Secuencia**
+- **Drag & Drop**: Reordenar videos arrastrando
+- **Eliminación**: Botón "×" en cada video de la secuencia
+- **Sustitución**: Doble clic para cambiar video por otro compatible
+- **Información Visual**:
+  - Thumbnail del video
+  - Título y duración
+  - Tags iniciales y finales
+  - Indicador de compatibilidad
+
+#### **G. Selección de Videos desde Galería**
+- **Botones de Selección**: En cada tarjeta de video de la galería
+- **Estados Visuales**:
+  - "Añadir" (video compatible)
+  - "Añadir Forzado" (video no compatible)
+  - "Ya en Secuencia" (video ya añadido)
+- **Filtrado Visual**: Videos no compatibles con opacidad reducida
+- **Contador**: Número de videos compatibles disponibles
+
+#### **H. Guardado y Gestión**
+- **Botón "Guardar Secuencia"**: Guarda la secuencia en Firebase
+- **Modal de Confirmación**: Pide nombre y descripción
+- **Estructura de Datos**:
+  ```javascript
+  sequence: {
+    id: "unique_id",
+    name: "Nombre de la secuencia",
+    description: "Descripción opcional",
+    videos: ["video_id_1", "video_id_2", ...],
+    totalDuration: 180, // segundos
+    style: "salsa",
+    createdAt: timestamp,
+    createdBy: "user_id",
+    tags: {
+      // tags combinados de todos los videos
+    }
+  }
+  ```
+
+#### **I. Galería de Secuencias**
+- **Tab "SECUENCIAS"**: En FigurasPage, junto al tab "VIDEOS"
+- **Cards de Secuencia**: Mismo diseño que cards de video
+- **Información Mostrada**:
+  - Thumbnail del primer video
+  - Nombre y descripción
+  - Duración total
+  - Número de videos
+  - Tags principales
+- **Funcionalidades**:
+  - Reproducir secuencia completa
+  - Editar secuencia
+  - Eliminar secuencia
+  - Descargar secuencia
+
+### **🎨 SISTEMA DE DISEÑO**
+
+#### **Colores y Estilos**
+- **Container Principal**: Fondo blanco con borde suave
+- **Videos Compatibles**: Verde suave para indicar compatibilidad
+- **Videos No Compatibles**: Gris con opacidad reducida
+- **Secuencia en Construcción**: Azul suave para destacar
+- **Botones de Acción**: Gradientes consistentes con la web
+
+#### **Animaciones y Transiciones**
+- **Apertura del Constructor**: Slide down suave
+- **Drag & Drop**: Animación fluida al reordenar
+- **Filtrado**: Transición suave al cambiar filtros
+- **Estados de Botones**: Hover effects consistentes
+
+### **🔧 IMPLEMENTACIÓN TÉCNICA**
+
+#### **Archivos a Crear**
+```
+src/
+├── components/
+│   └── sequence/
+│       ├── SequenceBuilder.jsx
+│       ├── SequenceContainer.jsx
+│       ├── VideoSelector.jsx
+│       ├── SequenceControls.jsx
+│       └── SequenceCard.jsx
+├── hooks/
+│   └── useSequenceBuilder.js
+├── services/
+│   └── firebase/
+│       └── sequences.js
+└── pages/
+    └── FigurasPage.jsx (modificar)
+```
+
+#### **Hooks Personalizados**
+- **useSequenceBuilder**: Gestión del estado de la secuencia
+- **useVideoCompatibility**: Lógica de filtrado por compatibilidad
+- **useDragAndDrop**: Funcionalidad de reordenamiento
+
+#### **Servicios Firebase**
+- **createSequence**: Crear nueva secuencia
+- **getSequences**: Obtener secuencias del usuario
+- **updateSequence**: Actualizar secuencia existente
+- **deleteSequence**: Eliminar secuencia
+- **getSequenceVideos**: Obtener videos de una secuencia
+
+### **🎯 FUNCIONALIDADES FUTURAS**
+
+#### **Fase 2: Reproducción Avanzada**
+- **Reproducción Continua**: Videos se reproducen uno tras otro
+- **Transiciones Suaves**: Fade entre videos
+- **Controles de Secuencia**: Play/pause, siguiente, anterior
+- **Bucle de Secuencia**: Reproducción infinita
+
+#### **Fase 3: Exportación de Video**
+- **Unión de Videos**: Combinar todos los videos en uno solo
+- **Ajuste de Velocidad**: Sincronizar por BPM
+- **Transiciones**: Efectos entre videos
+- **Descarga**: Video final descargable
+
+#### **Fase 4: Inteligencia Artificial**
+- **Sugerencias Inteligentes**: IA sugiere videos compatibles
+- **Análisis de Patrones**: Detectar patrones de baile
+- **Optimización Automática**: Mejorar secuencias automáticamente
+- **Recomendaciones Personalizadas**: Basadas en preferencias del usuario
+
+### **📋 CRONOGRAMA DE IMPLEMENTACIÓN**
+
+#### **Semana 1: Base del Sistema**
+- [ ] Crear componentes base (SequenceBuilder, SequenceContainer)
+- [ ] Implementar lógica de compatibilidad de tags
+- [ ] Integrar en FigurasPage
+- [ ] Sistema de filtrado básico
+
+#### **Semana 2: Funcionalidades Principales**
+- [ ] Drag & drop para reordenar
+- [ ] Generación aleatoria de secuencias
+- [ ] Sistema de guardado en Firebase
+- [ ] Galería de secuencias
+
+#### **Semana 3: Mejoras y Pulido**
+- [ ] Filtros avanzados
+- [ ] Animaciones y transiciones
+- [ ] Responsive design
+- [ ] Testing y corrección de bugs
+
+#### **Semana 4: Funcionalidades Avanzadas**
+- [ ] Reproducción de secuencias
+- [ ] Edición de secuencias existentes
+- [ ] Sistema de exportación básico
+- [ ] Documentación y optimización
+
+### **🎉 OBJETIVOS FINALES**
+1. **Sistema Intuitivo**: Fácil de usar para cualquier nivel de usuario
+2. **Lógica Inteligente**: Secuencias que fluyen naturalmente
+3. **Flexibilidad Total**: Control completo sobre la creación
+4. **Integración Perfecta**: Consistente con el resto de la aplicación
+5. **Escalabilidad**: Preparado para funcionalidades futuras
+
+---
+
+**📝 Esta hoja de ruta se actualizará conforme avance la implementación del creador de secuencias.**
+**🎯 Objetivo: Sistema completo y funcional en 4 semanas.**
+**👨‍💻 Desarrollador: David Exile**
+**📊 Estado: Planificación completada, listo para implementación**

@@ -26,9 +26,26 @@ export const generateVideoThumbnail = (videoFile) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      // Configurar canvas con proporción 16:9 (como el contenedor de la card)
-      canvas.width = 400;
-      canvas.height = 225; // 400 * 9/16 = 225 (proporción 16:9)
+      // Configurar canvas para mantener las proporciones originales del video
+      const maxWidth = 400;
+      const maxHeight = 400;
+      
+      // Calcular las dimensiones manteniendo las proporciones
+      const videoAspectRatio = video.videoWidth / video.videoHeight;
+      let canvasWidth, canvasHeight;
+      
+      if (videoAspectRatio > 1) {
+        // Video horizontal
+        canvasWidth = maxWidth;
+        canvasHeight = maxWidth / videoAspectRatio;
+      } else {
+        // Video vertical
+        canvasHeight = maxHeight;
+        canvasWidth = maxHeight * videoAspectRatio;
+      }
+      
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
       
       video.onloadedmetadata = () => {
         try {
@@ -103,12 +120,30 @@ export const generateBestVideoThumbnail = async (videoFile) => {
     
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    // Configurar canvas con proporción 16:9
-    canvas.width = 400;
-    canvas.height = 225;
     
     return new Promise((resolve, reject) => {
       video.onloadedmetadata = () => {
+        // Configurar canvas para mantener las proporciones originales del video
+        const maxWidth = 400;
+        const maxHeight = 400;
+        
+        // Calcular las dimensiones manteniendo las proporciones
+        const videoAspectRatio = video.videoWidth / video.videoHeight;
+        let canvasWidth, canvasHeight;
+        
+        if (videoAspectRatio > 1) {
+          // Video horizontal
+          canvasWidth = maxWidth;
+          canvasHeight = maxWidth / videoAspectRatio;
+        } else {
+          // Video vertical
+          canvasHeight = maxHeight;
+          canvasWidth = maxHeight * videoAspectRatio;
+        }
+        
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        
         const duration = video.duration;
         
         // Usar solo el punto medio del video (como fig006)
