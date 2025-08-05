@@ -308,26 +308,8 @@ body {
 .video-thumbnail-container img {
   transition: transform 0.3s ease;
   max-width: 100%;
-  /* Eliminamos max-height para permitir que object-cover funcione correctamente */
 }
 
 .video-thumbnail-container:hover img {
   transform: scale(1.05);
-}
-
-/* Aspect ratios específicos para thumbnails */
-.video-thumbnail-container.aspect-\[9\/16\] {
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  /* Para videos verticales, permitir que se extienda más allá de la card */
-  height: auto;
-  min-height: 300px;
-  /* Asegurar que la imagen pueda expandirse verticalmente */
-  overflow: visible;
-}
-
-.video-thumbnail-container.aspect-video {
-  width: 100%;
-  max-width: 100%;
 } 

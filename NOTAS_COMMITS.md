@@ -2,16 +2,23 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
-### 🏷️ **SIMPLIFICACIÓN DEL SISTEMA DE TAGS** - 2024-12-19
-- **Problema**: El sistema de tags se había vuelto demasiado complejo y difícil de usar
-- **Solución**:
-  - Simplificado el sistema de tags en el modal de subida de videos
-  - Eliminada la estructura jerárquica compleja de categorías
-  - Implementado sistema directo con 4 grupos simples: Estilo de baile, Técnica, Tipo de figura, Técnica de agarre
-  - Tags hardcodeados directamente en el componente para mayor simplicidad
-  - Interfaz más limpia y fácil de usar
+### 🎬 **SIMPLIFICACIÓN DEFINITIVA DEL SISTEMA DE THUMBNAILS** - 2024-12-19
+- **Problema**: El sistema de thumbnails se había vuelto demasiado complejo con SmartThumbnail y useImageOrientation, causando que los thumbnails se vieran "rotos" y no se mostraran correctamente
+- **Solución**: Volver a una implementación simple y directa
+  - Eliminado componente SmartThumbnail y hook useImageOrientation
+  - Vuelto a implementación básica con `w-full h-48` y `object-cover`
+  - Simplificado el modal de subida para usar URLs directas de video
+  - Eliminadas reglas CSS complejas de aspect ratios dinámicos
+  - Sistema más robusto y fácil de mantener
+- **Archivos eliminados**:
+  - `src/components/common/SmartThumbnail.jsx` - Componente complejo eliminado
+  - `src/hooks/useImageOrientation.js` - Hook complejo eliminado
 - **Archivos modificados**:
-  - `src/components/video/VideoUploadModal.jsx` - Sistema de tags simplificado
+  - `src/pages/FigurasPage.jsx` - Vuelto a implementación simple
+  - `src/pages/EscuelaPage.jsx` - Vuelto a implementación simple
+  - `src/pages/EventosPage.jsx` - Vuelto a implementación simple
+  - `src/components/video/VideoUploadModal.jsx` - Simplificado para usar URLs directas
+  - `src/index.css` - Eliminadas reglas CSS complejas
 
 ### 🎬 **SOLUCIÓN DEFINITIVA DE THUMBNAILS CON ASPECT RATIO DINÁMICO** - 2024-12-19
 - **Problema**: Los thumbnails no respetaban las proporciones de los videos verticales (9:16) y causaban distorsión

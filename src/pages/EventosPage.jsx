@@ -161,11 +161,15 @@ const EventosPage = () => {
           <div className="grid md:grid-cols-2 gap-6">
             {eventos.map((evento) => (
               <div key={evento.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
-                <div className="relative">
-                  <SmartThumbnail
-                    src={evento.thumbnail}
-                    alt={evento.title}
-                  />
+                <div className="relative group">
+                  <div className="w-full h-48 bg-gray-100 relative overflow-hidden">
+                    <img
+                      src={evento.thumbnailUrl || 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=EVENTO'}
+                      alt={evento.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
                   <div className="absolute top-2 right-2 bg-pink-500 text-white px-2 py-1 rounded text-sm font-medium">
                     {evento.type}
                   </div>
