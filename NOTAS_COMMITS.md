@@ -2,6 +2,17 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🏷️ **SIMPLIFICACIÓN DEL SISTEMA DE TAGS** - 2024-12-19
+- **Problema**: El sistema de tags se había vuelto demasiado complejo y difícil de usar
+- **Solución**:
+  - Simplificado el sistema de tags en el modal de subida de videos
+  - Eliminada la estructura jerárquica compleja de categorías
+  - Implementado sistema directo con 4 grupos simples: Estilo de baile, Técnica, Tipo de figura, Técnica de agarre
+  - Tags hardcodeados directamente en el componente para mayor simplicidad
+  - Interfaz más limpia y fácil de usar
+- **Archivos modificados**:
+  - `src/components/video/VideoUploadModal.jsx` - Sistema de tags simplificado
+
 ### 🎬 **SOLUCIÓN DEFINITIVA DE THUMBNAILS CON ASPECT RATIO DINÁMICO** - 2024-12-19
 - **Problema**: Los thumbnails no respetaban las proporciones de los videos verticales (9:16) y causaban distorsión
 - **Solución**:

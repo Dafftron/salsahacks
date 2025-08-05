@@ -640,16 +640,18 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       <div className="border-t pt-6">
         <h4 className="font-medium text-gray-900 mb-4">Etiquetas para todos los videos</h4>
         
-        {categoriesList.map((category) => (
-          <div key={category.key} className="space-y-3 mb-4">
-            <h5 className="font-medium text-gray-700 capitalize">{category.name}</h5>
+        {/* Sistema de tags simplificado */}
+        <div className="space-y-4">
+          {/* Tags de estilo */}
+          <div>
+            <h5 className="font-medium text-gray-700 mb-2">Estilo de baile</h5>
             <div className="flex flex-wrap gap-2">
-              {category.tags.map(tag => (
+              {['Salsa', 'Salsa en línea On1', 'Salsa cubana', 'Estilo LA', 'Estilo NY', 'Estilo show'].map(tag => (
                 <button
                   key={tag}
-                  onClick={() => handleTagToggle(category.key, tag)}
+                  onClick={() => handleTagToggle('estilo', tag)}
                   className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
-                    selectedTags[category.key]?.includes(tag)
+                    selectedTags.estilo?.includes(tag)
                        ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
@@ -659,7 +661,67 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
               ))}
             </div>
           </div>
-        ))}
+
+          {/* Tags de técnica */}
+          <div>
+            <h5 className="font-medium text-gray-700 mb-2">Técnica</h5>
+            <div className="flex flex-wrap gap-2">
+              {['Pasitos libres', 'Parejas', 'Footwork On1', 'Footwork On2', 'Shines', 'Body movement'].map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagToggle('subestilo', tag)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                    selectedTags.subestilo?.includes(tag)
+                       ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg'
+                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Tags de figuras */}
+          <div>
+            <h5 className="font-medium text-gray-700 mb-2">Tipo de figura</h5>
+            <div className="flex flex-wrap gap-2">
+              {['Cross Body Lead', 'Copa', 'Sombrero', 'Dile que no', 'Setenta', 'Vacilala', 'Enchufla'].map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagToggle('tipo', tag)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                    selectedTags.tipo?.includes(tag)
+                       ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
+                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Tags de manos */}
+          <div>
+            <h5 className="font-medium text-gray-700 mb-2">Técnica de agarre</h5>
+            <div className="flex flex-wrap gap-2">
+              {['Una mano', 'Dos manos paralelas', 'Cruzadas', 'Entrelazadas', 'Cambio de manos', 'Manos abiertas', 'Sin contacto'].map(tag => (
+                <button
+                  key={tag}
+                  onClick={() => handleTagToggle('manos', tag)}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                    selectedTags.manos?.includes(tag)
+                       ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
+                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
 
              <div className="bg-blue-50 p-4 rounded-lg">
