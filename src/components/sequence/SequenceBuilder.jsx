@@ -45,7 +45,8 @@ const SequenceBuilder = ({
     setSequenceDescription,
     isVideoCompatible,
     isVideoInSequence,
-    toggleBuilder
+    toggleBuilder,
+    checkCompatibility
   } = useSequenceBuilderContext()
 
   const {
@@ -60,6 +61,7 @@ const SequenceBuilder = ({
 
   const [toasts, setToasts] = useState([])
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null })
+  const [randomCount, setRandomCount] = useState(5) // Estado para el número de videos aleatorios
 
   const addToast = (message, type = 'success') => {
     const id = Date.now()
@@ -68,6 +70,41 @@ const SequenceBuilder = ({
 
   const removeToast = (id) => {
     setToasts(prev => prev.filter(toast => toast.id !== id))
+  }
+
+  const handleGenerateRandom = () => {
+    const videosNeeded = randomCount - sequence.length
+    
+    if (videosNeeded <= 0) {
+      addToast('La secuencia ya tiene suficientes videos', 'info')
+      return
+    }
+    
+    // Verificar cuántos videos compatibles hay disponibles
+    if (sequence.length > 0) {
+      const lastVideo = sequence[sequence.length - 1]
+      const compatibleVideos = videos.filter(video => 
+        !sequence.some(seqVideo => seqVideo.id === video.id) && // No incluir ya añadidos
+        checkCompatibility(lastVideo, video)
+      )
+      
+      if (compatibleVideos.length === 0) {
+        addToast('No hay videos compatibles disponibles para continuar la secuencia', 'warning')
+        return
+      }
+      
+      if (compatibleVideos.length < videosNeeded) {
+        addToast(`Solo hay ${compatibleVideos.length} videos compatibles disponibles de los ${videosNeeded} necesarios`, 'info')
+        // Completar con los disponibles
+        generateRandomSequence(videos, sequence.length + compatibleVideos.length)
+        addToast(`Secuencia completada con ${compatibleVideos.length} videos adicionales`)
+        return
+      }
+    }
+    
+    // Generar la secuencia completa
+    generateRandomSequence(videos, randomCount)
+    addToast(`Secuencia completada hasta ${randomCount} videos`)
   }
 
   const handleSaveSequence = async () => {
@@ -173,13 +210,39 @@ const SequenceBuilder = ({
             </div>
 
             {/* Botones de acción */}
-            <div className="flex flex-col space-y-2">
+            <div className="flex flex-col space-y-3">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700 text-center">
+                  Número de videos:
+                </label>
+                <input
+                  type="number"
+                  value={randomCount}
+                  onChange={(e) => setRandomCount(Math.max(1, parseInt(e.target.value) || 5))}
+                  min="1"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-sm"
+                  placeholder="5"
+                />
+                {sequence.length > 0 && (
+                  <div className="text-xs text-gray-500 text-center">
+                    {(() => {
+                      const lastVideo = sequence[sequence.length - 1]
+                      const compatibleVideos = videos.filter(video => 
+                        !sequence.some(seqVideo => seqVideo.id === video.id) &&
+                        checkCompatibility(lastVideo, video)
+                      )
+                      const videosNeeded = randomCount - sequence.length
+                      return `${compatibleVideos.length} compatibles disponibles (necesitas ${videosNeeded})`
+                    })()}
+                  </div>
+                )}
+              </div>
               <button
-                onClick={() => generateRandomSequence(videos, 5)}
+                onClick={handleGenerateRandom}
                 className="flex items-center justify-center space-x-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
               >
                 <Shuffle className="w-4 h-4" />
-                <span>Generar Aleatoria (5)</span>
+                <span>Completar hasta {randomCount}</span>
               </button>
               <button
                 onClick={handleClearSequence}

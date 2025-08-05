@@ -93,38 +93,57 @@ export const SequenceBuilderProvider = ({ children }) => {
   const generateRandomSequence = useCallback((allVideos, count = 5) => {
     if (allVideos.length === 0) return
     
-    const randomSequence = []
+    // Si ya hay videos en la secuencia, añadir a la existente
+    const currentSequence = [...sequence]
     let availableVideos = [...allVideos]
     
-    // Seleccionar el primer video aleatoriamente
-    const firstVideoIndex = Math.floor(Math.random() * availableVideos.length)
-    const firstVideo = availableVideos[firstVideoIndex]
-    randomSequence.push(firstVideo)
-    availableVideos.splice(firstVideoIndex, 1)
+    // Remover videos que ya están en la secuencia actual
+    availableVideos = availableVideos.filter(video => 
+      !currentSequence.some(seqVideo => seqVideo.id === video.id)
+    )
+    
+    console.log('🎲 Generando secuencia aleatoria para completar', count, 'videos totales')
+    console.log('📋 Videos actuales en secuencia:', currentSequence.length)
+    console.log('📋 Videos disponibles:', availableVideos.length)
+    
+    // Si no hay secuencia actual, seleccionar el primer video aleatoriamente
+    if (currentSequence.length === 0) {
+      const firstVideoIndex = Math.floor(Math.random() * availableVideos.length)
+      const firstVideo = availableVideos[firstVideoIndex]
+      currentSequence.push(firstVideo)
+      availableVideos.splice(firstVideoIndex, 1)
+      console.log('🎯 Primer video seleccionado:', firstVideo.title)
+    }
+    
+    // Calcular cuántos videos faltan para completar la secuencia
+    const videosNeeded = count - currentSequence.length
+    console.log(`🎯 Videos necesarios para completar: ${videosNeeded}`)
     
     // Construir el resto de la secuencia usando lógica de compatibilidad
-    for (let i = 1; i < count && availableVideos.length > 0; i++) {
-      const lastVideo = randomSequence[randomSequence.length - 1]
+    for (let i = 0; i < videosNeeded && availableVideos.length > 0; i++) {
+      const lastVideo = currentSequence[currentSequence.length - 1]
       const compatibleVideos = availableVideos.filter(video => 
         checkCompatibility(lastVideo, video)
       )
       
+      console.log(`📋 Paso ${i + 1}: ${compatibleVideos.length} videos compatibles disponibles`)
+      
       if (compatibleVideos.length === 0) {
-        // Si no hay videos compatibles, seleccionar uno aleatorio
-        const randomIndex = Math.floor(Math.random() * availableVideos.length)
-        randomSequence.push(availableVideos[randomIndex])
-        availableVideos.splice(randomIndex, 1)
+        console.log('⚠️ No hay videos compatibles, terminando secuencia')
+        break
       } else {
         // Seleccionar un video compatible aleatorio
         const randomCompatibleIndex = Math.floor(Math.random() * compatibleVideos.length)
         const selectedVideo = compatibleVideos[randomCompatibleIndex]
-        randomSequence.push(selectedVideo)
+        currentSequence.push(selectedVideo)
         availableVideos = availableVideos.filter(video => video.id !== selectedVideo.id)
+        console.log(`✅ Añadido: ${selectedVideo.title}`)
       }
     }
     
-    setSequence(randomSequence)
-  }, [checkCompatibility])
+    console.log(`🎉 Secuencia final: ${currentSequence.length} videos`)
+    setSequence(currentSequence)
+  }, [sequence, checkCompatibility])
 
   // Función para limpiar la secuencia
   const clearSequence = useCallback(() => {
