@@ -19,18 +19,55 @@ export const SequenceBuilderProvider = ({ children }) => {
   const [isBuilderOpen, setIsBuilderOpen] = useState(false)
   const [showAllVideos, setShowAllVideos] = useState(false)
 
+  // Función auxiliar para extraer todos los tags de un objeto de tags por categorías
+  const extractAllTags = useCallback((tagsObj) => {
+    if (!tagsObj) return []
+    
+    const allTags = []
+    
+    // Si es un array, devolverlo directamente
+    if (Array.isArray(tagsObj)) {
+      return tagsObj
+    }
+    
+    // Si es un objeto con categorías, extraer todos los tags
+    Object.values(tagsObj).forEach(categoryTags => {
+      if (Array.isArray(categoryTags)) {
+        allTags.push(...categoryTags)
+      }
+    })
+    
+    return allTags
+  }, [])
+
   // Función para verificar compatibilidad entre dos videos
   const checkCompatibility = useCallback((video1, video2) => {
     if (!video1 || !video2) return false
     
-    const tagsFinales1 = video1.tags?.tagsFinales || []
-    const tagsIniciales2 = video2.tags?.tagsIniciales || []
+    // Extraer todos los tags finales del primer video
+    const tagsFinales1 = extractAllTags(video1.tagsFinales)
+    
+    // Extraer todos los tags iniciales del segundo video
+    const tagsIniciales2 = extractAllTags(video2.tagsIniciales)
+    
+    console.log('🔍 Verificando compatibilidad:')
+    console.log('Video 1:', video1.title, 'Tags Finales:', tagsFinales1)
+    console.log('Video 2:', video2.title, 'Tags Iniciales:', tagsIniciales2)
     
     // Verificar si hay al menos un tag final del primer video que coincida con un tag inicial del segundo
-    return tagsFinales1.some(tagFinal => 
-      tagsIniciales2.some(tagInicial => tagFinal === tagInicial)
+    const isCompatible = tagsFinales1.some(tagFinal => 
+      tagsIniciales2.some(tagInicial => {
+        const match = tagFinal === tagInicial
+        if (match) {
+          console.log('✅ Match encontrado:', tagFinal, '=', tagInicial)
+        }
+        return match
+      })
     )
-  }, [])
+    
+    console.log('Resultado compatibilidad:', isCompatible)
+    return isCompatible
+  }, [extractAllTags])
 
   // Función para añadir un video a la secuencia (ahora permite repetidos)
   const addVideoToSequence = useCallback((video) => {
@@ -126,10 +163,22 @@ export const SequenceBuilderProvider = ({ children }) => {
 
   // Función para obtener videos compatibles (para filtrado)
   const getCompatibleVideos = useCallback((allVideos) => {
-    if (sequence.length === 0) return allVideos
+    if (sequence.length === 0) {
+      console.log('📋 Secuencia vacía, mostrando todos los videos')
+      return allVideos
+    }
     
     const lastVideo = sequence[sequence.length - 1]
-    return allVideos.filter(video => checkCompatibility(lastVideo, video))
+    console.log('🎯 Buscando videos compatibles con:', lastVideo.title)
+    
+    const compatibleVideos = allVideos.filter(video => {
+      const isCompatible = checkCompatibility(lastVideo, video)
+      console.log(`${video.title}: ${isCompatible ? '✅ Compatible' : '❌ Incompatible'}`)
+      return isCompatible
+    })
+    
+    console.log(`📊 Videos compatibles encontrados: ${compatibleVideos.length}/${allVideos.length}`)
+    return compatibleVideos
   }, [sequence, checkCompatibility])
 
   // Función para filtrar videos según el estado actual
