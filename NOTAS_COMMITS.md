@@ -14,6 +14,7 @@
 7. [Firebase Storage Setup](#firebase-storage-setup)
 8. [Sistema de Video Upload](#sistema-de-video-upload)
 9. [Sistema de Tags y Categorías](#sistema-de-tags-y-categorías)
+10. [Últimos Arreglos](#últimos-arreglos)
 
 ---
 
@@ -1419,3 +1420,39 @@ video: {
 - ❌ Duplicar lógica de procesamiento de tags
 - ❌ Ignorar warnings de React sobre keys duplicadas
 - ❌ Modificar estructura sin actualizar documentación
+
+---
+
+## 🔧 ÚLTIMOS ARREGLOS
+
+### **🏷️ Arreglo de Tags Duplicados - [Fecha Actual]**
+
+#### **Problema Identificado**
+- El tag "salsa" se agregaba automáticamente cuando se seleccionaban otros tags
+- Los tags se duplicaban al seleccionar múltiples veces el mismo tag
+- La lógica de asignación automática causaba inconsistencias
+
+#### **Solución Implementada**
+1. **Eliminación de Asignación Automática:**
+   - Removida la lógica que agregaba "salsa" automáticamente
+   - Los tags de estilo solo se incluyen si se seleccionan manualmente
+
+2. **Prevención de Duplicados:**
+   - Implementado `Set` en todas las funciones de toggle de tags
+   - Uso de `[...new Set([...currentTags, tag])]` para evitar duplicados
+   - Aplicado en `VideoEditModal.jsx` y `VideoUploadModal.jsx`
+
+3. **Funciones Mejoradas:**
+   - `handleTagToggle()`: Ahora usa Set para prevenir duplicados
+   - `handleTagInicialToggle()`: Prevención de duplicados implementada
+   - `handleTagFinalToggle()`: Prevención de duplicados implementada
+
+#### **Archivos Modificados**
+- `src/components/video/VideoEditModal.jsx`
+- `src/components/video/VideoUploadModal.jsx`
+
+#### **Resultado**
+- ✅ No más tags duplicados en la interfaz
+- ✅ El tag "salsa" solo aparece si se selecciona manualmente
+- ✅ Selección de tags más intuitiva y consistente
+- ✅ Mejor experiencia de usuario al editar videos

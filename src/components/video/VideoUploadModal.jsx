@@ -169,9 +169,11 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
           [category]: currentTags.filter(t => t !== tag)
         }
       } else {
+        // Usar Set para evitar duplicados automáticamente
+        const newTags = [...new Set([...currentTags, tag])]
         return {
           ...prev,
-          [category]: [...currentTags, tag]
+          [category]: newTags
         }
       }
     })
@@ -239,10 +241,8 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       const tagsWithStyle = {
         ...selectedTags,
         estilo: selectedTags.estilo && selectedTags.estilo.length > 0 ? 
-          selectedTags.estilo.includes(style) ? 
-            selectedTags.estilo : 
-            [...selectedTags.estilo, style]
-          : selectedTags.estilo || []
+          [...new Set([...selectedTags.estilo, style])] : 
+          []
       }
 
       // Obtener los valores actuales de los campos de entrada usando refs
