@@ -19,7 +19,6 @@ import {
   Clock,
   Users
 } from 'lucide-react'
-import SmartThumbnail from '../components/common/SmartThumbnail'
 
 const EscuelaPage = () => {
   const [selectedStyle, setSelectedStyle] = useState('SALSA')

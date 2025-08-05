@@ -22,7 +22,6 @@ import CategoryBadge from '../components/common/CategoryBadge'
 import VideoUploadModal from '../components/video/VideoUploadModal'
 import VideoEditModal from '../components/video/VideoEditModal'
 import VideoPlayer from '../components/video/VideoPlayer'
-import SmartThumbnail from '../components/common/SmartThumbnail'
 import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
 
