@@ -160,15 +160,27 @@ const EscuelaPage = () => {
           <div className="grid md:grid-cols-2 gap-6">
             {cursos.map((curso) => (
               <div key={curso.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
-                <div className="relative group">
-                  <div className="w-full h-48 bg-gray-100 relative overflow-hidden">
-                    <img
-                      src={curso.thumbnail || 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=CURSO'}
-                      alt={curso.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
+                                 <div className="relative group">
+                   <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+                     {curso.thumbnail && curso.thumbnail !== 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=CURSO' ? (
+                       <img
+                         src={curso.thumbnail}
+                         alt={curso.title}
+                         className="w-full h-full object-cover"
+                         loading="lazy"
+                         onError={(e) => {
+                           e.target.style.display = 'none';
+                           e.target.nextSibling.style.display = 'flex';
+                         }}
+                       />
+                     ) : null}
+                     <div className={`flex flex-col items-center justify-center text-gray-500 ${curso.thumbnail && curso.thumbnail !== 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=CURSO' ? 'hidden' : 'flex'}`}>
+                       <svg className="w-12 h-12 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                       </svg>
+                       <span className="text-sm font-medium">{curso.title}</span>
+                     </div>
+                   </div>
                   <div className="absolute top-2 right-2 bg-pink-500 text-white px-2 py-1 rounded text-sm font-medium">
                     {curso.level}
                   </div>

@@ -160,15 +160,27 @@ const EventosPage = () => {
           <div className="grid md:grid-cols-2 gap-6">
             {eventos.map((evento) => (
               <div key={evento.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
-                <div className="relative group">
-                  <div className="w-full h-48 bg-gray-100 relative overflow-hidden">
-                    <img
-                      src={evento.thumbnailUrl || 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=EVENTO'}
-                      alt={evento.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </div>
+                                 <div className="relative group">
+                   <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+                     {evento.thumbnailUrl && evento.thumbnailUrl !== 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=EVENTO' ? (
+                       <img
+                         src={evento.thumbnailUrl}
+                         alt={evento.title}
+                         className="w-full h-full object-cover"
+                         loading="lazy"
+                         onError={(e) => {
+                           e.target.style.display = 'none';
+                           e.target.nextSibling.style.display = 'flex';
+                         }}
+                       />
+                     ) : null}
+                     <div className={`flex flex-col items-center justify-center text-gray-500 ${evento.thumbnailUrl && evento.thumbnailUrl !== 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=EVENTO' ? 'hidden' : 'flex'}`}>
+                       <svg className="w-12 h-12 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                       </svg>
+                       <span className="text-sm font-medium">{evento.title}</span>
+                     </div>
+                   </div>
                   <div className="absolute top-2 right-2 bg-pink-500 text-white px-2 py-1 rounded text-sm font-medium">
                     {evento.type}
                   </div>

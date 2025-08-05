@@ -182,23 +182,38 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         }
       }
       
-      // Si no hay thumbnail personalizado, generar uno automáticamente
-      const result = await generateVideoThumbnail(file)
-      if (result.success && result.blob) {
-        // Subir thumbnail a Firebase Storage
-        const thumbnailPath = `thumbnails/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`
-        const uploadResult = await uploadFile(result.blob, thumbnailPath)
+      // Intentar generar thumbnail automáticamente con timeout
+      try {
+        const result = await Promise.race([
+          generateVideoThumbnail(file),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), 10000)
+          )
+        ])
         
-        if (uploadResult.success) {
-          // Limpiar blob URL temporal
-          URL.revokeObjectURL(result.thumbnailURL)
-          return { url: uploadResult.url, path: uploadResult.path }
+        if (result.success && result.blob) {
+          // Subir thumbnail a Firebase Storage
+          const thumbnailPath = `thumbnails/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`
+          const uploadResult = await uploadFile(result.blob, thumbnailPath)
+          
+          if (uploadResult.success) {
+            // Limpiar blob URL temporal
+            if (result.thumbnailURL) {
+              URL.revokeObjectURL(result.thumbnailURL)
+            }
+            return { url: uploadResult.url, path: uploadResult.path }
+          }
         }
+      } catch (thumbnailError) {
+        console.warn('Error generando thumbnail automático:', thumbnailError)
+        // Continuar sin thumbnail
       }
-      return { url: 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO', path: null }
+      
+      // Fallback: no thumbnail, se mostrará el placeholder en la UI
+      return { url: null, path: null }
     } catch (error) {
-      console.error('Error generating thumbnail:', error)
-      return { url: 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO', path: null }
+      console.error('Error en generateThumbnail:', error)
+      return { url: null, path: null }
     }
   }
 
@@ -273,9 +288,9 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         originalTitle: file.name,
         description: currentDescription,
         videoUrl: uploadResult.url,
-        thumbnailUrl: thumbnailResult.url,
+        thumbnailUrl: thumbnailResult.url || null,
         videoPath: uploadResult.path,
-        thumbnailPath: thumbnailResult.path,
+        thumbnailPath: thumbnailResult.path || null,
         fileSize: file.size,
         fileType: file.type,
         duration: 0, // Se puede calcular después
