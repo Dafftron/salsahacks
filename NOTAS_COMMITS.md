@@ -297,13 +297,15 @@
 - ✅ Mejor contraste y legibilidad
 - ✅ Efectos visuales más pulidos y profesionales
 
-### **Commit #006 - Corrección de Tags Duplicados**
+### **Commit #006 - Corrección de Tags Duplicados y Asignación Automática**
 **Fecha:** 2025-01-27
-**Descripción:** Solución del problema de tags duplicados en la galería de videos
+**Descripción:** Solución del problema de tags duplicados y eliminación de asignación automática de tags por defecto
 **Cambios:**
 - ✅ **Diagnóstico del problema:** Identificación de duplicación en tags de estilo "Salsa"
 - ✅ **Corrección en VideoEditModal:** Prevención de duplicación al añadir estilo
 - ✅ **Corrección en VideoUploadModal:** Prevención de duplicación al subir videos
+- ✅ **Eliminación de tags automáticos:** Los videos ya no reciben tag "salsa" por defecto
+- ✅ **Lógica condicional:** Solo se añaden tags de estilo si se seleccionan manualmente
 - ✅ **Función de limpieza:** `cleanupDuplicateTags()` para eliminar duplicados existentes
 - ✅ **Botón de limpieza:** Interfaz para ejecutar limpieza de tags duplicados
 - ✅ **Modal de confirmación:** Actualizado para incluir limpieza de tags
@@ -1380,6 +1382,12 @@ video: {
 - Verificación antes de añadir tags: `selectedTags.estilo.includes(style)`
 - Función de limpieza: `cleanupDuplicateTags()`
 - Botón de limpieza en interfaz: "🏷️ Limpiar Tags"
+
+#### **Asignación Condicional de Tags**
+- **Antes:** Tags de estilo se añadían automáticamente incluso sin selección manual
+- **Ahora:** Tags de estilo solo se añaden si se seleccionan manualmente
+- **Lógica:** `selectedTags.estilo && selectedTags.estilo.length > 0 ? ... : selectedTags.estilo || []`
+- **Resultado:** Videos sin tags seleccionados no reciben tags automáticos
 
 #### **Fuente Única de Verdad**
 - `CategoriesPage.jsx`: Define todas las categorías y tags disponibles
