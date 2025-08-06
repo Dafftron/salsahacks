@@ -35,10 +35,13 @@ const SmartThumbnail = ({
 
   return (
     <div className={`relative ${className}`} {...props}>
-      {/* Estado de carga */}
+      {/* Estado de carga mejorado */}
       {isLoading && (
-        <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 animate-pulse flex items-center justify-center">
+          <div className="relative">
+            <div className="w-8 h-8 border-3 border-gray-300 border-t-pink-500 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 w-8 h-8 border-3 border-transparent border-t-pink-300 rounded-full animate-spin" style={{animationDelay: '-0.5s'}}></div>
+          </div>
         </div>
       )}
 
@@ -46,11 +49,14 @@ const SmartThumbnail = ({
       <img
         src={imageSrc}
         alt={alt}
-        className={`w-full h-full object-cover transition-opacity duration-200 ${
-          isLoading ? 'opacity-0' : 'opacity-100'
+        className={`w-full h-full object-cover transition-all duration-300 ${
+          isLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
         }`}
         onLoad={handleImageLoad}
         onError={handleImageError}
+        loading="lazy"
+        decoding="async"
+        fetchPriority="high"
       />
 
       {/* Icono de reproducción (opcional) */}

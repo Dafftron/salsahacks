@@ -319,35 +319,223 @@ body {
   aspect-ratio: 16 / 9;
 }
 
-/* Mejorar la calidad de imagen de los thumbnails */
+/* Mejorar la calidad de imagen de los thumbnails - TÉCNICAS AVANZADAS */
 .video-thumbnail-container img,
 .aspect-video img {
+  /* Optimización de renderizado para máxima nitidez */
   image-rendering: -webkit-optimize-contrast;
+  image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
   image-rendering: pixelated;
+  
+  /* Aceleración por hardware y optimización de GPU */
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-perspective: 1000px;
+  perspective: 1000px;
+  
+  /* Filtros para mejorar la calidad visual */
+  filter: contrast(1.05) brightness(1.02) saturate(1.1);
+  -webkit-filter: contrast(1.05) brightness(1.02) saturate(1.1);
+  
+  /* Suavizado y antialiasing */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Optimización de carga y transiciones */
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
+  
+  /* Asegurar que las imágenes se muestren correctamente */
+  object-fit: cover;
+  object-position: center;
+  
+  /* Prevenir distorsión en diferentes densidades de píxeles */
+  image-orientation: from-image;
+  -webkit-image-orientation: from-image;
 }
 
-/* Asegurar que los thumbnails mantengan buena calidad en diferentes tamaños */
+/* Efectos hover mejorados para thumbnails */
+.video-thumbnail-container:hover img,
+.aspect-video:hover img {
+  transform: scale(1.05) translateZ(0);
+  filter: contrast(1.1) brightness(1.05) saturate(1.15);
+  -webkit-filter: contrast(1.1) brightness(1.05) saturate(1.15);
+}
+
+/* Calidad específica por densidad de pantalla */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .video-thumbnail-container img,
+  .aspect-video img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 3), (min-resolution: 288dpi) {
+  .video-thumbnail-container img,
+  .aspect-video img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Asegurar que los thumbnails mantengan excelente calidad en diferentes tamaños */
 @media (min-width: 768px) {
   .aspect-video img {
     min-height: 200px;
+    min-width: 356px; /* Mantener proporción 16:9 */
   }
 }
 
 @media (min-width: 1024px) {
   .aspect-video img {
     min-height: 225px;
+    min-width: 400px;
   }
 }
 
 @media (min-width: 1280px) {
   .aspect-video img {
     min-height: 250px;
+    min-width: 444px;
   }
+}
+
+@media (min-width: 1536px) {
+  .aspect-video img {
+    min-height: 280px;
+    min-width: 498px;
+  }
+}
+
+/* Optimización para pantallas de alta resolución */
+@media (min-width: 1920px) {
+  .aspect-video img {
+    min-height: 320px;
+    min-width: 569px;
+  }
+}
+
+/* Contenedor optimizado para thumbnails */
+.video-thumbnail-container,
+.aspect-video {
+  /* Mejorar el contraste del contenedor */
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  
+  /* Optimización de renderizado */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  
+  /* Sombra sutil para mejor definición */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  
+  /* Transición suave */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Efecto de carga mejorado */
+.video-thumbnail-container::before,
+.aspect-video::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.video-thumbnail-container:hover::before,
+.aspect-video:hover::before {
+  transform: translateX(100%);
+}
+
+/* Optimizaciones específicas para thumbnails de videos */
+.video-thumbnail-container img,
+.aspect-video img {
+  /* Mejorar la calidad de compresión */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  
+  /* Optimización para diferentes formatos de imagen */
+  image-orientation: from-image;
+  -webkit-image-orientation: from-image;
+  
+  /* Mejorar la nitidez en pantallas de alta densidad */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Aceleración por hardware */
+  will-change: transform, filter;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  
+  /* Transiciones suaves */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Efectos especiales para thumbnails de alta calidad */
+.video-thumbnail-container:hover img,
+.aspect-video:hover img {
+  /* Zoom suave con mejor calidad */
+  transform: scale(1.05) translateZ(0);
+  
+  /* Mejorar contraste y saturación en hover */
+  filter: contrast(1.1) brightness(1.05) saturate(1.15) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+  -webkit-filter: contrast(1.1) brightness(1.05) saturate(1.15) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+/* Optimización para diferentes densidades de pantalla */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .video-thumbnail-container img,
+  .aspect-video img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+@media (-webkit-min-device-pixel-ratio: 3), (min-resolution: 288dpi) {
+  .video-thumbnail-container img,
+  .aspect-video img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Mejoras específicas para pantallas 4K */
+@media (min-width: 2560px) {
+  .aspect-video img {
+    min-height: 400px;
+    min-width: 711px;
+  }
+  
+  .video-thumbnail-container img,
+  .aspect-video img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Optimización para dispositivos móviles de alta resolución */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+  .video-thumbnail-container img,
+  .aspect-video img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Clase personalizada para borde-3 */
+.border-3 {
+  border-width: 3px;
 }
 
 /* Utilidades para line-clamp */
