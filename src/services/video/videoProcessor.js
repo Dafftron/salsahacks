@@ -159,11 +159,7 @@ export const processVideoSequence = async (videos, targetBPM) => {
             // Intentar descarga directa primero
             const response = await fetch(video.videoUrl, {
               mode: 'cors',
-              credentials: 'omit',
-              headers: {
-                'Accept': 'video/*,*/*;q=0.9',
-                'Cache-Control': 'no-cache'
-              }
+              credentials: 'omit'
             })
             
             if (!response.ok) {
