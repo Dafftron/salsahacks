@@ -27,6 +27,7 @@ import ConfirmModal from '../common/ConfirmModal'
 import VideoPlayer from '../video/VideoPlayer.jsx'
 import SequenceTimeline from './SequenceTimeline.jsx'
 import BPMController from './BPMController'
+import VideoDownloadModal from '../video/VideoDownloadModal'
 import { processVideoSequence, createSequencePreview } from '../../services/video/videoProcessor'
 
 const SequenceBuilder = ({ 
@@ -60,6 +61,9 @@ const SequenceBuilder = ({
   // Estados para tags de secuencia
   const [sequenceTags, setSequenceTags] = useState({})
   const [isTagsSectionCollapsed, setIsTagsSectionCollapsed] = useState(true)
+
+  // Estados para modal de descarga
+  const [showDownloadModal, setShowDownloadModal] = useState(false)
 
   // Funciones auxiliares para tags (actualizadas para usar categoriesList)
   const getOrderedTags = (video) => {
@@ -427,119 +431,14 @@ const SequenceBuilder = ({
     }
   }
 
-    const handleProcessSequence = async () => {
+  const handleProcessSequence = async () => {
     if (!sequence || sequence.length === 0) {
       addToast('No hay videos en la secuencia para procesar', 'error')
       return
     }
     
-    setIsProcessingSequence(true)
-    addToast('🎬 Iniciando procesamiento de secuencia...', 'info')
-    
-    try {
-      console.log('🎬 Iniciando procesamiento de secuencia...')
-      
-      // Obtener archivos de video desde Firebase Storage
-      const videosWithFiles = []
-      
-      addToast('📥 Descargando archivos de video...', 'info')
-      
-      for (let i = 0; i < sequence.length; i++) {
-        const video = sequence[i]
-        try {
-          addToast(`📥 Descargando ${i + 1}/${sequence.length}: ${video.title}`, 'info')
-          console.log(`📥 Descargando video ${i + 1}/${sequence.length}: ${video.title}`)
-          console.log(`🔗 URL del video: ${video.videoUrl}`)
-          
-          // Descargar directamente desde la URL
-          const response = await fetch(video.videoUrl, {
-            mode: 'cors',
-            credentials: 'omit'
-          })
-          
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-          }
-          
-          const blob = await response.blob()
-          console.log(`✅ Video descargado: ${blob.size} bytes`)
-          
-          videosWithFiles.push({
-            ...video,
-            file: blob
-          })
-          
-          console.log(`✅ Archivo descargado para: ${video.title}`)
-        } catch (error) {
-          console.error(`❌ Error al descargar archivo de ${video.title}:`, error)
-          
-          // Intentar con Firebase Storage SDK como fallback
-          try {
-            addToast(`🔄 Reintentando descarga de ${video.title}...`, 'info')
-            
-            const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
-            const storage = getStorage()
-            
-            // Si videoUrl es una URL completa, extraer la ruta
-            let storagePath = video.videoUrl
-            if (video.videoUrl.includes('firebasestorage.googleapis.com')) {
-              const urlParts = video.videoUrl.split('/o/')
-              if (urlParts.length > 1) {
-                storagePath = decodeURIComponent(urlParts[1].split('?')[0])
-              }
-            }
-            
-            const videoRef = ref(storage, storagePath)
-            const downloadURL = await getDownloadURL(videoRef)
-            
-            const response = await fetch(downloadURL)
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-            }
-            
-            const blob = await response.blob()
-            console.log(`✅ Video descargado via Firebase SDK: ${blob.size} bytes`)
-            
-            videosWithFiles.push({
-              ...video,
-              file: blob
-            })
-            
-            console.log(`✅ Archivo descargado para: ${video.title}`)
-          } catch (storageError) {
-            throw new Error(`No se pudo descargar el archivo de ${video.title}: ${storageError.message}`)
-          }
-        }
-      }
-      
-      // Procesar secuencia (sin ajuste de BPM)
-      addToast('🎬 Combinando videos...', 'info')
-      const result = await processVideoSequence(videosWithFiles, null) // Sin ajuste de BPM
-      
-      if (result.success) {
-        // Crear blob y descargar
-        const blob = new Blob([result.data], { type: 'video/mp4' }) 
-        const url = URL.createObjectURL(blob)
-        
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `secuencia_${sequenceName || 'salsa'}_combinada.mp4`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        
-        URL.revokeObjectURL(url)
-        
-        addToast(`✅ Secuencia combinada y descargada exitosamente`, 'success')
-      } else {
-        throw new Error(result.error)
-      }
-    } catch (error) {
-      console.error('❌ Error al procesar secuencia:', error)
-      addToast(`Error al procesar secuencia: ${error.message}`, 'error')
-    } finally {
-      setIsProcessingSequence(false)
-    }
+    // Abrir modal de descarga en lugar de procesar directamente
+    setShowDownloadModal(true)
   }
 
   // Funciones para manejar tags de secuencia
@@ -1199,6 +1098,14 @@ const SequenceBuilder = ({
           onClose={() => removeToast(toast.id)}
         />
       ))}
+
+      {/* Modal de descarga */}
+      <VideoDownloadModal
+        isOpen={showDownloadModal}
+        onClose={() => setShowDownloadModal(false)}
+        videos={sequence}
+        sequenceName={sequenceName || 'Secuencia'}
+      />
     </>
   )
 }
