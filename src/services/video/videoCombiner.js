@@ -14,19 +14,14 @@ class VideoCombiner {
   // Método principal que usa MediaRecorder
   async combineVideos(videos, onProgress) {
     try {
-      // Descargar todos los videos primero
+      // Descargar todos los videos primero usando XMLHttpRequest para evitar CORS
       const videoBlobs = []
       
       for (let i = 0; i < videos.length; i++) {
         const video = videos[i]
         console.log(`Descargando video ${i + 1}/${videos.length}: ${video.title}`)
         
-        const response = await fetch(video.videoUrl)
-        if (!response.ok) {
-          throw new Error(`Error descargando video ${video.title}: ${response.statusText}`)
-        }
-        
-        const blob = await response.blob()
+        const blob = await this.downloadVideoWithXHR(video.videoUrl)
         videoBlobs.push(blob)
         
         if (onProgress) {
@@ -66,6 +61,29 @@ class VideoCombiner {
       console.error('Error combinando videos:', error)
       throw new Error(`Error combinando videos: ${error.message}`)
     }
+  }
+
+  // Método para descargar video usando XMLHttpRequest (evita CORS)
+  downloadVideoWithXHR(url) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('GET', url, true)
+      xhr.responseType = 'blob'
+      
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          resolve(xhr.response)
+        } else {
+          reject(new Error(`Error descargando video: ${xhr.status} ${xhr.statusText}`))
+        }
+      }
+      
+      xhr.onerror = function() {
+        reject(new Error('Error de red al descargar video'))
+      }
+      
+      xhr.send()
+    })
   }
 
   // Método simple (igual que el principal ahora)
