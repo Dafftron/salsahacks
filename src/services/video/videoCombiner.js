@@ -1,5 +1,5 @@
-import { FFmpeg } from '@ffmpeg/ffmpeg'
-import { fetchFile, toBlobURL } from '@ffmpeg/util'
+import { getDownloadURL, ref } from 'firebase/storage'
+import { storage } from '../firebase/config'
 
 class VideoCombiner {
   constructor() {

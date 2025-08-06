@@ -1,6 +1,6 @@
 {
   "storage": {
-    "rules": "storage.rules"
+    "rules": "y"
   },
   "hosting": {
     "public": "dist",
@@ -35,4 +35,4 @@
       }
     ]
   }
-} 
+}

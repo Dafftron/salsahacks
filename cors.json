@@ -1,8 +1,8 @@
 [
   {
-    "origin": ["http://localhost:3000", "https://localhost:3000", "http://127.0.0.1:3000", "https://127.0.0.1:3000"],
+    "origin": ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173", "https://salsahacks-a9cac.web.app"],
     "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
     "maxAgeSeconds": 3600,
-    "responseHeader": ["Content-Type", "Content-Length", "Content-Range", "Content-Disposition", "Cache-Control", "Access-Control-Allow-Origin"]
+    "responseHeader": ["Content-Type", "Content-Length", "Content-Range", "Content-Encoding", "Cache-Control", "Expires", "Last-Modified", "ETag", "Access-Control-Allow-Origin", "Access-Control-Allow-Methods", "Access-Control-Allow-Headers"]
   }
 ] 
