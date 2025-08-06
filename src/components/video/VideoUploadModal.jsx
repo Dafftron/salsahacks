@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { X, Upload, Tag, Trash2, CheckCircle, AlertCircle, ChevronDown, ChevronUp, ChevronsDown, ChevronsUp } from 'lucide-react'
+import { X, Upload, Tag, Trash2, CheckCircle, AlertCircle, ChevronDown, ChevronUp, ChevronsDown, ChevronsUp, Music } from 'lucide-react'
 import { uploadVideo, uploadFile, generateVideoThumbnail, generateBestVideoThumbnail } from '../../services/firebase/storage'
 import { createVideoDocument, checkVideoDuplicate } from '../../services/firebase/firestore'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCategories } from '../../hooks/useCategories'
 import Toast from '../common/Toast'
 import VideoPlayer from './VideoPlayer'
+import { extractBPMFromVideo, validateBPM, getBPMDescription } from '../../services/audio/bpmDetection'
 
 const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', style = 'salsa' }) => {
   const { user } = useAuth()
@@ -394,6 +395,23 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         videoResolution = 'Unknown'
       }
 
+      // Detectar BPM del video
+      let bpm = null
+      let bpmDetected = false
+      try {
+        console.log('🎵 Detectando BPM para:', file.name)
+        const bpmResult = await extractBPMFromVideo(file)
+        if (bpmResult.success && validateBPM(bpmResult.bpm)) {
+          bpm = bpmResult.bpm
+          bpmDetected = true
+          console.log(`✅ BPM detectado: ${bpm} para ${file.name}`)
+        } else {
+          console.warn(`⚠️ No se pudo detectar BPM válido para ${file.name}`)
+        }
+      } catch (error) {
+        console.error('❌ Error al detectar BPM:', error)
+      }
+
       // Crear documento en Firestore
       const videoDoc = {
         title: currentTitle,
@@ -415,7 +433,9 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         uploadedAt: new Date().toISOString(),
         views: 0,
         likes: 0,
-        likedBy: []
+        likedBy: [],
+        bpm: bpm, // BPM detectado
+        bpmDetected: bpmDetected // Indicar si se detectó BPM
       }
 
       const docResult = await createVideoDocument(videoDoc)

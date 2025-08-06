@@ -1,29 +1,32 @@
 // 🎬 COMPONENTE CONSTRUCTOR DE SECUENCIAS - SALSAHACKS V2.0
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
-  X, 
   Plus, 
   Trash2, 
+  Play, 
   Save, 
-  Shuffle, 
-  Eye, 
-  EyeOff,
-  GripVertical,
-  Play,
-  Edit3,
-  ChevronDown,
+  Edit, 
+  X, 
+  ChevronDown, 
   ChevronUp,
-  Heart
+  Heart, 
+  Music,
+  Shuffle,
+  GripVertical
 } from 'lucide-react'
 import { useSequenceBuilderContext } from '../../contexts/SequenceBuilderContext'
-import { useDragAndDrop } from '../../hooks/useDragAndDrop'
-import { useCategories } from '../../hooks/useCategories'
-import { toggleVideoLike } from '../../services/firebase/firestore'
+import { createSequence, getSequencesByStyle, deleteSequence, subscribeToSequencesByStyle } from '../../services/firebase/sequences'
+import { getVideos, toggleVideoLike } from '../../services/firebase/firestore'
 import { useAuth } from '../../contexts/AuthContext'
-import ConfirmModal from '../common/ConfirmModal'
+import { useTheme } from '../../contexts/ThemeContext'
+import { useCategories } from '../../hooks/useCategories'
+import { useDragAndDrop } from '../../hooks/useDragAndDrop'
 import Toast from '../common/Toast'
-import SmartThumbnail from '../common/SmartThumbnail.jsx'
+import ConfirmModal from '../common/ConfirmModal'
+import VideoPlayer from '../video/VideoPlayer'
+import BPMController from './BPMController'
+import { processVideoSequence } from '../../services/video/videoProcessor'
 
 const SequenceBuilder = ({ 
   isOpen, 
@@ -39,6 +42,10 @@ const SequenceBuilder = ({
   // Usar el hook de categorías para obtener categoriesList y getColorClasses
   const { categoriesList, getColorClasses } = useCategories('figuras', style)
   const { user } = useAuth()
+  
+  // Estados para BPM
+  const [currentBPM, setCurrentBPM] = useState(120)
+  const [isProcessingSequence, setIsProcessingSequence] = useState(false)
 
   // Funciones auxiliares para tags (actualizadas para usar categoriesList)
   const getOrderedTags = (video) => {
@@ -287,6 +294,65 @@ const SequenceBuilder = ({
     }
     setConfirmModal({ isOpen: false, type: null })
   }
+  
+  // Funciones para manejar BPM
+  const handleBPMChange = (newBPM) => {
+    setCurrentBPM(newBPM)
+    console.log('🎵 BPM cambiado a:', newBPM)
+  }
+  
+  const handleProcessSequence = async (targetBPM) => {
+    if (!sequence || sequence.length === 0) {
+      addToast('No hay videos en la secuencia para procesar', 'error')
+      return
+    }
+    
+    // Verificar que todos los videos tengan BPM
+    const videosWithoutBPM = sequence.filter(video => !video.bpm)
+    if (videosWithoutBPM.length > 0) {
+      addToast(`${videosWithoutBPM.length} videos no tienen BPM detectado`, 'warning')
+      return
+    }
+    
+    setIsProcessingSequence(true)
+    
+    try {
+      console.log('🎬 Iniciando procesamiento de secuencia con BPM:', targetBPM)
+      
+      // Preparar videos con archivos
+      const videosWithFiles = sequence.map(video => ({
+        ...video,
+        file: video.file || null // Necesitamos el archivo original
+      }))
+      
+      // Procesar secuencia
+      const result = await processVideoSequence(videosWithFiles, targetBPM)
+      
+      if (result.success) {
+        // Crear blob y descargar
+        const blob = new Blob([result.data], { type: 'video/mp4' })
+        const url = URL.createObjectURL(blob)
+        
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `secuencia_${targetBPM}bpm.mp4`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        
+        URL.revokeObjectURL(url)
+        
+        addToast(`Secuencia procesada y descargada con BPM ${targetBPM}`, 'success')
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error('❌ Error al procesar secuencia:', error)
+      addToast(`Error al procesar secuencia: ${error.message}`, 'error')
+    } finally {
+      setIsProcessingSequence(false)
+    }
+  }
 
   // Si no está abierto, no renderizar
   if (!isOpen) return null
@@ -385,6 +451,19 @@ const SequenceBuilder = ({
               </button>
             </div>
           </div>
+          
+          {/* Control de BPM */}
+          {sequence.length > 0 && (
+            <div className="mb-6">
+              <BPMController
+                sequence={sequence}
+                onBPMChange={handleBPMChange}
+                currentBPM={currentBPM}
+                onProcessSequence={handleProcessSequence}
+                isProcessing={isProcessingSequence}
+              />
+            </div>
+          )}
 
           {/* Secuencia actual */}
           <div className="mb-6">

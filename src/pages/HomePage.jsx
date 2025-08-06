@@ -1,8 +1,5 @@
 import { Link } from 'react-router-dom'
 import { Music, Video, BookOpen, Calendar, Tag, FileText } from 'lucide-react'
-// Temporalmente comentamos Firebase para diagnosticar
-// import FirebaseTest from '../components/FirebaseTest'
-// import FirebaseSimpleTest from '../components/FirebaseSimpleTest'
 import UserProfile from '../components/UserProfile'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -116,11 +113,6 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-
-      {/* Firebase Test Section - Temporalmente comentado */}
-      {/* <div className="mb-16">
-        <FirebaseTest />
-      </div> */}
       
       {/* User Profile Section */}
       {isAuthenticated && (
@@ -133,11 +125,6 @@ const HomePage = () => {
           </div>
         </div>
       )}
-      
-      {/* Firebase Simple Test Section - Temporalmente comentado */}
-      {/* <div className="mb-16">
-        <FirebaseSimpleTest />
-      </div> */}
     </div>
   )
 }

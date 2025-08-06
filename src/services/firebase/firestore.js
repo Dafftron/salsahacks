@@ -431,6 +431,8 @@ export const createVideoDocument = async (videoData) => {
     await setDoc(videoRef, {
       ...videoData,
       id: videoRef.id,
+      bpm: videoData.bpm || null, // Agregar campo BPM
+      bpmDetected: videoData.bpmDetected || false, // Indicar si se detectó BPM
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp()
     })
@@ -473,6 +475,45 @@ export const updateVideoDocument = async (videoId, updates) => {
   } catch (error) {
     console.error('❌ Error al actualizar video:', error)
     return { success: false, error: error.message }
+  }
+}
+
+// ===== FUNCIONES PARA BPM =====
+export const updateVideoBPM = async (videoId, bpm) => {
+  try {
+    console.log('🎵 Actualizando BPM del video:', videoId, 'BPM:', bpm)
+    const docRef = doc(db, COLLECTIONS.VIDEOS, videoId)
+    await updateDoc(docRef, {
+      bpm: bpm,
+      bpmDetected: true,
+      updatedAt: serverTimestamp()
+    })
+    console.log('✅ BPM actualizado exitosamente')
+    return { success: true, error: null }
+  } catch (error) {
+    console.error('❌ Error al actualizar BPM:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export const getVideosWithoutBPM = async () => {
+  try {
+    console.log('🔍 Buscando videos sin BPM detectado...')
+    const q = query(
+      collection(db, COLLECTIONS.VIDEOS),
+      where('bpmDetected', '==', false),
+      orderBy('createdAt', 'desc')
+    )
+    const querySnapshot = await getDocs(q)
+    const videos = []
+    querySnapshot.forEach((doc) => {
+      videos.push({ id: doc.id, ...doc.data() })
+    })
+    console.log(`✅ ${videos.length} videos sin BPM encontrados`)
+    return { videos, error: null }
+  } catch (error) {
+    console.error('❌ Error al obtener videos sin BPM:', error)
+    return { videos: [], error: error.message }
   }
 }
 
