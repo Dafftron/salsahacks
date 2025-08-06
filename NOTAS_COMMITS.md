@@ -168,6 +168,20 @@
     - `src/components/video/VideoUploadModal.jsx` - Integrado SmartThumbnail para vistas previas
     - `src/services/firebase/storage.js` - Modificadas funciones de generación de thumbnails para mantener proporciones
 
+### 🖼️ **THUMBNAILS INTELIGENTES CON ASPECT RATIO DINÁMICO Y MEJOR RESOLUCIÓN** - 2024-12-19
+- **Problema**: Los thumbnails no tenían el formato correcto (ratio 9:16 para vertical, 16:9 para horizontal) y resolución limitada
+- **Solución**:
+  - Mejorado componente `SmartThumbnail` con detección automática de orientación
+  - Videos verticales: `aspect-[9/16]` (ratio 9:16 como Instagram)
+  - Videos horizontales: `aspect-video` (ratio 16:9 estándar)
+  - Mejorada resolución con `loading="lazy"` y `decoding="async"`
+  - Añadido efecto hover suave con `hover:scale-105`
+  - Icono de reproducción más grande y mejorado
+  - Fallback mejorado con gradiente y mejor diseño
+- **Archivos modificados**:
+  - `src/components/common/SmartThumbnail.jsx` - Componente completamente renovado
+  - `src/pages/FigurasPage.jsx` - Implementado SmartThumbnail mejorado
+
 ### 🎬 **CORRECCIÓN DE THUMBNAILS DE VIDEOS** - 2024-12-19
 - **Problema**: Los thumbnails mostraban columnas blancas en los laterales para videos verticales
 - **Solución**: 
