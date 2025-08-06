@@ -62,8 +62,17 @@ class VideoCombiner {
         }
 
         try {
+          // Usar Firebase SDK para obtener URL de descarga
+          const { ref, getDownloadURL } = await import('firebase/storage')
+          const { storage } = await import('../firebase/config')
+          
+          const videoRef = ref(storage, video.videoPath)
+          const downloadURL = await getDownloadURL(videoRef)
+          
+          console.log(`URL de descarga obtenida para ${video.title}:`, downloadURL)
+
           // Descargar video
-          const response = await fetch(video.videoUrl)
+          const response = await fetch(downloadURL)
           if (!response.ok) {
             throw new Error(`Error descargando video: ${response.statusText}`)
           }

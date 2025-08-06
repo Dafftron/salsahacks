@@ -788,54 +788,29 @@ const FigurasPage = () => {
     try {
       console.log('Iniciando descarga de video individual:', video.title)
       
-      // Obtener la URL de descarga directa desde Firebase Storage
-      const { url, error } = await getFileURL(video.videoPath)
+      // Usar Firebase SDK directamente para descargar
+      const { ref } = await import('firebase/storage')
+      const { storage } = await import('../services/firebase/config')
       
-      if (error) {
-        console.error('Error al obtener URL de descarga:', error)
-        addToast('Error al preparar la descarga', 'error')
-        return
-      }
+      const videoRef = ref(storage, video.videoPath)
       
-      // Descargar usando XMLHttpRequest para evitar CORS
-      const blob = await new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest()
-        xhr.open('GET', url, true)
-        xhr.responseType = 'blob'
-        
-        xhr.onload = function() {
-          if (xhr.status === 200 || xhr.status === 206) {
-            resolve(xhr.response)
-          } else {
-            reject(new Error(`Error descargando: ${xhr.status}`))
-          }
-        }
-        
-        xhr.onerror = function() {
-          reject(new Error('Error de red al descargar'))
-        }
-        
-        xhr.send()
-      })
+      // Obtener la URL de descarga con token de acceso
+      const { getDownloadURL } = await import('firebase/storage')
+      const downloadURL = await getDownloadURL(videoRef)
       
-      // Crear URL local del blob
-      const blobUrl = URL.createObjectURL(blob)
+      console.log('URL de descarga obtenida:', downloadURL)
       
-      // Crear enlace de descarga
+      // Crear enlace de descarga directo
       const link = document.createElement('a')
-      link.href = blobUrl
+      link.href = downloadURL
       link.download = video.title || 'video'
-      link.style.display = 'none'
+      link.target = '_blank'
+      link.rel = 'noopener noreferrer'
       
       // Agregar al DOM y hacer clic
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
-      // Limpiar la URL del blob después de un momento
-      setTimeout(() => {
-        URL.revokeObjectURL(blobUrl)
-      }, 1000)
       
       addToast('Descarga iniciada', 'success')
     } catch (error) {
