@@ -31,6 +31,9 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
   useEffect(() => {
     if (!isOpen) {
       resetForm()
+    } else {
+      // Resetear el paso cuando se abre el modal
+      setCurrentStep(1)
     }
   }, [isOpen])
 
@@ -61,6 +64,12 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     setCollapsedVideos(new Set())
     setUploadProgress({})
     setUploading(false)
+    setCurrentStep(1)
+    
+    // Limpiar el input de archivos
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
   }
 
   const addToast = (message, type = 'success') => {
