@@ -1055,10 +1055,10 @@ const FigurasPage = () => {
               <p className="text-gray-400 text-sm mt-2">Sube tu primer video de {selectedStyle.toLowerCase()} usando el botón de arriba</p>
             </div>
                      ) : (
-             <div className={`grid gap-6 ${
+             <div className={`grid gap-4 ${
                isFullWidth 
-                 ? 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' 
-                 : 'md:grid-cols-2'
+                 ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                 : 'md:grid-cols-1 lg:grid-cols-2'
              }`}>
                {filteredVideos.map((video) => (
                 <div 
@@ -1069,8 +1069,9 @@ const FigurasPage = () => {
                       : 'border-gray-100'
                   }`}
                 >
-                  <div className="relative group">
-                    <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+                  <div className="flex">
+                    <div className="relative group flex-shrink-0">
+                      <div className="w-80 h-48 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
                       {video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? (
                         <img
                           src={video.thumbnailUrl}
@@ -1404,7 +1405,7 @@ const FigurasPage = () => {
                     </button>
                   </div>
                   
-                                     <div className="p-4">
+                  <div className="flex-1 p-4">
                      <div className="flex items-center justify-between mb-2">
                        <h3 className="font-semibold text-gray-800 text-lg">{video.title}</h3>
                        <div className="flex items-center space-x-1">
