@@ -12,7 +12,6 @@ const VideoDownloadModal = ({
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState(null)
   const [downloadUrl, setDownloadUrl] = useState(null)
-  const [downloadMethod, setDownloadMethod] = useState('ffmpeg') // 'ffmpeg' o 'simple'
 
   const videoCombiner = new VideoCombiner()
 
@@ -41,13 +40,8 @@ const VideoDownloadModal = ({
     })
 
     try {
-      let combinedBlob
-
-      if (downloadMethod === 'ffmpeg') {
-        combinedBlob = await videoCombiner.combineVideos(videos, setProgress)
-      } else {
-        combinedBlob = await videoCombiner.combineVideosSimple(videos, setProgress)
-      }
+      console.log('Iniciando combinación de videos...')
+      const combinedBlob = await videoCombiner.combineVideos(videos, setProgress)
 
       // Crear URL para descarga
       const url = URL.createObjectURL(combinedBlob)
@@ -73,7 +67,7 @@ const VideoDownloadModal = ({
     if (downloadUrl) {
       const link = document.createElement('a')
       link.href = downloadUrl
-      link.download = `${sequenceName}_combinada.${downloadMethod === 'ffmpeg' ? 'mp4' : 'webm'}`
+      link.download = `${sequenceName}_combinada.webm`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -127,38 +121,10 @@ const VideoDownloadModal = ({
             <p className="text-xs text-gray-500 mt-1">
               Duración total: {videos?.reduce((sum, v) => sum + (v.duration || 0), 0).toFixed(1)}s
             </p>
+            <p className="text-xs text-blue-600 mt-1">
+              Formato: WebM (compatible con navegadores modernos)
+            </p>
           </div>
-
-          {/* Method Selection */}
-          {!isProcessing && !downloadUrl && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Método de combinación:
-              </label>
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    value="ffmpeg"
-                    checked={downloadMethod === 'ffmpeg'}
-                    onChange={(e) => setDownloadMethod(e.target.value)}
-                    className="text-blue-600"
-                  />
-                  <span className="text-sm">FFmpeg (Mejor calidad, más lento)</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="radio"
-                    value="simple"
-                    checked={downloadMethod === 'simple'}
-                    onChange={(e) => setDownloadMethod(e.target.value)}
-                    className="text-blue-600"
-                  />
-                  <span className="text-sm">Simple (Más rápido, calidad media)</span>
-                </label>
-              </div>
-            </div>
-          )}
 
           {/* Progress */}
           {progress && (
