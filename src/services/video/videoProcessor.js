@@ -141,28 +141,38 @@ export const processVideoSequence = async (videos, targetBPM) => {
     const ffmpegInstance = await initFFmpeg()
     const processedVideos = []
     
-    // Procesar cada video individualmente
-    for (let i = 0; i < videos.length; i++) {
-      const video = videos[i]
-      const speedFactor = targetBPM / video.bpm
-      
-      console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM}, factor: ${speedFactor.toFixed(2)}x)`)
-      
-      // Verificar que el archivo existe
-      if (!video.file) {
-        throw new Error(`Video ${i + 1} (${video.title}) no tiene archivo asociado`)
-      }
-      
-      // Ajustar velocidad del video
-      const result = await adjustVideoSpeed(video.file, speedFactor, `adjusted${i}.mp4`)
-      
-      if (!result.success) {
-        throw new Error(`Error al procesar video ${i + 1} (${video.title}): ${result.error}`)
-      }
-      
-      processedVideos.push(result.data)
-      console.log(`✅ Video ${i + 1} procesado correctamente`)
-    }
+         // Procesar cada video individualmente
+     for (let i = 0; i < videos.length; i++) {
+       const video = videos[i]
+       const speedFactor = targetBPM / video.bpm
+       
+       console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM}, factor: ${speedFactor.toFixed(2)}x)`)
+       
+       // Descargar video desde Firebase Storage si no tiene file
+       let videoBlob
+       if (video.file) {
+         videoBlob = video.file
+       } else if (video.videoUrl) {
+         console.log(`📥 Descargando video ${i + 1}/${videos.length} desde Firebase Storage...`)
+         const response = await fetch(video.videoUrl)
+         if (!response.ok) {
+           throw new Error(`Error descargando video ${i + 1} (${video.title}): HTTP ${response.status}`)
+         }
+         videoBlob = await response.blob()
+       } else {
+         throw new Error(`Video ${i + 1} (${video.title}) no tiene archivo ni URL asociada`)
+       }
+       
+       // Ajustar velocidad del video
+       const result = await adjustVideoSpeed(videoBlob, speedFactor, `adjusted${i}.mp4`)
+       
+       if (!result.success) {
+         throw new Error(`Error al procesar video ${i + 1} (${video.title}): ${result.error}`)
+       }
+       
+       processedVideos.push(result.data)
+       console.log(`✅ Video ${i + 1} procesado correctamente`)
+     }
     
     // Concatenar todos los videos ajustados
     console.log('🎬 Concatenando videos procesados...')
@@ -232,31 +242,41 @@ export const createSequencePreview = async (videos, useBPMControl = false, targe
     const ffmpegInstance = await initFFmpeg()
     const processedVideos = []
     
-    // Procesar cada video según el estado del control BPM
-    for (let i = 0; i < videos.length; i++) {
-      const video = videos[i]
-      
-      // Verificar que el archivo existe
-      if (!video.file) {
-        throw new Error(`Video ${i + 1} (${video.title}) no tiene archivo asociado`)
-      }
-      
-      if (useBPMControl && targetBPM && video.bpm) {
-        // Ajustar velocidad según BPM
-        const speedFactor = targetBPM / video.bpm
-        console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM}, factor: ${speedFactor.toFixed(2)}x)`)
-        
-        const result = await adjustVideoSpeed(video.file, speedFactor, `preview${i}.mp4`)
-        if (!result.success) {
-          throw new Error(`Error al procesar video ${i + 1} (${video.title}): ${result.error}`)
-        }
-        processedVideos.push(result.data)
-      } else {
-        // Usar video original sin ajuste
-        console.log(`🎬 Usando video ${i + 1}/${videos.length}: ${video.title} (BPM original: ${video.bpm})`)
-        processedVideos.push(await fetchFile(video.file))
-      }
-    }
+         // Procesar cada video según el estado del control BPM
+     for (let i = 0; i < videos.length; i++) {
+       const video = videos[i]
+       
+       // Descargar video desde Firebase Storage si no tiene file
+       let videoBlob
+       if (video.file) {
+         videoBlob = video.file
+       } else if (video.videoUrl) {
+         console.log(`📥 Descargando video ${i + 1}/${videos.length} desde Firebase Storage...`)
+         const response = await fetch(video.videoUrl)
+         if (!response.ok) {
+           throw new Error(`Error descargando video ${i + 1} (${video.title}): HTTP ${response.status}`)
+         }
+         videoBlob = await response.blob()
+       } else {
+         throw new Error(`Video ${i + 1} (${video.title}) no tiene archivo ni URL asociada`)
+       }
+       
+       if (useBPMControl && targetBPM && video.bpm) {
+         // Ajustar velocidad según BPM
+         const speedFactor = targetBPM / video.bpm
+         console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM}, factor: ${speedFactor.toFixed(2)}x)`)
+         
+         const result = await adjustVideoSpeed(videoBlob, speedFactor, `preview${i}.mp4`)
+         if (!result.success) {
+           throw new Error(`Error al procesar video ${i + 1} (${video.title}): ${result.error}`)
+         }
+         processedVideos.push(result.data)
+       } else {
+         // Usar video original sin ajuste
+         console.log(`🎬 Usando video ${i + 1}/${videos.length}: ${video.title} (BPM original: ${video.bpm})`)
+         processedVideos.push(await fetchFile(videoBlob))
+       }
+     }
     
     // Concatenar videos
     console.log('🎬 Concatenando videos para preview...')

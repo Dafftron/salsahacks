@@ -323,6 +323,19 @@
   - Procesamiento de video con escalado específico según resolución
   - Configuración automática de calidad según resolución seleccionada
   - Compatibilidad con navegadores que no soportan File System Access API
+
+### 🎬 **FIX: DESCARGAS DE VIDEOS DESDE FIREBASE STORAGE** - 2024-12-19
+- **Problema**: Las funciones de procesamiento de secuencias fallaban porque buscaban `video.file` en lugar de descargar desde `video.videoUrl`
+- **Solución**: Modificadas las funciones `createSequencePreview` y `processVideoSequence` para descargar videos desde Firebase Storage
+- **Lógica mejorada**: Verificación de `video.file` primero, luego fallback a `video.videoUrl` con descarga desde Firebase
+- **Manejo de errores**: Mejor gestión de errores HTTP y validación de URLs
+- **Archivos modificados**:
+  - `src/services/video/videoProcessor.js` - Descarga automática desde Firebase Storage
+- **Funcionalidades**:
+  - Descarga automática de videos desde Firebase Storage cuando no están en memoria
+  - Compatibilidad con videos que tienen `file` (en memoria) o `videoUrl` (en Firebase)
+  - Mejor manejo de errores de red y validación de archivos
+  - Logs detallados del proceso de descarga y procesamiento
 - **Solución**:
   - Corregida inconsistencia en nombre de propiedad: cambiado `thumbnailURL` por `thumbnailUrl` en todos los componentes
   - Mejorado componente SmartThumbnail con mejor manejo de fallbacks
