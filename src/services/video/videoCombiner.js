@@ -48,26 +48,13 @@ class VideoCombiner {
           
           console.log(`URL de descarga obtenida para ${video.title}:`, downloadURL)
 
-          // Descargar video usando XMLHttpRequest para evitar CORS
-          const videoBlob = await new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest()
-            xhr.open('GET', downloadURL, true)
-            xhr.responseType = 'blob'
-            
-            xhr.onload = function() {
-              if (xhr.status === 200 || xhr.status === 206) {
-                resolve(xhr.response)
-              } else {
-                reject(new Error(`Error descargando: ${xhr.status}`))
-              }
-            }
-            
-            xhr.onerror = function() {
-              reject(new Error('Error de red al descargar'))
-            }
-            
-            xhr.send()
-          })
+          // Descargar video
+          const response = await fetch(downloadURL)
+          if (!response.ok) {
+            throw new Error(`Error descargando video: ${response.statusText}`)
+          }
+          
+          const videoBlob = await response.blob()
           videoBlobs.push(videoBlob)
           
           console.log(`Video ${i + 1} descargado: ${video.title}`)
@@ -95,7 +82,7 @@ class VideoCombiner {
           stage: 'complete',
           current: 100,
           total: 100,
-          message: '¡Videos combinados exitosamente!'
+          message: '¡Combinación completada!'
         })
       }
 
