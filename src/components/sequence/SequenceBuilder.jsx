@@ -24,13 +24,19 @@ import SmartThumbnail from '../common/SmartThumbnail.jsx'
 
 // Funciones auxiliares para tags (copiadas de FigurasPage)
 const getOrderedTags = (video) => {
-  if (!video.tags) return []
+  console.log('🏷️ getOrderedTags - video:', video.title, 'tags:', video.tags)
+  
+  if (!video.tags) {
+    console.log('❌ No hay tags en el video')
+    return []
+  }
   
   const orderedTags = []
   const categories = ['movimiento', 'nivel', 'estilo', 'ritmo', 'posicion', 'otro']
   
   categories.forEach(categoryKey => {
     if (video.tags[categoryKey] && Array.isArray(video.tags[categoryKey])) {
+      console.log(`📋 Categoría ${categoryKey}:`, video.tags[categoryKey])
       video.tags[categoryKey].forEach(tag => {
         orderedTags.push({
           tag,
@@ -41,17 +47,24 @@ const getOrderedTags = (video) => {
     }
   })
   
+  console.log('✅ Tags ordenados:', orderedTags)
   return orderedTags
 }
 
 const getOrderedTagsIniciales = (video) => {
-  if (!video.tagsIniciales) return []
+  console.log('🏷️ getOrderedTagsIniciales - video:', video.title, 'tagsIniciales:', video.tagsIniciales)
+  
+  if (!video.tagsIniciales) {
+    console.log('❌ No hay tagsIniciales en el video')
+    return []
+  }
   
   const orderedTags = []
   const categories = ['movimiento', 'nivel', 'estilo', 'ritmo', 'posicion', 'otro']
   
   categories.forEach(categoryKey => {
     if (video.tagsIniciales[categoryKey] && Array.isArray(video.tagsIniciales[categoryKey])) {
+      console.log(`📋 Categoría inicial ${categoryKey}:`, video.tagsIniciales[categoryKey])
       video.tagsIniciales[categoryKey].forEach(tag => {
         orderedTags.push({
           tag,
@@ -62,17 +75,24 @@ const getOrderedTagsIniciales = (video) => {
     }
   })
   
+  console.log('✅ Tags iniciales ordenados:', orderedTags)
   return orderedTags
 }
 
 const getOrderedTagsFinales = (video) => {
-  if (!video.tagsFinales) return []
+  console.log('🏷️ getOrderedTagsFinales - video:', video.title, 'tagsFinales:', video.tagsFinales)
+  
+  if (!video.tagsFinales) {
+    console.log('❌ No hay tagsFinales en el video')
+    return []
+  }
   
   const orderedTags = []
   const categories = ['movimiento', 'nivel', 'estilo', 'ritmo', 'posicion', 'otro']
   
   categories.forEach(categoryKey => {
     if (video.tagsFinales[categoryKey] && Array.isArray(video.tagsFinales[categoryKey])) {
+      console.log(`📋 Categoría final ${categoryKey}:`, video.tagsFinales[categoryKey])
       video.tagsFinales[categoryKey].forEach(tag => {
         orderedTags.push({
           tag,
@@ -83,6 +103,7 @@ const getOrderedTagsFinales = (video) => {
     }
   })
   
+  console.log('✅ Tags finales ordenados:', orderedTags)
   return orderedTags
 }
 
@@ -461,7 +482,7 @@ const SequenceBuilder = ({
                         {(() => {
                           const orderedTags = getOrderedTags(video)
                           if (orderedTags.length > 0) {
-                            return orderedTags.slice(0, 3).map(({ tag, categoryKey, color }) => (
+                            return orderedTags.map(({ tag, categoryKey, color }) => (
                               <span
                                 key={`${categoryKey}-${tag}`}
                                 className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
@@ -472,12 +493,6 @@ const SequenceBuilder = ({
                           } else {
                             return <span className="text-gray-400 text-sm">Sin etiquetas</span>
                           }
-                        })()}
-                        {(() => {
-                          const orderedTags = getOrderedTags(video)
-                          return orderedTags.length > 3 ? (
-                            <span className="text-xs text-gray-500">+{orderedTags.length - 3} más</span>
-                          ) : null
                         })()}
                       </div>
 
@@ -491,7 +506,7 @@ const SequenceBuilder = ({
                                 <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Iniciales:</span>
                               </div>
                               <div className="flex flex-wrap gap-2">
-                                {tagsIniciales.slice(0, 2).map(({ tag, categoryKey, color }) => (
+                                {tagsIniciales.map(({ tag, categoryKey, color }) => (
                                   <span
                                     key={`inicial-${categoryKey}-${tag}`}
                                     className="px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm"
@@ -499,9 +514,6 @@ const SequenceBuilder = ({
                                     {tag}
                                   </span>
                                 ))}
-                                {tagsIniciales.length > 2 && (
-                                  <span className="text-xs text-gray-500">+{tagsIniciales.length - 2} más</span>
-                                )}
                               </div>
                             </div>
                           )
@@ -519,7 +531,7 @@ const SequenceBuilder = ({
                                 <span className="text-xs font-medium text-green-600 uppercase tracking-wide">Finales:</span>
                               </div>
                               <div className="flex flex-wrap gap-2">
-                                {tagsFinales.slice(0, 2).map(({ tag, categoryKey, color }) => (
+                                {tagsFinales.map(({ tag, categoryKey, color }) => (
                                   <span
                                     key={`final-${categoryKey}-${tag}`}
                                     className="px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-sm"
@@ -527,9 +539,6 @@ const SequenceBuilder = ({
                                     {tag}
                                   </span>
                                 ))}
-                                {tagsFinales.length > 2 && (
-                                  <span className="text-xs text-gray-500">+{tagsFinales.length - 2} más</span>
-                                )}
                               </div>
                             </div>
                           )
