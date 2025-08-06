@@ -13,8 +13,8 @@ const BPMController = ({
   const [isBPMControlEnabled, setIsBPMControlEnabled] = useState(false) // Nuevo estado para el toggle
   const [isBPMSectionCollapsed, setIsBPMSectionCollapsed] = useState(true) // Estado para colapsar sección
   
-  // BPM presets con saltos de 5 (ahora hasta 300)
-  const bpmPresets = Array.from({length: 49}, (_, i) => 60 + i * 5) // 60, 65, 70... 300
+     // BPM presets con saltos de 5 (ahora hasta 220)
+   const bpmPresets = Array.from({length: 33}, (_, i) => 60 + i * 5) // 60, 65, 70... 220
   
   // Efecto para sincronizar BPM local con prop
   useEffect(() => {
@@ -91,190 +91,129 @@ const BPMController = ({
 
   
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+      {/* Header compacto con toggle integrado */}
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
           <Music className="h-5 w-5 text-purple-600" />
           <h3 className="text-lg font-semibold text-gray-800">Control de BPM</h3>
         </div>
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => setIsPreviewMode(!isPreviewMode)}
-            className={`p-2 rounded-lg transition-colors ${
-              isPreviewMode 
-                ? 'bg-purple-100 text-purple-600' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            onClick={handleToggleBPMControl}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              isBPMControlEnabled ? 'bg-purple-600' : 'bg-gray-300'
             }`}
-            title={isPreviewMode ? 'Desactivar preview' : 'Activar preview'}
           >
-            {isPreviewMode ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Toggle Control BPM */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-          <div className="flex items-center space-x-3">
-            {isBPMControlEnabled ? (
-              <Zap className="h-5 w-5 text-purple-600" />
-            ) : (
-              <ZapOff className="h-5 w-5 text-gray-400" />
-            )}
-            <div>
-              <div className="font-medium text-gray-800">Control de BPM</div>
-              <div className="text-sm text-gray-500">
-                {isBPMControlEnabled 
-                  ? 'Activado - Todos los videos se ajustarán al BPM global'
-                  : 'Desactivado - Cada video mantiene su BPM original'
-                }
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handleToggleBPMControl}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                isBPMControlEnabled ? 'bg-purple-600' : 'bg-gray-300'
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                isBPMControlEnabled ? 'translate-x-6' : 'translate-x-1'
               }`}
+            />
+          </button>
+          {isBPMControlEnabled && (
+            <button
+              onClick={() => setIsBPMSectionCollapsed(!isBPMSectionCollapsed)}
+              className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
+              title={isBPMSectionCollapsed ? "Expandir controles" : "Colapsar controles"}
             >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  isBPMControlEnabled ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </button>
-            {isBPMControlEnabled && (
-              <button
-                onClick={() => setIsBPMSectionCollapsed(!isBPMSectionCollapsed)}
-                className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
-                title={isBPMSectionCollapsed ? "Expandir controles" : "Colapsar controles"}
+              <svg 
+                className={`w-4 h-4 transform transition-transform ${isBPMSectionCollapsed ? 'rotate-90' : ''}`}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
               >
-                <svg 
-                  className={`w-4 h-4 transform transition-transform ${isBPMSectionCollapsed ? 'rotate-90' : ''}`}
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            )}
-          </div>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
-
+      {/* Estado del control */}
+      <div className="mb-3">
+        <div className="flex items-center space-x-2 text-sm">
+          {isBPMControlEnabled ? (
+            <Zap className="h-4 w-4 text-purple-600" />
+          ) : (
+            <ZapOff className="h-4 w-4 text-gray-400" />
+          )}
+          <span className="text-gray-600">
+            {isBPMControlEnabled 
+              ? 'Activado - Todos los videos se ajustarán al BPM global'
+              : 'Desactivado - Cada video mantiene su BPM original'
+            }
+          </span>
+        </div>
+      </div>
       
-      {/* BPM Slider y Video List - Sección Colapsable */}
+      {/* BPM Slider compacto - Solo cuando está activado */}
       {isBPMControlEnabled && (
-        <div className={`mb-6 overflow-hidden transition-all duration-300 ease-in-out ${
-          isBPMSectionCollapsed ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'
+        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isBPMSectionCollapsed ? 'max-h-0 opacity-0' : 'max-h-32 opacity-100'
         }`}>
-          {/* BPM Slider */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-600">BPM Global</span>
-              <button
-                onClick={handleResetBPM}
-                className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-                title="Reset a BPM original"
-              >
-                <RotateCcw className="h-3 w-3" />
-                <span>Reset</span>
-              </button>
-            </div>
-            
-            <div className="text-center mb-4">
-              <span className={`text-3xl font-bold ${getBPMColor(localBPM)}`}>
+          {/* BPM Display y Slider en línea */}
+          <div className="flex items-center space-x-4 mb-3">
+            <div className="flex items-center space-x-2">
+              <span className={`text-2xl font-bold ${getBPMColor(localBPM)}`}>
                 {localBPM}
               </span>
-              <span className="text-sm text-gray-500 ml-2">BPM</span>
+              <span className="text-sm text-gray-500">BPM</span>
             </div>
             
-            <div className="text-center mb-4">
-              <span className="text-sm text-gray-600">
-                {getBPMDescription(localBPM)}
-              </span>
-              {baseBPM !== localBPM && (
-                <span className="text-xs text-gray-400 ml-2">
-                  (Original: {baseBPM} BPM)
-                </span>
-              )}
+            <div className="flex-1">
+                             <input
+                 type="range"
+                 min="60"
+                 max="220"
+                 step="5"
+                 value={localBPM}
+                 onChange={(e) => handleBPMChange(parseInt(e.target.value))}
+                 className="w-full h-2 rounded-lg appearance-none cursor-pointer slider"
+                 style={{
+                   '--slider-value': `${((localBPM - 60) / (220 - 60)) * 100}%`,
+                   background: `linear-gradient(to right, ${getSliderColor(localBPM)} 0%, ${getSliderColor(localBPM)} ${((localBPM - 60) / (220 - 60)) * 100}%, #e5e7eb ${((localBPM - 60) / (220 - 60)) * 100}%, #e5e7eb 100%)`
+                 }}
+               />
             </div>
             
-            {/* Solo el slider sin números */}
-            <div className="px-2">
-              <input
-                type="range"
-                min="60"
-                max="300"
-                step="5"
-                value={localBPM}
-                onChange={(e) => handleBPMChange(parseInt(e.target.value))}
-                className="w-full h-3 rounded-lg appearance-none cursor-pointer slider"
-                style={{
-                  '--slider-value': `${((localBPM - 60) / (300 - 60)) * 100}%`,
-                  background: `linear-gradient(to right, ${getSliderColor(localBPM)} 0%, ${getSliderColor(localBPM)} ${((localBPM - 60) / (300 - 60)) * 100}%, #e5e7eb ${((localBPM - 60) / (300 - 60)) * 100}%, #e5e7eb 100%)`
-                }}
-              />
-            </div>
+            <button
+              onClick={handleResetBPM}
+              className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              title="Reset a BPM original"
+            >
+              <RotateCcw className="h-3 w-3" />
+              <span>Reset</span>
+            </button>
           </div>
           
-          {/* Video List */}
-          <div className="mb-6">
-            <div className="text-sm font-medium text-gray-600 mb-3">
-              Videos en secuencia ({sequence.length}):
-            </div>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {sequence.map((video, index) => {
-                const speedFactor = localBPM / video.bpm
-                const speedChange = ((speedFactor - 1) * 100).toFixed(1)
-                
-                return (
-                  <div key={video.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-800 truncate">
-                        {index + 1}. {video.title}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Original: {video.bpm} BPM
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className={`text-sm font-medium ${
-                        speedFactor > 1 ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {speedFactor > 1 ? '+' : ''}{speedChange}%
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {speedFactor.toFixed(2)}x
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+          {/* Descripción y resumen compacto */}
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <span>{getBPMDescription(localBPM)}</span>
+            {baseBPM !== localBPM && (
+              <span>(Original: {baseBPM} BPM)</span>
+            )}
+          </div>
+          
+          {/* Resumen de videos compacto */}
+          <div className="mt-2 text-xs text-gray-600">
+            <span className="font-medium">{sequence.length} videos</span>
+            <span className="ml-2">
+              {sequence.length > 0 && (
+                <>
+                  • Promedio: {Math.round(sequence.reduce((sum, v) => sum + v.bpm, 0) / sequence.length)} BPM
+                  • Ajuste: {((localBPM / (sequence.reduce((sum, v) => sum + v.bpm, 0) / sequence.length)) - 1) * 100 > 0 ? '+' : ''}
+                  {(((localBPM / (sequence.reduce((sum, v) => sum + v.bpm, 0) / sequence.length)) - 1) * 100).toFixed(1)}%
+                </>
+              )}
+            </span>
           </div>
         </div>
       )}
       
-
-      
-      {/* Info */}
-      <div className="mt-4 text-xs text-gray-500 text-center">
-        {isBPMControlEnabled ? (
-          <>
-            <p>El video se generará automáticamente al guardar la secuencia</p>
-            <p>Todos los videos se ajustarán al BPM seleccionado</p>
-          </>
-        ) : (
-          <>
-            <p>El video se generará automáticamente al guardar la secuencia</p>
-            <p>Cada video mantendrá su velocidad original</p>
-          </>
-        )}
+      {/* Info compacto */}
+      <div className="text-xs text-gray-500 text-center mt-2">
+        <p>El video se generará automáticamente al guardar la secuencia</p>
       </div>
     </div>
   )

@@ -891,6 +891,11 @@ const SequenceBuilder = ({
                               'HD'
                             }
                           </span>
+                          <span className="text-gray-400">•</span>
+                          <div className="flex items-center space-x-1">
+                            <Music className="h-3 w-3 text-purple-500" />
+                            <span className="font-medium text-purple-600">{video.bpm || 'N/A'} BPM</span>
+                          </div>
                         </div>
                         <button 
                           onClick={() => handleVideoLike(video)}
