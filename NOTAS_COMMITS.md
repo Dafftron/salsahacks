@@ -131,6 +131,24 @@
 - **Archivos modificados**:
   - `src/components/sequence/BPMController.jsx` - Rango BPM, layout compacto, resumen inteligente
   - `src/components/sequence/SequenceBuilder.jsx` - Visualización de BPM en tarjetas de secuencia
+
+### 🎬 **PASO 5 COMPLETADO: TAGS DE SECUENCIA** - 2024-12-19
+- **Implementado**: Sistema completo de etiquetas para categorizar secuencias
+- **Funcionalidad**: 
+  - Tags seleccionables por categorías (Dificultad, Estilo, Nivel, etc.)
+  - Sección colapsable debajo de "Secuencia Actual"
+  - Tags guardados junto con la secuencia en Firebase
+  - Visualización de tags en cards de la galería de secuencias
+  - Sistema de filtros aplicable (preparado para implementación)
+- **Interfaz**: 
+  - Toggle desplegable para expandir/colapsar sección de tags
+  - Tags seleccionados mostrados como chips con botón de eliminar
+  - Categorías organizadas con colores distintivos
+  - Tags visibles en galería con límite de 4 + contador
+- **Archivos modificados**:
+  - `src/components/sequence/SequenceBuilder.jsx` - Estados de tags, funciones de manejo, UI de selección
+  - `src/components/sequence/SequenceGallery.jsx` - Visualización de tags en cards, función getOrderedSequenceTags
+  - `src/services/firebase/sequences.js` - Estructura de datos actualizada para incluir tags
   - `src/components/sequence/SequenceBuilder.jsx` - Detección de edición y texto dinámico
   - `src/pages/FigurasPage.jsx` - Importación de updateSequence y lógica de guardado
 

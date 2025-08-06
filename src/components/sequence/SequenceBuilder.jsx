@@ -57,6 +57,10 @@ const SequenceBuilder = ({
   const [previewError, setPreviewError] = useState(null)
   const [lastPreviewData, setLastPreviewData] = useState(null) // Para cache
 
+  // Estados para tags de secuencia
+  const [sequenceTags, setSequenceTags] = useState({})
+  const [isTagsSectionCollapsed, setIsTagsSectionCollapsed] = useState(true)
+
   // Funciones auxiliares para tags (actualizadas para usar categoriesList)
   const getOrderedTags = (video) => {
     console.log('🏷️ getOrderedTags - video:', video.title, 'tags:', video.tags)
@@ -264,6 +268,7 @@ const SequenceBuilder = ({
         description: sequenceDescription,
         videos: sequence,
         style: style,
+        tags: sequenceTags, // Agregar tags de secuencia
         createdAt: new Date().toISOString()
       }
       
@@ -466,7 +471,7 @@ const SequenceBuilder = ({
     }
   }
 
-  const handleProcessSequence = async (targetBPM) => {
+    const handleProcessSequence = async (targetBPM) => {
     if (!sequence || sequence.length === 0) {
       addToast('No hay videos en la secuencia para procesar', 'error')
       return
@@ -523,7 +528,7 @@ const SequenceBuilder = ({
       
       if (result.success) {
         // Crear blob y descargar
-        const blob = new Blob([result.data], { type: 'video/mp4' })
+        const blob = new Blob([result.data], { type: 'video/mp4' }) 
         const url = URL.createObjectURL(blob)
         
         const a = document.createElement('a')
@@ -545,6 +550,51 @@ const SequenceBuilder = ({
     } finally {
       setIsProcessingSequence(false)
     }
+  }
+
+  // Funciones para manejar tags de secuencia
+  const handleTagToggle = (categoryKey, tag) => {
+    setSequenceTags(prevTags => {
+      const currentTags = prevTags[categoryKey] || []
+      const isSelected = currentTags.includes(tag)
+      
+      if (isSelected) {
+        // Remover tag
+        const newTags = currentTags.filter(t => t !== tag)
+        if (newTags.length === 0) {
+          const { [categoryKey]: removed, ...rest } = prevTags
+          return rest
+        } else {
+          return { ...prevTags, [categoryKey]: newTags }
+        }
+      } else {
+        // Agregar tag
+        return { ...prevTags, [categoryKey]: [...currentTags, tag] }
+      }
+    })
+  }
+
+  const isTagSelected = (categoryKey, tag) => {
+    return sequenceTags[categoryKey]?.includes(tag) || false
+  }
+
+  const getOrderedSequenceTags = () => {
+    const orderedTags = []
+    
+    categoriesList.forEach(category => {
+      const categoryTags = sequenceTags[category.key]
+      if (Array.isArray(categoryTags)) {
+        categoryTags.forEach(tag => {
+          orderedTags.push({
+            tag,
+            categoryKey: category.key,
+            color: category.color
+          })
+        })
+      }
+    })
+    
+    return orderedTags
   }
 
   // Si no está abierto, no renderizar
@@ -913,6 +963,96 @@ const SequenceBuilder = ({
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Tags de Secuencia */}
+          <div className="mb-6">
+            <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
+              {/* Header con toggle */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center space-x-2">
+                  <svg className="h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  <h3 className="text-lg font-semibold text-gray-800">Tags de Secuencia</h3>
+                </div>
+                <button
+                  onClick={() => setIsTagsSectionCollapsed(!isTagsSectionCollapsed)}
+                  className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
+                  title={isTagsSectionCollapsed ? "Expandir tags" : "Colapsar tags"}
+                >
+                  <svg 
+                    className={`w-4 h-4 transform transition-transform ${isTagsSectionCollapsed ? 'rotate-90' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Tags seleccionados */}
+              {(() => {
+                const orderedTags = getOrderedSequenceTags()
+                if (orderedTags.length > 0) {
+                  return (
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-2">
+                        {orderedTags.map(({ tag, categoryKey, color }) => (
+                          <span
+                            key={`${categoryKey}-${tag}`}
+                            className={`px-3 py-1 rounded-full text-sm font-medium ${getColorClasses(color)} flex items-center space-x-1`}
+                          >
+                            <span>{tag}</span>
+                            <button
+                              onClick={() => handleTagToggle(categoryKey, tag)}
+                              className="ml-1 hover:bg-black hover:bg-opacity-20 rounded-full p-0.5"
+                            >
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
+                return null
+              })()}
+
+              {/* Categorías de tags - Sección colapsable */}
+              <div className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                isTagsSectionCollapsed ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'
+              }`}>
+                <div className="space-y-4">
+                  {categoriesList.map(category => (
+                    <div key={category.key} className="border-t border-gray-100 pt-3">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center space-x-2">
+                        <span className={`w-3 h-3 rounded-full ${getColorClasses(category.color).replace('text-', 'bg-')}`}></span>
+                        <span>{category.name}</span>
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {category.tags.map(tag => (
+                          <button
+                            key={tag}
+                            onClick={() => handleTagToggle(category.key, tag)}
+                            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                              isTagSelected(category.key, tag)
+                                ? getColorClasses(category.color)
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                            }`}
+                          >
+                            {tag}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Botones de guardar/cancelar */}

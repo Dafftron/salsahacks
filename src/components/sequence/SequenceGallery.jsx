@@ -8,11 +8,13 @@ import {
   Download, 
   Clock,
   Users,
-  Calendar
+  Calendar,
+  Tag
 } from 'lucide-react'
 import ConfirmModal from '../common/ConfirmModal'
 import Toast from '../common/Toast'
 import SmartThumbnail from '../common/SmartThumbnail.jsx'
+import { useCategories } from '../../hooks/useCategories'
 
 const SequenceGallery = ({ 
   sequences, 
@@ -22,6 +24,9 @@ const SequenceGallery = ({
 }) => {
   const [toasts, setToasts] = useState([])
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, sequence: null })
+  
+  // Usar el hook de categorías para obtener getColorClasses
+  const { getColorClasses } = useCategories('figuras', 'salsa')
 
   const addToast = (message, type = 'success') => {
     const id = Date.now()
@@ -74,6 +79,37 @@ const SequenceGallery = ({
     return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
+  const getOrderedSequenceTags = (sequence) => {
+    if (!sequence.tags || Object.keys(sequence.tags).length === 0) {
+      return []
+    }
+    
+    const orderedTags = []
+    const categoriesList = [
+      { key: 'dificultad', color: 'red' },
+      { key: 'estilo', color: 'blue' },
+      { key: 'nivel', color: 'green' },
+      { key: 'figura', color: 'purple' },
+      { key: 'posicion', color: 'orange' },
+      { key: 'transicion', color: 'teal' }
+    ]
+    
+    categoriesList.forEach(category => {
+      const categoryTags = sequence.tags[category.key]
+      if (Array.isArray(categoryTags)) {
+        categoryTags.forEach(tag => {
+          orderedTags.push({
+            tag,
+            categoryKey: category.key,
+            color: category.color
+          })
+        })
+      }
+    })
+    
+    return orderedTags
+  }
+
   if (sequences.length === 0) {
     return (
       <div className="text-center py-12">
@@ -123,6 +159,33 @@ const SequenceGallery = ({
                   {sequence.description}
                 </p>
               )}
+
+              {/* Tags de la secuencia */}
+              {(() => {
+                const orderedTags = getOrderedSequenceTags(sequence)
+                if (orderedTags.length > 0) {
+                  return (
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-1">
+                        {orderedTags.slice(0, 4).map(({ tag, categoryKey, color }) => (
+                          <span
+                            key={`${categoryKey}-${tag}`}
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                        {orderedTags.length > 4 && (
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                            +{orderedTags.length - 4}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                }
+                return null
+              })()}
               
               <div className="flex items-center justify-between text-xs text-gray-500">
                 <div className="flex items-center space-x-1">
