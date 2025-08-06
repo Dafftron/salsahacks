@@ -26,6 +26,7 @@ import Toast from '../common/Toast'
 import ConfirmModal from '../common/ConfirmModal'
 import VideoPlayer from '../video/VideoPlayer.jsx'
 import SequenceTimeline from './SequenceTimeline.jsx'
+import SequenceVideoPlayer from './SequenceVideoPlayer.jsx'
 import BPMController from './BPMController'
 import VideoDownloadModal from '../video/VideoDownloadModal'
 import { processVideoSequence, createSequencePreview } from '../../services/video/videoProcessor'
@@ -64,6 +65,9 @@ const SequenceBuilder = ({
 
   // Estados para modal de descarga
   const [showDownloadModal, setShowDownloadModal] = useState(false)
+
+  // Estado para BPM actual
+  const [currentBPM, setCurrentBPM] = useState(null)
 
   // Funciones auxiliares para tags (actualizadas para usar categoriesList)
   const getOrderedTags = (video) => {
@@ -169,6 +173,18 @@ const SequenceBuilder = ({
     toggleBuilder,
     checkCompatibility
   } = useSequenceBuilderContext()
+
+  // Calcular BPM promedio de la secuencia
+  useEffect(() => {
+    const videosWithBPM = sequence.filter(video => video.bpm)
+    if (videosWithBPM.length > 0) {
+      const bpmValues = videosWithBPM.map(video => video.bpm)
+      const averageBPM = bpmValues.reduce((sum, bpm) => sum + bpm, 0) / bpmValues.length
+      setCurrentBPM(Math.round(averageBPM))
+    } else {
+      setCurrentBPM(null)
+    }
+  }, [sequence])
 
   const {
     handleDragStart,
@@ -637,8 +653,9 @@ const SequenceBuilder = ({
                 <div className="space-y-4">
                   {/* Video Player Principal */}
                   {previewVideoUrl === 'sequence-timeline' ? (
-                    <SequenceTimeline
+                    <SequenceVideoPlayer
                       videos={sequence}
+                      currentBPM={currentBPM}
                       className="w-full h-96"
                       showControls={true}
                       autoplay={false}

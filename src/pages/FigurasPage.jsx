@@ -786,7 +786,7 @@ const FigurasPage = () => {
   // Función para descargar video usando Firebase Storage
   const downloadVideo = async (video) => {
     try {
-      addToast('Preparando descarga...', 'info')
+      console.log('Iniciando descarga de video individual:', video.title)
       
       // Obtener la URL de descarga directa desde Firebase Storage
       const { url, error } = await getFileURL(video.videoPath)
@@ -797,13 +797,26 @@ const FigurasPage = () => {
         return
       }
       
-      // Descargar el archivo como blob para evitar ventanas del navegador
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const blob = await response.blob()
+      // Descargar usando XMLHttpRequest para evitar CORS
+      const blob = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest()
+        xhr.open('GET', url, true)
+        xhr.responseType = 'blob'
+        
+        xhr.onload = function() {
+          if (xhr.status === 200 || xhr.status === 206) {
+            resolve(xhr.response)
+          } else {
+            reject(new Error(`Error descargando: ${xhr.status}`))
+          }
+        }
+        
+        xhr.onerror = function() {
+          reject(new Error('Error de red al descargar'))
+        }
+        
+        xhr.send()
+      })
       
       // Crear URL local del blob
       const blobUrl = URL.createObjectURL(blob)
