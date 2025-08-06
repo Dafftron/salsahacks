@@ -146,24 +146,69 @@ export const processVideoSequence = async (videos, targetBPM) => {
        const video = videos[i]
        const speedFactor = targetBPM / video.bpm
        
-       console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM}, factor: ${speedFactor.toFixed(2)}x)`)
-       
-       // Descargar video desde Firebase Storage si no tiene file
-       let videoBlob
-       if (video.file) {
-         videoBlob = video.file
-       } else if (video.videoUrl) {
-         console.log(`📥 Descargando video ${i + 1}/${videos.length} desde Firebase Storage...`)
-         const response = await fetch(video.videoUrl)
-         if (!response.ok) {
-           throw new Error(`Error descargando video ${i + 1} (${video.title}): HTTP ${response.status}`)
-         }
-         videoBlob = await response.blob()
-       } else {
-         throw new Error(`Video ${i + 1} (${video.title}) no tiene archivo ni URL asociada`)
-       }
-       
-       // Ajustar velocidad del video
+               console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM}, factor: ${speedFactor.toFixed(2)}x)`)
+        
+        // Descargar video desde Firebase Storage si no tiene file
+        let videoBlob
+        if (video.file) {
+          videoBlob = video.file
+        } else if (video.videoUrl) {
+          console.log(`📥 Descargando video ${i + 1}/${videos.length} desde URL: ${video.videoUrl}`)
+          
+          try {
+            // Intentar descarga directa primero
+            const response = await fetch(video.videoUrl, {
+              mode: 'cors',
+              credentials: 'omit',
+              headers: {
+                'Accept': 'video/*,*/*;q=0.9',
+                'Cache-Control': 'no-cache'
+              }
+            })
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+            }
+            
+            videoBlob = await response.blob()
+            console.log(`✅ Video descargado exitosamente: ${videoBlob.size} bytes`)
+          } catch (fetchError) {
+            console.warn(`⚠️ Error en fetch directo: ${fetchError.message}`)
+            
+            // Si falla, intentar con Firebase Storage SDK
+            try {
+              const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
+              const storage = getStorage()
+              
+              // Si videoUrl es una URL completa, extraer la ruta
+              let storagePath = video.videoUrl
+              if (video.videoUrl.includes('firebasestorage.googleapis.com')) {
+                // Extraer la ruta del bucket de la URL
+                const urlParts = video.videoUrl.split('/o/')
+                if (urlParts.length > 1) {
+                  storagePath = decodeURIComponent(urlParts[1].split('?')[0])
+                }
+              }
+              
+              const videoRef = ref(storage, storagePath)
+              const downloadURL = await getDownloadURL(videoRef)
+              
+              const response = await fetch(downloadURL)
+              if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+              }
+              
+              videoBlob = await response.blob()
+              console.log(`✅ Video descargado via Firebase SDK: ${videoBlob.size} bytes`)
+            } catch (storageError) {
+              throw new Error(`Error descargando video ${i + 1} (${video.title}): ${storageError.message}`)
+            }
+          }
+        } else {
+          throw new Error(`Video ${i + 1} (${video.title}) no tiene archivo ni URL asociada`)
+        }
+        
+        // Ajustar velocidad del video
        const result = await adjustVideoSpeed(videoBlob, speedFactor, `adjusted${i}.mp4`)
        
        if (!result.success) {
@@ -251,12 +296,57 @@ export const createSequencePreview = async (videos, useBPMControl = false, targe
        if (video.file) {
          videoBlob = video.file
        } else if (video.videoUrl) {
-         console.log(`📥 Descargando video ${i + 1}/${videos.length} desde Firebase Storage...`)
-         const response = await fetch(video.videoUrl)
-         if (!response.ok) {
-           throw new Error(`Error descargando video ${i + 1} (${video.title}): HTTP ${response.status}`)
+         console.log(`📥 Descargando video ${i + 1}/${videos.length} desde URL: ${video.videoUrl}`)
+         
+         try {
+           // Intentar descarga directa primero
+           const response = await fetch(video.videoUrl, {
+             mode: 'cors',
+             credentials: 'omit',
+             headers: {
+               'Accept': 'video/*,*/*;q=0.9',
+               'Cache-Control': 'no-cache'
+             }
+           })
+           
+           if (!response.ok) {
+             throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+           }
+           
+           videoBlob = await response.blob()
+           console.log(`✅ Video descargado exitosamente: ${videoBlob.size} bytes`)
+         } catch (fetchError) {
+           console.warn(`⚠️ Error en fetch directo: ${fetchError.message}`)
+           
+           // Si falla, intentar con Firebase Storage SDK
+           try {
+             const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
+             const storage = getStorage()
+             
+             // Si videoUrl es una URL completa, extraer la ruta
+             let storagePath = video.videoUrl
+             if (video.videoUrl.includes('firebasestorage.googleapis.com')) {
+               // Extraer la ruta del bucket de la URL
+               const urlParts = video.videoUrl.split('/o/')
+               if (urlParts.length > 1) {
+                 storagePath = decodeURIComponent(urlParts[1].split('?')[0])
+               }
+             }
+             
+             const videoRef = ref(storage, storagePath)
+             const downloadURL = await getDownloadURL(videoRef)
+             
+             const response = await fetch(downloadURL)
+             if (!response.ok) {
+               throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+             }
+             
+             videoBlob = await response.blob()
+             console.log(`✅ Video descargado via Firebase SDK: ${videoBlob.size} bytes`)
+           } catch (storageError) {
+             throw new Error(`Error descargando video ${i + 1} (${video.title}): ${storageError.message}`)
+           }
          }
-         videoBlob = await response.blob()
        } else {
          throw new Error(`Video ${i + 1} (${video.title}) no tiene archivo ni URL asociada`)
        }
