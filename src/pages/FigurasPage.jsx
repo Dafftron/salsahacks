@@ -70,6 +70,7 @@ const FigurasPage = () => {
   const [activeTab, setActiveTab] = useState('videos')
   const [syncStatus, setSyncStatus] = useState('idle') // idle, syncing, error
   const [cleanupModal, setCleanupModal] = useState({ isOpen: false, type: null })
+  const [editSequenceModal, setEditSequenceModal] = useState({ isOpen: false, sequence: null })
   const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
   
   // Estados para secuencias
@@ -260,20 +261,27 @@ const FigurasPage = () => {
     
     // Verificar si hay una secuencia en construcción
     if (sequence.length > 0 || sequenceName.trim()) {
-      const confirmed = window.confirm(
-        `¿Deseas cargar la secuencia "${sequenceToEdit.name}"?\n\n` +
-        `Esto reemplazará la secuencia actual en construcción y perderás todos los cambios no guardados.`
-      )
-      
-      if (!confirmed) {
-        console.log('❌ Usuario canceló la carga de secuencia')
-        return
-      }
+      // Abrir modal de confirmación
+      setEditSequenceModal({ isOpen: true, sequence: sequenceToEdit })
+    } else {
+      // Cargar directamente la secuencia
+      loadSequence(sequenceToEdit)
+      addToast(`Secuencia "${sequenceToEdit.name}" cargada para edición`)
     }
-    
-    // Cargar la secuencia en el constructor
-    loadSequence(sequenceToEdit)
-    addToast(`Secuencia "${sequenceToEdit.name}" cargada para edición`)
+  }
+
+  const handleConfirmEditSequence = () => {
+    const sequenceToEdit = editSequenceModal.sequence
+    if (sequenceToEdit) {
+      loadSequence(sequenceToEdit)
+      addToast(`Secuencia "${sequenceToEdit.name}" cargada para edición`)
+    }
+    setEditSequenceModal({ isOpen: false, sequence: null })
+  }
+
+  const handleCancelEditSequence = () => {
+    console.log('❌ Usuario canceló la carga de secuencia')
+    setEditSequenceModal({ isOpen: false, sequence: null })
   }
 
 
@@ -1669,6 +1677,22 @@ const FigurasPage = () => {
            'Eliminar Todo'
          }
          cancelText="Cancelar"
+       />
+
+       {/* Confirm Edit Sequence Modal */}
+       <ConfirmModal
+         isOpen={editSequenceModal.isOpen}
+         onClose={handleCancelEditSequence}
+         onConfirm={handleConfirmEditSequence}
+         title="🎬 Cargar Secuencia"
+         message={`¿Deseas cargar la secuencia "${editSequenceModal.sequence?.name}"?
+
+Esto reemplazará la secuencia actual en construcción y perderás todos los cambios no guardados.
+
+¿Estás seguro de que quieres continuar?`}
+         confirmText="Sí, Cargar"
+         cancelText="Cancelar"
+         type="warning"
        />
 
        {/* Confirm Delete Modal */}
