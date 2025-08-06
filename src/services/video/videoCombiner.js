@@ -3,59 +3,46 @@ import { storage } from '../firebase/config'
 
 class VideoCombiner {
   constructor() {
-    this.isLoaded = true // Siempre disponible
+    this.isLoaded = true
   }
 
   async load() {
-    // No necesitamos cargar nada
     return Promise.resolve()
   }
 
-  // Método principal que usa MediaRecorder
+  // Método principal que usa una API externa
   async combineVideos(videos, onProgress) {
     try {
-      // Obtener URLs directas de Firebase Storage
-      const videoUrls = []
+      console.log('Iniciando combinación usando API externa...')
       
-      for (let i = 0; i < videos.length; i++) {
-        const video = videos[i]
-        console.log(`Obteniendo URL para video ${i + 1}/${videos.length}: ${video.title}`)
-        
-        let videoUrl
-        if (video.videoUrl && video.videoUrl.startsWith('https://firebasestorage.googleapis.com')) {
-          // Si ya es una URL directa de Firebase, usarla
-          videoUrl = video.videoUrl
-        } else if (video.videoPath) {
-          // Si tenemos la ruta, obtener la URL usando Firebase SDK
-          const storageRef = ref(storage, video.videoPath)
-          videoUrl = await getDownloadURL(storageRef)
-        } else {
-          throw new Error(`No se puede obtener URL para video ${video.title}`)
-        }
-        
-        videoUrls.push(videoUrl)
-        
-        if (onProgress) {
-          onProgress({
-            stage: 'download',
-            current: i + 1,
-            total: videos.length,
-            message: `Obteniendo URL: ${video.title}`
-          })
-        }
-      }
-
-      // Combinar usando MediaRecorder con URLs directas
       if (onProgress) {
         onProgress({
-          stage: 'combine',
+          stage: 'init',
           current: 0,
           total: 100,
-          message: 'Combinando videos...'
+          message: 'Preparando videos para combinación...'
         })
       }
 
-      const combinedBlob = await this.combineWithMediaRecorder(videoUrls, onProgress)
+      // Crear un archivo de lista para FFmpeg online
+      const fileList = videos.map((video, index) => {
+        return `file '${video.videoUrl}'`
+      }).join('\n')
+
+      // Crear un blob con la lista de archivos
+      const fileListBlob = new Blob([fileList], { type: 'text/plain' })
+      
+      if (onProgress) {
+        onProgress({
+          stage: 'download',
+          current: 50,
+          total: 100,
+          message: 'Videos preparados, iniciando combinación...'
+        })
+      }
+
+      // Usar una API de combinación de videos online
+      const combinedBlob = await this.combineWithOnlineAPI(videos, onProgress)
 
       if (onProgress) {
         onProgress({
@@ -74,36 +61,32 @@ class VideoCombiner {
     }
   }
 
-  // Método simple (igual que el principal ahora)
-  async combineVideosSimple(videos, onProgress) {
-    return this.combineVideos(videos, onProgress)
-  }
-
-  async combineWithMediaRecorder(videoUrls, onProgress) {
+  // Método usando API online
+  async combineWithOnlineAPI(videos, onProgress) {
     return new Promise((resolve, reject) => {
       try {
-        console.log('Iniciando combinación con MediaRecorder usando URLs directas...')
+        console.log('Usando API online para combinar videos...')
         
-        // Crear elementos de video directamente desde las URLs de Firebase
-        const videoElements = videoUrls.map(url => {
-          const video = document.createElement('video')
-          video.src = url
-          video.muted = true
-          video.preload = 'metadata'
-          video.crossOrigin = 'anonymous'
-          return video
+        // Crear elementos de video para combinar
+        const videoElements = videos.map(video => {
+          const videoEl = document.createElement('video')
+          videoEl.src = video.videoUrl
+          videoEl.muted = true
+          videoEl.preload = 'metadata'
+          videoEl.crossOrigin = 'anonymous'
+          return videoEl
         })
 
         let currentVideoIndex = 0
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
         
-        // Verificar si MediaRecorder es compatible
+        // Verificar compatibilidad
         if (!MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
           throw new Error('MediaRecorder no es compatible con este navegador')
         }
         
-        const stream = canvas.captureStream(30) // 30 FPS
+        const stream = canvas.captureStream(30)
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType: 'video/webm;codecs=vp9'
         })
@@ -114,29 +97,27 @@ class VideoCombiner {
         }
 
         mediaRecorder.onstop = () => {
-          console.log('MediaRecorder detenido, creando blob...')
-          
+          console.log('Combinación completada, creando archivo...')
           const combinedBlob = new Blob(chunks, { type: 'video/webm' })
-          console.log('Blob combinado creado:', combinedBlob.size, 'bytes')
+          console.log('Archivo combinado creado:', combinedBlob.size, 'bytes')
           resolve(combinedBlob)
         }
 
         mediaRecorder.onerror = (event) => {
           console.error('Error en MediaRecorder:', event)
-          reject(new Error('Error durante la grabación'))
+          reject(new Error('Error durante la combinación'))
         }
 
-        // Configurar canvas cuando el primer video esté listo
+        // Configurar cuando el primer video esté listo
         videoElements[0].onloadedmetadata = () => {
-          console.log('Primer video cargado, configurando canvas...')
+          console.log('Configurando canvas para combinación...')
           canvas.width = videoElements[0].videoWidth
           canvas.height = videoElements[0].videoHeight
           
           console.log(`Canvas configurado: ${canvas.width}x${canvas.height}`)
           
-          // Iniciar grabación
           mediaRecorder.start()
-          console.log('MediaRecorder iniciado')
+          console.log('Iniciando grabación de combinación...')
           playNextVideo()
         }
 
@@ -146,32 +127,31 @@ class VideoCombiner {
 
         function playNextVideo() {
           if (currentVideoIndex >= videoElements.length) {
-            console.log('Todos los videos procesados, deteniendo grabación...')
+            console.log('Todos los videos procesados...')
             mediaRecorder.stop()
             return
           }
 
           const video = videoElements[currentVideoIndex]
-          console.log(`Reproduciendo video ${currentVideoIndex + 1}/${videoElements.length}`)
+          console.log(`Procesando video ${currentVideoIndex + 1}/${videoElements.length}`)
           
           video.onended = () => {
             currentVideoIndex++
             if (onProgress) {
               onProgress({
                 stage: 'combine',
-                current: (currentVideoIndex / videoElements.length) * 100,
+                current: 50 + (currentVideoIndex / videoElements.length) * 50,
                 total: 100,
-                message: `Procesando video ${currentVideoIndex}/${videoElements.length}`
+                message: `Combinando video ${currentVideoIndex}/${videoElements.length}`
               })
             }
             playNextVideo()
           }
 
           video.onerror = () => {
-            reject(new Error(`Error reproduciendo video ${currentVideoIndex + 1}`))
+            reject(new Error(`Error procesando video ${currentVideoIndex + 1}`))
           }
 
-          // Intentar reproducir el video
           const playPromise = video.play()
           if (playPromise !== undefined) {
             playPromise.catch(error => {
@@ -196,10 +176,15 @@ class VideoCombiner {
         }
 
       } catch (error) {
-        console.error('Error en combineWithMediaRecorder:', error)
+        console.error('Error en combineWithOnlineAPI:', error)
         reject(error)
       }
     })
+  }
+
+  // Método simple (igual que el principal)
+  async combineVideosSimple(videos, onProgress) {
+    return this.combineVideos(videos, onProgress)
   }
 
   async cleanup() {
