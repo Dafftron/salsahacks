@@ -36,11 +36,11 @@ const VideoDownloadModal = ({
       stage: 'init',
       current: 0,
       total: 100,
-      message: 'Iniciando FFmpeg.wasm...'
+      message: 'Iniciando MediaRecorder...'
     })
 
     try {
-      console.log('Iniciando combinación con FFmpeg.wasm...')
+      console.log('Iniciando combinación con MediaRecorder...')
       const combinedBlob = await videoCombiner.combineVideos(videos, setProgress)
 
       // Crear URL para descarga
@@ -67,7 +67,7 @@ const VideoDownloadModal = ({
     if (downloadUrl) {
       const link = document.createElement('a')
       link.href = downloadUrl
-      link.download = `${sequenceName}_combinada.mp4`
+      link.download = `${sequenceName}_combinada.webm`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -95,11 +95,11 @@ const VideoDownloadModal = ({
   const getStageDescription = () => {
     switch (progress?.stage) {
       case 'init':
-        return 'Inicializando FFmpeg.wasm...'
+        return 'Inicializando MediaRecorder...'
       case 'download':
         return 'Descargando videos...'
       case 'combine':
-        return 'Combinando con FFmpeg...'
+        return 'Combinando videos...'
       case 'finalize':
         return 'Finalizando archivo...'
       case 'complete':
@@ -137,9 +137,10 @@ const VideoDownloadModal = ({
             </p>
             <p className="text-xs text-gray-500 mt-1">
               Duración total: {videos?.reduce((sum, v) => sum + (v.duration || 0), 0).toFixed(1)}s
+              {videos?.some(v => !v.duration) && ' (calculando...)'}
             </p>
             <p className="text-xs text-blue-600 mt-1">
-              Formato: MP4 (calidad profesional con FFmpeg.wasm)
+              Formato: WebM (calidad profesional con MediaRecorder)
             </p>
           </div>
 
@@ -182,7 +183,7 @@ const VideoDownloadModal = ({
               <div className="flex items-center space-x-2">
                 <CheckCircle className="h-5 w-5 text-green-500" />
                 <span className="text-sm text-green-700">
-                  ¡Videos combinados exitosamente con FFmpeg.wasm!
+                  ¡Videos combinados exitosamente con MediaRecorder!
                 </span>
               </div>
             </div>
@@ -197,7 +198,7 @@ const VideoDownloadModal = ({
               className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
             >
               <Download className="h-4 w-4" />
-              <span>Combinar con FFmpeg</span>
+              <span>Combinar Videos</span>
             </button>
           )}
 
@@ -207,7 +208,7 @@ const VideoDownloadModal = ({
               className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
             >
               <Download className="h-4 w-4" />
-              <span>Descargar MP4</span>
+              <span>Descargar WebM</span>
             </button>
           )}
 
