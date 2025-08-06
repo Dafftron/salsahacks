@@ -30,6 +30,9 @@
 - ✅ Sistema de tags iniciales y finales para secuencias
 - ✅ Búsqueda avanzada y filtrado inteligente
 - ✅ Sincronización en tiempo real con Firebase
+- ✅ Constructor de secuencias completo integrado
+- ✅ Sistema de descarga de videos
+- ✅ VideoPlayer profesional con controles avanzados
 - ✅ Firebase como backend (Auth, Firestore, Storage)
 - ✅ Diseño responsive y moderno
 
