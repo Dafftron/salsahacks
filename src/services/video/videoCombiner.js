@@ -23,7 +23,8 @@ class VideoCombiner {
       console.log('FFmpeg.wasm cargado correctamente')
     } catch (error) {
       console.error('Error cargando FFmpeg:', error)
-      throw new Error('No se pudo cargar FFmpeg.wasm')
+      console.error('Detalles del error:', error.message)
+      throw new Error(`No se pudo cargar FFmpeg.wasm: ${error.message}`)
     }
   }
 

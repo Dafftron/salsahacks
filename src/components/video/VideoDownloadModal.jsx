@@ -37,11 +37,11 @@ const VideoDownloadModal = ({
       stage: 'init',
       current: 0,
       total: 100,
-      message: 'Iniciando MediaRecorder...'
+      message: 'Iniciando FFmpeg.wasm...'
     })
 
     try {
-      console.log('Iniciando combinación con MediaRecorder...')
+      console.log('Iniciando combinación con FFmpeg.wasm...')
       const combinedBlob = await videoCombiner.combineVideos(videos, setProgress)
 
       // Crear URL para descarga
@@ -96,11 +96,11 @@ const VideoDownloadModal = ({
   const getStageDescription = () => {
     switch (progress?.stage) {
       case 'init':
-        return 'Inicializando MediaRecorder...'
+        return 'Inicializando FFmpeg.wasm...'
       case 'download':
         return 'Descargando videos...'
       case 'combine':
-        return 'Combinando videos...'
+        return 'Combinando videos con FFmpeg...'
       case 'finalize':
         return 'Finalizando archivo...'
       case 'complete':
