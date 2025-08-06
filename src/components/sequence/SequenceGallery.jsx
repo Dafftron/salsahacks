@@ -9,7 +9,8 @@ import {
   Clock,
   Users,
   Calendar,
-  Tag
+  Tag,
+  Image
 } from 'lucide-react'
 import ConfirmModal from '../common/ConfirmModal'
 import Toast from '../common/Toast'
@@ -20,7 +21,8 @@ const SequenceGallery = ({
   sequences, 
   onDeleteSequence, 
   onPlaySequence,
-  onEditSequence 
+  onEditSequence,
+  onEditThumbnail 
 }) => {
   const [toasts, setToasts] = useState([])
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, sequence: null })
@@ -199,27 +201,57 @@ const SequenceGallery = ({
               </div>
             </div>
 
-            {/* Preview de videos */}
+            {/* Thumbnail del video final */}
             <div className="p-4">
-              <div className="grid grid-cols-4 gap-2 mb-4">
-                {sequence.videos.slice(0, 4).map((video, index) => (
-                  <div key={video.id} className="relative">
-                    <div className="aspect-video rounded overflow-hidden">
-                      <SmartThumbnail
-                        src={video.thumbnailUrl}
-                        alt={video.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    {index === 3 && sequence.videos.length > 4 && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">
-                          +{sequence.videos.length - 4}
-                        </span>
+              <div className="relative group mb-4">
+                <div className="aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+                  {sequence.thumbnailUrl ? (
+                    <SmartThumbnail
+                      src={sequence.thumbnailUrl}
+                      alt={sequence.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <div className="text-center">
+                        <Play className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                        <p className="text-sm text-gray-500 font-medium">{sequence.name}</p>
+                        <p className="text-xs text-gray-400">{sequence.videos.length} videos</p>
                       </div>
-                    )}
+                    </div>
+                  )}
+                  
+                  {/* Overlay con información */}
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <Play className="w-8 h-8 text-white mx-auto" />
+                    </div>
                   </div>
-                ))}
+                  
+                  {/* Badge de duración */}
+                  <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs font-medium">
+                    {getTotalDuration(sequence.videos)}
+                  </div>
+                  
+                  {/* Badge de resolución si está disponible */}
+                  {sequence.resolution && (
+                    <div className="absolute top-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs font-medium">
+                      {sequence.resolution}
+                    </div>
+                  )}
+                  
+                  {/* Botón de editar thumbnail */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onEditThumbnail && onEditThumbnail(sequence)
+                    }}
+                    className="absolute top-2 right-2 bg-black bg-opacity-75 text-white p-1 rounded hover:bg-opacity-90 transition-colors"
+                    title="Editar thumbnail"
+                  >
+                    <Image className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
 
               {/* Botones de acción */}

@@ -263,12 +263,17 @@ const SequenceBuilder = ({
     }
 
     try {
+      // Generar thumbnail de la secuencia
+      const thumbnailUrl = await generateSequenceThumbnail()
+      
       const sequenceData = {
         name: sequenceName,
         description: sequenceDescription,
         videos: sequence,
         style: style,
         tags: sequenceTags, // Agregar tags de secuencia
+        thumbnailUrl: thumbnailUrl, // Agregar thumbnail
+        resolution: sequence.length > 0 ? sequence[0].resolution : 'HD', // Usar resolución del primer video
         createdAt: new Date().toISOString()
       }
       
@@ -595,6 +600,34 @@ const SequenceBuilder = ({
     })
     
     return orderedTags
+  }
+
+  // Función para generar thumbnail de la secuencia
+  const generateSequenceThumbnail = async () => {
+    if (sequence.length === 0) return null
+    
+    try {
+      // Usar el primer video como base para el thumbnail
+      const firstVideo = sequence[0]
+      
+      // Si el primer video tiene thumbnail, usarlo como base
+      if (firstVideo.thumbnailUrl) {
+        return firstVideo.thumbnailUrl
+      }
+      
+      // Si no, generar un thumbnail del video
+      const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
+      const storage = getStorage()
+      const videoRef = ref(storage, firstVideo.videoUrl)
+      const downloadURL = await getDownloadURL(videoRef)
+      
+      // Por ahora, usar la URL del video como thumbnail
+      // En el futuro, se podría generar un thumbnail real del video
+      return downloadURL
+    } catch (error) {
+      console.error('Error al generar thumbnail:', error)
+      return null
+    }
   }
 
   // Si no está abierto, no renderizar

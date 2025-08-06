@@ -149,6 +149,22 @@
   - `src/components/sequence/SequenceBuilder.jsx` - Estados de tags, funciones de manejo, UI de selección
   - `src/components/sequence/SequenceGallery.jsx` - Visualización de tags en cards, función getOrderedSequenceTags
   - `src/services/firebase/sequences.js` - Estructura de datos actualizada para incluir tags
+
+### 🎬 **PASO 5.1 COMPLETADO: THUMBNAIL DE SECUENCIA** - 2024-12-19
+- **Implementado**: Sistema de thumbnail único para secuencias en galería
+- **Funcionalidad**: 
+  - Thumbnail del video final de la secuencia en lugar de 4 thumbnails individuales
+  - Generación automática de thumbnail al guardar secuencia
+  - Botón de editar thumbnail en cada card de secuencia
+  - Fallback visual cuando no hay thumbnail disponible
+- **Interfaz**: 
+  - Thumbnail grande con overlay hover y botón de play
+  - Badges de duración y resolución
+  - Botón de editar thumbnail (preparado para funcionalidad futura)
+  - Diseño consistente con galería de videos individuales
+- **Archivos modificados**:
+  - `src/components/sequence/SequenceGallery.jsx` - Thumbnail único, botón de editar, overlay hover
+  - `src/components/sequence/SequenceBuilder.jsx` - Generación de thumbnail, guardado automático
   - `src/components/sequence/SequenceBuilder.jsx` - Detección de edición y texto dinámico
   - `src/pages/FigurasPage.jsx` - Importación de updateSequence y lógica de guardado
 
