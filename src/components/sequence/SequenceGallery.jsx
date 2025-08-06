@@ -16,6 +16,7 @@ import ConfirmModal from '../common/ConfirmModal'
 import Toast from '../common/Toast'
 import SmartThumbnail from '../common/SmartThumbnail.jsx'
 import { useCategories } from '../../hooks/useCategories'
+import { useCardSize } from '../../contexts/CardSizeContext'
 
 const SequenceGallery = ({ 
   sequences, 
@@ -30,6 +31,7 @@ const SequenceGallery = ({
   
   // Usar el hook de categorías para obtener getColorClasses
   const { getColorClasses } = useCategories('figuras', 'salsa')
+  const { getSequenceConfig } = useCardSize()
 
   const addToast = (message, type = 'success') => {
     const id = Date.now()
@@ -151,7 +153,7 @@ const SequenceGallery = ({
   return (
     <div className="space-y-6">
       {/* Grid de secuencias */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className={`grid gap-6 ${getSequenceConfig().grid}`}>
         {sequences.map((sequence) => (
           <div
             key={sequence.id}
@@ -159,7 +161,7 @@ const SequenceGallery = ({
           >
             {/* Thumbnail */}
             <div className="relative group">
-              <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+              <div className={`w-full ${getSequenceConfig().aspect} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
                 {sequence.thumbnailUrl ? (
                   <SmartThumbnail
                     src={sequence.thumbnailUrl}
@@ -204,7 +206,7 @@ const SequenceGallery = ({
             <div className="p-4">
               {/* Título y rating */}
               <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold text-gray-800 text-lg truncate">{sequence.name}</h3>
+                <h3 className={`font-semibold text-gray-800 ${getSequenceConfig().titleSize} truncate`}>{sequence.name}</h3>
                 <div className="flex items-center space-x-1">
                   <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                     {sequence.videos.length} videos
@@ -213,29 +215,32 @@ const SequenceGallery = ({
               </div>
 
               {/* Descripción */}
-              <p className="text-gray-600 text-sm mb-3 line-clamp-2">{sequence.description || 'Sin descripción'}</p>
+              <p className={`text-gray-600 text-sm mb-3 ${getSequenceConfig().descriptionLines === 1 ? 'line-clamp-1' : getSequenceConfig().descriptionLines === 2 ? 'line-clamp-2' : getSequenceConfig().descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{sequence.description || 'Sin descripción'}</p>
               
               {/* Tags de la secuencia */}
-              <div className="flex flex-wrap gap-2 mb-3">
-                {(() => {
-                  const orderedTags = getOrderedSequenceTags(sequence)
-                  if (orderedTags.length > 0) {
-                    return orderedTags.map(({ tag, categoryKey, color }) => (
-                      <span
-                        key={`${categoryKey}-${tag}`}
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
-                      >
-                        {tag}
-                      </span>
-                    ))
-                  } else {
-                    return <span className="text-gray-400 text-sm">Sin etiquetas</span>
-                  }
-                })()}
-              </div>
+              {getSequenceConfig().showTags && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {(() => {
+                    const orderedTags = getOrderedSequenceTags(sequence)
+                    if (orderedTags.length > 0) {
+                      return orderedTags.map(({ tag, categoryKey, color }) => (
+                        <span
+                          key={`${categoryKey}-${tag}`}
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
+                        >
+                          {tag}
+                        </span>
+                      ))
+                    } else {
+                      return <span className="text-gray-400 text-sm">Sin etiquetas</span>
+                    }
+                  })()}
+                </div>
+              )}
               
               {/* Stats del video */}
-              <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
+              {getSequenceConfig().showStats && (
+                <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
                 <div className="flex items-center space-x-2">
                   <span className="font-medium">
                     {getTotalDuration(sequence.videos)}
@@ -274,12 +279,13 @@ const SequenceGallery = ({
                    >
                      <Trash2 className="h-4 w-4" />
                    </button>
-                 </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+                                  </div>
+               </div>
+             )}
+           </div>
+         </div>
+       ))}
+     </div>
 
       {/* Modal de confirmación de eliminación */}
       <ConfirmModal

@@ -1560,29 +1560,31 @@ const FigurasPage = () => {
                          <span className="text-xs font-medium text-gray-500 ml-1">({video.rating || 0})</span>
                        </div>
                      </div>
-                     <p className="text-gray-600 text-sm mb-3">{video.description || 'Sin descripción'}</p>
+                     <p className={`text-gray-600 text-sm mb-3 ${getVideoConfig().descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig().descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig().descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
                     
                                          {/* Tags Normales */}
-                     <div className="flex flex-wrap gap-2 mb-3">
-                       {(() => {
-                         const orderedTags = getOrderedTags(video)
-                         if (orderedTags.length > 0) {
-                           return orderedTags.map(({ tag, categoryKey, color }) => (
-                             <span
-                               key={`${categoryKey}-${tag}`}
-                               className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
-                             >
-                               {tag}
-                             </span>
-                           ))
-                         } else {
-                           return <span className="text-gray-400 text-sm">Sin etiquetas</span>
-                         }
-                       })()}
-                     </div>
+                     {getVideoConfig().showTags && (
+                       <div className="flex flex-wrap gap-2 mb-3">
+                         {(() => {
+                           const orderedTags = getOrderedTags(video)
+                           if (orderedTags.length > 0) {
+                             return orderedTags.map(({ tag, categoryKey, color }) => (
+                               <span
+                                 key={`${categoryKey}-${tag}`}
+                                 className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
+                               >
+                                 {tag}
+                               </span>
+                             ))
+                           } else {
+                             return <span className="text-gray-400 text-sm">Sin etiquetas</span>
+                           }
+                         })()}
+                       </div>
+                     )}
 
                      {/* Tags Iniciales */}
-                     {(() => {
+                     {getVideoConfig().showTags && (() => {
                        const tagsIniciales = getOrderedTagsIniciales(video)
                        if (tagsIniciales.length > 0) {
                          return (
@@ -1607,7 +1609,7 @@ const FigurasPage = () => {
                      })()}
 
                      {/* Tags Finales */}
-                     {(() => {
+                     {getVideoConfig().showTags && (() => {
                        const tagsFinales = getOrderedTagsFinales(video)
                        if (tagsFinales.length > 0) {
                          return (
@@ -1631,84 +1633,86 @@ const FigurasPage = () => {
                        return null
                      })()}
                     
-                                                             <div className="flex items-center justify-between text-sm text-gray-500">
-                                             <div className="flex items-center space-x-2">
-                         <span className="font-medium">
-                           {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
-                         </span>
-                         <span className="text-gray-400">•</span>
-                         <span className="text-gray-600">
-                           {video.resolution && video.resolution !== 'Unknown' ? 
-                             video.resolution : 
-                             'HD'
-                           }
-                         </span>
-                         {video.bpm && (
-                           <>
-                             <span className="text-gray-400">•</span>
-                             <span className="text-purple-600 font-medium flex items-center space-x-1">
-                               <Music className="h-3 w-3" />
-                               <span>{video.bpm} BPM</span>
-                             </span>
-                           </>
-                         )}
+                                                                                  {getVideoConfig().showStats && (
+                       <div className="flex items-center justify-between text-sm text-gray-500">
+                         <div className="flex items-center space-x-2">
+                           <span className="font-medium">
+                             {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
+                           </span>
+                           <span className="text-gray-400">•</span>
+                           <span className="text-gray-600">
+                             {video.resolution && video.resolution !== 'Unknown' ? 
+                               video.resolution : 
+                               'HD'
+                             }
+                           </span>
+                           {video.bpm && (
+                             <>
+                               <span className="text-gray-400">•</span>
+                               <span className="text-purple-600 font-medium flex items-center space-x-1">
+                                 <Music className="h-3 w-3" />
+                                 <span>{video.bpm} BPM</span>
+                               </span>
+                             </>
+                           )}
+                         </div>
+                                                <div className="flex items-center space-x-4">
+                           <button 
+                             onClick={() => handleVideoLike(video)}
+                             className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${
+                               video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                             }`}
+                             title={video.userLiked ? 'Quitar like' : 'Dar like'}
+                           >
+                             <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
+                             <span className="font-medium">{video.likes || 0}</span>
+                           </button>
+                           <button 
+                             onClick={() => openEditModal(video)}
+                             className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                             title="Editar video"
+                           >
+                             <Edit className="h-4 w-4" />
+                           </button>
+                           <button 
+                             onClick={() => openDeleteModal(video)}
+                             className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
+                             title="Eliminar video"
+                           >
+                             <Trash2 className="h-4 w-4" />
+                           </button>
+                           <button 
+                             onClick={() => handleAddVideoToSequence(video)}
+                             disabled={isVideoInSequence(video)}
+                             className={`transition-colors duration-200 p-1 rounded ${
+                               isVideoInSequence(video)
+                                 ? 'text-gray-300 cursor-not-allowed'
+                                 : isBuilderOpen && !isVideoCompatible(video)
+                                 ? 'text-red-400 hover:text-red-500 hover:bg-red-50'
+                                 : 'text-gray-400 hover:text-purple-500 hover:bg-purple-50'
+                             }`}
+                             title={
+                               isVideoInSequence(video) 
+                                 ? 'Ya en secuencia' 
+                                 : isBuilderOpen && !isVideoCompatible(video)
+                                 ? 'Añadir forzadamente (incompatible)'
+                                 : 'Añadir a secuencia'
+                             }
+                           >
+                             <Plus className="h-4 w-4" />
+                           </button>
+                           <button 
+                             onClick={() => {
+                               downloadVideo(video)
+                             }}
+                             className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
+                             title="Descargar video"
+                           >
+                             <Download className="h-4 w-4" />
+                           </button>
+                         </div>
                        </div>
-                       <div className="flex items-center space-x-4">
-                         <button 
-                           onClick={() => handleVideoLike(video)}
-                           className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${
-                             video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-                           }`}
-                           title={video.userLiked ? 'Quitar like' : 'Dar like'}
-                         >
-                           <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
-                           <span className="font-medium">{video.likes || 0}</span>
-                         </button>
-                         <button 
-                           onClick={() => openEditModal(video)}
-                           className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
-                           title="Editar video"
-                         >
-                           <Edit className="h-4 w-4" />
-                         </button>
-                         <button 
-                           onClick={() => openDeleteModal(video)}
-                           className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
-                           title="Eliminar video"
-                         >
-                           <Trash2 className="h-4 w-4" />
-                         </button>
-                         <button 
-                           onClick={() => handleAddVideoToSequence(video)}
-                           disabled={isVideoInSequence(video)}
-                           className={`transition-colors duration-200 p-1 rounded ${
-                             isVideoInSequence(video)
-                               ? 'text-gray-300 cursor-not-allowed'
-                               : isBuilderOpen && !isVideoCompatible(video)
-                               ? 'text-red-400 hover:text-red-500 hover:bg-red-50'
-                               : 'text-gray-400 hover:text-purple-500 hover:bg-purple-50'
-                           }`}
-                           title={
-                             isVideoInSequence(video) 
-                               ? 'Ya en secuencia' 
-                               : isBuilderOpen && !isVideoCompatible(video)
-                               ? 'Añadir forzadamente (incompatible)'
-                               : 'Añadir a secuencia'
-                           }
-                         >
-                           <Plus className="h-4 w-4" />
-                         </button>
-                         <button 
-                           onClick={() => {
-                             downloadVideo(video)
-                           }}
-                           className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
-                           title="Descargar video"
-                         >
-                           <Download className="h-4 w-4" />
-                         </button>
-                       </div>
-                     </div>
+                     )}
                   </div>
                 </div>
               ))}
@@ -1724,13 +1728,18 @@ const FigurasPage = () => {
               <h2 className="text-2xl font-semibold text-gray-800">
                 Secuencias de {selectedStyle.toLowerCase()} ({sequences.length})
               </h2>
-              <button
-                onClick={toggleBuilder}
-                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-              >
-                <Shuffle className="h-4 w-4" />
-                <span>CREAR SECUENCIA</span>
-              </button>
+              <div className="flex items-center space-x-4">
+                {/* Selector de tamaño de cards */}
+                <CardSizeSelector type="sequence" />
+                
+                <button
+                  onClick={toggleBuilder}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  <Shuffle className="h-4 w-4" />
+                  <span>CREAR SECUENCIA</span>
+                </button>
+              </div>
             </div>
             
             {sequencesLoading ? (
