@@ -414,7 +414,8 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         uploadedBy: user?.uid || 'anonymous',
         uploadedAt: new Date().toISOString(),
         views: 0,
-        likes: 0
+        likes: 0,
+        likedBy: []
       }
 
       const docResult = await createVideoDocument(videoDoc)

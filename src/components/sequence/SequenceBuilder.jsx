@@ -19,6 +19,8 @@ import {
 import { useSequenceBuilderContext } from '../../contexts/SequenceBuilderContext'
 import { useDragAndDrop } from '../../hooks/useDragAndDrop'
 import { useCategories } from '../../hooks/useCategories'
+import { toggleVideoLike } from '../../services/firebase/firestore'
+import { useAuth } from '../../contexts/AuthContext'
 import ConfirmModal from '../common/ConfirmModal'
 import Toast from '../common/Toast'
 import SmartThumbnail from '../common/SmartThumbnail.jsx'
@@ -36,6 +38,7 @@ const SequenceBuilder = ({
 }) => {
   // Usar el hook de categorías para obtener categoriesList y getColorClasses
   const { categoriesList, getColorClasses } = useCategories('figuras', style)
+  const { user } = useAuth()
 
   // Funciones auxiliares para tags (actualizadas para usar categoriesList)
   const getOrderedTags = (video) => {
@@ -162,6 +165,27 @@ const SequenceBuilder = ({
 
   const removeToast = (id) => {
     setToasts(prev => prev.filter(toast => toast.id !== id))
+  }
+
+  // Función para manejar likes
+  const handleVideoLike = async (video) => {
+    if (!user) {
+      addToast('Debes iniciar sesión para dar like', 'error')
+      return
+    }
+
+    try {
+      const result = await toggleVideoLike(video.id, user.uid)
+      
+      if (result.success) {
+        addToast(`Has ${result.userLiked ? 'dado like a' : 'quitado like de'} "${video.title}"`, 'success')
+      } else {
+        addToast('Error al actualizar like', 'error')
+      }
+    } catch (error) {
+      console.error('Error al manejar like:', error)
+      addToast('Error al actualizar like', 'error')
+    }
   }
 
   const handleGenerateRandom = () => {
@@ -542,10 +566,16 @@ const SequenceBuilder = ({
                             }
                           </span>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <Heart className="h-4 w-4 text-red-500 fill-current" />
+                        <button 
+                          onClick={() => handleVideoLike(video)}
+                          className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${
+                            video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                          }`}
+                          title={video.userLiked ? 'Quitar like' : 'Dar like'}
+                        >
+                          <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
                           <span className="font-medium">{video.likes || 0}</span>
-                        </div>
+                        </button>
                       </div>
                     </div>
                   </div>

@@ -476,6 +476,207 @@ export const updateVideoDocument = async (videoId, updates) => {
   }
 }
 
+// ===== SISTEMA DE LIKES =====
+export const toggleVideoLike = async (videoId, userId) => {
+  try {
+    console.log('❤️ Toggle like para video:', videoId, 'usuario:', userId)
+    
+    const docRef = doc(db, COLLECTIONS.VIDEOS, videoId)
+    const docSnap = await getDoc(docRef)
+    
+    if (!docSnap.exists()) {
+      throw new Error('Video no encontrado')
+    }
+    
+    const videoData = docSnap.data()
+    const likedBy = videoData.likedBy || []
+    const currentLikes = videoData.likes || 0
+    
+    // Verificar si el usuario ya dio like
+    const userLikedIndex = likedBy.indexOf(userId)
+    let newLikedBy, newLikes
+    
+    if (userLikedIndex === -1) {
+      // Usuario no ha dado like, agregarlo
+      newLikedBy = [...likedBy, userId]
+      newLikes = currentLikes + 1
+      console.log('✅ Like agregado por usuario:', userId)
+    } else {
+      // Usuario ya dio like, removerlo
+      newLikedBy = likedBy.filter(id => id !== userId)
+      newLikes = currentLikes - 1
+      console.log('✅ Like removido por usuario:', userId)
+    }
+    
+    // Actualizar el documento del video
+    await updateDoc(docRef, {
+      likes: newLikes,
+      likedBy: newLikedBy,
+      updatedAt: serverTimestamp()
+    })
+    
+    // También manejar favoritos automáticamente
+    let favoriteResult = null
+    try {
+      if (userLikedIndex === -1) {
+        // Si está dando like, agregar a favoritos
+        favoriteResult = await toggleUserFavorite(videoId, userId)
+        console.log('⭐ Video agregado automáticamente a favoritos')
+      } else {
+        // Si está quitando like, también quitar de favoritos
+        favoriteResult = await toggleUserFavorite(videoId, userId)
+        console.log('⭐ Video removido automáticamente de favoritos')
+      }
+    } catch (favoriteError) {
+      console.error('⚠️ Error al manejar favoritos automáticamente:', favoriteError)
+      // No fallar si hay error en favoritos, solo en likes
+    }
+    
+    console.log(`✅ Video actualizado: ${newLikes} likes, ${newLikedBy.length} usuarios`)
+    return { 
+      success: true, 
+      likes: newLikes, 
+      likedBy: newLikedBy, 
+      userLiked: userLikedIndex === -1,
+      isFavorite: favoriteResult?.isFavorite || false,
+      error: null 
+    }
+  } catch (error) {
+    console.error('❌ Error al toggle like:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export const checkUserLikedVideo = async (videoId, userId) => {
+  try {
+    const docRef = doc(db, COLLECTIONS.VIDEOS, videoId)
+    const docSnap = await getDoc(docRef)
+    
+    if (!docSnap.exists()) {
+      return { userLiked: false, error: 'Video no encontrado' }
+    }
+    
+    const videoData = docSnap.data()
+    const likedBy = videoData.likedBy || []
+    const userLiked = likedBy.includes(userId)
+    
+    return { userLiked, error: null }
+  } catch (error) {
+    console.error('❌ Error al verificar like del usuario:', error)
+    return { userLiked: false, error: error.message }
+  }
+}
+
+// ===== SISTEMA DE FAVORITOS POR USUARIO =====
+export const toggleUserFavorite = async (videoId, userId) => {
+  try {
+    console.log('⭐ Toggle favorito para video:', videoId, 'usuario:', userId)
+    
+    // Obtener el perfil del usuario
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    
+    if (!userDocSnap.exists()) {
+      throw new Error('Usuario no encontrado')
+    }
+    
+    const userData = userDocSnap.data()
+    const favorites = userData.favorites || []
+    
+    // Verificar si el video ya está en favoritos
+    const videoIndex = favorites.indexOf(videoId)
+    let newFavorites
+    
+    if (videoIndex === -1) {
+      // Video no está en favoritos, agregarlo
+      newFavorites = [...favorites, videoId]
+      console.log('✅ Video agregado a favoritos del usuario:', userId)
+    } else {
+      // Video ya está en favoritos, removerlo
+      newFavorites = favorites.filter(id => id !== videoId)
+      console.log('✅ Video removido de favoritos del usuario:', userId)
+    }
+    
+    // Actualizar el perfil del usuario
+    await updateDoc(userDocRef, {
+      favorites: newFavorites,
+      updatedAt: serverTimestamp()
+    })
+    
+    console.log(`✅ Perfil de usuario actualizado: ${newFavorites.length} favoritos`)
+    return { 
+      success: true, 
+      favorites: newFavorites, 
+      isFavorite: videoIndex === -1,
+      error: null 
+    }
+  } catch (error) {
+    console.error('❌ Error al toggle favorito:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export const checkUserFavorite = async (videoId, userId) => {
+  try {
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    
+    if (!userDocSnap.exists()) {
+      return { isFavorite: false, error: 'Usuario no encontrado' }
+    }
+    
+    const userData = userDocSnap.data()
+    const favorites = userData.favorites || []
+    const isFavorite = favorites.includes(videoId)
+    
+    return { isFavorite, error: null }
+  } catch (error) {
+    console.error('❌ Error al verificar favorito del usuario:', error)
+    return { isFavorite: false, error: error.message }
+  }
+}
+
+export const getUserFavorites = async (userId) => {
+  try {
+    console.log('🔍 Obteniendo favoritos del usuario:', userId)
+    
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    
+    if (!userDocSnap.exists()) {
+      return { favorites: [], error: 'Usuario no encontrado' }
+    }
+    
+    const userData = userDocSnap.data()
+    const favoriteIds = userData.favorites || []
+    
+    if (favoriteIds.length === 0) {
+      return { favorites: [], error: null }
+    }
+    
+    // Obtener los videos favoritos
+    const videos = []
+    for (const videoId of favoriteIds) {
+      try {
+        const videoDocRef = doc(db, COLLECTIONS.VIDEOS, videoId)
+        const videoDocSnap = await getDoc(videoDocRef)
+        
+        if (videoDocSnap.exists()) {
+          videos.push({ id: videoDocSnap.id, ...videoDocSnap.data() })
+        }
+      } catch (error) {
+        console.error(`Error al obtener video ${videoId}:`, error)
+      }
+    }
+    
+    console.log(`✅ ${videos.length} favoritos encontrados para usuario: ${userId}`)
+    return { favorites: videos, error: null }
+  } catch (error) {
+    console.error('❌ Error al obtener favoritos del usuario:', error)
+    return { favorites: [], error: error.message }
+  }
+}
+
 export const deleteVideoDocument = async (videoId) => {
   try {
     console.log('🗑️ Eliminando video:', videoId)

@@ -40,7 +40,10 @@ import {
   updateVideoThumbnailPaths,
   diagnoseVideos,
   updateVideoDocument,
-  cleanupDuplicateTags
+  cleanupDuplicateTags,
+  toggleVideoLike,
+  checkUserLikedVideo,
+  checkUserFavorite
 } from '../services/firebase/firestore'
 import {
   createSequence,
@@ -147,6 +150,38 @@ const FigurasPage = () => {
     }
   }, [selectedStyle])
 
+  // Verificar estado de likes del usuario cuando se cargan videos
+  useEffect(() => {
+    if (videos.length > 0 && user) {
+      console.log('❤️ Verificando estado de likes y favoritos del usuario para', videos.length, 'videos')
+      
+      const checkUserLikesAndFavorites = async () => {
+        const updatedVideos = await Promise.all(
+          videos.map(async (video) => {
+            try {
+              const [likeResult, favoriteResult] = await Promise.all([
+                checkUserLikedVideo(video.id, user.uid),
+                checkUserFavorite(video.id, user.uid)
+              ])
+              return { 
+                ...video, 
+                userLiked: likeResult.userLiked,
+                isFavorite: favoriteResult.isFavorite
+              }
+            } catch (error) {
+              console.error('Error al verificar like/favorito para video:', video.id, error)
+              return { ...video, userLiked: false, isFavorite: false }
+            }
+          })
+        )
+        
+        setVideos(updatedVideos)
+      }
+      
+      checkUserLikesAndFavorites()
+    }
+  }, [videos.length, user])
+
   // Sincronización en tiempo real para secuencias
   useEffect(() => {
     console.log('🎬 FigurasPage: useEffect de secuencias ejecutándose')
@@ -203,6 +238,44 @@ const FigurasPage = () => {
   const handleVideoUpdated = (updatedVideo) => {
     setVideos(prev => prev.map(v => v.id === updatedVideo.id ? updatedVideo : v))
     addToast(`${updatedVideo.title} actualizado exitosamente`, 'success')
+  }
+
+  // Función para manejar likes
+  const handleVideoLike = async (video) => {
+    if (!user) {
+      addToast('Debes iniciar sesión para dar like', 'error')
+      return
+    }
+
+    try {
+      const result = await toggleVideoLike(video.id, user.uid)
+      
+      if (result.success) {
+        // Actualizar el video en el estado local
+        setVideos(prevVideos => 
+          prevVideos.map(v => 
+            v.id === video.id 
+              ? { 
+                  ...v, 
+                  likes: result.likes, 
+                  likedBy: result.likedBy,
+                  userLiked: result.userLiked,
+                  isFavorite: result.isFavorite
+                }
+              : v
+          )
+        )
+        
+        const action = result.userLiked ? 'dado like a' : 'quitado like de'
+        const favoriteAction = result.isFavorite ? 'y agregado a favoritos' : 'y removido de favoritos'
+        addToast(`Has ${action} "${video.title}" ${favoriteAction}`, 'success')
+      } else {
+        addToast('Error al actualizar like', 'error')
+      }
+    } catch (error) {
+      console.error('Error al manejar like:', error)
+      addToast('Error al actualizar like', 'error')
+    }
   }
 
   // Función para añadir notificaciones
@@ -1167,8 +1240,8 @@ const FigurasPage = () => {
                                     <span class="text-sm font-medium text-gray-600">${video.rating || 0}</span>
                                   </div>
                                 </div>
-                                <button class="flex items-center space-x-1 ${video.favorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'} transition-colors duration-200 p-2 rounded hover:bg-red-50" title="${video.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
-                                  <svg class="w-5 h-5 ${video.favorite ? 'fill-current' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <button class="flex items-center space-x-1 ${video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'} transition-colors duration-200 p-2 rounded hover:bg-red-50" title="${video.userLiked ? 'Quitar like' : 'Dar like'}">
+                                  <svg class="w-5 h-5 ${video.userLiked ? 'fill-current' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                                   </svg>
                                   <span class="text-sm font-medium">${video.likes || 0}</span>
@@ -1335,15 +1408,20 @@ const FigurasPage = () => {
                               // Click to rate
                               star.addEventListener('click', async () => {
                                 try {
+                                  const currentRating = video.rating || 0
+                                  // Si la estrella clickeada ya está marcada, quitar todas las estrellas (rating = 0)
+                                  // Si no está marcada, asignar el valor de la estrella
+                                  const newRating = currentRating >= starValue ? 0 : starValue
+                                  
                                   // Actualizar en Firestore
-                                  await updateVideoDocument(video.id, { rating: starValue })
+                                  await updateVideoDocument(video.id, { rating: newRating })
                                   
                                   // Actualizar estado local
-                                  video.rating = starValue
+                                  video.rating = newRating
                                   
                                   // Actualizar visual
                                   stars.forEach((s, i) => {
-                                    if (i < starValue) {
+                                    if (i < newRating) {
                                       s.classList.add('text-yellow-400', 'fill-current')
                                       s.classList.remove('text-gray-300')
                                     } else {
@@ -1352,44 +1430,76 @@ const FigurasPage = () => {
                                     }
                                   })
                                   
-                                  ratingText.textContent = starValue
-                                  ratingContainer.title = `Puntuación: ${starValue}/5`
+                                  ratingText.textContent = newRating
+                                  ratingContainer.title = `Puntuación: ${newRating}/5`
                                   
-                                  console.log(`Video "${video.title}" puntuado con ${starValue} estrellas`)
+                                  console.log(`Video "${video.title}" puntuado con ${newRating} estrellas`)
                                 } catch (error) {
                                   console.error('Error al actualizar puntuación:', error)
                                 }
                               })
                             })
                             
-                            // Añadir funcionalidad al botón de favoritos
-                            const favButton = stats.querySelector('button[title*="favoritos"]')
-                            favButton.onclick = async () => {
+                            // Añadir funcionalidad al botón de likes
+                            const likeButton = stats.querySelector('button[title*="like"]')
+                            likeButton.onclick = async () => {
+                              if (!user) {
+                                alert('Debes iniciar sesión para dar like')
+                                return
+                              }
+                              
                               try {
-                                const newFavoriteState = !video.favorite
-                                await updateVideoDocument(video.id, { favorite: newFavoriteState })
-                                video.favorite = newFavoriteState
+                                const result = await toggleVideoLike(video.id, user.uid)
                                 
-                                // Cambiar el estado visual del botón
-                                const icon = favButton.querySelector('svg')
-                                const button = favButton
-                                if (newFavoriteState) {
-                                  icon.classList.add('fill-current', 'text-red-500')
-                                  icon.classList.remove('text-gray-400')
-                                  button.classList.add('text-red-500')
-                                  button.classList.remove('text-gray-400')
-                                  button.title = 'Quitar de favoritos'
+                                if (result.success) {
+                                  // Actualizar el video en el estado local
+                                  video.likes = result.likes
+                                  video.likedBy = result.likedBy
+                                  video.userLiked = result.userLiked
+                                  
+                                  // Actualizar el estado global de videos
+                                  setVideos(prevVideos => 
+                                    prevVideos.map(v => 
+                                      v.id === video.id 
+                                        ? { 
+                                            ...v, 
+                                            likes: result.likes, 
+                                            likedBy: result.likedBy,
+                                            userLiked: result.userLiked 
+                                          }
+                                        : v
+                                    )
+                                  )
+                                  
+                                  // Cambiar el estado visual del botón
+                                  const icon = likeButton.querySelector('svg')
+                                  const button = likeButton
+                                  const likesText = likeButton.querySelector('span')
+                                  
+                                  if (result.userLiked) {
+                                    icon.classList.add('fill-current', 'text-red-500')
+                                    icon.classList.remove('text-gray-400')
+                                    button.classList.add('text-red-500')
+                                    button.classList.remove('text-gray-400')
+                                    button.title = 'Quitar like'
+                                  } else {
+                                    icon.classList.remove('fill-current', 'text-red-500')
+                                    icon.classList.add('text-gray-400')
+                                    button.classList.remove('text-red-500')
+                                    button.classList.add('text-gray-400')
+                                    button.title = 'Dar like'
+                                  }
+                                  
+                                  // Actualizar el contador
+                                  likesText.textContent = result.likes
+                                  
+                                  const action = result.userLiked ? 'dado like a' : 'quitado like de'
+                                  console.log(`Has ${action} "${video.title}"`)
                                 } else {
-                                  icon.classList.remove('fill-current', 'text-red-500')
-                                  icon.classList.add('text-gray-400')
-                                  button.classList.remove('text-red-500')
-                                  button.classList.add('text-gray-400')
-                                  button.title = 'Añadir a favoritos'
+                                  console.error('Error al actualizar like')
                                 }
-                                
-                                console.log(`Video "${video.title}" ${newFavoriteState ? 'añadido a' : 'removido de'} favoritos`)
                               } catch (error) {
-                                console.error('Error al actualizar favorito:', error)
+                                console.error('Error al actualizar like:', error)
                               }
                             }
                          } catch (error) {
@@ -1418,7 +1528,10 @@ const FigurasPage = () => {
                                viewBox="0 0 24 24"
                                onClick={async () => {
                                  try {
-                                   const newRating = star
+                                   const currentRating = video.rating || 0
+                                   // Si la estrella clickeada ya está marcada, quitar todas las estrellas (rating = 0)
+                                   // Si no está marcada, asignar el valor de la estrella
+                                   const newRating = currentRating >= star ? 0 : star
                                    await updateVideoDocument(video.id, { rating: newRating })
                                    video.rating = newRating
                                    console.log(`Video "${video.title}" rated ${newRating} stars`)
@@ -1519,27 +1632,15 @@ const FigurasPage = () => {
                          </span>
                        </div>
                        <div className="flex items-center space-x-4">
-                         <div className="flex items-center space-x-1">
-                           <Heart className="h-4 w-4 text-red-500 fill-current" />
-                           <span className="font-medium">{video.likes || 0}</span>
-                         </div>
                          <button 
-                           onClick={async () => {
-                             try {
-                               const newFavoriteState = !video.favorite
-                               await updateVideoDocument(video.id, { favorite: newFavoriteState })
-                               video.favorite = newFavoriteState
-                               console.log(`Video "${video.title}" ${newFavoriteState ? 'añadido a' : 'removido de'} favoritos`)
-                             } catch (error) {
-                               console.error('Error al actualizar favorito:', error)
-                             }
-                           }}
-                           className={`transition-colors duration-200 p-1 rounded hover:bg-red-50 ${
-                             video.favorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                           onClick={() => handleVideoLike(video)}
+                           className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${
+                             video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
                            }`}
-                           title={video.favorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
+                           title={video.userLiked ? 'Quitar like' : 'Dar like'}
                          >
-                           <Heart className={`h-4 w-4 ${video.favorite ? 'fill-current' : ''}`} />
+                           <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
+                           <span className="font-medium">{video.likes || 0}</span>
                          </button>
                          <button 
                            onClick={() => openEditModal(video)}
