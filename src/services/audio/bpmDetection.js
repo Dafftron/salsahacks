@@ -14,6 +14,18 @@ export const extractBPMFromVideo = async (videoFile) => {
     // Decodificar audio del video
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
     
+    // Verificar si el video tiene audio significativo
+    const hasAudio = checkAudioLevel(audioBuffer)
+    if (!hasAudio) {
+      console.log('🎵 Video sin audio significativo, usando BPM por defecto')
+      return {
+        success: false,
+        bpm: null,
+        originalBPM: null,
+        error: 'Video sin audio significativo'
+      }
+    }
+    
     console.log('🎵 Audio decodificado, detectando BPM...')
     
     // Detectar BPM usando análisis de frecuencia
@@ -41,6 +53,24 @@ export const extractBPMFromVideo = async (videoFile) => {
   }
 }
 
+// Función para verificar si el video tiene audio significativo
+const checkAudioLevel = (audioBuffer) => {
+  const channelData = audioBuffer.getChannelData(0)
+  const sampleRate = audioBuffer.sampleRate
+  
+  // Analizar los primeros 5 segundos
+  const analysisLength = Math.min(5 * sampleRate, channelData.length)
+  const data = channelData.slice(0, analysisLength)
+  
+  // Calcular RMS (Root Mean Square) para medir el nivel de audio
+  const rms = Math.sqrt(data.reduce((sum, sample) => sum + sample * sample, 0) / data.length)
+  
+  console.log(`🎵 Nivel de audio RMS: ${rms.toFixed(4)}`)
+  
+  // Considerar que hay audio si RMS > 0.01 (umbral muy bajo)
+  return rms > 0.01
+}
+
 // Función para detectar BPM usando análisis de frecuencia
 const detectBPMFromAudioBuffer = async (audioBuffer) => {
   const sampleRate = audioBuffer.sampleRate
@@ -63,18 +93,37 @@ const detectBPMFromAudioBuffer = async (audioBuffer) => {
   if (intervals.length > 0) {
     const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length
     const bpm = (60 * sampleRate) / avgInterval
-    return Math.max(60, Math.min(200, bpm)) // Limitar entre 60-200 BPM
+    
+    console.log(`🎵 BPM calculado: ${bpm}, intervalos: ${intervals.length}, promedio: ${avgInterval}`)
+    
+    // Aplicar límites más realistas para salsa (80-180 BPM)
+    const limitedBPM = Math.max(80, Math.min(180, bpm))
+    
+    if (bpm !== limitedBPM) {
+      console.log(`🎵 BPM ajustado de ${bpm} a ${limitedBPM}`)
+    }
+    
+    return limitedBPM
   }
   
-  // BPM por defecto si no se detecta
+  // BPM por defecto si no se detecta (BPM típico de salsa)
+  console.log('🎵 No se detectaron intervalos, usando BPM por defecto: 120')
   return 120
 }
 
 // Función para detectar picos de energía
 const detectPeaks = (data, sampleRate) => {
   const peaks = []
-  const threshold = 0.1
-  const minDistance = sampleRate * 0.1 // Mínimo 0.1 segundos entre picos
+  
+  // Calcular umbral dinámico basado en la energía promedio
+  const energy = data.map(sample => sample * sample)
+  const avgEnergy = energy.reduce((a, b) => a + b, 0) / energy.length
+  const threshold = Math.max(0.05, Math.min(0.3, avgEnergy * 2)) // Umbral dinámico
+  
+  // Distancia mínima entre picos (0.3 segundos para evitar falsos positivos)
+  const minDistance = sampleRate * 0.3
+  
+  console.log(`🎵 Detectando picos con umbral: ${threshold.toFixed(4)}, energía promedio: ${avgEnergy.toFixed(4)}`)
   
   for (let i = 1; i < data.length - 1; i++) {
     if (data[i] > threshold && data[i] > data[i - 1] && data[i] > data[i + 1]) {
@@ -84,13 +133,14 @@ const detectPeaks = (data, sampleRate) => {
     }
   }
   
+  console.log(`🎵 Picos detectados: ${peaks.length}`)
   return peaks
 }
 
 export const validateBPM = (bpm) => {
-  // Validar que el BPM esté en un rango razonable (60-200 BPM)
-  if (bpm < 60 || bpm > 200) {
-    console.warn(`⚠️ BPM fuera de rango: ${bpm}`)
+  // Validar que el BPM esté en un rango razonable para salsa (80-180 BPM)
+  if (bpm < 80 || bpm > 180) {
+    console.warn(`⚠️ BPM fuera de rango para salsa: ${bpm} (rango esperado: 80-180)`)
     return false
   }
   return true
