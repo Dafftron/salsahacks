@@ -216,19 +216,11 @@ const SequenceGallery = ({
 
               {/* Descripción o Iconos */}
               {getSequenceConfig().showIcons ? (
-                // Mostrar iconos en tamaños pequeños y medianos
-                <div className="flex items-center justify-between text-gray-500 mb-2">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="w-3 h-3" />
-                    <span className="text-xs">{getTotalDuration(sequence.videos)}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
+                // Mostrar solo número de videos en tamaños pequeños y medianos
+                <div className="flex items-center justify-center text-gray-500 mb-2">
+                  <div className="flex items-center space-x-1">
                     <Users className="w-3 h-3" />
-                    <span className="text-xs">{sequence.videos.length}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="w-3 h-3" />
-                    <span className="text-xs">{formatDate(sequence.createdAt).split(' ')[0]}</span>
+                    <span className="text-xs font-medium">{sequence.videos.length} videos</span>
                   </div>
                 </div>
               ) : (
@@ -261,13 +253,8 @@ const SequenceGallery = ({
               {getSequenceConfig().showStats && (
                 <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
                   <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4" />
-                    <span className="font-medium">
-                      {getTotalDuration(sequence.videos)}
-                    </span>
-                    <span className="text-gray-400">•</span>
                     <Users className="w-4 h-4" />
-                    <span className="text-gray-600">
+                    <span className="font-medium">
                       {sequence.videos.length} videos
                     </span>
                     <span className="text-gray-400">•</span>
@@ -276,11 +263,6 @@ const SequenceGallery = ({
                         sequence.resolution : 
                         'HD'
                       }
-                    </span>
-                    <span className="text-gray-400">•</span>
-                    <Calendar className="w-4 h-4" />
-                    <span className="text-gray-600">
-                      {formatDate(sequence.createdAt)}
                     </span>
                   </div>
                   <div className="flex items-center space-x-2">

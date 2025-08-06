@@ -82,8 +82,8 @@ export const CardSizeProvider = ({ children }) => {
     large: {
       grid: 'md:grid-cols-2 lg:grid-cols-3',
       aspect: 'aspect-video',
-      titleSize: 'text-xl',
-      descriptionLines: 3,
+      titleSize: 'text-lg',
+      descriptionLines: 2,
       showStats: true,
       showTags: true,
       showIcons: false, // En grande mostrar descripción
@@ -92,8 +92,8 @@ export const CardSizeProvider = ({ children }) => {
     'extra-large': {
       grid: 'md:grid-cols-1 lg:grid-cols-2',
       aspect: 'aspect-video',
-      titleSize: 'text-2xl',
-      descriptionLines: 4,
+      titleSize: 'text-xl',
+      descriptionLines: 3,
       showStats: true,
       showTags: true,
       showIcons: false, // En extra grande mostrar descripción
