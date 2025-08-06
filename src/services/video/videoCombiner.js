@@ -1,29 +1,52 @@
+import { FFmpeg } from '@ffmpeg/ffmpeg'
+import { fetchFile, toBlobURL } from '@ffmpeg/util'
+
 class VideoCombiner {
   constructor() {
-    this.isLoaded = true // No necesitamos cargar nada
+    this.ffmpeg = new FFmpeg()
+    this.isLoaded = false
   }
 
   async load() {
-    // No necesitamos cargar nada
-    return Promise.resolve()
+    if (this.isLoaded) return
+
+    try {
+      console.log('Cargando FFmpeg.wasm...')
+      
+      // Cargar FFmpeg con archivos CDN más estables
+      await this.ffmpeg.load({
+        coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+        wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm',
+      })
+      
+      this.isLoaded = true
+      console.log('FFmpeg.wasm cargado correctamente')
+    } catch (error) {
+      console.error('Error cargando FFmpeg:', error)
+      throw new Error('No se pudo cargar FFmpeg.wasm')
+    }
   }
 
-  // Método principal que usa MediaRecorder optimizado para mantener calidad
+  // Método principal que usa FFmpeg.wasm para mantener calidad original
   async combineVideos(videos, onProgress) {
     try {
-      console.log('Iniciando combinación con MediaRecorder optimizado...')
+      if (!this.isLoaded) {
+        await this.load()
+      }
+
+      console.log('Iniciando combinación con FFmpeg.wasm...')
       
       if (onProgress) {
         onProgress({
           stage: 'init',
           current: 0,
           total: 100,
-          message: 'Iniciando combinación...'
+          message: 'Iniciando FFmpeg.wasm...'
         })
       }
 
       // Descargar todos los videos
-      const videoBlobs = []
+      const videoFiles = []
       
       for (let i = 0; i < videos.length; i++) {
         const video = videos[i]
@@ -32,7 +55,7 @@ class VideoCombiner {
         if (onProgress) {
           onProgress({
             stage: 'download',
-            current: ((i + 1) / videos.length) * 50,
+            current: ((i + 1) / videos.length) * 30,
             total: 100,
             message: `Descargando: ${video.title}`
           })
@@ -48,16 +71,21 @@ class VideoCombiner {
           
           console.log(`URL de descarga obtenida para ${video.title}:`, downloadURL)
 
-          // Descargar video para combinación
+          // Descargar video para FFmpeg
           const response = await fetch(downloadURL)
           if (!response.ok) {
             throw new Error(`Error descargando video: ${response.statusText}`)
           }
           
           const videoBlob = await response.blob()
-          videoBlobs.push(videoBlob)
+          const videoBuffer = await videoBlob.arrayBuffer()
           
-          console.log(`Video ${i + 1} descargado: ${video.title}`)
+          // Escribir archivo en FFmpeg
+          const fileName = `input_${i}.mp4`
+          await this.ffmpeg.writeFile(fileName, new Uint8Array(videoBuffer))
+          videoFiles.push(fileName)
+          
+          console.log(`Video ${i + 1} descargado y escrito: ${fileName}`)
           
         } catch (error) {
           console.error(`Error con video ${video.title}:`, error)
@@ -65,17 +93,45 @@ class VideoCombiner {
         }
       }
 
+      // Crear archivo de lista para concatenación
+      const fileList = videoFiles.map(file => `file '${file}'`).join('\n')
+      await this.ffmpeg.writeFile('filelist.txt', fileList)
+      
+      console.log('Archivo de lista creado:', fileList)
+
       if (onProgress) {
         onProgress({
           stage: 'combine',
-          current: 50,
+          current: 30,
           total: 100,
-          message: 'Combinando videos...'
+          message: 'Combinando videos con FFmpeg...'
         })
       }
 
-      // Crear un video combinado usando MediaRecorder optimizado
-      const combinedBlob = await this.combineVideoBlobs(videoBlobs)
+      // Ejecutar comando FFmpeg para combinar con configuración ligera
+      console.log('Ejecutando comando FFmpeg...')
+      await this.ffmpeg.exec([
+        '-f', 'concat',
+        '-safe', '0',
+        '-i', 'filelist.txt',
+        '-c', 'copy', // Copiar sin recodificar (más rápido)
+        'output.mp4'
+      ])
+
+      if (onProgress) {
+        onProgress({
+          stage: 'finalize',
+          current: 90,
+          total: 100,
+          message: 'Finalizando archivo...'
+        })
+      }
+
+      // Leer el archivo combinado
+      const data = await this.ffmpeg.readFile('output.mp4')
+      
+      // Limpiar archivos temporales
+      await this.cleanup(videoFiles)
 
       if (onProgress) {
         onProgress({
@@ -87,10 +143,16 @@ class VideoCombiner {
       }
 
       console.log('Combinación completada, archivo creado')
-      return combinedBlob
+      return new Blob([data], { type: 'video/mp4' })
 
     } catch (error) {
       console.error('Error combinando videos:', error)
+      // Intentar limpiar en caso de error
+      try {
+        await this.cleanup(videos.map((_, i) => `input_${i}.mp4`))
+      } catch (cleanupError) {
+        console.warn('Error limpiando archivos:', cleanupError)
+      }
       throw new Error(`Error combinando videos: ${error.message}`)
     }
   }
@@ -107,11 +169,11 @@ class VideoCombiner {
         canvas.width = 1920
         canvas.height = 1080
         
-        // Crear MediaRecorder con máxima calidad
-        const stream = canvas.captureStream(30) // 30 FPS para estabilidad
+        // Crear MediaRecorder con máxima calidad y FPS alto
+        const stream = canvas.captureStream(60) // 60 FPS para suavidad
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType: 'video/webm;codecs=vp9',
-          videoBitsPerSecond: 20000000 // 20 Mbps para máxima calidad
+          videoBitsPerSecond: 25000000 // 25 Mbps para máxima calidad
         })
         
         const chunks = []
@@ -184,6 +246,46 @@ class VideoCombiner {
             
             // Dibujar video centrado y escalado
             ctx.drawImage(video, offsetX, offsetY, drawWidth, drawHeight)
+          }
+          
+          // Usar requestAnimationFrame para máxima suavidad
+          video.onplay = () => {
+            const renderFrame = () => {
+              if (!video.paused && !video.ended) {
+                ctx.imageSmoothingEnabled = true
+                ctx.imageSmoothingQuality = 'high'
+                
+                // Limpiar canvas antes de dibujar
+                ctx.clearRect(0, 0, canvas.width, canvas.height)
+                
+                // Calcular dimensiones para mantener proporción
+                const videoAspect = video.videoWidth / video.videoHeight
+                const canvasAspect = canvas.width / canvas.height
+                
+                let drawWidth, drawHeight, offsetX, offsetY
+                
+                if (videoAspect > canvasAspect) {
+                  drawWidth = canvas.width
+                  drawHeight = canvas.width / videoAspect
+                  offsetX = 0
+                  offsetY = (canvas.height - drawHeight) / 2
+                } else {
+                  drawHeight = canvas.height
+                  drawWidth = canvas.height * videoAspect
+                  offsetX = (canvas.width - drawWidth) / 2
+                  offsetY = 0
+                }
+                
+                // Dibujar video centrado y escalado
+                ctx.drawImage(video, offsetX, offsetY, drawWidth, drawHeight)
+                
+                // Continuar renderizando
+                requestAnimationFrame(renderFrame)
+              }
+            }
+            
+            // Iniciar renderizado suave
+            requestAnimationFrame(renderFrame)
           }
           
           video.onended = () => {
