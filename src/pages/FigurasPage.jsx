@@ -255,13 +255,13 @@ const FigurasPage = () => {
     addToast('Funcionalidad de reproducción en desarrollo')
   }
 
-  const handleEditSequence = (sequence) => {
-    console.log('🎬 Editando secuencia:', sequence)
+  const handleEditSequence = (sequenceToEdit) => {
+    console.log('🎬 Editando secuencia:', sequenceToEdit)
     
     // Verificar si hay una secuencia en construcción
     if (sequence.length > 0 || sequenceName.trim()) {
       const confirmed = window.confirm(
-        `¿Deseas cargar la secuencia "${sequence.name}"?\n\n` +
+        `¿Deseas cargar la secuencia "${sequenceToEdit.name}"?\n\n` +
         `Esto reemplazará la secuencia actual en construcción y perderás todos los cambios no guardados.`
       )
       
@@ -272,8 +272,8 @@ const FigurasPage = () => {
     }
     
     // Cargar la secuencia en el constructor
-    loadSequence(sequence)
-    addToast(`Secuencia "${sequence.name}" cargada para edición`)
+    loadSequence(sequenceToEdit)
+    addToast(`Secuencia "${sequenceToEdit.name}" cargada para edición`)
   }
 
 
