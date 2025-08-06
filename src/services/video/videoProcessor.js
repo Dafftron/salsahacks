@@ -271,20 +271,24 @@ export const createSequencePreview = async (videos, useBPMControl = false, targe
            throw new Error(`Error al procesar video ${i + 1} (${video.title}): ${result.error}`)
          }
          processedVideos.push(result.data)
-       } else {
-         // Usar video original sin ajuste
-         console.log(`🎬 Usando video ${i + 1}/${videos.length}: ${video.title} (BPM original: ${video.bpm})`)
-         processedVideos.push(await fetchFile(videoBlob))
-       }
+               } else {
+          // Usar video original sin ajuste
+          console.log(`🎬 Usando video ${i + 1}/${videos.length}: ${video.title} (BPM original: ${video.bpm})`)
+          // Para videos sin ajuste, necesitamos los datos del blob, no fetchFile
+          processedVideos.push(videoBlob)
+        }
      }
     
     // Concatenar videos
     console.log('🎬 Concatenando videos para preview...')
     
-    // Escribir videos procesados
-    for (let i = 0; i < processedVideos.length; i++) {
-      ffmpegInstance.FS('writeFile', `preview${i}.mp4`, processedVideos[i])
-    }
+         // Escribir videos procesados
+     for (let i = 0; i < processedVideos.length; i++) {
+       const videoData = processedVideos[i]
+       // Si es un blob, convertirlo a Uint8Array, si ya es Uint8Array, usarlo directamente
+       const dataToWrite = videoData instanceof Blob ? await fetchFile(videoData) : videoData
+       ffmpegInstance.FS('writeFile', `preview${i}.mp4`, dataToWrite)
+     }
     
     // Crear archivo de lista
     const fileList = processedVideos.map((_, i) => `file preview${i}.mp4`).join('\n')
