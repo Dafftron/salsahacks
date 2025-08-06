@@ -425,15 +425,25 @@ const SequenceBuilder = ({
       for (let i = 0; i < sequence.length; i++) {
         const video = sequence[i]
         try {
-          // Obtener el archivo desde Firebase Storage
-          const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
-          const storage = getStorage()
-          const videoRef = ref(storage, video.videoUrl)
-          const downloadURL = await getDownloadURL(videoRef)
+          console.log(`📥 Descargando video ${i + 1}/${sequence.length}: ${video.title}`)
+          console.log(`🔗 URL del video: ${video.videoUrl}`)
           
-          // Descargar el archivo
-          const response = await fetch(downloadURL)
+          // Descargar directamente desde la URL
+          const response = await fetch(video.videoUrl, {
+            mode: 'cors',
+            credentials: 'omit',
+            headers: {
+              'Accept': 'video/*,*/*;q=0.9',
+              'Cache-Control': 'no-cache'
+            }
+          })
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          }
+          
           const blob = await response.blob()
+          console.log(`✅ Video descargado: ${blob.size} bytes`)
           
           videosWithFiles.push({
             ...video,
@@ -441,7 +451,39 @@ const SequenceBuilder = ({
           })
         } catch (error) {
           console.error(`❌ Error al descargar archivo de ${video.title}:`, error)
-          throw new Error(`No se pudo descargar el archivo de ${video.title}`)
+          
+          // Intentar con Firebase Storage SDK como fallback
+          try {
+            const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
+            const storage = getStorage()
+            
+            // Si videoUrl es una URL completa, extraer la ruta
+            let storagePath = video.videoUrl
+            if (video.videoUrl.includes('firebasestorage.googleapis.com')) {
+              const urlParts = video.videoUrl.split('/o/')
+              if (urlParts.length > 1) {
+                storagePath = decodeURIComponent(urlParts[1].split('?')[0])
+              }
+            }
+            
+            const videoRef = ref(storage, storagePath)
+            const downloadURL = await getDownloadURL(videoRef)
+            
+            const response = await fetch(downloadURL)
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+            }
+            
+            const blob = await response.blob()
+            console.log(`✅ Video descargado via Firebase SDK: ${blob.size} bytes`)
+            
+            videosWithFiles.push({
+              ...video,
+              file: blob
+            })
+          } catch (storageError) {
+            throw new Error(`No se pudo descargar el archivo de ${video.title}: ${storageError.message}`)
+          }
         }
       }
       
@@ -504,16 +546,25 @@ const SequenceBuilder = ({
         const video = sequence[i]
         try {
           addToast(`📥 Descargando ${i + 1}/${sequence.length}: ${video.title}`, 'info')
+          console.log(`📥 Descargando video ${i + 1}/${sequence.length}: ${video.title}`)
+          console.log(`🔗 URL del video: ${video.videoUrl}`)
           
-          // Obtener el archivo desde Firebase Storage
-          const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
-          const storage = getStorage()
-          const videoRef = ref(storage, video.videoUrl)
-          const downloadURL = await getDownloadURL(videoRef)
+          // Descargar directamente desde la URL
+          const response = await fetch(video.videoUrl, {
+            mode: 'cors',
+            credentials: 'omit',
+            headers: {
+              'Accept': 'video/*,*/*;q=0.9',
+              'Cache-Control': 'no-cache'
+            }
+          })
           
-          // Descargar el archivo
-          const response = await fetch(downloadURL)
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          }
+          
           const blob = await response.blob()
+          console.log(`✅ Video descargado: ${blob.size} bytes`)
           
           videosWithFiles.push({
             ...video,
@@ -523,7 +574,43 @@ const SequenceBuilder = ({
           console.log(`✅ Archivo descargado para: ${video.title}`)
         } catch (error) {
           console.error(`❌ Error al descargar archivo de ${video.title}:`, error)
-          throw new Error(`No se pudo descargar el archivo de ${video.title}`)
+          
+          // Intentar con Firebase Storage SDK como fallback
+          try {
+            addToast(`🔄 Reintentando descarga de ${video.title}...`, 'info')
+            
+            const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
+            const storage = getStorage()
+            
+            // Si videoUrl es una URL completa, extraer la ruta
+            let storagePath = video.videoUrl
+            if (video.videoUrl.includes('firebasestorage.googleapis.com')) {
+              const urlParts = video.videoUrl.split('/o/')
+              if (urlParts.length > 1) {
+                storagePath = decodeURIComponent(urlParts[1].split('?')[0])
+              }
+            }
+            
+            const videoRef = ref(storage, storagePath)
+            const downloadURL = await getDownloadURL(videoRef)
+            
+            const response = await fetch(downloadURL)
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+            }
+            
+            const blob = await response.blob()
+            console.log(`✅ Video descargado via Firebase SDK: ${blob.size} bytes`)
+            
+            videosWithFiles.push({
+              ...video,
+              file: blob
+            })
+            
+            console.log(`✅ Archivo descargado para: ${video.title}`)
+          } catch (storageError) {
+            throw new Error(`No se pudo descargar el archivo de ${video.title}: ${storageError.message}`)
+          }
         }
       }
       
