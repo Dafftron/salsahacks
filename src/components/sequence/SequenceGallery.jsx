@@ -215,7 +215,7 @@ const SequenceGallery = ({
               </div>
 
               {/* Descripción */}
-              <p className={`text-gray-600 text-sm mb-3 ${getSequenceConfig().descriptionLines === 1 ? 'line-clamp-1' : getSequenceConfig().descriptionLines === 2 ? 'line-clamp-2' : getSequenceConfig().descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{sequence.description || 'Sin descripción'}</p>
+              <p className={`text-gray-600 text-sm ${getSequenceConfig().compact ? 'mb-2' : 'mb-3'} ${getSequenceConfig().descriptionLines === 1 ? 'line-clamp-1' : getSequenceConfig().descriptionLines === 2 ? 'line-clamp-2' : getSequenceConfig().descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{sequence.description || 'Sin descripción'}</p>
               
               {/* Tags de la secuencia */}
               {getSequenceConfig().showTags && (
