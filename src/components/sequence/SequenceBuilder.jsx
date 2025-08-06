@@ -18,118 +18,10 @@ import {
 } from 'lucide-react'
 import { useSequenceBuilderContext } from '../../contexts/SequenceBuilderContext'
 import { useDragAndDrop } from '../../hooks/useDragAndDrop'
+import { useCategories } from '../../hooks/useCategories'
 import ConfirmModal from '../common/ConfirmModal'
 import Toast from '../common/Toast'
 import SmartThumbnail from '../common/SmartThumbnail.jsx'
-
-// Funciones auxiliares para tags (copiadas de FigurasPage)
-const getOrderedTags = (video) => {
-  console.log('🏷️ getOrderedTags - video:', video.title, 'tags:', video.tags)
-  
-  if (!video.tags) {
-    console.log('❌ No hay tags en el video')
-    return []
-  }
-  
-  const orderedTags = []
-  const categories = ['movimiento', 'nivel', 'estilo', 'ritmo', 'posicion', 'otro']
-  
-  categories.forEach(categoryKey => {
-    if (video.tags[categoryKey] && Array.isArray(video.tags[categoryKey])) {
-      console.log(`📋 Categoría ${categoryKey}:`, video.tags[categoryKey])
-      video.tags[categoryKey].forEach(tag => {
-        orderedTags.push({
-          tag,
-          categoryKey,
-          color: getTagColor(categoryKey)
-        })
-      })
-    }
-  })
-  
-  console.log('✅ Tags ordenados:', orderedTags)
-  return orderedTags
-}
-
-const getOrderedTagsIniciales = (video) => {
-  console.log('🏷️ getOrderedTagsIniciales - video:', video.title, 'tagsIniciales:', video.tagsIniciales)
-  
-  if (!video.tagsIniciales) {
-    console.log('❌ No hay tagsIniciales en el video')
-    return []
-  }
-  
-  const orderedTags = []
-  const categories = ['movimiento', 'nivel', 'estilo', 'ritmo', 'posicion', 'otro']
-  
-  categories.forEach(categoryKey => {
-    if (video.tagsIniciales[categoryKey] && Array.isArray(video.tagsIniciales[categoryKey])) {
-      console.log(`📋 Categoría inicial ${categoryKey}:`, video.tagsIniciales[categoryKey])
-      video.tagsIniciales[categoryKey].forEach(tag => {
-        orderedTags.push({
-          tag,
-          categoryKey,
-          color: getTagColor(categoryKey)
-        })
-      })
-    }
-  })
-  
-  console.log('✅ Tags iniciales ordenados:', orderedTags)
-  return orderedTags
-}
-
-const getOrderedTagsFinales = (video) => {
-  console.log('🏷️ getOrderedTagsFinales - video:', video.title, 'tagsFinales:', video.tagsFinales)
-  
-  if (!video.tagsFinales) {
-    console.log('❌ No hay tagsFinales en el video')
-    return []
-  }
-  
-  const orderedTags = []
-  const categories = ['movimiento', 'nivel', 'estilo', 'ritmo', 'posicion', 'otro']
-  
-  categories.forEach(categoryKey => {
-    if (video.tagsFinales[categoryKey] && Array.isArray(video.tagsFinales[categoryKey])) {
-      console.log(`📋 Categoría final ${categoryKey}:`, video.tagsFinales[categoryKey])
-      video.tagsFinales[categoryKey].forEach(tag => {
-        orderedTags.push({
-          tag,
-          categoryKey,
-          color: getTagColor(categoryKey)
-        })
-      })
-    }
-  })
-  
-  console.log('✅ Tags finales ordenados:', orderedTags)
-  return orderedTags
-}
-
-const getTagColor = (categoryKey) => {
-  const colors = {
-    movimiento: 'blue',
-    nivel: 'green',
-    estilo: 'purple',
-    ritmo: 'orange',
-    posicion: 'red',
-    otro: 'gray'
-  }
-  return colors[categoryKey] || 'gray'
-}
-
-const getColorClasses = (color) => {
-  const colorMap = {
-    blue: 'bg-blue-100 text-blue-800',
-    green: 'bg-green-100 text-green-800',
-    purple: 'bg-purple-100 text-purple-800',
-    orange: 'bg-orange-100 text-orange-800',
-    red: 'bg-red-100 text-red-800',
-    gray: 'bg-gray-100 text-gray-800'
-  }
-  return colorMap[color] || 'bg-gray-100 text-gray-800'
-}
 
 const SequenceBuilder = ({ 
   isOpen, 
@@ -142,6 +34,96 @@ const SequenceBuilder = ({
   isIntegrated = false,
   onToggleBuilder
 }) => {
+  // Usar el hook de categorías para obtener categoriesList y getColorClasses
+  const { categoriesList, getColorClasses } = useCategories('figuras', style)
+
+  // Funciones auxiliares para tags (actualizadas para usar categoriesList)
+  const getOrderedTags = (video) => {
+    console.log('🏷️ getOrderedTags - video:', video.title, 'tags:', video.tags)
+    
+    if (!video.tags || Object.keys(video.tags).length === 0) {
+      console.log('❌ No hay tags en el video')
+      return []
+    }
+    
+    const orderedTags = []
+    
+    categoriesList.forEach(category => {
+      const categoryTags = video.tags[category.key]
+      if (Array.isArray(categoryTags)) {
+        console.log(`📋 Categoría ${category.key}:`, categoryTags)
+        categoryTags.forEach(tag => {
+          orderedTags.push({
+            tag,
+            categoryKey: category.key,
+            color: category.color
+          })
+        })
+      }
+    })
+    
+    console.log('✅ Tags ordenados:', orderedTags)
+    return orderedTags
+  }
+
+  const getOrderedTagsIniciales = (video) => {
+    console.log('🏷️ getOrderedTagsIniciales - video:', video.title, 'tagsIniciales:', video.tagsIniciales)
+    
+    if (!video.tagsIniciales || Object.keys(video.tagsIniciales).length === 0) {
+      console.log('❌ No hay tagsIniciales en el video')
+      return []
+    }
+    
+    const orderedTags = []
+    
+    categoriesList.forEach(category => {
+      const categoryTags = video.tagsIniciales[category.key]
+      if (Array.isArray(categoryTags)) {
+        console.log(`📋 Categoría inicial ${category.key}:`, categoryTags)
+        categoryTags.forEach(tag => {
+          orderedTags.push({
+            tag,
+            categoryKey: category.key,
+            color: category.color,
+            type: 'inicial'
+          })
+        })
+      }
+    })
+    
+    console.log('✅ Tags iniciales ordenados:', orderedTags)
+    return orderedTags
+  }
+
+  const getOrderedTagsFinales = (video) => {
+    console.log('🏷️ getOrderedTagsFinales - video:', video.title, 'tagsFinales:', video.tagsFinales)
+    
+    if (!video.tagsFinales || Object.keys(video.tagsFinales).length === 0) {
+      console.log('❌ No hay tagsFinales en el video')
+      return []
+    }
+    
+    const orderedTags = []
+    
+    categoriesList.forEach(category => {
+      const categoryTags = video.tagsFinales[category.key]
+      if (Array.isArray(categoryTags)) {
+        console.log(`📋 Categoría final ${category.key}:`, categoryTags)
+        categoryTags.forEach(tag => {
+          orderedTags.push({
+            tag,
+            categoryKey: category.key,
+            color: category.color,
+            type: 'final'
+          })
+        })
+      }
+    })
+    
+    console.log('✅ Tags finales ordenados:', orderedTags)
+    return orderedTags
+  }
+
   const {
     sequence,
     sequenceName,
