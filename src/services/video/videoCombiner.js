@@ -10,39 +10,77 @@ class VideoCombiner {
     return Promise.resolve()
   }
 
-  // Método principal que usa una API externa
+  // Método principal que descarga videos primero
   async combineVideos(videos, onProgress) {
     try {
-      console.log('Iniciando combinación usando API externa...')
+      console.log('Iniciando descarga de videos...')
       
       if (onProgress) {
         onProgress({
           stage: 'init',
           current: 0,
           total: 100,
-          message: 'Preparando videos para combinación...'
+          message: 'Iniciando descarga de videos...'
         })
       }
 
-      // Crear un archivo de lista para FFmpeg online
-      const fileList = videos.map((video, index) => {
-        return `file '${video.videoUrl}'`
-      }).join('\n')
-
-      // Crear un blob con la lista de archivos
-      const fileListBlob = new Blob([fileList], { type: 'text/plain' })
+      // Descargar todos los videos como blobs locales
+      const videoBlobs = []
       
+      for (let i = 0; i < videos.length; i++) {
+        const video = videos[i]
+        console.log(`Descargando video ${i + 1}/${videos.length}: ${video.title}`)
+        
+        try {
+          // Usar fetch con modo 'no-cors' para evitar CORS
+          const response = await fetch(video.videoUrl, {
+            mode: 'no-cors',
+            cache: 'no-cache'
+          })
+          
+          if (!response.ok && response.type !== 'opaque') {
+            throw new Error(`Error descargando video: ${response.statusText}`)
+          }
+          
+          const blob = await response.blob()
+          videoBlobs.push(blob)
+          
+          if (onProgress) {
+            onProgress({
+              stage: 'download',
+              current: ((i + 1) / videos.length) * 50,
+              total: 100,
+              message: `Descargando: ${video.title}`
+            })
+          }
+        } catch (error) {
+          console.error(`Error descargando ${video.title}:`, error)
+          // Si falla fetch, intentar con XMLHttpRequest
+          const blob = await this.downloadWithXHR(video.videoUrl)
+          videoBlobs.push(blob)
+          
+          if (onProgress) {
+            onProgress({
+              stage: 'download',
+              current: ((i + 1) / videos.length) * 50,
+              total: 100,
+              message: `Descargando: ${video.title}`
+            })
+          }
+        }
+      }
+
+      // Combinar usando MediaRecorder
       if (onProgress) {
         onProgress({
-          stage: 'download',
+          stage: 'combine',
           current: 50,
           total: 100,
-          message: 'Videos preparados, iniciando combinación...'
+          message: 'Combinando videos...'
         })
       }
 
-      // Usar una API de combinación de videos online
-      const combinedBlob = await this.combineWithOnlineAPI(videos, onProgress)
+      const combinedBlob = await this.combineWithMediaRecorder(videoBlobs, onProgress)
 
       if (onProgress) {
         onProgress({
@@ -61,20 +99,49 @@ class VideoCombiner {
     }
   }
 
-  // Método usando API online
-  async combineWithOnlineAPI(videos, onProgress) {
+  // Método alternativo con XMLHttpRequest
+  downloadWithXHR(url) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('GET', url, true)
+      xhr.responseType = 'blob'
+      
+      xhr.onload = function() {
+        if (xhr.status === 200 || xhr.status === 206) {
+          resolve(xhr.response)
+        } else {
+          reject(new Error(`Error descargando: ${xhr.status}`))
+        }
+      }
+      
+      xhr.onerror = function() {
+        reject(new Error('Error de red'))
+      }
+      
+      xhr.send()
+    })
+  }
+
+  // Método simple (igual que el principal)
+  async combineVideosSimple(videos, onProgress) {
+    return this.combineVideos(videos, onProgress)
+  }
+
+  async combineWithMediaRecorder(videoBlobs, onProgress) {
     return new Promise((resolve, reject) => {
       try {
-        console.log('Usando API online para combinar videos...')
+        console.log('Iniciando combinación con MediaRecorder...')
         
-        // Crear elementos de video para combinar
-        const videoElements = videos.map(video => {
-          const videoEl = document.createElement('video')
-          videoEl.src = video.videoUrl
-          videoEl.muted = true
-          videoEl.preload = 'metadata'
-          videoEl.crossOrigin = 'anonymous'
-          return videoEl
+        // Crear URLs locales para los blobs
+        const videoUrls = videoBlobs.map(blob => URL.createObjectURL(blob))
+        
+        // Crear elementos de video
+        const videoElements = videoUrls.map(url => {
+          const video = document.createElement('video')
+          video.src = url
+          video.muted = true
+          video.preload = 'metadata'
+          return video
         })
 
         let currentVideoIndex = 0
@@ -98,6 +165,9 @@ class VideoCombiner {
 
         mediaRecorder.onstop = () => {
           console.log('Combinación completada, creando archivo...')
+          // Limpiar URLs locales
+          videoUrls.forEach(url => URL.revokeObjectURL(url))
+          
           const combinedBlob = new Blob(chunks, { type: 'video/webm' })
           console.log('Archivo combinado creado:', combinedBlob.size, 'bytes')
           resolve(combinedBlob)
@@ -176,15 +246,10 @@ class VideoCombiner {
         }
 
       } catch (error) {
-        console.error('Error en combineWithOnlineAPI:', error)
+        console.error('Error en combineWithMediaRecorder:', error)
         reject(error)
       }
     })
-  }
-
-  // Método simple (igual que el principal)
-  async combineVideosSimple(videos, onProgress) {
-    return this.combineVideos(videos, onProgress)
   }
 
   async cleanup() {
