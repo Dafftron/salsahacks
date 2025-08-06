@@ -19,7 +19,7 @@ const CardSizeSelector = ({ type = 'video' }) => {
 
   // Iconos para cada tamaño
   const sizeIcons = {
-    small: <Grid4X4 className="h-4 w-4" />,
+    small: <LayoutGrid className="h-4 w-4" />,
     medium: <Grid3X3 className="h-4 w-4" />,
     large: <Grid className="h-4 w-4" />,
     'extra-large': <Square className="h-4 w-4" />

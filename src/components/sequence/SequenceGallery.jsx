@@ -203,12 +203,12 @@ const SequenceGallery = ({
             </div>
 
             {/* Contenido del card */}
-            <div className="p-4">
+            <div className={`${getSequenceConfig().compact ? 'p-2' : 'p-4'}`}>
               {/* Título y rating */}
-              <div className="flex items-center justify-between mb-2">
+              <div className={`flex items-center justify-between ${getSequenceConfig().compact ? 'mb-1' : 'mb-2'}`}>
                 <h3 className={`font-semibold text-gray-800 ${getSequenceConfig().titleSize} truncate`}>{sequence.name}</h3>
                 <div className="flex items-center space-x-1">
-                  <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                  <span className={`bg-blue-100 text-blue-800 px-2 py-1 rounded-full ${getSequenceConfig().compact ? 'text-xs' : 'text-xs'} font-medium`}>
                     {sequence.videos.length} videos
                   </span>
                 </div>

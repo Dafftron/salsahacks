@@ -22,7 +22,7 @@ export const CardSizeProvider = ({ children }) => {
     small: {
       grid: 'md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
       aspect: 'aspect-square',
-      titleSize: 'text-sm',
+      titleSize: 'text-xs',
       descriptionLines: 1,
       showStats: false,
       showTags: false,
@@ -31,11 +31,11 @@ export const CardSizeProvider = ({ children }) => {
     medium: {
       grid: 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
       aspect: 'aspect-video',
-      titleSize: 'text-lg',
-      descriptionLines: 2,
-      showStats: true,
-      showTags: true,
-      compact: false
+      titleSize: 'text-sm',
+      descriptionLines: 1,
+      showStats: false,
+      showTags: false,
+      compact: true
     },
     large: {
       grid: 'md:grid-cols-2 lg:grid-cols-3',
@@ -62,7 +62,7 @@ export const CardSizeProvider = ({ children }) => {
     small: {
       grid: 'md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
       aspect: 'aspect-square',
-      titleSize: 'text-sm',
+      titleSize: 'text-xs',
       descriptionLines: 1,
       showStats: false,
       showTags: false,
@@ -71,11 +71,11 @@ export const CardSizeProvider = ({ children }) => {
     medium: {
       grid: 'md:grid-cols-2 lg:grid-cols-3',
       aspect: 'aspect-video',
-      titleSize: 'text-lg',
-      descriptionLines: 2,
-      showStats: true,
-      showTags: true,
-      compact: false
+      titleSize: 'text-sm',
+      descriptionLines: 1,
+      showStats: false,
+      showTags: false,
+      compact: true
     },
     large: {
       grid: 'md:grid-cols-2 lg:grid-cols-2',

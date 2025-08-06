@@ -32,6 +32,7 @@ import Toast from '../components/common/Toast'
 import SequenceBuilder from '../components/sequence/SequenceBuilder'
 import SequenceGallery from '../components/sequence/SequenceGallery'
 import CardSizeSelector from '../components/common/CardSizeSelector'
+import CompactCardActions from '../components/common/CompactCardActions'
 import { useSequenceBuilderContext } from '../contexts/SequenceBuilderContext'
 
 import { 
@@ -1527,16 +1528,16 @@ const FigurasPage = () => {
                     </button>
                   </div>
                   
-                                     <div className="p-4">
-                     <div className="flex items-center justify-between mb-2">
-                       <h3 className={`font-semibold text-gray-800 ${getVideoConfig().titleSize}`}>{video.title}</h3>
+                                     <div className={`${getVideoConfig().compact ? 'p-2' : 'p-4'}`}>
+                                            <div className={`flex items-center justify-between ${getVideoConfig().compact ? 'mb-1' : 'mb-2'}`}>
+                         <h3 className={`font-semibold text-gray-800 ${getVideoConfig().titleSize}`}>{video.title}</h3>
                        <div className="flex items-center space-x-1">
                          {[1, 2, 3, 4, 5].map(star => {
                            const isFilled = (video.rating || 0) >= star
                            return (
                              <svg 
                                key={star}
-                               className={`h-4 w-4 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} 
+                               className={`${getVideoConfig().compact ? 'h-3 w-3' : 'h-4 w-4'} ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} 
                                fill="currentColor" 
                                viewBox="0 0 24 24"
                                onClick={async () => {
@@ -1557,10 +1558,10 @@ const FigurasPage = () => {
                              </svg>
                            )
                          })}
-                         <span className="text-xs font-medium text-gray-500 ml-1">({video.rating || 0})</span>
+                         <span className={`${getVideoConfig().compact ? 'text-xs' : 'text-xs'} font-medium text-gray-500 ml-1`}>({video.rating || 0})</span>
                        </div>
                      </div>
-                                           <p className={`text-gray-600 text-sm mb-3 ${getVideoConfig().descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig().descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig().descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
+                                           <p className={`text-gray-600 text-sm ${getVideoConfig().compact ? 'mb-2' : 'mb-3'} ${getVideoConfig().descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig().descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig().descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
                     
                                          {/* Tags Normales */}
                                            {getVideoConfig().showTags && (
@@ -1633,86 +1634,102 @@ const FigurasPage = () => {
                         return null
                       })()}
                     
-                                                                                   {getVideoConfig().showStats && (
+                                                                                                         {getVideoConfig().compact ? (
+                        <CompactCardActions
+                          video={video}
+                          onLike={() => handleVideoLike(video)}
+                          onEdit={() => openEditModal(video)}
+                          onDelete={() => openDeleteModal(video)}
+                          onAddToSequence={() => handleAddVideoToSequence(video)}
+                          onDownload={() => downloadVideo(video)}
+                          onPlay={() => {
+                            // Función de reproducción
+                          }}
+                          isVideoInSequence={isVideoInSequence(video)}
+                          isBuilderOpen={isBuilderOpen}
+                          isVideoCompatible={isVideoCompatible(video)}
+                          type="video"
+                        />
+                      ) : (
                         <div className="flex items-center justify-between text-sm text-gray-500">
-                                             <div className="flex items-center space-x-2">
-                         <span className="font-medium">
-                           {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
-                         </span>
-                         <span className="text-gray-400">•</span>
-                         <span className="text-gray-600">
-                           {video.resolution && video.resolution !== 'Unknown' ? 
-                             video.resolution : 
-                             'HD'
-                           }
-                         </span>
-                         {video.bpm && (
-                           <>
-                             <span className="text-gray-400">•</span>
-                             <span className="text-purple-600 font-medium flex items-center space-x-1">
-                               <Music className="h-3 w-3" />
-                               <span>{video.bpm} BPM</span>
-                             </span>
-                           </>
-                         )}
-                       </div>
-                       <div className="flex items-center space-x-4">
-                         <button 
-                           onClick={() => handleVideoLike(video)}
-                           className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${
-                             video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-                           }`}
-                           title={video.userLiked ? 'Quitar like' : 'Dar like'}
-                         >
-                           <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
-                           <span className="font-medium">{video.likes || 0}</span>
-                         </button>
-                         <button 
-                           onClick={() => openEditModal(video)}
-                           className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
-                           title="Editar video"
-                         >
-                           <Edit className="h-4 w-4" />
-                         </button>
-                         <button 
-                           onClick={() => openDeleteModal(video)}
-                           className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
-                           title="Eliminar video"
-                         >
-                           <Trash2 className="h-4 w-4" />
-                         </button>
-                         <button 
-                           onClick={() => handleAddVideoToSequence(video)}
-                           disabled={isVideoInSequence(video)}
-                           className={`transition-colors duration-200 p-1 rounded ${
-                             isVideoInSequence(video)
-                               ? 'text-gray-300 cursor-not-allowed'
-                               : isBuilderOpen && !isVideoCompatible(video)
-                               ? 'text-red-400 hover:text-red-500 hover:bg-red-50'
-                               : 'text-gray-400 hover:text-purple-500 hover:bg-purple-50'
-                           }`}
-                           title={
-                             isVideoInSequence(video) 
-                               ? 'Ya en secuencia' 
-                               : isBuilderOpen && !isVideoCompatible(video)
-                               ? 'Añadir forzadamente (incompatible)'
-                               : 'Añadir a secuencia'
-                           }
-                         >
-                           <Plus className="h-4 w-4" />
-                         </button>
-                         <button 
-                           onClick={() => {
-                             downloadVideo(video)
-                           }}
-                           className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
-                           title="Descargar video"
-                         >
-                           <Download className="h-4 w-4" />
-                         </button>
-                                               </div>
-                      </div>
-                    )}
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium">
+                              {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
+                            </span>
+                            <span className="text-gray-400">•</span>
+                            <span className="text-gray-600">
+                              {video.resolution && video.resolution !== 'Unknown' ? 
+                                video.resolution : 
+                                'HD'
+                              }
+                            </span>
+                            {video.bpm && (
+                              <>
+                                <span className="text-gray-400">•</span>
+                                <span className="text-purple-600 font-medium flex items-center space-x-1">
+                                  <Music className="h-3 w-3" />
+                                  <span>{video.bpm} BPM</span>
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-4">
+                            <button 
+                              onClick={() => handleVideoLike(video)}
+                              className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${
+                                video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                              }`}
+                              title={video.userLiked ? 'Quitar like' : 'Dar like'}
+                            >
+                              <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
+                              <span className="font-medium">{video.likes || 0}</span>
+                            </button>
+                            <button 
+                              onClick={() => openEditModal(video)}
+                              className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                              title="Editar video"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <button 
+                              onClick={() => openDeleteModal(video)}
+                              className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
+                              title="Eliminar video"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                            <button 
+                              onClick={() => handleAddVideoToSequence(video)}
+                              disabled={isVideoInSequence(video)}
+                              className={`transition-colors duration-200 p-1 rounded ${
+                                isVideoInSequence(video)
+                                  ? 'text-gray-300 cursor-not-allowed'
+                                  : isBuilderOpen && !isVideoCompatible(video)
+                                  ? 'text-red-400 hover:text-red-500 hover:bg-red-50'
+                                  : 'text-gray-400 hover:text-purple-500 hover:bg-purple-50'
+                              }`}
+                              title={
+                                isVideoInSequence(video) 
+                                  ? 'Ya en secuencia' 
+                                  : isBuilderOpen && !isVideoCompatible(video)
+                                  ? 'Añadir forzadamente (incompatible)'
+                                  : 'Añadir a secuencia'
+                              }
+                            >
+                              <Plus className="h-4 w-4" />
+                            </button>
+                            <button 
+                              onClick={() => {
+                                downloadVideo(video)
+                              }}
+                              className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
+                              title="Descargar video"
+                            >
+                              <Download className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      )}
                   </div>
                 </div>
               ))}
