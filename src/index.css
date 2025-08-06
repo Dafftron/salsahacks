@@ -322,11 +322,11 @@ body {
 /* Mejorar la calidad de imagen de los thumbnails - TÉCNICAS AVANZADAS */
 .video-thumbnail-container img,
 .aspect-video img {
-  /* Optimización de renderizado para máxima nitidez */
+  /* Optimización de renderizado para máxima nitidez - ELIMINAR PIXELACIÓN */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
-  image-rendering: pixelated;
+  image-rendering: auto; /* Cambiar de pixelated a auto para mejor calidad */
   
   /* Aceleración por hardware y optimización de GPU */
   -webkit-backface-visibility: hidden;
@@ -336,16 +336,16 @@ body {
   -webkit-perspective: 1000px;
   perspective: 1000px;
   
-  /* Filtros para mejorar la calidad visual */
-  filter: contrast(1.05) brightness(1.02) saturate(1.1);
-  -webkit-filter: contrast(1.05) brightness(1.02) saturate(1.1);
+  /* Filtros para mejorar la calidad visual - AJUSTADOS PARA MEJOR NITIDEZ */
+  filter: contrast(1.08) brightness(1.03) saturate(1.05) sharpness(0.5);
+  -webkit-filter: contrast(1.08) brightness(1.03) saturate(1.05);
   
-  /* Suavizado y antialiasing */
+  /* Suavizado y antialiasing mejorado */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   
   /* Optimización de carga y transiciones */
-  will-change: transform;
+  will-change: transform, filter;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
   
   /* Asegurar que las imágenes se muestren correctamente */
@@ -355,6 +355,11 @@ body {
   /* Prevenir distorsión en diferentes densidades de píxeles */
   image-orientation: from-image;
   -webkit-image-orientation: from-image;
+  
+  /* Mejorar la interpolación de píxeles */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 /* Efectos hover mejorados para thumbnails */
@@ -365,12 +370,16 @@ body {
   -webkit-filter: contrast(1.1) brightness(1.05) saturate(1.15);
 }
 
-/* Calidad específica por densidad de pantalla */
+/* Calidad específica por densidad de pantalla - ANTI-PIXELACIÓN */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .video-thumbnail-container img,
   .aspect-video img {
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
+    image-rendering: auto;
+    /* Filtros específicos para pantallas 2x */
+    filter: contrast(1.05) brightness(1.01) saturate(1.03);
+    -webkit-filter: contrast(1.05) brightness(1.01) saturate(1.03);
   }
 }
 
@@ -379,6 +388,10 @@ body {
   .aspect-video img {
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
+    image-rendering: auto;
+    /* Filtros específicos para pantallas 3x */
+    filter: contrast(1.03) brightness(1.01) saturate(1.02);
+    -webkit-filter: contrast(1.03) brightness(1.01) saturate(1.02);
   }
 }
 
@@ -457,13 +470,14 @@ body {
   transform: translateX(100%);
 }
 
-/* Optimizaciones específicas para thumbnails de videos */
+/* Optimizaciones específicas para thumbnails de videos - ANTI-PIXELACIÓN */
 .video-thumbnail-container img,
 .aspect-video img {
-  /* Mejorar la calidad de compresión */
+  /* Mejorar la calidad de compresión - ELIMINAR PIXELACIÓN */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  image-rendering: auto; /* Usar auto en lugar de pixelated */
   
   /* Optimización para diferentes formatos de imagen */
   image-orientation: from-image;
@@ -480,6 +494,15 @@ body {
   
   /* Transiciones suaves */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Filtros específicos para eliminar pixelación */
+  filter: contrast(1.1) brightness(1.02) saturate(1.08) blur(0.1px);
+  -webkit-filter: contrast(1.1) brightness(1.02) saturate(1.08) blur(0.1px);
+  
+  /* Mejorar la interpolación */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 /* Efectos especiales para thumbnails de alta calidad */

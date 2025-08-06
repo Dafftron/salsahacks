@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { X, Upload, Tag, Trash2, CheckCircle, AlertCircle, ChevronDown, ChevronUp, ChevronsDown, ChevronsUp } from 'lucide-react'
-import { uploadVideo, uploadFile, generateVideoThumbnail } from '../../services/firebase/storage'
+import { uploadVideo, uploadFile, generateVideoThumbnail, generateBestVideoThumbnail } from '../../services/firebase/storage'
 import { createVideoDocument, checkVideoDuplicate } from '../../services/firebase/firestore'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCategories } from '../../hooks/useCategories'
@@ -207,12 +207,12 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         }
       }
       
-      // Intentar generar thumbnail automáticamente con timeout
+      // Intentar generar thumbnail de ALTA CALIDAD automáticamente con timeout
       try {
         const result = await Promise.race([
-          generateVideoThumbnail(file),
+          generateBestVideoThumbnail(file), // Usar la función de alta calidad
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Timeout')), 10000)
+            setTimeout(() => reject(new Error('Timeout')), 15000) // Aumentar timeout para mejor calidad
           )
         ])
         
@@ -271,9 +271,9 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         const canvas = document.createElement('canvas')
         const ctx = canvas.getContext('2d')
         
-        // Configurar canvas con tamaño fijo para thumbnail
-        canvas.width = 400
-        canvas.height = 225 // Proporción 16:9
+        // Configurar canvas con ALTA CALIDAD para thumbnail
+        canvas.width = 1280 // Aumentar de 400 a 1280 para mejor calidad
+        canvas.height = 720 // Aumentar de 225 a 720 para mejor calidad (16:9)
         
         video.onloadedmetadata = () => {
           try {
@@ -297,7 +297,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
                   } else {
                     reject(new Error('No se pudo generar el thumbnail por defecto'))
                   }
-                }, 'image/jpeg', 0.8)
+                }, 'image/jpeg', 0.95) // Aumentar calidad de 0.8 a 0.95
                 
               } catch (error) {
                 reject(new Error(`Error al capturar frame por defecto: ${error.message}`))

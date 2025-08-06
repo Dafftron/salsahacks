@@ -9,7 +9,7 @@ import {
 } from 'firebase/storage';
 import { storage } from './config';
 
-// Función para generar thumbnail del video completo
+// Función para generar thumbnail del video completo - ALTA CALIDAD
 export const generateVideoThumbnail = (videoFile) => {
   return new Promise((resolve, reject) => {
     try {
@@ -26,9 +26,9 @@ export const generateVideoThumbnail = (videoFile) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      // Configurar canvas para mantener las proporciones originales del video
-      const maxWidth = 400;
-      const maxHeight = 400;
+      // Configurar canvas para thumbnails de ALTA CALIDAD
+      const maxWidth = 1280; // Aumentar de 400 a 1280 para mejor calidad
+      const maxHeight = 720; // Aumentar de 400 a 720 para mejor calidad
       
       video.onloadedmetadata = () => {
         try {
@@ -80,7 +80,7 @@ export const generateVideoThumbnail = (videoFile) => {
                 } else {
                   reject(new Error('No se pudo generar el thumbnail'));
                 }
-              }, 'image/jpeg', 0.8);
+              }, 'image/jpeg', 0.95); // Aumentar calidad de 0.8 a 0.95
               
             } catch (error) {
               reject(new Error(`Error al capturar frame: ${error.message}`));
@@ -127,9 +127,9 @@ export const generateBestVideoThumbnail = async (videoFile) => {
     
     return new Promise((resolve, reject) => {
       video.onloadedmetadata = () => {
-        // Configurar canvas para mantener las proporciones originales del video
-        const maxWidth = 400;
-        const maxHeight = 400;
+        // Configurar canvas para thumbnails de ALTA CALIDAD
+        const maxWidth = 1280; // Aumentar de 400 a 1280 para mejor calidad
+        const maxHeight = 720; // Aumentar de 400 a 720 para mejor calidad
         
         // Calcular las dimensiones manteniendo las proporciones
         const videoAspectRatio = video.videoWidth / video.videoHeight;
@@ -175,7 +175,7 @@ export const generateBestVideoThumbnail = async (videoFile) => {
               } else {
                 reject(new Error('No se pudo generar el thumbnail'));
               }
-            }, 'image/jpeg', 0.8);
+            }, 'image/jpeg', 0.95); // Aumentar calidad de 0.8 a 0.95
             
           } catch (error) {
             reject(new Error(`Error al capturar frame: ${error.message}`));
