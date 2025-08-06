@@ -10,67 +10,23 @@ class VideoCombiner {
     return Promise.resolve()
   }
 
-  // Método principal que descarga videos primero
+  // Método principal que usa URLs directas
   async combineVideos(videos, onProgress) {
     try {
-      console.log('Iniciando descarga de videos...')
+      console.log('Iniciando combinación con URLs directas...')
       
       if (onProgress) {
         onProgress({
           stage: 'init',
           current: 0,
           total: 100,
-          message: 'Iniciando descarga de videos...'
+          message: 'Preparando combinación...'
         })
       }
 
-      // Descargar todos los videos como blobs locales
-      const videoBlobs = []
+      // Usar URLs directas sin descargar
+      const videoUrls = videos.map(video => video.videoUrl)
       
-      for (let i = 0; i < videos.length; i++) {
-        const video = videos[i]
-        console.log(`Descargando video ${i + 1}/${videos.length}: ${video.title}`)
-        
-        try {
-          // Usar fetch con modo 'no-cors' para evitar CORS
-          const response = await fetch(video.videoUrl, {
-            mode: 'no-cors',
-            cache: 'no-cache'
-          })
-          
-          if (!response.ok && response.type !== 'opaque') {
-            throw new Error(`Error descargando video: ${response.statusText}`)
-          }
-          
-          const blob = await response.blob()
-          videoBlobs.push(blob)
-          
-          if (onProgress) {
-            onProgress({
-              stage: 'download',
-              current: ((i + 1) / videos.length) * 50,
-              total: 100,
-              message: `Descargando: ${video.title}`
-            })
-          }
-        } catch (error) {
-          console.error(`Error descargando ${video.title}:`, error)
-          // Si falla fetch, intentar con XMLHttpRequest
-          const blob = await this.downloadWithXHR(video.videoUrl)
-          videoBlobs.push(blob)
-          
-          if (onProgress) {
-            onProgress({
-              stage: 'download',
-              current: ((i + 1) / videos.length) * 50,
-              total: 100,
-              message: `Descargando: ${video.title}`
-            })
-          }
-        }
-      }
-
-      // Combinar usando MediaRecorder
       if (onProgress) {
         onProgress({
           stage: 'combine',
@@ -80,7 +36,7 @@ class VideoCombiner {
         })
       }
 
-      const combinedBlob = await this.combineWithMediaRecorder(videoBlobs, onProgress)
+      const combinedBlob = await this.combineWithMediaRecorder(videoUrls, onProgress)
 
       if (onProgress) {
         onProgress({
@@ -99,48 +55,23 @@ class VideoCombiner {
     }
   }
 
-  // Método alternativo con XMLHttpRequest
-  downloadWithXHR(url) {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
-      xhr.open('GET', url, true)
-      xhr.responseType = 'blob'
-      
-      xhr.onload = function() {
-        if (xhr.status === 200 || xhr.status === 206) {
-          resolve(xhr.response)
-        } else {
-          reject(new Error(`Error descargando: ${xhr.status}`))
-        }
-      }
-      
-      xhr.onerror = function() {
-        reject(new Error('Error de red'))
-      }
-      
-      xhr.send()
-    })
-  }
-
   // Método simple (igual que el principal)
   async combineVideosSimple(videos, onProgress) {
     return this.combineVideos(videos, onProgress)
   }
 
-  async combineWithMediaRecorder(videoBlobs, onProgress) {
+  async combineWithMediaRecorder(videoUrls, onProgress) {
     return new Promise((resolve, reject) => {
       try {
         console.log('Iniciando combinación con MediaRecorder...')
         
-        // Crear URLs locales para los blobs
-        const videoUrls = videoBlobs.map(blob => URL.createObjectURL(blob))
-        
-        // Crear elementos de video
+        // Crear elementos de video directamente desde URLs
         const videoElements = videoUrls.map(url => {
           const video = document.createElement('video')
           video.src = url
           video.muted = true
           video.preload = 'metadata'
+          video.crossOrigin = 'anonymous'
           return video
         })
 
@@ -165,8 +96,6 @@ class VideoCombiner {
 
         mediaRecorder.onstop = () => {
           console.log('Combinación completada, creando archivo...')
-          // Limpiar URLs locales
-          videoUrls.forEach(url => URL.revokeObjectURL(url))
           
           const combinedBlob = new Blob(chunks, { type: 'video/webm' })
           console.log('Archivo combinado creado:', combinedBlob.size, 'bytes')
@@ -191,7 +120,8 @@ class VideoCombiner {
           playNextVideo()
         }
 
-        videoElements[0].onerror = () => {
+        videoElements[0].onerror = (error) => {
+          console.error('Error cargando primer video:', error)
           reject(new Error('Error cargando el primer video'))
         }
 
@@ -218,7 +148,8 @@ class VideoCombiner {
             playNextVideo()
           }
 
-          video.onerror = () => {
+          video.onerror = (error) => {
+            console.error(`Error procesando video ${currentVideoIndex + 1}:`, error)
             reject(new Error(`Error procesando video ${currentVideoIndex + 1}`))
           }
 
