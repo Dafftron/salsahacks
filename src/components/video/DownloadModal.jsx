@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { X, Download, Video, Settings, Check } from 'lucide-react'
-import { convertVideoFormat } from '../../services/video/videoProcessor'
+import { convertVideoFormat, generateSequenceVideo } from '../../services/video/videoProcessor'
 
 const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
   const [format, setFormat] = useState('mp4')
@@ -37,7 +37,7 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
   
   // Manejar descarga
   const handleDownload = async () => {
-    if (!video || !video.file) {
+    if (!video) {
       console.error('No hay video para descargar')
       return
     }
@@ -46,7 +46,7 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
     setProgress(0)
     
     try {
-      console.log(`🎬 Iniciando conversión: ${format}, calidad: ${quality}`)
+      console.log(`🎬 Iniciando descarga: ${format}, calidad: ${quality}`)
       
       // Simular progreso
       const progressInterval = setInterval(() => {
@@ -59,20 +59,32 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
         })
       }, 500)
       
-      // Convertir video
-      const result = await convertVideoFormat(video.file, format, quality)
+      let result
+      
+      // Verificar si es una secuencia o un video individual
+      if (video.videos && Array.isArray(video.videos)) {
+        // Es una secuencia
+        console.log('🎬 Procesando secuencia...')
+        result = await generateSequenceVideo(video, format, quality)
+      } else if (video.file) {
+        // Es un video individual
+        console.log('🎬 Procesando video individual...')
+        result = await convertVideoFormat(video.file, format, quality)
+      } else {
+        throw new Error('Formato de video no válido')
+      }
       
       clearInterval(progressInterval)
       setProgress(100)
       
       if (result.success) {
         // Crear blob y descargar
-        const blob = new Blob([result.data], { type: `video/${format}` })
+        const blob = new Blob([result.data], { type: `video/${result.format || format}` })
         const url = URL.createObjectURL(blob)
         
         const a = document.createElement('a')
         a.href = url
-        a.download = `${video.title}_${quality}.${format}`
+        a.download = `${video.title || video.name}_${quality}.${result.format || format}`
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
@@ -122,7 +134,9 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-2">
             <Download className="h-5 w-5 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-800">Descargar Video</h2>
+            <h2 className="text-lg font-semibold text-gray-800">
+              {video?.videos ? 'Descargar Secuencia' : 'Descargar Video'}
+            </h2>
           </div>
           <button
             onClick={onClose}
@@ -134,21 +148,43 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
         
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Video Info */}
+          {/* Video/Sequence Info */}
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="flex items-center space-x-3">
               <Video className="h-8 w-8 text-gray-400" />
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-gray-800 truncate">
-                  {video?.title || 'Video sin título'}
+                  {video?.title || video?.name || 'Sin título'}
                 </h3>
-                <p className="text-sm text-gray-500">
-                  {video?.fileSize ? `${(video.fileSize / (1024 * 1024)).toFixed(2)} MB` : 'Tamaño desconocido'}
-                </p>
-                {video?.bpm && (
-                  <p className="text-sm text-purple-600">
-                    BPM: {video.bpm}
-                  </p>
+                {video?.videos ? (
+                  // Información de secuencia
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500">
+                      {video.videos.length} videos • Duración aproximada: {Math.floor(video.videos.length * 30 / 60)}:{(video.videos.length * 30 % 60).toString().padStart(2, '0')}
+                    </p>
+                    {video.useBPMControl && video.targetBPM && (
+                      <p className="text-sm text-purple-600">
+                        BPM ajustado: {video.targetBPM}
+                      </p>
+                    )}
+                    {video.description && (
+                      <p className="text-sm text-gray-600">
+                        {video.description}
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  // Información de video individual
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-500">
+                      {video?.fileSize ? `${(video.fileSize / (1024 * 1024)).toFixed(2)} MB` : 'Tamaño desconocido'}
+                    </p>
+                    {video?.bpm && (
+                      <p className="text-sm text-purple-600">
+                        BPM: {video.bpm}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

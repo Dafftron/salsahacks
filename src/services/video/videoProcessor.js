@@ -371,4 +371,65 @@ export const convertVideoFormat = async (videoFile, format = 'mp4', quality = 'm
       error: error.message
     }
   }
+}
+
+// Generar video final de secuencia para descarga
+export const generateSequenceVideo = async (sequence, format = 'mp4', quality = 'medium') => {
+  try {
+    console.log(`🎬 Generando video de secuencia: ${sequence.name}`)
+    console.log(`📹 Formato: ${format}, Calidad: ${quality}`)
+    
+    if (!sequence.videos || sequence.videos.length === 0) {
+      throw new Error('La secuencia no tiene videos')
+    }
+    
+    // Usar la configuración de BPM guardada en la secuencia
+    const useBPMControl = sequence.useBPMControl || false
+    const targetBPM = sequence.targetBPM || null
+    
+    console.log(`🎵 Configuración BPM: ${useBPMControl ? 'Activado' : 'Desactivado'}, BPM: ${targetBPM}`)
+    
+    // Generar el video combinado
+    const result = await createSequencePreview(sequence.videos, useBPMControl, targetBPM)
+    
+    if (!result.success) {
+      throw new Error(`Error generando video: ${result.error}`)
+    }
+    
+    // Si se requiere un formato específico, convertir
+    if (format !== 'mp4') {
+      console.log(`🔄 Convirtiendo a formato ${format}...`)
+      const convertResult = await convertVideoFormat(
+        new Blob([result.data], { type: 'video/mp4' }), 
+        format, 
+        quality
+      )
+      
+      if (!convertResult.success) {
+        throw new Error(`Error convirtiendo formato: ${convertResult.error}`)
+      }
+      
+      return {
+        success: true,
+        data: convertResult.data,
+        format: format,
+        error: null
+      }
+    }
+    
+    return {
+      success: true,
+      data: result.data,
+      format: 'mp4',
+      error: null
+    }
+  } catch (error) {
+    console.error('❌ Error generando video de secuencia:', error)
+    return {
+      success: false,
+      data: null,
+      format: null,
+      error: error.message
+    }
+  }
 } 

@@ -287,6 +287,26 @@
 ### 🖼️ **FIX: CORRECCIÓN PROBLEMA THUMBNAILS NO VISIBLES** - 2024-12-19
 - **Problema**: Los thumbnails no se mostraban en los componentes de secuencias
 - **Causa**: Inconsistencia en el nombre de la propiedad (thumbnailURL vs thumbnailUrl)
+
+### 🎬 **PASO 6 COMPLETADO: DESCARGAR DESDE GALERÍA** - 2024-12-19
+- **Funcionalidad**: Botón de descarga en las cards de secuencia con modal completo
+- **Modal de descargas**: Integración con DownloadModal existente para resoluciones y formatos
+- **Generación de video**: Función `generateSequenceVideo` para crear video final de secuencia
+- **Configuración BPM**: Respeta la configuración de BPM guardada en la secuencia
+- **Formatos soportados**: MP4, AVI, MOV, WebM con diferentes calidades
+- **Interfaz adaptativa**: Modal que detecta si es secuencia o video individual
+- **Información detallada**: Muestra número de videos, duración, BPM ajustado y descripción
+- **Archivos modificados**:
+  - `src/components/sequence/SequenceGallery.jsx` - Botón de descarga en cards
+  - `src/pages/FigurasPage.jsx` - Estado y funciones para descarga de secuencias
+  - `src/components/video/DownloadModal.jsx` - Soporte para secuencias y información adaptativa
+  - `src/services/video/videoProcessor.js` - Función `generateSequenceVideo` para procesamiento
+- **Funcionalidades**:
+  - Descarga de secuencias completas con configuración BPM preservada
+  - Selección de formato y calidad para descarga
+  - Información detallada de la secuencia en el modal
+  - Procesamiento optimizado con FFmpeg.wasm
+  - Integración completa con el sistema de descargas existente
 - **Solución**:
   - Corregida inconsistencia en nombre de propiedad: cambiado `thumbnailURL` por `thumbnailUrl` en todos los componentes
   - Mejorado componente SmartThumbnail con mejor manejo de fallbacks

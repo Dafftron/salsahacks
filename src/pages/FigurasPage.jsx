@@ -26,6 +26,7 @@ import CategoryBadge from '../components/common/CategoryBadge'
 import VideoUploadModal from '../components/video/VideoUploadModal'
 import VideoEditModal from '../components/video/VideoEditModal'
 import VideoPlayer from '../components/video/VideoPlayer'
+import DownloadModal from '../components/video/DownloadModal'
 import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
 import SequenceBuilder from '../components/sequence/SequenceBuilder'
@@ -75,6 +76,7 @@ const FigurasPage = () => {
   const [syncStatus, setSyncStatus] = useState('idle') // idle, syncing, error
   const [cleanupModal, setCleanupModal] = useState({ isOpen: false, type: null })
   const [editSequenceModal, setEditSequenceModal] = useState({ isOpen: false, sequence: null })
+  const [downloadSequenceModal, setDownloadSequenceModal] = useState({ isOpen: false, sequence: null })
   const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
   
   // Estados para secuencias
@@ -367,6 +369,15 @@ const FigurasPage = () => {
   const handleCancelEditSequence = () => {
     console.log('❌ Usuario canceló la carga de secuencia')
     setEditSequenceModal({ isOpen: false, sequence: null })
+  }
+
+  const handleDownloadSequence = (sequence) => {
+    console.log('📥 Abriendo descarga de secuencia:', sequence)
+    setDownloadSequenceModal({ isOpen: true, sequence })
+  }
+
+  const handleCloseDownloadSequence = () => {
+    setDownloadSequenceModal({ isOpen: false, sequence: null })
   }
 
 
@@ -1743,6 +1754,7 @@ const FigurasPage = () => {
                 onDeleteSequence={handleDeleteSequence}
                 onPlaySequence={handlePlaySequence}
                 onEditSequence={handleEditSequence}
+                onDownloadSequence={handleDownloadSequence}
               />
             )}
           </div>
@@ -1834,6 +1846,21 @@ Esta acción NO se puede deshacer.`}
          confirmText="Sí, Eliminar"
          cancelText="Cancelar"
          type="danger"
+       />
+
+       {/* Download Sequence Modal */}
+       <DownloadModal
+         isOpen={downloadSequenceModal.isOpen}
+         onClose={handleCloseDownloadSequence}
+         video={downloadSequenceModal.sequence ? {
+           ...downloadSequenceModal.sequence,
+           title: downloadSequenceModal.sequence.name,
+           file: null // El archivo se generará dinámicamente
+         } : null}
+         onDownloadComplete={() => {
+           addToast('Secuencia descargada correctamente', 'success')
+           handleCloseDownloadSequence()
+         }}
        />
 
        {/* Toasts */}

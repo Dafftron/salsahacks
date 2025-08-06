@@ -22,7 +22,8 @@ const SequenceGallery = ({
   onDeleteSequence, 
   onPlaySequence,
   onEditSequence,
-  onEditThumbnail 
+  onEditThumbnail,
+  onDownloadSequence 
 }) => {
   const [toasts, setToasts] = useState([])
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, sequence: null })
@@ -59,6 +60,19 @@ const SequenceGallery = ({
       addToast('Reproduciendo secuencia')
     } catch (error) {
       addToast('Error al reproducir la secuencia', 'error')
+    }
+  }
+
+  const handleDownloadSequence = (sequence) => {
+    try {
+      if (onDownloadSequence) {
+        onDownloadSequence(sequence)
+        addToast('Abriendo opciones de descarga')
+      } else {
+        addToast('Funcionalidad de descarga no disponible', 'warning')
+      }
+    } catch (error) {
+      addToast('Error al abrir descarga', 'error')
     }
   }
 
@@ -238,22 +252,29 @@ const SequenceGallery = ({
                     {formatDate(sequence.createdAt)}
                   </span>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => onEditSequence(sequence)}
-                    className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
-                    title="Editar secuencia"
-                  >
-                    <Edit3 className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteClick(sequence)}
-                    className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
-                    title="Eliminar secuencia"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+                                 <div className="flex items-center space-x-2">
+                   <button
+                     onClick={() => handleDownloadSequence(sequence)}
+                     className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
+                     title="Descargar secuencia"
+                   >
+                     <Download className="h-4 w-4" />
+                   </button>
+                   <button
+                     onClick={() => onEditSequence(sequence)}
+                     className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                     title="Editar secuencia"
+                   >
+                     <Edit3 className="h-4 w-4" />
+                   </button>
+                   <button
+                     onClick={() => handleDeleteClick(sequence)}
+                     className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
+                     title="Eliminar secuencia"
+                   >
+                     <Trash2 className="h-4 w-4" />
+                   </button>
+                 </div>
               </div>
             </div>
           </div>
