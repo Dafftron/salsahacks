@@ -25,6 +25,7 @@ import { useDragAndDrop } from '../../hooks/useDragAndDrop'
 import Toast from '../common/Toast'
 import ConfirmModal from '../common/ConfirmModal'
 import VideoPlayer from '../video/VideoPlayer.jsx'
+import SequenceTimeline from './SequenceTimeline.jsx'
 import BPMController from './BPMController'
 import { processVideoSequence, createSequencePreview } from '../../services/video/videoProcessor'
 
@@ -43,8 +44,7 @@ const SequenceBuilder = ({
   const { categoriesList, getColorClasses } = useCategories('figuras', style)
   const { user } = useAuth()
   
-  // Estados para BPM
-  const [currentBPM, setCurrentBPM] = useState(120)
+  // Estados para procesamiento
   const [isProcessingSequence, setIsProcessingSequence] = useState(false)
   
   // Estados para reproducción de video individual
@@ -329,26 +329,14 @@ const SequenceBuilder = ({
     setConfirmModal({ isOpen: false, type: null })
   }
   
-  // Funciones para manejar BPM
-  const handleBPMChange = (newBPM) => {
-    // Si newBPM es null, significa que el control BPM está desactivado
-    if (newBPM === null) {
-      setCurrentBPM(null)
-      console.log('🎵 Control BPM desactivado - usando BPMs originales')
-    } else {
-      setCurrentBPM(newBPM)
-      console.log('🎵 BPM cambiado a:', newBPM)
-    }
-  }
-
-  // Efecto para generar preview en tiempo real cuando cambie la secuencia o BPM
+  // Efecto para generar preview en tiempo real cuando cambie la secuencia
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       generateRealtimePreview()
     }, 500) // Debounce de 500ms para evitar demasiadas regeneraciones
 
     return () => clearTimeout(timeoutId)
-  }, [sequence, currentBPM]) // Se ejecuta cuando cambia la secuencia o el BPM
+  }, [sequence]) // Se ejecuta cuando cambia la secuencia
 
   // Cleanup de URLs cuando se desmonte el componente
   useEffect(() => {
@@ -403,8 +391,6 @@ const SequenceBuilder = ({
     // Crear clave de cache para verificar si necesitamos regenerar
     const previewKey = JSON.stringify({
       videos: sequence.map(v => v.id),
-      useBPMControl: currentBPM !== null,
-      targetBPM: currentBPM,
       sequenceLength: sequence.length
     })
     
@@ -419,93 +405,20 @@ const SequenceBuilder = ({
     try {
       console.log('🎬 Generando preview en tiempo real...')
       
-      // Obtener archivos de video desde Firebase Storage
-      const videosWithFiles = []
+      // Verificar que todos los videos tengan URLs válidas
+      const validVideos = sequence.filter(video => video.videoUrl)
       
-      for (let i = 0; i < sequence.length; i++) {
-        const video = sequence[i]
-        try {
-          console.log(`📥 Descargando video ${i + 1}/${sequence.length}: ${video.title}`)
-          console.log(`🔗 URL del video: ${video.videoUrl}`)
-          
-          // Descargar directamente desde la URL
-          const response = await fetch(video.videoUrl, {
-            mode: 'cors',
-            credentials: 'omit'
-          })
-          
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-          }
-          
-          const blob = await response.blob()
-          console.log(`✅ Video descargado: ${blob.size} bytes`)
-          
-          videosWithFiles.push({
-            ...video,
-            file: blob
-          })
-        } catch (error) {
-          console.error(`❌ Error al descargar archivo de ${video.title}:`, error)
-          
-          // Intentar con Firebase Storage SDK como fallback
-          try {
-            const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
-            const storage = getStorage()
-            
-            // Si videoUrl es una URL completa, extraer la ruta
-            let storagePath = video.videoUrl
-            if (video.videoUrl.includes('firebasestorage.googleapis.com')) {
-              const urlParts = video.videoUrl.split('/o/')
-              if (urlParts.length > 1) {
-                storagePath = decodeURIComponent(urlParts[1].split('?')[0])
-              }
-            }
-            
-            const videoRef = ref(storage, storagePath)
-            const downloadURL = await getDownloadURL(videoRef)
-            
-            const response = await fetch(downloadURL)
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-            }
-            
-            const blob = await response.blob()
-            console.log(`✅ Video descargado via Firebase SDK: ${blob.size} bytes`)
-            
-            videosWithFiles.push({
-              ...video,
-              file: blob
-            })
-          } catch (storageError) {
-            throw new Error(`No se pudo descargar el archivo de ${video.title}: ${storageError.message}`)
-          }
-        }
+      if (validVideos.length === 0) {
+        throw new Error('No hay videos válidos en la secuencia')
       }
       
-      // Crear preview de secuencia
-      const result = await createSequencePreview(
-        videosWithFiles, 
-        currentBPM !== null, 
-        currentBPM
-      )
+      // Para el preview en tiempo real, usaremos el SequenceTimeline
+      // que muestra los videos en una línea de tiempo como CapCut
+      setPreviewVideoUrl('sequence-timeline') // Marcador especial para indicar que usamos el timeline
+      setLastPreviewData(previewKey)
       
-      if (result.success) {
-        // Limpiar URL anterior si existe
-        if (previewVideoUrl) {
-          URL.revokeObjectURL(previewVideoUrl)
-        }
-        
-        // Crear blob y URL para el preview
-        const blob = new Blob([result.data], { type: 'video/mp4' })
-        const url = URL.createObjectURL(blob)
-        
-        setPreviewVideoUrl(url)
-        setLastPreviewData(previewKey)
-        console.log('✅ Preview en tiempo real generado exitosamente')
-      } else {
-        throw new Error(result.error)
-      }
+      console.log('✅ Preview en tiempo real generado (modo timeline)')
+      
     } catch (error) {
       console.error('❌ Error al generar preview en tiempo real:', error)
       setPreviewError(error.message)
@@ -514,16 +427,9 @@ const SequenceBuilder = ({
     }
   }
 
-    const handleProcessSequence = async (targetBPM) => {
+    const handleProcessSequence = async () => {
     if (!sequence || sequence.length === 0) {
       addToast('No hay videos en la secuencia para procesar', 'error')
-      return
-    }
-    
-    // Verificar que todos los videos tengan BPM
-    const videosWithoutBPM = sequence.filter(video => !video.bpm)
-    if (videosWithoutBPM.length > 0) {
-      addToast(`${videosWithoutBPM.length} videos no tienen BPM detectado`, 'warning')
       return
     }
     
@@ -531,7 +437,7 @@ const SequenceBuilder = ({
     addToast('🎬 Iniciando procesamiento de secuencia...', 'info')
     
     try {
-      console.log('🎬 Iniciando procesamiento de secuencia con BPM:', targetBPM)
+      console.log('🎬 Iniciando procesamiento de secuencia...')
       
       // Obtener archivos de video desde Firebase Storage
       const videosWithFiles = []
@@ -606,9 +512,9 @@ const SequenceBuilder = ({
         }
       }
       
-      // Procesar secuencia
-      addToast('🎬 Procesando videos con ajuste de BPM...', 'info')
-      const result = await processVideoSequence(videosWithFiles, targetBPM)
+      // Procesar secuencia (sin ajuste de BPM)
+      addToast('🎬 Combinando videos...', 'info')
+      const result = await processVideoSequence(videosWithFiles, null) // Sin ajuste de BPM
       
       if (result.success) {
         // Crear blob y descargar
@@ -617,14 +523,14 @@ const SequenceBuilder = ({
         
         const a = document.createElement('a')
         a.href = url
-        a.download = `secuencia_${sequenceName || 'salsa'}_${targetBPM}bpm.mp4`
+        a.download = `secuencia_${sequenceName || 'salsa'}_combinada.mp4`
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
         
         URL.revokeObjectURL(url)
         
-        addToast(`✅ Secuencia procesada y descargada con BPM ${targetBPM}`, 'success')
+        addToast(`✅ Secuencia combinada y descargada exitosamente`, 'success')
       } else {
         throw new Error(result.error)
       }
@@ -829,21 +735,37 @@ const SequenceBuilder = ({
               )}
               
               {!isCreatingPreview && !previewError && previewVideoUrl && (
-                <div className="bg-black rounded-lg overflow-hidden">
-                  <VideoPlayer
-                    src={previewVideoUrl}
-                    className="w-full h-64 object-contain"
-                    showControls={true}
-                    autoplay={false}
-                    loop={false}
-                    muted={false}
-                    size="medium"
-                    videoTitle="Preview de Secuencia"
-                  />
+                <div className="space-y-4">
+                  {/* Video Player Principal */}
+                  {previewVideoUrl === 'sequence-timeline' ? (
+                    <SequenceTimeline
+                      videos={sequence}
+                      className="w-full h-96"
+                      showControls={true}
+                      autoplay={false}
+                      loop={false}
+                      muted={false}
+                    />
+                  ) : (
+                    <div className="bg-black rounded-lg overflow-hidden">
+                      <VideoPlayer
+                        src={previewVideoUrl}
+                        className="w-full h-96 object-contain"
+                        showControls={true}
+                        autoplay={false}
+                        loop={false}
+                        muted={false}
+                        size="medium"
+                        videoTitle="Preview de Secuencia"
+                      />
+                    </div>
+                  )}
+                  
+
                 </div>
               )}
               
-              {!isCreatingPreview && !previewError && !previewVideoUrl && sequence.length === 0 && (
+              {!isCreatingPreview && !previewError && sequence.length === 0 && (
                 <div className="flex items-center justify-center py-8 text-gray-500">
                   <span>Añade videos a la secuencia para ver el preview</span>
                 </div>
@@ -851,22 +773,40 @@ const SequenceBuilder = ({
             </div>
           </div>
           
-          {/* Control de BPM */}
-          {sequence.length > 0 && (
-            <div className="mb-6">
-              <BPMController
-                sequence={sequence}
-                onBPMChange={handleBPMChange}
-                currentBPM={currentBPM}
-                onProcessSequence={handleProcessSequence}
-                isProcessing={isProcessingSequence}
-              />
-            </div>
-          )}
+
 
           {/* Secuencia actual */}
           <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-700">Secuencia Actual ({sequence.length} videos)</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-700">Secuencia Actual ({sequence.length} videos)</h3>
+              
+              {/* Botón de descarga prominente */}
+              {sequence.length > 0 && (
+                <button
+                  onClick={handleProcessSequence}
+                  disabled={isProcessingSequence}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    isProcessingSequence
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 shadow-lg transform hover:scale-105'
+                  }`}
+                >
+                  {isProcessingSequence ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Procesando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span>Descargar Secuencia</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
             
             {sequence.length === 0 ? (
               <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
