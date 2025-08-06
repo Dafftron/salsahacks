@@ -314,6 +314,42 @@ body {
   transform: scale(1.05);
 }
 
+/* Estilos específicos para thumbnails con aspect ratio 16:9 */
+.aspect-video {
+  aspect-ratio: 16 / 9;
+}
+
+/* Mejorar la calidad de imagen de los thumbnails */
+.video-thumbnail-container img,
+.aspect-video img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Asegurar que los thumbnails mantengan buena calidad en diferentes tamaños */
+@media (min-width: 768px) {
+  .aspect-video img {
+    min-height: 200px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .aspect-video img {
+    min-height: 225px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .aspect-video img {
+    min-height: 250px;
+  }
+}
+
 /* Utilidades para line-clamp */
 .line-clamp-1 {
   overflow: hidden;

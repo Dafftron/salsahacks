@@ -408,7 +408,7 @@ const SequenceBuilder = ({
 
                     {/* Thumbnail */}
                     <div className="relative group">
-                      <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+                      <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
                         {video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? (
                           <img
                             src={video.thumbnailUrl}

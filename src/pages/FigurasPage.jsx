@@ -56,7 +56,6 @@ import {
 } from '../services/firebase/storage'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
-import SmartThumbnail from '../components/common/SmartThumbnail'
 
 const FigurasPage = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
@@ -1071,32 +1070,43 @@ const FigurasPage = () => {
                   }`}
                 >
                   <div className="relative group">
-                    <SmartThumbnail
-                      src={video.thumbnailUrl}
-                      alt={video.title}
-                      showPlayIcon={true}
-                      className="w-full"
-                      fallbackSrc="/placeholder-video.svg"
-                    />
-                    
-                    {/* Badge de resolución */}
-                    <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
-                      {video.resolution && video.resolution !== 'Unknown' ? video.resolution : 'HD'}
+                    <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+                      {video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? (
+                        <img
+                          src={video.thumbnailUrl}
+                          alt={video.title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className={`flex flex-col items-center justify-center text-gray-500 ${video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? 'hidden' : 'flex'}`}>
+                        <svg className="w-12 h-12 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-sm font-medium">{video.title}</span>
+                      </div>
+                      <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
+                        {video.resolution && video.resolution !== 'Unknown' ? video.resolution : 'HD'}
+                      </div>
+                      
+                      {/* Indicador de compatibilidad */}
+                      {isBuilderOpen && (
+                        <div className={`absolute top-2 right-2 p-1 rounded-full text-xs font-bold ${
+                          isVideoCompatible(video)
+                            ? 'bg-green-500 text-white' 
+                            : 'bg-red-500 text-white'
+                        }`}>
+                          {isVideoCompatible(video) ? '✅' : '❌'}
+                        </div>
+                      )}
                     </div>
                     
-                    {/* Indicador de compatibilidad */}
-                    {isBuilderOpen && (
-                      <div className={`absolute top-2 right-2 p-1 rounded-full text-xs font-bold ${
-                        isVideoCompatible(video)
-                          ? 'bg-green-500 text-white' 
-                          : 'bg-red-500 text-white'
-                      }`}>
-                        {isVideoCompatible(video) ? '✅' : '❌'}
-                      </div>
-                    )}
-                    
-                    {/* Botón de reproducción */}
-                    <button
+                                         {/* Botón de reproducción */}
+                     <button
                        onClick={async () => {
                          try {
                            // Abrir modal de reproducción
@@ -1579,10 +1589,10 @@ const FigurasPage = () => {
                   </div>
                 </div>
               ))}
-            </div>
-          )}
-        </div>
-      )}
+                         </div>
+           )}
+         </div>
+        )}
 
         {/* Secuencias Grid */}
         {activeTab === 'secuencias' && (
@@ -1619,14 +1629,14 @@ const FigurasPage = () => {
 
       </div>
 
-      {/* Video Upload Modal */}
-      <VideoUploadModal
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        onVideoUploaded={handleVideoUploaded}
-        page="figuras"
-        style={selectedStyle}
-      />
+                           {/* Video Upload Modal */}
+                <VideoUploadModal
+           isOpen={isUploadModalOpen}
+           onClose={() => setIsUploadModalOpen(false)}
+           onVideoUploaded={handleVideoUploaded}
+           page="figuras"
+           style={selectedStyle}
+         />
 
         {/* Video Edit Modal */}
         <VideoEditModal

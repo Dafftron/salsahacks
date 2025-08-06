@@ -2,6 +2,27 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🖼️ **IMPROVEMENT: THUMBNAILS CON FORMATO HORIZONTAL 16:9 Y MEJOR RESOLUCIÓN** - 2024-12-19
+- **Problema**: Los thumbnails de las tarjetas en la pestaña de figuras no tenían formato horizontal con ratio 16:9 como las fotos de Instagram
+- **Solución**:
+  - Cambiado de altura fija `h-48` a aspect ratio dinámico `aspect-video` (16:9)
+  - Implementado formato horizontal consistente en todas las páginas (Figuras, Escuela, Eventos)
+  - Agregados estilos CSS específicos para mejorar la calidad de imagen de los thumbnails
+  - Aplicado `image-rendering: crisp-edges` y optimizaciones de renderizado
+  - Configuradas alturas mínimas responsivas para diferentes tamaños de pantalla
+  - Mantenido `object-cover` para evitar distorsión de imágenes
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Thumbnails con aspect-video (16:9)
+  - `src/pages/EscuelaPage.jsx` - Thumbnails con aspect-video (16:9)
+  - `src/pages/EventosPage.jsx` - Thumbnails con aspect-video (16:9)
+  - `src/components/sequence/SequenceBuilder.jsx` - Thumbnails con aspect-video (16:9)
+  - `src/index.css` - Estilos CSS para aspect ratio 16:9 y mejor calidad de imagen
+- **Funcionalidades**:
+  - Thumbnails con formato horizontal 16:9 (ratio de Instagram)
+  - Mejor resolución y calidad visual de las imágenes
+  - Diseño responsivo que se adapta a diferentes tamaños de pantalla
+  - Consistencia visual en todas las páginas de la aplicación
+
 ### 🎬 **FIX: CORRECCIÓN ERROR IMPORTACIÓN SMARTTHUMBNAIL Y SISTEMA DE SECUENCIAS** - 2024-12-19
 - **Problema**: Error de importación en SequenceGallery.jsx - Vite no podía resolver la ruta de SmartThumbnail
 - **Solución**:
@@ -167,20 +188,6 @@
 - **Archivos modificados**:
     - `src/components/video/VideoUploadModal.jsx` - Integrado SmartThumbnail para vistas previas
     - `src/services/firebase/storage.js` - Modificadas funciones de generación de thumbnails para mantener proporciones
-
-### 🖼️ **THUMBNAILS INTELIGENTES CON ASPECT RATIO DINÁMICO Y MEJOR RESOLUCIÓN** - 2024-12-19
-- **Problema**: Los thumbnails no tenían el formato correcto (ratio 9:16 para vertical, 16:9 para horizontal) y resolución limitada
-- **Solución**:
-  - Mejorado componente `SmartThumbnail` con detección automática de orientación
-  - Videos verticales: `aspect-[9/16]` (ratio 9:16 como Instagram)
-  - Videos horizontales: `aspect-video` (ratio 16:9 estándar)
-  - Mejorada resolución con `loading="lazy"` y `decoding="async"`
-  - Añadido efecto hover suave con `hover:scale-105`
-  - Icono de reproducción más grande y mejorado
-  - Fallback mejorado con gradiente y mejor diseño
-- **Archivos modificados**:
-  - `src/components/common/SmartThumbnail.jsx` - Componente completamente renovado
-  - `src/pages/FigurasPage.jsx` - Implementado SmartThumbnail mejorado
 
 ### 🎬 **CORRECCIÓN DE THUMBNAILS DE VIDEOS** - 2024-12-19
 - **Problema**: Los thumbnails mostraban columnas blancas en los laterales para videos verticales

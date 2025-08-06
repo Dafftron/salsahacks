@@ -161,7 +161,7 @@ const EventosPage = () => {
             {eventos.map((evento) => (
               <div key={evento.id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
                                  <div className="relative group">
-                   <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+                   <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
                      {evento.thumbnailUrl && evento.thumbnailUrl !== 'https://via.placeholder.com/300x200/1a1a1a/ffffff?text=EVENTO' ? (
                        <img
                          src={evento.thumbnailUrl}
