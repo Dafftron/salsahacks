@@ -19,7 +19,6 @@ const SequenceTimeline = ({
   
   const videoRef = useRef(null)
   const containerRef = useRef(null)
-  const timelineRef = useRef(null)
   const controlsTimeoutRef = useRef(null)
   
   // Calcular duración total
@@ -54,10 +53,10 @@ const SequenceTimeline = ({
     }
   }
   
-  // Handle video end
+  // Handle video end - reproducir siguiente automáticamente
   const handleVideoEnd = () => {
     if (currentVideoIndex < videos.length - 1) {
-      // Play next video
+      // Play next video automáticamente
       setCurrentVideoIndex(prev => prev + 1)
       setCurrentTime(0)
     } else if (loop) {
@@ -121,31 +120,6 @@ const SequenceTimeline = ({
     if (currentVideoIndex < videos.length - 1) {
       setCurrentVideoIndex(prev => prev + 1)
       setCurrentTime(0)
-    }
-  }
-  
-  // Handle timeline click
-  const handleTimelineClick = (e) => {
-    if (timelineRef.current) {
-      const rect = timelineRef.current.getBoundingClientRect()
-      const clickX = e.clientX - rect.left
-      const percentage = clickX / rect.width
-      const newTime = percentage * totalDuration
-      
-      // Encontrar qué video corresponde a este tiempo
-      let accumulatedTime = 0
-      for (let i = 0; i < videos.length; i++) {
-        const videoDuration = videos[i].duration || 0
-        if (newTime <= accumulatedTime + videoDuration) {
-          setCurrentVideoIndex(i)
-          const videoTime = newTime - accumulatedTime
-          if (videoRef.current) {
-            videoRef.current.currentTime = videoTime
-          }
-          break
-        }
-        accumulatedTime += videoDuration
-      }
     }
   }
   
@@ -256,74 +230,20 @@ const SequenceTimeline = ({
         {currentVideoIndex + 1} / {videos.length} - {currentVideo?.title}
       </div>
       
-      {/* Timeline */}
+      {/* Progress Bar Simple */}
       <div className="absolute bottom-16 left-0 right-0 px-4">
-        <div 
-          ref={timelineRef}
-          className="w-full h-16 bg-gray-800 rounded-lg cursor-pointer relative"
-          onClick={handleTimelineClick}
-        >
-          {/* Video clips */}
-          <div className="absolute inset-0 flex">
-            {videos.map((video, index) => {
-              let startTime = 0
-              for (let i = 0; i < index; i++) {
-                startTime += videos[i].duration || 0
-              }
-              const endTime = startTime + (video.duration || 0)
-              const width = ((video.duration || 0) / totalDuration) * 100
-              const left = (startTime / totalDuration) * 100
-              const isActive = index === currentVideoIndex
-              
-              return (
-                <div
-                  key={video.id}
-                  className={`absolute h-full border-r border-gray-600 relative ${isActive ? 'ring-2 ring-blue-400' : ''}`}
-                  style={{
-                    left: `${left}%`,
-                    width: `${width}%`
-                  }}
-                >
-                  {/* Clip background */}
-                  <div className={`absolute inset-0 ${isActive ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-teal-500 to-teal-600'}`}>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-full h-full bg-gray-700 flex items-center justify-center relative">
-                        <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-medium px-1 text-center bg-black bg-opacity-50">
-                          {video.title}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Time indicator */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-xs px-1 py-0.5">
-                    {formatTime(startTime)} - {formatTime(endTime)}
-                  </div>
-                  
-                  {/* Separator */}
-                  {index < videos.length - 1 && (
-                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-white z-5"></div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-          
-          {/* Playhead */}
+        <div className="w-full h-2 bg-gray-800 rounded-full relative">
+          {/* Progress Fill */}
           <div 
-            className="absolute top-0 bottom-0 w-1 bg-white z-10 shadow-lg"
+            className="h-full bg-blue-500 rounded-full transition-all duration-300"
             style={{
-              left: `${(currentGlobalTime / totalDuration) * 100}%`
+              width: `${(currentGlobalTime / totalDuration) * 100}%`
             }}
-          >
-            <div className="absolute -top-2 -left-2 w-5 h-5 bg-white rounded-full shadow-lg flex items-center justify-center">
-              <div className="w-2 h-2 bg-gray-800 rounded-full"></div>
-            </div>
-          </div>
+          />
           
-          {/* Time markers */}
+          {/* Progress Text */}
           <div className="absolute -top-6 left-0 right-0 flex justify-between text-white text-xs">
-            <div>00:00</div>
+            <div>{formatTime(currentGlobalTime)}</div>
             <div>{formatTime(totalDuration)}</div>
           </div>
         </div>
