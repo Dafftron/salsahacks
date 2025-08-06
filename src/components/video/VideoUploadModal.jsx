@@ -843,6 +843,10 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       handleUpload()
     } else {
       setCurrentStep(prev => prev + 1)
+      // Cuando se avanza al paso 2, plegar todos los videos
+      if (currentStep === 1) {
+        setCollapsedVideos(new Set(selectedFiles.map(file => file.name)))
+      }
     }
   }
 
