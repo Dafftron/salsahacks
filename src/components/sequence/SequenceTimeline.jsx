@@ -112,6 +112,13 @@ const SequenceTimeline = ({
     if (currentVideoIndex > 0) {
       setCurrentVideoIndex(prev => prev - 1)
       setCurrentTime(0)
+      // Reproducir automáticamente el video anterior
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.play()
+          setIsPlaying(true)
+        }
+      }, 100)
     }
   }
   
@@ -120,6 +127,13 @@ const SequenceTimeline = ({
     if (currentVideoIndex < videos.length - 1) {
       setCurrentVideoIndex(prev => prev + 1)
       setCurrentTime(0)
+      // Reproducir automáticamente el siguiente video
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.play()
+          setIsPlaying(true)
+        }
+      }, 100)
     }
   }
   
