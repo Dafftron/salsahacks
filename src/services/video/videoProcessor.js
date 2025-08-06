@@ -314,35 +314,51 @@ export const createSequencePreview = async (videos, useBPMControl = false, targe
   }
 }
 
-// Convertir video a diferentes formatos
-export const convertVideoFormat = async (videoFile, format = 'mp4', quality = 'medium') => {
+// Convertir video a diferentes formatos y resoluciones
+export const convertVideoFormat = async (videoFile, format = 'mp4', resolution = '720p') => {
   try {
-    console.log(`🎬 Convirtiendo video a formato ${format} con calidad ${quality}...`)
+    console.log(`🎬 Convirtiendo video a formato ${format} con resolución ${resolution}...`)
     
     const ffmpegInstance = await initFFmpeg()
     
     // Escribir archivo de entrada
     ffmpegInstance.FS('writeFile', 'input.mp4', await fetchFile(videoFile))
     
-    // Configurar calidad
+    // Configurar resolución y calidad
+    let resolutionSettings = []
     let qualitySettings = []
-    switch (quality) {
-      case 'low':
+    
+    // Configurar resolución
+    switch (resolution) {
+      case '360p':
+        resolutionSettings = ['-vf', 'scale=-1:360']
         qualitySettings = ['-crf', '28', '-preset', 'ultrafast']
         break
-      case 'medium':
+      case '480p':
+        resolutionSettings = ['-vf', 'scale=-1:480']
+        qualitySettings = ['-crf', '25', '-preset', 'fast']
+        break
+      case '720p':
+        resolutionSettings = ['-vf', 'scale=-1:720']
         qualitySettings = ['-crf', '23', '-preset', 'fast']
         break
-      case 'high':
+      case '1080p':
+        resolutionSettings = ['-vf', 'scale=-1:1080']
+        qualitySettings = ['-crf', '20', '-preset', 'medium']
+        break
+      case '4k':
+        resolutionSettings = ['-vf', 'scale=-1:2160']
         qualitySettings = ['-crf', '18', '-preset', 'medium']
         break
       default:
+        resolutionSettings = ['-vf', 'scale=-1:720']
         qualitySettings = ['-crf', '23', '-preset', 'fast']
     }
     
     // Convertir formato
     await ffmpegInstance.run(
       '-i', 'input.mp4',
+      ...resolutionSettings,
       ...qualitySettings,
       `output.${format}`
     )
@@ -374,10 +390,10 @@ export const convertVideoFormat = async (videoFile, format = 'mp4', quality = 'm
 }
 
 // Generar video final de secuencia para descarga
-export const generateSequenceVideo = async (sequence, format = 'mp4', quality = 'medium') => {
+export const generateSequenceVideo = async (sequence, format = 'mp4', resolution = '720p') => {
   try {
     console.log(`🎬 Generando video de secuencia: ${sequence.name}`)
-    console.log(`📹 Formato: ${format}, Calidad: ${quality}`)
+    console.log(`📹 Formato: ${format}, Resolución: ${resolution}`)
     
     if (!sequence.videos || sequence.videos.length === 0) {
       throw new Error('La secuencia no tiene videos')
@@ -396,14 +412,14 @@ export const generateSequenceVideo = async (sequence, format = 'mp4', quality = 
       throw new Error(`Error generando video: ${result.error}`)
     }
     
-    // Si se requiere un formato específico, convertir
-    if (format !== 'mp4') {
-      console.log(`🔄 Convirtiendo a formato ${format}...`)
-      const convertResult = await convertVideoFormat(
-        new Blob([result.data], { type: 'video/mp4' }), 
-        format, 
-        quality
-      )
+         // Si se requiere un formato específico o resolución diferente, convertir
+     if (format !== 'mp4' || resolution !== '720p') {
+       console.log(`🔄 Convirtiendo a formato ${format} con resolución ${resolution}...`)
+       const convertResult = await convertVideoFormat(
+         new Blob([result.data], { type: 'video/mp4' }), 
+         format, 
+         resolution
+       )
       
       if (!convertResult.success) {
         throw new Error(`Error convirtiendo formato: ${convertResult.error}`)

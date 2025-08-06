@@ -293,7 +293,7 @@
 - **Modal de descargas**: Integración con DownloadModal existente para resoluciones y formatos
 - **Generación de video**: Función `generateSequenceVideo` para crear video final de secuencia
 - **Configuración BPM**: Respeta la configuración de BPM guardada en la secuencia
-- **Formatos soportados**: MP4, AVI, MOV, WebM con diferentes calidades
+- **Formatos soportados**: MP4, AVI, MOV, WebM con diferentes resoluciones
 - **Interfaz adaptativa**: Modal que detecta si es secuencia o video individual
 - **Información detallada**: Muestra número de videos, duración, BPM ajustado y descripción
 - **Archivos modificados**:
@@ -303,10 +303,26 @@
   - `src/services/video/videoProcessor.js` - Función `generateSequenceVideo` para procesamiento
 - **Funcionalidades**:
   - Descarga de secuencias completas con configuración BPM preservada
-  - Selección de formato y calidad para descarga
+  - Selección de formato y resolución para descarga
   - Información detallada de la secuencia en el modal
   - Procesamiento optimizado con FFmpeg.wasm
   - Integración completa con el sistema de descargas existente
+
+### 🎬 **UPGRADE: RESOLUCIONES ESPECÍFICAS Y SELECCIÓN DE CARPETA** - 2024-12-19
+- **Resoluciones específicas**: Cambiado de calidades genéricas a resoluciones específicas (360p, 480p, 720p, 1080p, 4K)
+- **Selección de carpeta**: Implementada funcionalidad para elegir carpeta de descarga usando File System Access API
+- **Procesamiento mejorado**: Función `convertVideoFormat` actualizada para manejar resoluciones específicas
+- **Configuración de calidad**: Ajustes automáticos de CRF y preset según la resolución seleccionada
+- **Fallback inteligente**: Si File System Access API no está disponible, usa descarga normal
+- **Archivos modificados**:
+  - `src/components/video/DownloadModal.jsx` - Resoluciones específicas y selección de carpeta
+  - `src/services/video/videoProcessor.js` - Procesamiento con resoluciones específicas
+- **Funcionalidades**:
+  - Resoluciones desde 360p hasta 4K con configuraciones optimizadas
+  - Selección de carpeta de descarga con interfaz nativa del navegador
+  - Procesamiento de video con escalado específico según resolución
+  - Configuración automática de calidad según resolución seleccionada
+  - Compatibilidad con navegadores que no soportan File System Access API
 - **Solución**:
   - Corregida inconsistencia en nombre de propiedad: cambiado `thumbnailURL` por `thumbnailUrl` en todos los componentes
   - Mejorado componente SmartThumbnail con mejor manejo de fallbacks

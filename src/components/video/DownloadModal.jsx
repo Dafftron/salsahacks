@@ -4,7 +4,7 @@ import { convertVideoFormat, generateSequenceVideo } from '../../services/video/
 
 const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
   const [format, setFormat] = useState('mp4')
-  const [quality, setQuality] = useState('medium')
+  const [resolution, setResolution] = useState('720p')
   const [isProcessing, setIsProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
   
@@ -16,11 +16,13 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
     { value: 'webm', label: 'WebM', description: 'Formato web, archivos pequeños' }
   ]
   
-  // Opciones de calidad
-  const qualityOptions = [
-    { value: 'low', label: 'Baja', description: 'Archivo pequeño, calidad reducida' },
-    { value: 'medium', label: 'Media', description: 'Balance entre calidad y tamaño' },
-    { value: 'high', label: 'Alta', description: 'Alta calidad, archivo más grande' }
+  // Opciones de resolución
+  const resolutionOptions = [
+    { value: '360p', label: '360p', description: 'Calidad baja, archivo pequeño' },
+    { value: '480p', label: '480p', description: 'Calidad estándar, balance' },
+    { value: '720p', label: '720p', description: 'HD, buena calidad' },
+    { value: '1080p', label: '1080p', description: 'Full HD, alta calidad' },
+    { value: '4k', label: '4K', description: 'Ultra HD, máxima calidad' }
   ]
   
   // Obtener descripción del formato
@@ -29,9 +31,9 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
     return option ? option.description : ''
   }
   
-  // Obtener descripción de la calidad
-  const getQualityDescription = (qualityValue) => {
-    const option = qualityOptions.find(opt => opt.value === qualityValue)
+  // Obtener descripción de la resolución
+  const getResolutionDescription = (resolutionValue) => {
+    const option = resolutionOptions.find(opt => opt.value === resolutionValue)
     return option ? option.description : ''
   }
   
@@ -45,8 +47,8 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
     setIsProcessing(true)
     setProgress(0)
     
-    try {
-      console.log(`🎬 Iniciando descarga: ${format}, calidad: ${quality}`)
+         try {
+       console.log(`🎬 Iniciando descarga: ${format}, resolución: ${resolution}`)
       
       // Simular progreso
       const progressInterval = setInterval(() => {
@@ -61,42 +63,59 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
       
       let result
       
-      // Verificar si es una secuencia o un video individual
-      if (video.videos && Array.isArray(video.videos)) {
-        // Es una secuencia
-        console.log('🎬 Procesando secuencia...')
-        result = await generateSequenceVideo(video, format, quality)
-      } else if (video.file) {
-        // Es un video individual
-        console.log('🎬 Procesando video individual...')
-        result = await convertVideoFormat(video.file, format, quality)
-      } else {
-        throw new Error('Formato de video no válido')
-      }
+             // Verificar si es una secuencia o un video individual
+       if (video.videos && Array.isArray(video.videos)) {
+         // Es una secuencia
+         console.log('🎬 Procesando secuencia...')
+         result = await generateSequenceVideo(video, format, resolution)
+       } else if (video.file) {
+         // Es un video individual
+         console.log('🎬 Procesando video individual...')
+         result = await convertVideoFormat(video.file, format, resolution)
+       } else {
+         throw new Error('Formato de video no válido')
+       }
       
       clearInterval(progressInterval)
       setProgress(100)
       
-      if (result.success) {
-        // Crear blob y descargar
-        const blob = new Blob([result.data], { type: `video/${result.format || format}` })
-        const url = URL.createObjectURL(blob)
-        
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${video.title || video.name}_${quality}.${result.format || format}`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        
-        URL.revokeObjectURL(url)
-        
-        console.log('✅ Video descargado correctamente')
-        onDownloadComplete && onDownloadComplete()
-        onClose()
-      } else {
-        throw new Error(result.error)
-      }
+             if (result.success) {
+         // Crear blob y descargar
+         const blob = new Blob([result.data], { type: `video/${result.format || format}` })
+         
+         try {
+           const dirHandle = await selectDownloadFolder()
+           
+           if (dirHandle) {
+             // Usar File System Access API
+             const fileName = `${video.title || video.name}_${resolution}.${result.format || format}`
+             const fileHandle = await dirHandle.getFileHandle(fileName, { create: true })
+             const writable = await fileHandle.createWritable()
+             await writable.write(blob)
+             await writable.close()
+             console.log('✅ Video guardado en carpeta seleccionada')
+           } else {
+             // Descarga normal
+             const url = URL.createObjectURL(blob)
+             const a = document.createElement('a')
+             a.href = url
+             a.download = `${video.title || video.name}_${resolution}.${result.format || format}`
+             document.body.appendChild(a)
+             a.click()
+             document.body.removeChild(a)
+             URL.revokeObjectURL(url)
+             console.log('✅ Video descargado correctamente')
+           }
+           
+           onDownloadComplete && onDownloadComplete()
+           onClose()
+         } catch (error) {
+           console.error('Error al guardar archivo:', error)
+           throw new Error('Error al guardar el archivo')
+         }
+       } else {
+         throw new Error(result.error)
+       }
     } catch (error) {
       console.error('❌ Error al descargar video:', error)
       alert(`Error al procesar video: ${error.message}`)
@@ -106,23 +125,59 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
     }
   }
   
+  // Función para elegir carpeta de descarga
+  const selectDownloadFolder = async () => {
+    try {
+      // Verificar si la API de File System Access está disponible
+      if ('showDirectoryPicker' in window) {
+        const dirHandle = await window.showDirectoryPicker()
+        return dirHandle
+      } else {
+        // Fallback: usar descarga normal
+        console.log('API de File System Access no disponible, usando descarga normal')
+        return null
+      }
+    } catch (error) {
+      console.log('Usuario canceló la selección de carpeta o error:', error)
+      return null
+    }
+  }
+
   // Descarga directa (sin conversión)
-  const handleDirectDownload = () => {
+  const handleDirectDownload = async () => {
     if (!video || !video.file) {
       console.error('No hay video para descargar')
       return
     }
     
-    const url = URL.createObjectURL(video.file)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = video.title || 'video'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-    
-    onClose()
+    try {
+      const dirHandle = await selectDownloadFolder()
+      
+      if (dirHandle) {
+        // Usar File System Access API
+        const fileName = `${video.title || video.name}.mp4`
+        const fileHandle = await dirHandle.getFileHandle(fileName, { create: true })
+        const writable = await fileHandle.createWritable()
+        await writable.write(video.file)
+        await writable.close()
+        console.log('✅ Archivo guardado en carpeta seleccionada')
+      } else {
+        // Descarga normal
+        const url = URL.createObjectURL(video.file)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = video.title || 'video'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+      }
+      
+      onClose()
+    } catch (error) {
+      console.error('Error en descarga directa:', error)
+      alert('Error al descargar el archivo')
+    }
   }
   
   if (!isOpen) return null
@@ -233,48 +288,48 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
             </div>
           </div>
           
-          {/* Quality Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Calidad
-            </label>
-            <div className="space-y-2">
-              {qualityOptions.map(option => (
-                <label
-                  key={option.value}
-                  className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                    quality === option.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="quality"
-                    value={option.value}
-                    checked={quality === option.value}
-                    onChange={(e) => setQuality(e.target.value)}
-                    className="sr-only"
-                  />
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      quality === option.value
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-gray-300'
-                    }`}>
-                      {quality === option.value && (
-                        <div className="w-2 h-2 rounded-full bg-white"></div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-800">{option.label}</div>
-                      <div className="text-sm text-gray-500">{option.description}</div>
-                    </div>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
+                     {/* Resolution Selection */}
+           <div>
+             <label className="block text-sm font-medium text-gray-700 mb-3">
+               Resolución
+             </label>
+             <div className="space-y-2">
+               {resolutionOptions.map(option => (
+                 <label
+                   key={option.value}
+                   className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                     resolution === option.value
+                       ? 'border-blue-500 bg-blue-50'
+                       : 'border-gray-200 hover:border-gray-300'
+                   }`}
+                 >
+                   <input
+                     type="radio"
+                     name="resolution"
+                     value={option.value}
+                     checked={resolution === option.value}
+                     onChange={(e) => setResolution(e.target.value)}
+                     className="sr-only"
+                   />
+                   <div className="flex items-center space-x-3">
+                     <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                       resolution === option.value
+                         ? 'border-blue-500 bg-blue-500'
+                         : 'border-gray-300'
+                     }`}>
+                       {resolution === option.value && (
+                         <div className="w-2 h-2 rounded-full bg-white"></div>
+                       )}
+                     </div>
+                     <div>
+                       <div className="font-medium text-gray-800">{option.label}</div>
+                       <div className="text-sm text-gray-500">{option.description}</div>
+                     </div>
+                   </div>
+                 </label>
+               ))}
+             </div>
+           </div>
           
           {/* Progress Bar */}
           {isProcessing && (
