@@ -1,7 +1,7 @@
 // 🎴 SELECTOR DE TAMAÑOS DE CARDS - SALSAHACKS V2.0
 
 import React from 'react'
-import { Grid, Grid3X3, Grid4X4, Square } from 'lucide-react'
+import { Grid, Grid3X3, Square, LayoutGrid } from 'lucide-react'
 import { useCardSize } from '../../contexts/CardSizeContext'
 
 const CardSizeSelector = ({ type = 'video' }) => {

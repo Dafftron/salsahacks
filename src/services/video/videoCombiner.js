@@ -8,23 +8,21 @@ class VideoCombiner {
     return Promise.resolve()
   }
 
-  // Método principal que usa MediaRecorder API
+  // Método principal que descarga videos individuales de la secuencia
   async combineVideos(videos, onProgress) {
     try {
-      console.log('Iniciando combinación con MediaRecorder...')
+      console.log('Iniciando descarga de secuencia...')
       
       if (onProgress) {
         onProgress({
           stage: 'init',
           current: 0,
           total: 100,
-          message: 'Iniciando MediaRecorder...'
+          message: 'Iniciando descarga de secuencia...'
         })
       }
 
-      // Descargar todos los videos
-      const videoBlobs = []
-      
+      // Descargar todos los videos de la secuencia
       for (let i = 0; i < videos.length; i++) {
         const video = videos[i]
         console.log(`Descargando video ${i + 1}/${videos.length}: ${video.title}`)
@@ -32,14 +30,14 @@ class VideoCombiner {
         if (onProgress) {
           onProgress({
             stage: 'download',
-            current: ((i + 1) / videos.length) * 50,
+            current: ((i + 1) / videos.length) * 100,
             total: 100,
             message: `Descargando: ${video.title}`
           })
         }
 
         try {
-          // Usar Firebase SDK para obtener URL de descarga
+          // Usar Firebase SDK para obtener URL de descarga (igual que descarga individual)
           const { ref, getDownloadURL } = await import('firebase/storage')
           const { storage } = await import('../firebase/config')
           
@@ -48,16 +46,22 @@ class VideoCombiner {
           
           console.log(`URL de descarga obtenida para ${video.title}:`, downloadURL)
 
-          // Descargar video
-          const response = await fetch(downloadURL)
-          if (!response.ok) {
-            throw new Error(`Error descargando video: ${response.statusText}`)
-          }
-          
-          const videoBlob = await response.blob()
-          videoBlobs.push(videoBlob)
+          // Crear enlace de descarga directo (igual que descarga individual)
+          const link = document.createElement('a')
+          link.href = downloadURL
+          link.download = `${video.title}_secuencia_${i + 1}.mp4`
+          link.target = '_blank'
+          link.rel = 'noopener noreferrer'
+
+          // Agregar al DOM y hacer clic
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
           
           console.log(`Video ${i + 1} descargado: ${video.title}`)
+          
+          // Pequeña pausa entre descargas
+          await new Promise(resolve => setTimeout(resolve, 500))
           
         } catch (error) {
           console.error(`Error con video ${video.title}:`, error)
@@ -67,31 +71,19 @@ class VideoCombiner {
 
       if (onProgress) {
         onProgress({
-          stage: 'combine',
-          current: 50,
-          total: 100,
-          message: 'Combinando videos...'
-        })
-      }
-
-      // Crear un video combinado usando MediaRecorder
-      const combinedBlob = await this.combineVideoBlobs(videoBlobs)
-
-      if (onProgress) {
-        onProgress({
           stage: 'complete',
           current: 100,
           total: 100,
-          message: '¡Combinación completada!'
+          message: '¡Secuencia descargada!'
         })
       }
 
-      console.log('Combinación completada, archivo creado')
-      return combinedBlob
+      console.log('Descarga de secuencia completada')
+      return new Blob(['Secuencia descargada'], { type: 'text/plain' })
 
     } catch (error) {
-      console.error('Error combinando videos:', error)
-      throw new Error(`Error combinando videos: ${error.message}`)
+      console.error('Error descargando secuencia:', error)
+      throw new Error(`Error descargando secuencia: ${error.message}`)
     }
   }
 

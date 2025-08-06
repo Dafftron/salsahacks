@@ -67,7 +67,7 @@ const VideoDownloadModal = ({
     if (downloadUrl) {
       const link = document.createElement('a')
       link.href = downloadUrl
-      link.download = `${sequenceName}_combinada.webm`
+      link.download = `${sequenceName}_secuencia.txt`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -133,14 +133,14 @@ const VideoDownloadModal = ({
           {/* Video Info */}
           <div className="bg-gray-50 rounded-lg p-3">
             <p className="text-sm text-gray-600">
-              <strong>{videos?.length || 0} videos</strong> serán combinados en uno solo
+              <strong>{videos?.length || 0} videos</strong> serán descargados individualmente
             </p>
             <p className="text-xs text-gray-500 mt-1">
               Duración total: {videos?.reduce((sum, v) => sum + (v.duration || 0), 0).toFixed(1)}s
               {videos?.some(v => !v.duration) && ' (calculando...)'}
             </p>
             <p className="text-xs text-blue-600 mt-1">
-              Formato: WebM (calidad profesional con MediaRecorder)
+              Formato: MP4 (descarga directa sin CORS)
             </p>
           </div>
 
@@ -183,7 +183,7 @@ const VideoDownloadModal = ({
               <div className="flex items-center space-x-2">
                 <CheckCircle className="h-5 w-5 text-green-500" />
                 <span className="text-sm text-green-700">
-                  ¡Videos combinados exitosamente con MediaRecorder!
+                  ¡Secuencia descargada exitosamente!
                 </span>
               </div>
             </div>
@@ -198,7 +198,7 @@ const VideoDownloadModal = ({
               className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
             >
               <Download className="h-4 w-4" />
-              <span>Combinar Videos</span>
+              <span>Descargar Secuencia</span>
             </button>
           )}
 
@@ -208,7 +208,7 @@ const VideoDownloadModal = ({
               className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
             >
               <Download className="h-4 w-4" />
-              <span>Descargar WebM</span>
+              <span>Ver Descargas</span>
             </button>
           )}
 

@@ -31,6 +31,7 @@ import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
 import SequenceBuilder from '../components/sequence/SequenceBuilder'
 import SequenceGallery from '../components/sequence/SequenceGallery'
+import CardSizeSelector from '../components/common/CardSizeSelector'
 import { useSequenceBuilderContext } from '../contexts/SequenceBuilderContext'
 
 import { 
@@ -61,6 +62,7 @@ import {
 } from '../services/firebase/storage'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { useCardSize } from '../contexts/CardSizeContext'
 
 const FigurasPage = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
@@ -84,6 +86,7 @@ const FigurasPage = () => {
   const [sequencesLoading, setSequencesLoading] = useState(true)
   
   const { user } = useAuth()
+  const { getVideoConfig, getSequenceConfig } = useCardSize()
   
   // Usar el contexto de constructor de secuencias
   const {
@@ -1072,6 +1075,9 @@ const FigurasPage = () => {
                 Videos de {selectedStyle.toLowerCase()} ({filteredVideos.length})
               </h2>
               <div className="flex items-center space-x-4">
+                {/* Selector de tamaño de cards */}
+                <CardSizeSelector type="video" />
+                
                 {/* Botón de modo ancho completo */}
                 <button
                   onClick={() => setIsFullWidth(!isFullWidth)}
@@ -1139,11 +1145,7 @@ const FigurasPage = () => {
               <p className="text-gray-400 text-sm mt-2">Sube tu primer video de {selectedStyle.toLowerCase()} usando el botón de arriba</p>
             </div>
                      ) : (
-             <div className={`grid gap-6 ${
-               isFullWidth 
-                 ? 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' 
-                 : 'md:grid-cols-2'
-             }`}>
+             <div className={`grid gap-6 ${getVideoConfig().grid}`}>
                {filteredVideos.map((video) => (
                 <div 
                   key={video.id} 
@@ -1154,7 +1156,7 @@ const FigurasPage = () => {
                   }`}
                 >
                   <div className="relative group">
-                    <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+                    <div className={`w-full ${getVideoConfig().aspect} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
                       {video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? (
                         <img
                           src={video.thumbnailUrl}
@@ -1527,7 +1529,7 @@ const FigurasPage = () => {
                   
                                      <div className="p-4">
                      <div className="flex items-center justify-between mb-2">
-                       <h3 className="font-semibold text-gray-800 text-lg">{video.title}</h3>
+                       <h3 className={`font-semibold text-gray-800 ${getVideoConfig().titleSize}`}>{video.title}</h3>
                        <div className="flex items-center space-x-1">
                          {[1, 2, 3, 4, 5].map(star => {
                            const isFilled = (video.rating || 0) >= star
@@ -1558,78 +1560,81 @@ const FigurasPage = () => {
                          <span className="text-xs font-medium text-gray-500 ml-1">({video.rating || 0})</span>
                        </div>
                      </div>
-                     <p className="text-gray-600 text-sm mb-3">{video.description || 'Sin descripción'}</p>
+                                           <p className={`text-gray-600 text-sm mb-3 ${getVideoConfig().descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig().descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig().descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
                     
                                          {/* Tags Normales */}
-                     <div className="flex flex-wrap gap-2 mb-3">
-                       {(() => {
-                         const orderedTags = getOrderedTags(video)
-                         if (orderedTags.length > 0) {
-                           return orderedTags.map(({ tag, categoryKey, color }) => (
-                             <span
-                               key={`${categoryKey}-${tag}`}
-                               className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
-                             >
-                               {tag}
-                             </span>
-                           ))
-                         } else {
-                           return <span className="text-gray-400 text-sm">Sin etiquetas</span>
-                         }
-                       })()}
-                     </div>
+                                           {getVideoConfig().showTags && (
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {(() => {
+                            const orderedTags = getOrderedTags(video)
+                            if (orderedTags.length > 0) {
+                              return orderedTags.map(({ tag, categoryKey, color }) => (
+                                <span
+                                  key={`${categoryKey}-${tag}`}
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
+                                >
+                                  {tag}
+                                </span>
+                              ))
+                            } else {
+                              return <span className="text-gray-400 text-sm">Sin etiquetas</span>
+                            }
+                          })()}
+                        </div>
+                      )}
 
                      {/* Tags Iniciales */}
-                     {(() => {
-                       const tagsIniciales = getOrderedTagsIniciales(video)
-                       if (tagsIniciales.length > 0) {
-                         return (
-                           <div className="mb-3">
-                             <div className="flex items-center space-x-2 mb-2">
-                               <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Iniciales:</span>
-                             </div>
-                             <div className="flex flex-wrap gap-2">
-                               {tagsIniciales.map(({ tag, categoryKey, color }) => (
-                                 <span
-                                   key={`inicial-${categoryKey}-${tag}`}
-                                   className="px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm"
-                                 >
-                                   {tag}
-                                 </span>
-                               ))}
-                             </div>
-                           </div>
-                         )
-                       }
-                       return null
-                     })()}
+                                           {getVideoConfig().showTags && (() => {
+                        const tagsIniciales = getOrderedTagsIniciales(video)
+                        if (tagsIniciales.length > 0) {
+                          return (
+                            <div className="mb-3">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Iniciales:</span>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {tagsIniciales.map(({ tag, categoryKey, color }) => (
+                                  <span
+                                    key={`inicial-${categoryKey}-${tag}`}
+                                    className="px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        }
+                        return null
+                      })()}
 
                      {/* Tags Finales */}
-                     {(() => {
-                       const tagsFinales = getOrderedTagsFinales(video)
-                       if (tagsFinales.length > 0) {
-                         return (
-                           <div className="mb-3">
-                             <div className="flex items-center space-x-2 mb-2">
-                               <span className="text-xs font-medium text-green-600 uppercase tracking-wide">Finales:</span>
-                             </div>
-                             <div className="flex flex-wrap gap-2">
-                               {tagsFinales.map(({ tag, categoryKey, color }) => (
-                                 <span
-                                   key={`final-${categoryKey}-${tag}`}
-                                   className="px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-sm"
-                                 >
-                                   {tag}
-                                 </span>
-                               ))}
-                             </div>
-                           </div>
-                         )
-                       }
-                       return null
-                     })()}
+                                           {getVideoConfig().showTags && (() => {
+                        const tagsFinales = getOrderedTagsFinales(video)
+                        if (tagsFinales.length > 0) {
+                          return (
+                            <div className="mb-3">
+                              <div className="flex items-center space-x-2 mb-2">
+                                <span className="text-xs font-medium text-green-600 uppercase tracking-wide">Finales:</span>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {tagsFinales.map(({ tag, categoryKey, color }) => (
+                                  <span
+                                    key={`final-${categoryKey}-${tag}`}
+                                    className="px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-sm"
+                                  >
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )
+                        }
+                        return null
+                      })()}
                     
-                                                             <div className="flex items-center justify-between text-sm text-gray-500">
+                                                                                   {getVideoConfig().showStats && (
+                        <div className="flex items-center justify-between text-sm text-gray-500">
                                              <div className="flex items-center space-x-2">
                          <span className="font-medium">
                            {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
@@ -1705,12 +1710,13 @@ const FigurasPage = () => {
                          >
                            <Download className="h-4 w-4" />
                          </button>
-                       </div>
-                     </div>
+                                               </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
-                         </div>
+            </div>
            )}
          </div>
         )}
@@ -1722,13 +1728,18 @@ const FigurasPage = () => {
               <h2 className="text-2xl font-semibold text-gray-800">
                 Secuencias de {selectedStyle.toLowerCase()} ({sequences.length})
               </h2>
-              <button
-                onClick={toggleBuilder}
-                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-              >
-                <Shuffle className="h-4 w-4" />
-                <span>CREAR SECUENCIA</span>
-              </button>
+              <div className="flex items-center space-x-4">
+                {/* Selector de tamaño de cards */}
+                <CardSizeSelector type="sequence" />
+                
+                <button
+                  onClick={toggleBuilder}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  <Shuffle className="h-4 w-4" />
+                  <span>CREAR SECUENCIA</span>
+                </button>
+              </div>
             </div>
             
             {sequencesLoading ? (
