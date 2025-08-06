@@ -17,8 +17,9 @@ const SequenceTimeline = ({
   const [totalDuration, setTotalDuration] = useState(0)
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [videoStartTimes, setVideoStartTimes] = useState([])
-  const [videoElements, setVideoElements] = useState([])
+  const [videoDurations, setVideoDurations] = useState([])
   
+  const videoRef = useRef(null)
   const containerRef = useRef(null)
   const timelineRef = useRef(null)
   const controlsTimeoutRef = useRef(null)
@@ -28,10 +29,14 @@ const SequenceTimeline = ({
     if (videos.length > 0) {
       let total = 0
       const startTimes = [0]
+      const durations = []
       
       videos.forEach((video, index) => {
+        const duration = video.duration || 0
+        durations.push(duration)
+        
         if (index < videos.length - 1) {
-          total += video.duration || 0
+          total += duration
           startTimes.push(total)
         }
       })
@@ -43,20 +48,7 @@ const SequenceTimeline = ({
       
       setTotalDuration(total)
       setVideoStartTimes(startTimes)
-    }
-  }, [videos])
-  
-  // Crear elementos de video combinados
-  useEffect(() => {
-    if (videos.length > 0) {
-      const elements = videos.map((video, index) => {
-        const videoElement = document.createElement('video')
-        videoElement.src = video.videoUrl
-        videoElement.muted = true
-        videoElement.preload = 'metadata'
-        return videoElement
-      })
-      setVideoElements(elements)
+      setVideoDurations(durations)
     }
   }, [videos])
   
@@ -67,12 +59,18 @@ const SequenceTimeline = ({
         if (currentTime >= videoStartTimes[i]) {
           if (i !== currentVideoIndex) {
             setCurrentVideoIndex(i)
+            // Cambiar el video que se está reproduciendo
+            if (videoRef.current) {
+              const videoTime = currentTime - videoStartTimes[i]
+              videoRef.current.src = videos[i].videoUrl
+              videoRef.current.currentTime = videoTime
+            }
           }
           break
         }
       }
     }
-  }, [currentTime, videoStartTimes, currentVideoIndex])
+  }, [currentTime, videoStartTimes, currentVideoIndex, videos])
   
   // Auto-hide controls
   useEffect(() => {
@@ -91,32 +89,61 @@ const SequenceTimeline = ({
     }
   }, [isPlaying, showControls])
   
-  // Simular reproducción de video combinado
-  useEffect(() => {
-    let interval
-    if (isPlaying && totalDuration > 0) {
-      interval = setInterval(() => {
-        setCurrentTime(prev => {
-          const newTime = prev + 0.1
-          if (newTime >= totalDuration) {
-            setIsPlaying(false)
-            return 0
-          }
-          return newTime
-        })
-      }, 100)
+  // Handle time update del video actual
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      const videoTime = videoRef.current.currentTime
+      const globalTime = videoStartTimes[currentVideoIndex] + videoTime
+      setCurrentTime(globalTime)
     }
-    return () => clearInterval(interval)
-  }, [isPlaying, totalDuration])
+  }
+  
+  // Handle video end
+  const handleVideoEnd = () => {
+    if (currentVideoIndex < videos.length - 1) {
+      // Play next video
+      setCurrentVideoIndex(prev => prev + 1)
+      setCurrentTime(videoStartTimes[currentVideoIndex + 1])
+    } else if (loop) {
+      // Loop back to first video
+      setCurrentVideoIndex(0)
+      setCurrentTime(0)
+    } else {
+      // Stop at last video
+      setIsPlaying(false)
+    }
+  }
+  
+  // Handle loaded metadata
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      // Aplicar el tiempo correcto al video actual
+      const videoStartTime = videoStartTimes[currentVideoIndex] || 0
+      const videoTime = currentTime - videoStartTime
+      if (videoTime > 0) {
+        videoRef.current.currentTime = videoTime
+      }
+    }
+  }
   
   // Toggle play/pause
   const togglePlay = () => {
-    setIsPlaying(!isPlaying)
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause()
+      } else {
+        videoRef.current.play()
+      }
+      setIsPlaying(!isPlaying)
+    }
   }
   
   // Toggle mute
   const toggleMute = () => {
-    setIsMuted(!isMuted)
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted
+      setIsMuted(!isMuted)
+    }
   }
   
   // Toggle fullscreen
@@ -137,7 +164,21 @@ const SequenceTimeline = ({
       const clickX = e.clientX - rect.left
       const percentage = clickX / rect.width
       const newTime = percentage * totalDuration
+      
       setCurrentTime(newTime)
+      
+      // Encontrar el video correspondiente y establecer su tiempo
+      for (let i = videoStartTimes.length - 1; i >= 0; i--) {
+        if (newTime >= videoStartTimes[i]) {
+          setCurrentVideoIndex(i)
+          if (videoRef.current) {
+            const videoTime = newTime - videoStartTimes[i]
+            videoRef.current.src = videos[i].videoUrl
+            videoRef.current.currentTime = videoTime
+          }
+          break
+        }
+      }
     }
   }
   
@@ -161,38 +202,48 @@ const SequenceTimeline = ({
           break
         case 'ArrowLeft':
           e.preventDefault()
-          const newTimeLeft = Math.max(0, currentTime - 10)
-          setCurrentTime(newTimeLeft)
+          if (videoRef.current) {
+            const newTime = Math.max(0, currentTime - 10)
+            setCurrentTime(newTime)
+            // Ajustar el video actual
+            for (let i = videoStartTimes.length - 1; i >= 0; i--) {
+              if (newTime >= videoStartTimes[i]) {
+                setCurrentVideoIndex(i)
+                const videoTime = newTime - videoStartTimes[i]
+                videoRef.current.currentTime = videoTime
+                break
+              }
+            }
+          }
           break
         case 'ArrowRight':
           e.preventDefault()
-          const newTimeRight = Math.min(totalDuration, currentTime + 10)
-          setCurrentTime(newTimeRight)
+          if (videoRef.current) {
+            const newTime = Math.min(totalDuration, currentTime + 10)
+            setCurrentTime(newTime)
+            // Ajustar el video actual
+            for (let i = videoStartTimes.length - 1; i >= 0; i--) {
+              if (newTime >= videoStartTimes[i]) {
+                setCurrentVideoIndex(i)
+                const videoTime = newTime - videoStartTimes[i]
+                videoRef.current.currentTime = videoTime
+                break
+              }
+            }
+          }
           break
       }
     }
     
     document.addEventListener('keydown', handleKeyPress)
     return () => document.removeEventListener('keydown', handleKeyPress)
-  }, [currentTime, totalDuration])
+  }, [currentTime, totalDuration, videoStartTimes])
   
   // Formatear tiempo
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = Math.floor(seconds % 60)
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
-  
-  // Obtener el video actual basado en el tiempo
-  const getCurrentVideo = () => {
-    if (videos.length === 0) return null
-    
-    for (let i = videoStartTimes.length - 1; i >= 0; i--) {
-      if (currentTime >= videoStartTimes[i]) {
-        return videos[i]
-      }
-    }
-    return videos[0]
   }
   
   if (videos.length === 0) {
@@ -205,7 +256,7 @@ const SequenceTimeline = ({
     )
   }
   
-  const currentVideo = getCurrentVideo()
+  const currentVideo = videos[currentVideoIndex]
   
   return (
     <div 
@@ -218,32 +269,34 @@ const SequenceTimeline = ({
         }
       }}
     >
-      {/* Video Element - Mostrar el video actual */}
+      {/* Video Element - Reproducción real */}
       <video
+        ref={videoRef}
         src={currentVideo?.videoUrl}
         className="w-full h-full object-contain"
+        onEnded={handleVideoEnd}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
         muted={isMuted}
-        autoPlay={false}
+        autoPlay={autoplay}
         loop={false}
-        style={{
-          objectPosition: 'center',
-          objectFit: 'contain'
-        }}
       />
       
       {/* Video Info Overlay */}
       <div className="absolute top-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm">
-        {formatTime(currentTime)} / {formatTime(totalDuration)}
+        {currentVideoIndex + 1} / {videos.length} - {currentVideo?.title}
       </div>
       
       {/* Timeline mejorado estilo CapCut */}
       <div className="absolute bottom-16 left-0 right-0 px-4">
         <div 
           ref={timelineRef}
-          className="w-full h-12 bg-gray-800 rounded-lg cursor-pointer relative"
+          className="w-full h-16 bg-gray-800 rounded-lg cursor-pointer relative"
           onClick={handleTimelineClick}
         >
-          {/* Video clips con mejor visualización */}
+          {/* Video clips con thumbnails */}
           <div className="absolute inset-0 flex">
             {videos.map((video, index) => {
               const startTime = videoStartTimes[index] || 0
@@ -254,25 +307,44 @@ const SequenceTimeline = ({
               return (
                 <div
                   key={video.id}
-                  className="absolute h-full bg-gradient-to-r from-teal-500 to-teal-600 border-r border-teal-700"
+                  className="absolute h-full border-r border-gray-600 relative"
                   style={{
                     left: `${left}%`,
                     width: `${width}%`
                   }}
                 >
                   {/* Thumbnail del video */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-                      <span className="text-white text-xs font-medium px-1 text-center">
-                        {video.title}
-                      </span>
+                  <div className="absolute inset-0 bg-gradient-to-br from-teal-500 to-teal-600">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-full h-full bg-gray-700 flex items-center justify-center relative">
+                        {/* Intentar mostrar thumbnail real */}
+                        {video.thumbnailUrl && (
+                          <img 
+                            src={video.thumbnailUrl} 
+                            alt={video.title}
+                            className="w-full h-full object-cover opacity-75"
+                            onError={(e) => {
+                              e.target.style.display = 'none'
+                              e.target.nextSibling.style.display = 'flex'
+                            }}
+                          />
+                        )}
+                        <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-medium px-1 text-center bg-black bg-opacity-50">
+                          {video.title}
+                        </div>
+                      </div>
                     </div>
                   </div>
                   
                   {/* Indicador de tiempo */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs px-1 py-0.5">
+                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-xs px-1 py-0.5">
                     {formatTime(startTime)} - {formatTime(endTime)}
                   </div>
+                  
+                  {/* Separador entre clips */}
+                  {index < videos.length - 1 && (
+                    <div className="absolute right-0 top-0 bottom-0 w-1 bg-white z-5"></div>
+                  )}
                 </div>
               )
             })}
