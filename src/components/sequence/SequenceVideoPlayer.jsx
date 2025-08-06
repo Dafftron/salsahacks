@@ -45,7 +45,7 @@ const SequenceVideoPlayer = ({
   const [controlsTimeout, setControlsTimeout] = useState(null)
   const [showSpeedMenu, setShowSpeedMenu] = useState(false)
   const [manualPlaybackSpeed, setManualPlaybackSpeed] = useState(1)
-  const [useManualSpeed, setUseManualSpeed] = useState(false)
+  const [useManualSpeed, setUseManualSpeed] = useState(true)
   
   const videoRef = useRef(null)
   const containerRef = useRef(null)
@@ -55,34 +55,15 @@ const SequenceVideoPlayer = ({
   // Velocidades disponibles
   const availableSpeeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2]
 
-  // Calcular velocidad de reproducción basada en BPM (solo si no se usa velocidad manual)
+  // Velocidad fija en 1x (sin ajuste automático de BPM)
   useEffect(() => {
-    if (!useManualSpeed && currentBPM && currentVideo?.bpm) {
-      const targetBPM = currentBPM
-      const videoBPM = currentVideo.bpm
-      const newPlaybackRate = targetBPM / videoBPM
-      
-      console.log(`🎵 Ajustando velocidad: ${videoBPM} BPM → ${targetBPM} BPM = ${newPlaybackRate.toFixed(2)}x`)
-      setPlaybackRate(newPlaybackRate)
-      
-      if (videoRef.current) {
-        videoRef.current.playbackRate = newPlaybackRate
-      }
-    } else if (!useManualSpeed) {
-      setPlaybackRate(1)
-      if (videoRef.current) {
-        videoRef.current.playbackRate = 1
-      }
+    setPlaybackRate(1)
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 1
     }
-  }, [currentBPM, currentVideo?.bpm, currentVideoIndex, useManualSpeed])
+  }, [currentVideoIndex])
 
-  // Aplicar velocidad manual cuando se activa
-  useEffect(() => {
-    if (useManualSpeed && videoRef.current) {
-      videoRef.current.playbackRate = manualPlaybackSpeed
-      setPlaybackRate(manualPlaybackSpeed)
-    }
-  }, [useManualSpeed, manualPlaybackSpeed])
+
 
   // Manejar bucle de segmento
   useEffect(() => {
@@ -184,17 +165,9 @@ const SequenceVideoPlayer = ({
   const handleLoadedMetadata = () => {
     if (videoRef.current) {
       setDuration(videoRef.current.duration)
-      // Aplicar velocidad de reproducción
-      if (useManualSpeed) {
-        videoRef.current.playbackRate = manualPlaybackSpeed
-        setPlaybackRate(manualPlaybackSpeed)
-      } else if (currentBPM && currentVideo?.bpm) {
-        const targetBPM = currentBPM
-        const videoBPM = currentVideo.bpm
-        const newPlaybackRate = targetBPM / videoBPM
-        videoRef.current.playbackRate = newPlaybackRate
-        setPlaybackRate(newPlaybackRate)
-      }
+      // Aplicar velocidad manual
+      videoRef.current.playbackRate = manualPlaybackSpeed
+      setPlaybackRate(manualPlaybackSpeed)
     }
   }
   
@@ -353,7 +326,6 @@ const SequenceVideoPlayer = ({
 
   const handleSpeedChange = (speed) => {
     setManualPlaybackSpeed(speed)
-    setUseManualSpeed(true)
     if (videoRef.current) {
       videoRef.current.playbackRate = speed
       setPlaybackRate(speed)
@@ -516,29 +488,29 @@ const SequenceVideoPlayer = ({
         onClick={activateControls}
       />
       
-      {/* Video Info Overlay */}
-      <div className="absolute top-2 left-2 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg text-sm">
-        <div className="flex items-center space-x-2">
-          <span className="font-medium">
-            {currentVideoIndex + 1} / {videos.length}
-          </span>
-          <span className="text-gray-300">|</span>
-          <span className="max-w-xs truncate">{currentVideo.title}</span>
-          {playbackRate !== 1 && (
-            <>
-              <span className="text-gray-300">|</span>
-              <span className="text-yellow-400 font-medium">
-                {playbackRate > 1 ? '⏩' : '⏪'} {playbackRate.toFixed(2)}x
-              </span>
-            </>
-          )}
-        </div>
-        {videos.length > 1 && (
-          <div className="text-xs text-gray-400 mt-1">
-            Usa Ctrl+←/→ para cambiar de video
-          </div>
-        )}
-      </div>
+             {/* Video Info Overlay */}
+       <div className="absolute top-2 left-2 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg text-sm">
+         <div className="flex items-center space-x-2">
+           <span className="font-medium">
+             {currentVideoIndex + 1} / {videos.length}
+           </span>
+           <span className="text-gray-300">|</span>
+           <span className="max-w-xs truncate">{currentVideo.title}</span>
+           {playbackRate !== 1 && (
+             <>
+               <span className="text-gray-300">|</span>
+               <span className="text-blue-400 font-medium">
+                 {playbackRate.toFixed(2)}x
+               </span>
+             </>
+           )}
+         </div>
+         {videos.length > 1 && (
+           <div className="text-xs text-gray-400 mt-1">
+             Usa Ctrl+←/→ para cambiar de video
+           </div>
+         )}
+       </div>
       
       {/* Controls Overlay */}
       {showControlsUI && (
@@ -687,39 +659,28 @@ const SequenceVideoPlayer = ({
                   className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
                   title="Velocidad de reproducción"
                 >
-                  <div className="flex items-center justify-center w-4 h-4 text-[10px] font-bold leading-none">
-                    {useManualSpeed ? `${manualPlaybackSpeed}x` : 'Auto'}
-                  </div>
+                                     <div className="flex items-center justify-center w-4 h-4 text-[10px] font-bold leading-none">
+                     {manualPlaybackSpeed === 1 ? '1x' : `${manualPlaybackSpeed}x`}
+                   </div>
                 </button>
                 
-                {showSpeedMenu && (
-                  <div className="absolute bottom-full right-0 mb-2 bg-black/90 rounded-lg p-2 z-20 min-w-[80px]">
-                    <button
-                      onClick={() => {
-                        setUseManualSpeed(false)
-                        setShowSpeedMenu(false)
-                      }}
-                      className={`w-full text-left px-3 py-1 rounded text-xs transition-colors ${
-                        !useManualSpeed ? 'bg-blue-500 text-white' : 'text-white hover:bg-white/20'
-                      }`}
-                    >
-                      Auto (BPM)
-                    </button>
-                    {availableSpeeds.map((speed) => (
-                      <button
-                        key={speed}
-                        onClick={() => handleSpeedChange(speed)}
-                        className={`w-full text-left px-3 py-1 rounded text-xs transition-colors ${
-                          useManualSpeed && manualPlaybackSpeed === speed 
-                            ? 'bg-blue-500 text-white' 
-                            : 'text-white hover:bg-white/20'
-                        }`}
-                      >
-                        {getSpeedLabel(speed)}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                                 {showSpeedMenu && (
+                   <div className="absolute bottom-full right-0 mb-2 bg-black/90 rounded-lg p-2 z-20 min-w-[80px]">
+                     {availableSpeeds.map((speed) => (
+                       <button
+                         key={speed}
+                         onClick={() => handleSpeedChange(speed)}
+                         className={`w-full text-left px-3 py-1 rounded text-xs transition-colors ${
+                           manualPlaybackSpeed === speed 
+                             ? 'bg-blue-500 text-white' 
+                             : 'text-white hover:bg-white/20'
+                         }`}
+                       >
+                         {getSpeedLabel(speed)}
+                       </button>
+                     ))}
+                   </div>
+                 )}
               </div>
 
               {/* Botón de descarga */}
@@ -845,6 +806,22 @@ const SequenceVideoPlayer = ({
                 </div>
               </div>
             </div>
+
+            {/* Indicador de progreso de la secuencia */}
+            {videos.length > 1 && (
+              <div className="mt-2">
+                <div className="flex items-center justify-between text-xs text-gray-300 mb-1">
+                  <span>Progreso de la secuencia</span>
+                  <span>{currentVideoIndex + 1} de {videos.length}</span>
+                </div>
+                <div className="w-full h-1 bg-gray-600 rounded-full">
+                  <div 
+                    className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                    style={{ width: `${((currentVideoIndex + 1) / videos.length) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
