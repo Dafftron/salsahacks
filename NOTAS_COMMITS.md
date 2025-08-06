@@ -2,6 +2,59 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🎬 **FEATURE: GENERACIÓN DE VIDEOS CON AJUSTE DE BPM** - 2024-12-19
+- **Problema**: No existía funcionalidad para generar videos combinados con ajuste automático de BPM
+- **Solución**: Implementado sistema completo de generación de videos con procesamiento de BPM
+  - **Procesamiento con FFmpeg**: Uso de @ffmpeg/ffmpeg para procesamiento de video en el navegador
+  - **Ajuste automático de velocidad**: Cada video se ajusta automáticamente al BPM global seleccionado
+  - **Descarga de archivos**: Descarga automática de archivos desde Firebase Storage para procesamiento
+  - **Concatenación inteligente**: Videos procesados se concatenan en secuencia final
+  - **Manejo de errores robusto**: Fallback para videos sin audio y limpieza de archivos temporales
+  - **Feedback en tiempo real**: Toasts informativos durante cada paso del proceso
+- **Archivos modificados**:
+  - `src/components/sequence/SequenceBuilder.jsx` - Integración de procesamiento de video
+  - `src/components/sequence/BPMController.jsx` - Mejorado con indicadores de progreso
+  - `src/services/video/videoProcessor.js` - Servicio de procesamiento con FFmpeg
+- **Funcionalidades**:
+  - Botón "Generar Video con BPM X" funcional en el Constructor de Secuencias
+  - Procesamiento automático de velocidad basado en BPM de cada video
+  - Descarga automática del video final combinado
+  - Indicadores de progreso durante el procesamiento
+  - Manejo de videos con y sin audio
+  - Limpieza automática de archivos temporales
+
+### 🎬 **ROADMAP: SISTEMA COMPLETO DE SECUENCIAS CON BPM** - 2024-12-19
+- **Objetivo**: Implementar sistema completo de secuencias con control de BPM y previews
+- **Funcionalidades a implementar**:
+  1. **Reproducción en Galería**: Video como se guardó (con o sin ajuste de BPM)
+  2. **Preview en Constructor**: Botón para previsualizar secuencia actual
+  3. **Toggle Control BPM**: ON/OFF para activar ajuste de BPM
+  4. **Preview en tiempo real**: Actualización automática al mover deslizador
+  5. **Descarga desde Galería**: Modal de descargas con resoluciones
+  6. **Eliminar botón "Generar"**: Generación automática al guardar
+  7. **Reproducción individual**: Botones play en cada video del constructor
+- **Flujo de trabajo**:
+  1. Usuario crea secuencia (3 videos)
+  2. Reproduce videos individuales
+  3. Hace preview de secuencia completa
+  4. Activa Control de BPM (opcional)
+  5. Ajusta velocidad con preview en tiempo real
+  6. Guarda → genera video automáticamente
+  7. En galería: reproduce y descarga
+- **Archivos a modificar**:
+  - `SequenceBuilder.jsx` - Preview, toggle BPM, botones play individuales ✅
+  - `BPMController.jsx` - Toggle ON/OFF, preview en tiempo real
+  - `SequenceGallery.jsx` - Botón descarga con modal
+  - `videoProcessor.js` - Función para preview sin ajuste de BPM
+
+### 🎬 **PASO 1 COMPLETADO: REPRODUCCIÓN INDIVIDUAL EN CONSTRUCTOR** - 2024-12-19
+- **Implementado**: Botones de play en cada video del constructor de secuencias
+- **Funcionalidad**: Al hacer hover sobre el thumbnail aparece botón de play
+- **Modal**: Se abre un modal con VideoPlayer para reproducir el video individual
+- **Estilo**: Mismo estilo que las cards de la galería (botón play con overlay)
+- **Archivos modificados**:
+  - `src/components/sequence/SequenceBuilder.jsx` - Agregada función `handlePlayVideo` y botón play en thumbnails
+
 ### 🖼️ **UPGRADE: GENERACIÓN DE THUMBNAILS DE ALTA CALIDAD** - 2024-12-19
 - **Problema**: Los thumbnails generados automáticamente tenían baja resolución y calidad
 - **Solución**: Mejorado significativamente el sistema de generación de thumbnails

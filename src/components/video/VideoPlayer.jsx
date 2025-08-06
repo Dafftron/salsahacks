@@ -486,12 +486,16 @@ const VideoPlayer = ({
         sizeClass = 'max-w-2xl'
         break
       case 'fullscreen':
-        return 'w-full h-full'
+        return 'w-full h-full' // Sin aspect ratio forzado para fullscreen
       default:
         sizeClass = 'max-w-md'
     }
     
-    // Ajustar el aspect ratio según la orientación del video
+    // Ajustar el aspect ratio según la orientación del video (solo para tamaños no-fullscreen)
+    if (size === 'fullscreen') {
+      return sizeClass
+    }
+    
     const aspectClass = videoOrientation === 'vertical' ? 'aspect-[9/16]' : 'aspect-video'
     
     return `${sizeClass} ${aspectClass}`
@@ -573,7 +577,7 @@ const VideoPlayer = ({
       <video
         ref={videoRef}
         src={src}
-        className="w-full h-full object-cover cursor-pointer"
+        className={`w-full h-full cursor-pointer ${size === 'fullscreen' ? 'object-contain' : 'object-cover'}`}
         muted={isMuted}
         loop={isLoopEnabled && !isLoopSegmentMode}
         onTimeUpdate={handleTimeUpdate}

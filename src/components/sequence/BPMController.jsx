@@ -8,6 +8,7 @@ const BPMController = ({
   onProcessSequence,
   isProcessing = false 
 }) => {
+  const [processingStep, setProcessingStep] = useState('')
   const [localBPM, setLocalBPM] = useState(currentBPM || 120)
   const [isPreviewMode, setIsPreviewMode] = useState(false)
   
@@ -65,6 +66,7 @@ const BPMController = ({
   
   // Procesar secuencia
   const handleProcessSequence = () => {
+    setProcessingStep('Iniciando procesamiento...')
     onProcessSequence(localBPM)
   }
   
@@ -188,9 +190,16 @@ const BPMController = ({
         }`}
       >
         {isProcessing ? (
-          <div className="flex items-center justify-center space-x-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            <span>Procesando secuencia...</span>
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <span>Procesando secuencia...</span>
+            </div>
+            {processingStep && (
+              <div className="text-xs text-purple-100 text-center">
+                {processingStep}
+              </div>
+            )}
           </div>
         ) : (
           <span>Generar Video con BPM {localBPM}</span>

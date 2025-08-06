@@ -24,10 +24,9 @@ import { useCategories } from '../../hooks/useCategories'
 import { useDragAndDrop } from '../../hooks/useDragAndDrop'
 import Toast from '../common/Toast'
 import ConfirmModal from '../common/ConfirmModal'
-import VideoPlayer from '../video/VideoPlayer'
+import VideoPlayer from '../video/VideoPlayer.jsx'
 import BPMController from './BPMController'
-// TEMPORALMENTE COMENTADO PARA DIAGNÓSTICO
-// import { processVideoSequence } from '../../services/video/videoProcessor'
+import { processVideoSequence } from '../../services/video/videoProcessor'
 
 const SequenceBuilder = ({ 
   isOpen, 
@@ -47,6 +46,10 @@ const SequenceBuilder = ({
   // Estados para BPM
   const [currentBPM, setCurrentBPM] = useState(120)
   const [isProcessingSequence, setIsProcessingSequence] = useState(false)
+  
+  // Estados para reproducción de video individual
+  const [selectedVideo, setSelectedVideo] = useState(null)
+  const [showVideoModal, setShowVideoModal] = useState(false)
 
   // Funciones auxiliares para tags (actualizadas para usar categoriesList)
   const getOrderedTags = (video) => {
@@ -302,6 +305,39 @@ const SequenceBuilder = ({
     console.log('🎵 BPM cambiado a:', newBPM)
   }
   
+  // Función para obtener resoluciones disponibles basadas en la resolución del video
+  const getAvailableResolutions = (video) => {
+    if (!video || !video.resolution) {
+      return ['auto', '360p', '480p', '720p', '1080p']
+    }
+    
+    const resolution = video.resolution.toLowerCase()
+    const resolutions = ['auto']
+    
+    // Agregar resoluciones hasta la máxima disponible
+    if (resolution.includes('4k') || resolution.includes('2160p')) {
+      resolutions.push('360p', '480p', '720p', '1080p', '4k')
+    } else if (resolution.includes('1080p') || resolution.includes('1920')) {
+      resolutions.push('360p', '480p', '720p', '1080p')
+    } else if (resolution.includes('720p') || resolution.includes('1280')) {
+      resolutions.push('360p', '480p', '720p')
+    } else if (resolution.includes('480p') || resolution.includes('854')) {
+      resolutions.push('360p', '480p')
+    } else {
+      resolutions.push('360p')
+    }
+    
+    return resolutions
+  }
+
+  // Función para reproducir video individual
+  const handlePlayVideo = (video) => {
+    console.log('🎬 Reproduciendo video individual:', video.title)
+    setSelectedVideo(video)
+    setShowVideoModal(true)
+    addToast(`🎬 Reproduciendo: ${video.title}`, 'info')
+  }
+
   const handleProcessSequence = async (targetBPM) => {
     if (!sequence || sequence.length === 0) {
       addToast('No hay videos en la secuencia para procesar', 'error')
@@ -316,17 +352,45 @@ const SequenceBuilder = ({
     }
     
     setIsProcessingSequence(true)
+    addToast('🎬 Iniciando procesamiento de secuencia...', 'info')
     
     try {
       console.log('🎬 Iniciando procesamiento de secuencia con BPM:', targetBPM)
       
-      // Preparar videos con archivos
-      const videosWithFiles = sequence.map(video => ({
-        ...video,
-        file: video.file || null // Necesitamos el archivo original
-      }))
+      // Obtener archivos de video desde Firebase Storage
+      const videosWithFiles = []
+      
+      addToast('📥 Descargando archivos de video...', 'info')
+      
+      for (let i = 0; i < sequence.length; i++) {
+        const video = sequence[i]
+        try {
+          addToast(`📥 Descargando ${i + 1}/${sequence.length}: ${video.title}`, 'info')
+          
+          // Obtener el archivo desde Firebase Storage
+          const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
+          const storage = getStorage()
+          const videoRef = ref(storage, video.videoUrl)
+          const downloadURL = await getDownloadURL(videoRef)
+          
+          // Descargar el archivo
+          const response = await fetch(downloadURL)
+          const blob = await response.blob()
+          
+          videosWithFiles.push({
+            ...video,
+            file: blob
+          })
+          
+          console.log(`✅ Archivo descargado para: ${video.title}`)
+        } catch (error) {
+          console.error(`❌ Error al descargar archivo de ${video.title}:`, error)
+          throw new Error(`No se pudo descargar el archivo de ${video.title}`)
+        }
+      }
       
       // Procesar secuencia
+      addToast('🎬 Procesando videos con ajuste de BPM...', 'info')
       const result = await processVideoSequence(videosWithFiles, targetBPM)
       
       if (result.success) {
@@ -336,14 +400,14 @@ const SequenceBuilder = ({
         
         const a = document.createElement('a')
         a.href = url
-        a.download = `secuencia_${targetBPM}bpm.mp4`
+        a.download = `secuencia_${sequenceName || 'salsa'}_${targetBPM}bpm.mp4`
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
         
         URL.revokeObjectURL(url)
         
-        addToast(`Secuencia procesada y descargada con BPM ${targetBPM}`, 'success')
+        addToast(`✅ Secuencia procesada y descargada con BPM ${targetBPM}`, 'success')
       } else {
         throw new Error(result.error)
       }
@@ -534,6 +598,16 @@ const SequenceBuilder = ({
                         <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
                           {video.resolution && video.resolution !== 'Unknown' ? video.resolution : 'HD'}
                         </div>
+                        
+                        {/* Botón de play */}
+                        <button
+                          onClick={() => handlePlayVideo(video)}
+                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        >
+                          <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
+                        </button>
                       </div>
                     </div>
                     
@@ -683,6 +757,48 @@ const SequenceBuilder = ({
           </div>
         </div>
       </div>
+
+      {/* Modal de video individual */}
+      {showVideoModal && selectedVideo && (
+                <div
+          className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowVideoModal(false)}
+        >
+          <div
+            className="bg-black rounded-lg overflow-hidden w-full max-w-6xl max-h-[95vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-900">
+              <h3 className="text-xl font-semibold text-white">{selectedVideo.title}</h3>
+              <button 
+                onClick={() => setShowVideoModal(false)}
+                className="text-gray-400 hover:text-white text-2xl font-bold p-2 hover:bg-gray-800 rounded transition-colors"
+              >
+                &times;
+              </button>
+            </div>
+            
+            {/* Video Player */}
+            <div className="flex-1 bg-black flex items-center justify-center p-4">
+              <div className="w-full h-full flex items-center justify-center">
+                <VideoPlayer
+                  src={selectedVideo.videoUrl}
+                  className="max-w-full max-h-full object-contain"
+                  showControls={true}
+                  autoplay={false}
+                  loop={false}
+                  muted={false}
+                  resolutions={getAvailableResolutions(selectedVideo)}
+                  currentResolution="auto"
+                  videoTitle={selectedVideo.title}
+                  size="fullscreen"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modales */}
       <ConfirmModal

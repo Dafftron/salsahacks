@@ -35,6 +35,7 @@
 - ✅ VideoPlayer profesional con controles avanzados
 - ✅ Firebase como backend (Auth, Firestore, Storage)
 - ✅ Diseño responsive y moderno
+- 🚧 **EN DESARROLLO**: Sistema completo de secuencias con control de BPM y previews
 
 ---
 
@@ -330,6 +331,16 @@ Todas las páginas **Figuras**, **Escuela** y **Eventos** compartirán:
 - [x] Logs de auditoría básicos
 - [x] Configuraciones del sistema
 - [x] Enlaces copiables para WhatsApp
+
+#### 5.2 Sistema de Secuencias con BPM 🚧 **EN DESARROLLO**
+- [ ] **Reproducción en Galería**: Video como se guardó (con o sin ajuste de BPM)
+- [ ] **Preview en Constructor**: Botón para previsualizar secuencia actual
+- [ ] **Toggle Control BPM**: ON/OFF para activar ajuste de BPM
+- [ ] **Preview en tiempo real**: Actualización automática al mover deslizador
+- [ ] **Descarga desde Galería**: Modal de descargas con resoluciones
+- [ ] **Eliminar botón "Generar"**: Generación automática al guardar
+- [ ] **Reproducción individual**: Botones play en cada video del constructor
+- [ ] **Flujo completo**: Crear → Preview → Ajustar BPM → Guardar → Descargar
 
 #### 5.2 Sistema de Recomendaciones ⏳ **PENDIENTE**
 - [ ] Algoritmo de recomendaciones

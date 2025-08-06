@@ -26,23 +26,42 @@ export const adjustVideoSpeed = async (videoFile, speedFactor, outputName = 'out
     // Escribir archivo de entrada
     ffmpegInstance.FS('writeFile', 'input.mp4', await fetchFile(videoFile))
     
-    // Ajustar velocidad manteniendo pitch del audio
-    await ffmpegInstance.run(
-      '-i', 'input.mp4',
-      '-filter:v', `setpts=${1/speedFactor}*PTS`,
-      '-filter:a', `atempo=${speedFactor}`,
-      '-c:v', 'libx264',
-      '-c:a', 'aac',
-      '-preset', 'fast',
-      outputName
-    )
+    // Intentar primero con audio, si falla, procesar solo video
+    try {
+      // Ajustar velocidad manteniendo pitch del audio
+      await ffmpegInstance.run(
+        '-i', 'input.mp4',
+        '-filter:v', `setpts=${1/speedFactor}*PTS`,
+        '-filter:a', `atempo=${speedFactor}`,
+        '-c:v', 'libx264',
+        '-c:a', 'aac',
+        '-preset', 'fast',
+        outputName
+      )
+    } catch (audioError) {
+      console.log('⚠️ Error con audio, procesando solo video:', audioError.message)
+      
+      // Procesar solo video sin audio
+      await ffmpegInstance.run(
+        '-i', 'input.mp4',
+        '-filter:v', `setpts=${1/speedFactor}*PTS`,
+        '-c:v', 'libx264',
+        '-an', // Sin audio
+        '-preset', 'fast',
+        outputName
+      )
+    }
     
     // Leer archivo de salida
     const data = ffmpegInstance.FS('readFile', outputName)
     
     // Limpiar archivos temporales
-    ffmpegInstance.FS('unlink', 'input.mp4')
-    ffmpegInstance.FS('unlink', outputName)
+    try {
+      ffmpegInstance.FS('unlink', 'input.mp4')
+      ffmpegInstance.FS('unlink', outputName)
+    } catch (e) {
+      console.warn('⚠️ No se pudieron limpiar archivos temporales')
+    }
     
     console.log('✅ Velocidad ajustada correctamente')
     
@@ -127,16 +146,22 @@ export const processVideoSequence = async (videos, targetBPM) => {
       const video = videos[i]
       const speedFactor = targetBPM / video.bpm
       
-      console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM})`)
+      console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM}, factor: ${speedFactor.toFixed(2)}x)`)
+      
+      // Verificar que el archivo existe
+      if (!video.file) {
+        throw new Error(`Video ${i + 1} (${video.title}) no tiene archivo asociado`)
+      }
       
       // Ajustar velocidad del video
       const result = await adjustVideoSpeed(video.file, speedFactor, `adjusted${i}.mp4`)
       
       if (!result.success) {
-        throw new Error(`Error al procesar video ${i + 1}: ${result.error}`)
+        throw new Error(`Error al procesar video ${i + 1} (${video.title}): ${result.error}`)
       }
       
       processedVideos.push(result.data)
+      console.log(`✅ Video ${i + 1} procesado correctamente`)
     }
     
     // Concatenar todos los videos ajustados
@@ -165,10 +190,18 @@ export const processVideoSequence = async (videos, targetBPM) => {
     
     // Limpiar archivos temporales
     for (let i = 0; i < processedVideos.length; i++) {
-      ffmpegInstance.FS('unlink', `processed${i}.mp4`)
+      try {
+        ffmpegInstance.FS('unlink', `processed${i}.mp4`)
+      } catch (e) {
+        console.warn(`⚠️ No se pudo limpiar archivo temporal processed${i}.mp4`)
+      }
     }
-    ffmpegInstance.FS('unlink', 'filelist.txt')
-    ffmpegInstance.FS('unlink', 'final_sequence.mp4')
+    try {
+      ffmpegInstance.FS('unlink', 'filelist.txt')
+      ffmpegInstance.FS('unlink', 'final_sequence.mp4')
+    } catch (e) {
+      console.warn('⚠️ No se pudieron limpiar algunos archivos temporales')
+    }
     
     console.log('✅ Secuencia procesada correctamente')
     
