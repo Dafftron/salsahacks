@@ -141,142 +141,119 @@ const SequenceGallery = ({
         {sequences.map((sequence) => (
           <div
             key={sequence.id}
-            className="bg-white rounded-lg border hover:shadow-lg transition-shadow duration-200"
+            className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]"
           >
-            {/* Header con información básica */}
-            <div className="p-4 border-b">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold text-gray-900 text-lg truncate">
-                  {sequence.name}
-                </h3>
+            {/* Thumbnail */}
+            <div className="relative group">
+              <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+                {sequence.thumbnailUrl ? (
+                  <SmartThumbnail
+                    src={sequence.thumbnailUrl}
+                    alt={sequence.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-gray-500">
+                    <Play className="w-12 h-12 mb-2 text-gray-400" />
+                    <span className="text-sm font-medium">{sequence.name}</span>
+                  </div>
+                )}
+                
+                {/* Badge de resolución */}
+                <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
+                  {sequence.resolution && sequence.resolution !== 'Unknown' ? sequence.resolution : 'HD'}
+                </div>
+                
+                {/* Botón de editar thumbnail */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onEditThumbnail && onEditThumbnail(sequence)
+                  }}
+                  className="absolute top-2 right-2 bg-black bg-opacity-75 text-white p-1 rounded hover:bg-opacity-90 transition-colors"
+                  title="Editar thumbnail"
+                >
+                  <Image className="w-3 h-3" />
+                </button>
+                
+                {/* Botón de reproducción */}
+                <button
+                  onClick={() => handlePlaySequence(sequence)}
+                  className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                >
+                  <Play className="w-12 h-12 text-white" />
+                </button>
+              </div>
+            </div>
+
+            {/* Contenido del card */}
+            <div className="p-4">
+              {/* Título y rating */}
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-gray-800 text-lg truncate">{sequence.name}</h3>
                 <div className="flex items-center space-x-1">
                   <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                     {sequence.videos.length} videos
                   </span>
                 </div>
               </div>
-              
-              {sequence.description && (
-                <p className="text-gray-600 text-sm line-clamp-2 mb-3">
-                  {sequence.description}
-                </p>
-              )}
 
+              {/* Descripción */}
+              <p className="text-gray-600 text-sm mb-3 line-clamp-2">{sequence.description || 'Sin descripción'}</p>
+              
               {/* Tags de la secuencia */}
-              {(() => {
-                const orderedTags = getOrderedSequenceTags(sequence)
-                if (orderedTags.length > 0) {
-                  return (
-                    <div className="mb-3">
-                      <div className="flex flex-wrap gap-1">
-                        {orderedTags.slice(0, 4).map(({ tag, categoryKey, color }) => (
-                          <span
-                            key={`${categoryKey}-${tag}`}
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                        {orderedTags.length > 4 && (
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                            +{orderedTags.length - 4}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )
-                }
-                return null
-              })()}
-              
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <div className="flex items-center space-x-1">
-                  <Clock className="w-3 h-3" />
-                  <span>{getTotalDuration(sequence.videos)}</span>
-                </div>
-                <div className="flex items-center space-x-1">
-                  <Calendar className="w-3 h-3" />
-                  <span>{formatDate(sequence.createdAt)}</span>
-                </div>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {(() => {
+                  const orderedTags = getOrderedSequenceTags(sequence)
+                  if (orderedTags.length > 0) {
+                    return orderedTags.map(({ tag, categoryKey, color }) => (
+                      <span
+                        key={`${categoryKey}-${tag}`}
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
+                      >
+                        {tag}
+                      </span>
+                    ))
+                  } else {
+                    return <span className="text-gray-400 text-sm">Sin etiquetas</span>
+                  }
+                })()}
               </div>
-            </div>
-
-            {/* Thumbnail del video final */}
-            <div className="p-4">
-              <div className="relative group mb-4">
-                <div className="aspect-video rounded-lg overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-                  {sequence.thumbnailUrl ? (
-                    <SmartThumbnail
-                      src={sequence.thumbnailUrl}
-                      alt={sequence.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <div className="text-center">
-                        <Play className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-500 font-medium">{sequence.name}</p>
-                        <p className="text-xs text-gray-400">{sequence.videos.length} videos</p>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Overlay con información */}
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                      <Play className="w-8 h-8 text-white mx-auto" />
-                    </div>
-                  </div>
-                  
-                  {/* Badge de duración */}
-                  <div className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs font-medium">
+              
+              {/* Stats del video */}
+              <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
+                <div className="flex items-center space-x-2">
+                  <span className="font-medium">
                     {getTotalDuration(sequence.videos)}
-                  </div>
-                  
-                  {/* Badge de resolución si está disponible */}
-                  {sequence.resolution && (
-                    <div className="absolute top-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs font-medium">
-                      {sequence.resolution}
-                    </div>
-                  )}
-                  
-                  {/* Botón de editar thumbnail */}
+                  </span>
+                  <span className="text-gray-400">•</span>
+                  <span className="text-gray-600">
+                    {sequence.resolution && sequence.resolution !== 'Unknown' ? 
+                      sequence.resolution : 
+                      'HD'
+                    }
+                  </span>
+                  <span className="text-gray-400">•</span>
+                  <span className="text-gray-600">
+                    {formatDate(sequence.createdAt)}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onEditThumbnail && onEditThumbnail(sequence)
-                    }}
-                    className="absolute top-2 right-2 bg-black bg-opacity-75 text-white p-1 rounded hover:bg-opacity-90 transition-colors"
-                    title="Editar thumbnail"
+                    onClick={() => onEditSequence(sequence)}
+                    className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                    title="Editar secuencia"
                   >
-                    <Image className="w-3 h-3" />
+                    <Edit3 className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteClick(sequence)}
+                    className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
+                    title="Eliminar secuencia"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-              </div>
-
-              {/* Botones de acción */}
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handlePlaySequence(sequence)}
-                  className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors"
-                >
-                  <Play className="w-4 h-4" />
-                  <span>Reproducir</span>
-                </button>
-                
-                <button
-                  onClick={() => onEditSequence(sequence)}
-                  className="px-3 py-2 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
-                >
-                  <Edit3 className="w-4 h-4 text-gray-600" />
-                </button>
-                
-                <button
-                  onClick={() => handleDeleteClick(sequence)}
-                  className="px-3 py-2 border border-gray-300 hover:bg-red-50 hover:border-red-300 rounded-lg transition-colors"
-                >
-                  <Trash2 className="w-4 h-4 text-gray-600 hover:text-red-600" />
-                </button>
               </div>
             </div>
           </div>
