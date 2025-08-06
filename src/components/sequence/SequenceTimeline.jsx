@@ -59,10 +59,24 @@ const SequenceTimeline = ({
       // Play next video automáticamente
       setCurrentVideoIndex(prev => prev + 1)
       setCurrentTime(0)
+      // Reproducir inmediatamente el siguiente video
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.play()
+          setIsPlaying(true)
+        }
+      }, 50) // Tiempo más corto para transición inmediata
     } else if (loop) {
       // Loop back to first video
       setCurrentVideoIndex(0)
       setCurrentTime(0)
+      // Reproducir inmediatamente el primer video
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.play()
+          setIsPlaying(true)
+        }
+      }, 50) // Tiempo más corto para transición inmediata
     } else {
       // Stop at last video
       setIsPlaying(false)
@@ -118,7 +132,7 @@ const SequenceTimeline = ({
           videoRef.current.play()
           setIsPlaying(true)
         }
-      }, 100)
+      }, 50) // Tiempo más corto para transición inmediata
     }
   }
   
@@ -133,7 +147,7 @@ const SequenceTimeline = ({
           videoRef.current.play()
           setIsPlaying(true)
         }
-      }, 100)
+      }, 50) // Tiempo más corto para transición inmediata
     }
   }
   
