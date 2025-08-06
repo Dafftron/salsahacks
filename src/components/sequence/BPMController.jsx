@@ -91,39 +91,6 @@ const BPMController = ({
         </div>
       </div>
       
-      {/* BPM Display */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-600">BPM Global</span>
-          <button
-            onClick={handleResetBPM}
-            className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            title="Reset a BPM original"
-          >
-            <RotateCcw className="h-3 w-3" />
-            <span>Reset</span>
-          </button>
-        </div>
-        
-        <div className="text-center mb-4">
-          <span className={`text-3xl font-bold ${getBPMColor(localBPM)}`}>
-            {localBPM}
-          </span>
-          <span className="text-sm text-gray-500 ml-2">BPM</span>
-        </div>
-        
-        <div className="text-center mb-4">
-          <span className="text-sm text-gray-600">
-            {getBPMDescription(localBPM)}
-          </span>
-          {baseBPM !== localBPM && (
-            <span className="text-xs text-gray-400 ml-2">
-              (Original: {baseBPM} BPM)
-            </span>
-          )}
-        </div>
-      </div>
-      
       {/* BPM Slider */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
