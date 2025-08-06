@@ -96,11 +96,31 @@ const detectBPMFromAudioBuffer = async (audioBuffer) => {
     
     console.log(`🎵 BPM calculado: ${bpm}, intervalos: ${intervals.length}, promedio: ${avgInterval}`)
     
+    // Si el BPM calculado es muy alto (>300), probablemente es un error de detección
+    if (bpm > 300) {
+      console.log(`🎵 BPM demasiado alto (${bpm}), probablemente error de detección`)
+      return 120 // Usar BPM por defecto
+    }
+    
     // Aplicar límites más realistas para salsa (80-180 BPM)
     const limitedBPM = Math.max(80, Math.min(180, bpm))
     
     if (bpm !== limitedBPM) {
       console.log(`🎵 BPM ajustado de ${bpm} a ${limitedBPM}`)
+    }
+    
+    // Si el BPM está muy cerca del límite máximo, verificar si es real
+    if (limitedBPM >= 175) {
+      console.log(`🎵 BPM muy alto (${limitedBPM}), verificando si es real...`)
+      // Verificar si hay suficientes intervalos consistentes
+      const consistentIntervals = intervals.filter(interval => 
+        Math.abs(interval - avgInterval) < avgInterval * 0.3
+      )
+      
+      if (consistentIntervals.length < intervals.length * 0.7) {
+        console.log(`🎵 BPM alto pero intervalos inconsistentes, usando BPM por defecto`)
+        return 120
+      }
     }
     
     return limitedBPM
@@ -118,15 +138,23 @@ const detectPeaks = (data, sampleRate) => {
   // Calcular umbral dinámico basado en la energía promedio
   const energy = data.map(sample => sample * sample)
   const avgEnergy = energy.reduce((a, b) => a + b, 0) / energy.length
-  const threshold = Math.max(0.05, Math.min(0.3, avgEnergy * 2)) // Umbral dinámico
   
-  // Distancia mínima entre picos (0.3 segundos para evitar falsos positivos)
-  const minDistance = sampleRate * 0.3
+  // Umbral más sensible para detectar mejor los beats
+  const threshold = Math.max(0.01, Math.min(0.5, avgEnergy * 3))
+  
+  // Distancia mínima entre picos (0.5 segundos para BPM más realistas)
+  const minDistance = sampleRate * 0.5
   
   console.log(`🎵 Detectando picos con umbral: ${threshold.toFixed(4)}, energía promedio: ${avgEnergy.toFixed(4)}`)
   
-  for (let i = 1; i < data.length - 1; i++) {
-    if (data[i] > threshold && data[i] > data[i - 1] && data[i] > data[i + 1]) {
+  // Usar ventana deslizante para detectar picos más precisos
+  const windowSize = Math.floor(sampleRate * 0.1) // Ventana de 0.1 segundos
+  
+  for (let i = windowSize; i < data.length - windowSize; i++) {
+    const windowData = data.slice(i - windowSize, i + windowSize)
+    const maxInWindow = Math.max(...windowData)
+    
+    if (data[i] === maxInWindow && data[i] > threshold) {
       if (peaks.length === 0 || i - peaks[peaks.length - 1] > minDistance) {
         peaks.push(i)
       }
@@ -134,6 +162,26 @@ const detectPeaks = (data, sampleRate) => {
   }
   
   console.log(`🎵 Picos detectados: ${peaks.length}`)
+  
+  // Si no se detectan suficientes picos, reducir el umbral
+  if (peaks.length < 3) {
+    console.log('🎵 Pocos picos detectados, reduciendo umbral...')
+    const lowerThreshold = threshold * 0.5
+    peaks.length = 0 // Limpiar array
+    
+    for (let i = windowSize; i < data.length - windowSize; i++) {
+      const windowData = data.slice(i - windowSize, i + windowSize)
+      const maxInWindow = Math.max(...windowData)
+      
+      if (data[i] === maxInWindow && data[i] > lowerThreshold) {
+        if (peaks.length === 0 || i - peaks[peaks.length - 1] > minDistance) {
+          peaks.push(i)
+        }
+      }
+    }
+    console.log(`🎵 Picos detectados con umbral reducido: ${peaks.length}`)
+  }
+  
   return peaks
 }
 

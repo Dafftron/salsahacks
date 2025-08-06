@@ -314,7 +314,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                      loop={true}
                      showControls={true}
                      autoplay={false}
-                     muted={true}
+                     muted={false}
                      className="w-full max-w-2xl"
                      resolutions={['auto', '4k', '1080p', '720p', '480p', '360p']}
                      currentResolution="auto"
