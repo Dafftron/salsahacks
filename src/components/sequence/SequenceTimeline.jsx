@@ -14,35 +14,19 @@ const SequenceTimeline = ({
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showControlsUI, setShowControlsUI] = useState(showControls)
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
-  const [currentVideoTime, setCurrentVideoTime] = useState(0)
+  const [currentTime, setCurrentTime] = useState(0)
   const [totalDuration, setTotalDuration] = useState(0)
-  const [videoStartTimes, setVideoStartTimes] = useState([])
   
   const videoRef = useRef(null)
   const containerRef = useRef(null)
   const timelineRef = useRef(null)
   const controlsTimeoutRef = useRef(null)
   
-  // Calcular duración total y tiempos de inicio de cada video
+  // Calcular duración total
   useEffect(() => {
     if (videos.length > 0) {
-      let total = 0
-      const startTimes = [0]
-      
-      videos.forEach((video, index) => {
-        if (index < videos.length - 1) {
-          total += video.duration || 0
-          startTimes.push(total)
-        }
-      })
-      
-      // Añadir la duración del último video
-      if (videos.length > 0) {
-        total += videos[videos.length - 1].duration || 0
-      }
-      
+      const total = videos.reduce((sum, video) => sum + (video.duration || 0), 0)
       setTotalDuration(total)
-      setVideoStartTimes(startTimes)
     }
   }, [videos])
   
@@ -63,10 +47,10 @@ const SequenceTimeline = ({
     }
   }, [isPlaying, showControls])
   
-  // Handle time update del video actual
+  // Handle time update
   const handleTimeUpdate = () => {
     if (videoRef.current) {
-      setCurrentVideoTime(videoRef.current.currentTime)
+      setCurrentTime(videoRef.current.currentTime)
     }
   }
   
@@ -75,11 +59,11 @@ const SequenceTimeline = ({
     if (currentVideoIndex < videos.length - 1) {
       // Play next video
       setCurrentVideoIndex(prev => prev + 1)
-      setCurrentVideoTime(0)
+      setCurrentTime(0)
     } else if (loop) {
       // Loop back to first video
       setCurrentVideoIndex(0)
-      setCurrentVideoTime(0)
+      setCurrentTime(0)
     } else {
       // Stop at last video
       setIsPlaying(false)
@@ -89,7 +73,7 @@ const SequenceTimeline = ({
   // Handle loaded metadata
   const handleLoadedMetadata = () => {
     if (videoRef.current) {
-      setCurrentVideoTime(0)
+      setCurrentTime(0)
     }
   }
   
@@ -128,7 +112,7 @@ const SequenceTimeline = ({
   const goToPreviousVideo = () => {
     if (currentVideoIndex > 0) {
       setCurrentVideoIndex(prev => prev - 1)
-      setCurrentVideoTime(0)
+      setCurrentTime(0)
     }
   }
   
@@ -136,7 +120,7 @@ const SequenceTimeline = ({
   const goToNextVideo = () => {
     if (currentVideoIndex < videos.length - 1) {
       setCurrentVideoIndex(prev => prev + 1)
-      setCurrentVideoTime(0)
+      setCurrentTime(0)
     }
   }
   
@@ -146,23 +130,21 @@ const SequenceTimeline = ({
       const rect = timelineRef.current.getBoundingClientRect()
       const clickX = e.clientX - rect.left
       const percentage = clickX / rect.width
-      const globalTime = percentage * totalDuration
+      const newTime = percentage * totalDuration
       
-      // Encontrar el video correspondiente
-      for (let i = videoStartTimes.length - 1; i >= 0; i--) {
-        if (globalTime >= videoStartTimes[i]) {
-          if (i !== currentVideoIndex) {
-            setCurrentVideoIndex(i)
-            setCurrentVideoTime(0)
-          } else {
-            // Mismo video, ajustar tiempo
-            const videoTime = globalTime - videoStartTimes[i]
-            if (videoRef.current) {
-              videoRef.current.currentTime = videoTime
-            }
+      // Encontrar qué video corresponde a este tiempo
+      let accumulatedTime = 0
+      for (let i = 0; i < videos.length; i++) {
+        const videoDuration = videos[i].duration || 0
+        if (newTime <= accumulatedTime + videoDuration) {
+          setCurrentVideoIndex(i)
+          const videoTime = newTime - accumulatedTime
+          if (videoRef.current) {
+            videoRef.current.currentTime = videoTime
           }
           break
         }
+        accumulatedTime += videoDuration
       }
     }
   }
@@ -188,14 +170,14 @@ const SequenceTimeline = ({
         case 'ArrowLeft':
           e.preventDefault()
           if (videoRef.current) {
-            const newTime = Math.max(0, currentVideoTime - 10)
+            const newTime = Math.max(0, currentTime - 10)
             videoRef.current.currentTime = newTime
           }
           break
         case 'ArrowRight':
           e.preventDefault()
           if (videoRef.current) {
-            const newTime = Math.min(videoRef.current.duration, currentVideoTime + 10)
+            const newTime = Math.min(videoRef.current.duration, currentTime + 10)
             videoRef.current.currentTime = newTime
           }
           break
@@ -212,7 +194,7 @@ const SequenceTimeline = ({
     
     document.addEventListener('keydown', handleKeyPress)
     return () => document.removeEventListener('keydown', handleKeyPress)
-  }, [currentVideoTime, currentVideoIndex])
+  }, [currentTime, currentVideoIndex])
   
   // Formatear tiempo
   const formatTime = (seconds) => {
@@ -223,7 +205,11 @@ const SequenceTimeline = ({
   
   // Obtener tiempo global actual
   const getCurrentGlobalTime = () => {
-    return videoStartTimes[currentVideoIndex] + currentVideoTime
+    let globalTime = 0
+    for (let i = 0; i < currentVideoIndex; i++) {
+      globalTime += videos[i].duration || 0
+    }
+    return globalTime + currentTime
   }
   
   if (videos.length === 0) {
@@ -250,7 +236,7 @@ const SequenceTimeline = ({
         }
       }}
     >
-      {/* Video Element - Reproducción real */}
+      {/* Video Element */}
       <video
         ref={videoRef}
         src={currentVideo?.videoUrl}
@@ -270,19 +256,22 @@ const SequenceTimeline = ({
         {currentVideoIndex + 1} / {videos.length} - {currentVideo?.title}
       </div>
       
-      {/* Timeline mejorado estilo CapCut */}
+      {/* Timeline */}
       <div className="absolute bottom-16 left-0 right-0 px-4">
         <div 
           ref={timelineRef}
           className="w-full h-16 bg-gray-800 rounded-lg cursor-pointer relative"
           onClick={handleTimelineClick}
         >
-          {/* Video clips con thumbnails */}
+          {/* Video clips */}
           <div className="absolute inset-0 flex">
             {videos.map((video, index) => {
-              const startTime = videoStartTimes[index] || 0
-              const endTime = index < videos.length - 1 ? videoStartTimes[index + 1] : totalDuration
-              const width = ((endTime - startTime) / totalDuration) * 100
+              let startTime = 0
+              for (let i = 0; i < index; i++) {
+                startTime += videos[i].duration || 0
+              }
+              const endTime = startTime + (video.duration || 0)
+              const width = ((video.duration || 0) / totalDuration) * 100
               const left = (startTime / totalDuration) * 100
               const isActive = index === currentVideoIndex
               
@@ -295,22 +284,10 @@ const SequenceTimeline = ({
                     width: `${width}%`
                   }}
                 >
-                  {/* Thumbnail del video */}
+                  {/* Clip background */}
                   <div className={`absolute inset-0 ${isActive ? 'bg-gradient-to-br from-blue-500 to-blue-600' : 'bg-gradient-to-br from-teal-500 to-teal-600'}`}>
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-full h-full bg-gray-700 flex items-center justify-center relative">
-                        {/* Intentar mostrar thumbnail real */}
-                        {video.thumbnailUrl && (
-                          <img 
-                            src={video.thumbnailUrl} 
-                            alt={video.title}
-                            className="w-full h-full object-cover opacity-75"
-                            onError={(e) => {
-                              e.target.style.display = 'none'
-                              e.target.nextSibling.style.display = 'flex'
-                            }}
-                          />
-                        )}
                         <div className="absolute inset-0 flex items-center justify-center text-white text-xs font-medium px-1 text-center bg-black bg-opacity-50">
                           {video.title}
                         </div>
@@ -318,12 +295,12 @@ const SequenceTimeline = ({
                     </div>
                   </div>
                   
-                  {/* Indicador de tiempo */}
+                  {/* Time indicator */}
                   <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-75 text-white text-xs px-1 py-0.5">
                     {formatTime(startTime)} - {formatTime(endTime)}
                   </div>
                   
-                  {/* Separador entre clips */}
+                  {/* Separator */}
                   {index < videos.length - 1 && (
                     <div className="absolute right-0 top-0 bottom-0 w-1 bg-white z-5"></div>
                   )}
@@ -332,7 +309,7 @@ const SequenceTimeline = ({
             })}
           </div>
           
-          {/* Playhead mejorado */}
+          {/* Playhead */}
           <div 
             className="absolute top-0 bottom-0 w-1 bg-white z-10 shadow-lg"
             style={{
@@ -344,24 +321,10 @@ const SequenceTimeline = ({
             </div>
           </div>
           
-          {/* Marcadores de tiempo */}
+          {/* Time markers */}
           <div className="absolute -top-6 left-0 right-0 flex justify-between text-white text-xs">
-            {videos.map((video, index) => {
-              const startTime = videoStartTimes[index] || 0
-              const left = (startTime / totalDuration) * 100
-              return (
-                <div
-                  key={video.id}
-                  className="absolute transform -translate-x-1/2"
-                  style={{ left: `${left}%` }}
-                >
-                  {formatTime(startTime)}
-                </div>
-              )
-            })}
-            <div className="absolute right-0 transform translate-x-1/2">
-              {formatTime(totalDuration)}
-            </div>
+            <div>00:00</div>
+            <div>{formatTime(totalDuration)}</div>
           </div>
         </div>
       </div>
@@ -408,7 +371,7 @@ const SequenceTimeline = ({
               
               {/* Time Display */}
               <span className="text-white text-sm">
-                {formatTime(currentVideoTime)} / {formatTime(currentVideo.duration || 0)} | {formatTime(currentGlobalTime)} / {formatTime(totalDuration)}
+                {formatTime(currentTime)} / {formatTime(currentVideo.duration || 0)} | {formatTime(currentGlobalTime)} / {formatTime(totalDuration)}
               </span>
             </div>
             
