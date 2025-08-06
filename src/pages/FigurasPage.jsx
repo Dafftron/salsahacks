@@ -87,7 +87,10 @@ const FigurasPage = () => {
     isVideoCompatible,
     getFilteredVideos,
     showAllVideos,
-    toggleShowAllVideos
+    toggleShowAllVideos,
+    loadSequence,
+    sequence,
+    sequenceName
   } = useSequenceBuilderContext()
   
   // Usar el nuevo sistema de categorías
@@ -253,9 +256,24 @@ const FigurasPage = () => {
   }
 
   const handleEditSequence = (sequence) => {
-    // TODO: Implementar edición de secuencia
-    console.log('Editando secuencia:', sequence)
-    addToast('Funcionalidad de edición en desarrollo')
+    console.log('🎬 Editando secuencia:', sequence)
+    
+    // Verificar si hay una secuencia en construcción
+    if (sequence.length > 0 || sequenceName.trim()) {
+      const confirmed = window.confirm(
+        `¿Deseas cargar la secuencia "${sequence.name}"?\n\n` +
+        `Esto reemplazará la secuencia actual en construcción y perderás todos los cambios no guardados.`
+      )
+      
+      if (!confirmed) {
+        console.log('❌ Usuario canceló la carga de secuencia')
+        return
+      }
+    }
+    
+    // Cargar la secuencia en el constructor
+    loadSequence(sequence)
+    addToast(`Secuencia "${sequence.name}" cargada para edición`)
   }
 
 

@@ -168,6 +168,14 @@ export const SequenceBuilderProvider = ({ children }) => {
     clearSequence()
   }, [clearSequence])
 
+  // Función para cargar una secuencia existente en el constructor
+  const loadSequence = useCallback((sequenceData) => {
+    setSequence(sequenceData.videos || [])
+    setSequenceName(sequenceData.name || '')
+    setSequenceDescription(sequenceData.description || '')
+    setIsBuilderOpen(true)
+  }, [])
+
   // Función para alternar "mostrar todos los videos"
   const toggleShowAllVideos = useCallback(() => {
     setShowAllVideos(prev => !prev)
@@ -236,6 +244,7 @@ export const SequenceBuilderProvider = ({ children }) => {
     openBuilder,
     closeBuilder,
     toggleBuilder,
+    loadSequence,
     toggleShowAllVideos,
     
     // Funciones de utilidad
