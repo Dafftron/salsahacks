@@ -220,6 +220,100 @@ export const processVideoSequence = async (videos, targetBPM) => {
   }
 }
 
+// Crear preview de secuencia (con o sin ajuste de BPM)
+export const createSequencePreview = async (videos, useBPMControl = false, targetBPM = null) => {
+  try {
+    console.log(`🎬 Creando preview de secuencia con ${videos.length} videos...`)
+    console.log(`🎬 Control BPM: ${useBPMControl ? 'Activado' : 'Desactivado'}`)
+    if (useBPMControl && targetBPM) {
+      console.log(`🎬 BPM objetivo: ${targetBPM}`)
+    }
+    
+    const ffmpegInstance = await initFFmpeg()
+    const processedVideos = []
+    
+    // Procesar cada video según el estado del control BPM
+    for (let i = 0; i < videos.length; i++) {
+      const video = videos[i]
+      
+      // Verificar que el archivo existe
+      if (!video.file) {
+        throw new Error(`Video ${i + 1} (${video.title}) no tiene archivo asociado`)
+      }
+      
+      if (useBPMControl && targetBPM && video.bpm) {
+        // Ajustar velocidad según BPM
+        const speedFactor = targetBPM / video.bpm
+        console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM}, factor: ${speedFactor.toFixed(2)}x)`)
+        
+        const result = await adjustVideoSpeed(video.file, speedFactor, `preview${i}.mp4`)
+        if (!result.success) {
+          throw new Error(`Error al procesar video ${i + 1} (${video.title}): ${result.error}`)
+        }
+        processedVideos.push(result.data)
+      } else {
+        // Usar video original sin ajuste
+        console.log(`🎬 Usando video ${i + 1}/${videos.length}: ${video.title} (BPM original: ${video.bpm})`)
+        processedVideos.push(await fetchFile(video.file))
+      }
+    }
+    
+    // Concatenar videos
+    console.log('🎬 Concatenando videos para preview...')
+    
+    // Escribir videos procesados
+    for (let i = 0; i < processedVideos.length; i++) {
+      ffmpegInstance.FS('writeFile', `preview${i}.mp4`, processedVideos[i])
+    }
+    
+    // Crear archivo de lista
+    const fileList = processedVideos.map((_, i) => `file preview${i}.mp4`).join('\n')
+    ffmpegInstance.FS('writeFile', 'filelist.txt', fileList)
+    
+    // Concatenar
+    await ffmpegInstance.run(
+      '-f', 'concat',
+      '-safe', '0',
+      '-i', 'filelist.txt',
+      '-c', 'copy',
+      'sequence_preview.mp4'
+    )
+    
+    // Leer resultado final
+    const finalData = ffmpegInstance.FS('readFile', 'sequence_preview.mp4')
+    
+    // Limpiar archivos temporales
+    for (let i = 0; i < processedVideos.length; i++) {
+      try {
+        ffmpegInstance.FS('unlink', `preview${i}.mp4`)
+      } catch (e) {
+        console.warn(`⚠️ No se pudo limpiar archivo temporal preview${i}.mp4`)
+      }
+    }
+    try {
+      ffmpegInstance.FS('unlink', 'filelist.txt')
+      ffmpegInstance.FS('unlink', 'sequence_preview.mp4')
+    } catch (e) {
+      console.warn('⚠️ No se pudieron limpiar algunos archivos temporales')
+    }
+    
+    console.log('✅ Preview de secuencia creado correctamente')
+    
+    return {
+      success: true,
+      data: finalData,
+      error: null
+    }
+  } catch (error) {
+    console.error('❌ Error al crear preview de secuencia:', error)
+    return {
+      success: false,
+      data: null,
+      error: error.message
+    }
+  }
+}
+
 // Convertir video a diferentes formatos
 export const convertVideoFormat = async (videoFile, format = 'mp4', quality = 'medium') => {
   try {

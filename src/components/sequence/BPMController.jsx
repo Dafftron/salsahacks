@@ -6,7 +6,8 @@ const BPMController = ({
   onBPMChange, 
   currentBPM, 
   onProcessSequence,
-  isProcessing = false 
+  isProcessing = false,
+  onPreviewSequence = null // Nueva prop para preview
 }) => {
   const [localBPM, setLocalBPM] = useState(currentBPM || 120)
   const [isPreviewMode, setIsPreviewMode] = useState(false)
@@ -85,6 +86,17 @@ const BPMController = ({
   const handleResetBPM = () => {
     handleBPMChange(baseBPM)
   }
+
+  // Manejar preview de secuencia
+  const handlePreviewSequence = () => {
+    if (onPreviewSequence) {
+      onPreviewSequence({
+        sequence,
+        useBPMControl: isBPMControlEnabled,
+        targetBPM: isBPMControlEnabled ? localBPM : null
+      })
+    }
+  }
   
 
   
@@ -162,6 +174,31 @@ const BPMController = ({
           </div>
         </div>
       </div>
+
+      {/* Botón Preview Secuencia */}
+      {sequence.length > 0 && (
+        <div className="mb-6">
+          <button
+            onClick={handlePreviewSequence}
+            disabled={sequence.length === 0}
+            className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+              sequence.length === 0
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+            }`}
+          >
+            <div className="flex items-center justify-center space-x-2">
+              <Play className="h-5 w-5" />
+              <span>
+                {isBPMControlEnabled 
+                  ? `Previsualizar Secuencia con BPM ${localBPM}`
+                  : 'Previsualizar Secuencia con BPMs Originales'
+                }
+              </span>
+            </div>
+          </button>
+        </div>
+      )}
       
       {/* BPM Slider y Video List - Sección Colapsable */}
       {isBPMControlEnabled && (

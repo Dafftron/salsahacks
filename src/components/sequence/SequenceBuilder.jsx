@@ -26,7 +26,7 @@ import Toast from '../common/Toast'
 import ConfirmModal from '../common/ConfirmModal'
 import VideoPlayer from '../video/VideoPlayer.jsx'
 import BPMController from './BPMController'
-import { processVideoSequence } from '../../services/video/videoProcessor'
+import { processVideoSequence, createSequencePreview } from '../../services/video/videoProcessor'
 
 const SequenceBuilder = ({ 
   isOpen, 
@@ -50,6 +50,11 @@ const SequenceBuilder = ({
   // Estados para reproducción de video individual
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [showVideoModal, setShowVideoModal] = useState(false)
+  
+  // Estados para preview de secuencia
+  const [isCreatingPreview, setIsCreatingPreview] = useState(false)
+  const [previewVideoUrl, setPreviewVideoUrl] = useState(null)
+  const [showPreviewModal, setShowPreviewModal] = useState(false)
 
   // Funciones auxiliares para tags (actualizadas para usar categoriesList)
   const getOrderedTags = (video) => {
@@ -344,6 +349,78 @@ const SequenceBuilder = ({
     addToast(`🎬 Reproduciendo: ${video.title}`, 'info')
   }
 
+  // Función para manejar preview de secuencia
+  const handlePreviewSequence = async (previewData) => {
+    if (!sequence || sequence.length === 0) {
+      addToast('No hay videos en la secuencia para previsualizar', 'error')
+      return
+    }
+    
+    setIsCreatingPreview(true)
+    addToast('🎬 Creando preview de secuencia...', 'info')
+    
+    try {
+      console.log('🎬 Iniciando preview de secuencia:', previewData)
+      
+      // Obtener archivos de video desde Firebase Storage
+      const videosWithFiles = []
+      
+      addToast('📥 Descargando archivos de video...', 'info')
+      
+      for (let i = 0; i < sequence.length; i++) {
+        const video = sequence[i]
+        try {
+          addToast(`📥 Descargando ${i + 1}/${sequence.length}: ${video.title}`, 'info')
+          
+          // Obtener el archivo desde Firebase Storage
+          const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
+          const storage = getStorage()
+          const videoRef = ref(storage, video.videoUrl)
+          const downloadURL = await getDownloadURL(videoRef)
+          
+          // Descargar el archivo
+          const response = await fetch(downloadURL)
+          const blob = await response.blob()
+          
+          videosWithFiles.push({
+            ...video,
+            file: blob
+          })
+          
+          console.log(`✅ Archivo descargado para: ${video.title}`)
+        } catch (error) {
+          console.error(`❌ Error al descargar archivo de ${video.title}:`, error)
+          throw new Error(`No se pudo descargar el archivo de ${video.title}`)
+        }
+      }
+      
+      // Crear preview de secuencia
+      addToast('🎬 Procesando preview de secuencia...', 'info')
+      const result = await createSequencePreview(
+        videosWithFiles, 
+        previewData.useBPMControl, 
+        previewData.targetBPM
+      )
+      
+      if (result.success) {
+        // Crear blob y URL para el preview
+        const blob = new Blob([result.data], { type: 'video/mp4' })
+        const url = URL.createObjectURL(blob)
+        
+        setPreviewVideoUrl(url)
+        setShowPreviewModal(true)
+        addToast('✅ Preview de secuencia creado exitosamente', 'success')
+      } else {
+        throw new Error(result.error)
+      }
+    } catch (error) {
+      console.error('❌ Error al crear preview de secuencia:', error)
+      addToast(`❌ Error al crear preview: ${error.message}`, 'error')
+    } finally {
+      setIsCreatingPreview(false)
+    }
+  }
+
   const handleProcessSequence = async (targetBPM) => {
     if (!sequence || sequence.length === 0) {
       addToast('No hay videos en la secuencia para procesar', 'error')
@@ -532,6 +609,7 @@ const SequenceBuilder = ({
                 currentBPM={currentBPM}
                 onProcessSequence={handleProcessSequence}
                 isProcessing={isProcessingSequence}
+                onPreviewSequence={handlePreviewSequence}
               />
             </div>
           )}
@@ -799,6 +877,46 @@ const SequenceBuilder = ({
                   currentResolution="auto"
                   videoTitle={selectedVideo.title}
                   size="fullscreen"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Preview de Secuencia */}
+      {showPreviewModal && previewVideoUrl && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowPreviewModal(false)}
+        >
+          <div
+            className="bg-black rounded-lg overflow-hidden w-full max-w-6xl max-h-[95vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-900">
+              <h3 className="text-xl font-semibold text-white">Preview de Secuencia</h3>
+              <button
+                onClick={() => setShowPreviewModal(false)}
+                className="text-gray-400 hover:text-white text-2xl font-bold p-2 hover:bg-gray-800 rounded transition-colors"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Video Player */}
+            <div className="flex-1 bg-black flex items-center justify-center p-4">
+              <div className="w-full h-full flex items-center justify-center">
+                <VideoPlayer
+                  src={previewVideoUrl}
+                  className="max-w-full max-h-full object-contain"
+                  showControls={true}
+                  autoplay={false}
+                  loop={false}
+                  muted={false}
+                  size="fullscreen"
+                  videoTitle="Preview de Secuencia"
                 />
               </div>
             </div>
