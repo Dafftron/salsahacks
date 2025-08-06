@@ -69,6 +69,24 @@ const CompactCardActions = ({
         >
           <Download className="h-3 w-3" />
         </button>
+        
+        {/* Botón de editar */}
+        <button
+          onClick={onEdit}
+          className="p-1 text-gray-400 hover:text-blue-500 transition-colors rounded"
+          title="Editar"
+        >
+          <Edit className="h-3 w-3" />
+        </button>
+        
+        {/* Botón de eliminar */}
+        <button
+          onClick={onDelete}
+          className="p-1 text-gray-400 hover:text-red-500 transition-colors rounded"
+          title="Eliminar"
+        >
+          <Trash2 className="h-3 w-3" />
+        </button>
       </div>
     )
   }
