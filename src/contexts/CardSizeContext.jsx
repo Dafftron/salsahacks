@@ -57,42 +57,46 @@ export const CardSizeProvider = ({ children }) => {
     }
   }
 
-  // Configuraciones de tamaños para secuencias
+  // Configuraciones de tamaños para secuencias (igual que videos)
   const sequenceSizeConfig = {
     small: {
       grid: 'md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
       aspect: 'aspect-square',
       titleSize: 'text-xs',
-      descriptionLines: 1,
+      descriptionLines: 0, // Sin descripción, solo iconos
       showStats: false,
       showTags: false,
+      showIcons: true, // Mostrar iconos en lugar de descripción
       compact: true
     },
     medium: {
-      grid: 'md:grid-cols-2 lg:grid-cols-3',
+      grid: 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
       aspect: 'aspect-video',
       titleSize: 'text-sm',
-      descriptionLines: 1,
+      descriptionLines: 0, // Sin descripción, solo iconos
       showStats: false,
       showTags: false,
+      showIcons: true, // Mostrar iconos en lugar de descripción
       compact: true
     },
     large: {
-      grid: 'md:grid-cols-2 lg:grid-cols-2',
+      grid: 'md:grid-cols-2 lg:grid-cols-3',
       aspect: 'aspect-video',
       titleSize: 'text-xl',
       descriptionLines: 3,
       showStats: true,
       showTags: true,
+      showIcons: false, // En grande mostrar descripción
       compact: false
     },
     'extra-large': {
-      grid: 'md:grid-cols-1 lg:grid-cols-1',
+      grid: 'md:grid-cols-1 lg:grid-cols-2',
       aspect: 'aspect-video',
       titleSize: 'text-2xl',
       descriptionLines: 4,
       showStats: true,
       showTags: true,
+      showIcons: false, // En extra grande mostrar descripción
       compact: false
     }
   }

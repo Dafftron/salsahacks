@@ -214,8 +214,27 @@ const SequenceGallery = ({
                 </div>
               </div>
 
-              {/* Descripción */}
-              <p className={`text-gray-600 text-sm ${getSequenceConfig().compact ? 'mb-2' : 'mb-3'} ${getSequenceConfig().descriptionLines === 1 ? 'line-clamp-1' : getSequenceConfig().descriptionLines === 2 ? 'line-clamp-2' : getSequenceConfig().descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{sequence.description || 'Sin descripción'}</p>
+              {/* Descripción o Iconos */}
+              {getSequenceConfig().showIcons ? (
+                // Mostrar iconos en tamaños pequeños y medianos
+                <div className="flex items-center justify-between text-gray-500 mb-2">
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-3 h-3" />
+                    <span className="text-xs">{getTotalDuration(sequence.videos)}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Users className="w-3 h-3" />
+                    <span className="text-xs">{sequence.videos.length}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-3 h-3" />
+                    <span className="text-xs">{formatDate(sequence.createdAt).split(' ')[0]}</span>
+                  </div>
+                </div>
+              ) : (
+                // Mostrar descripción en tamaños grandes
+                <p className={`text-gray-600 text-sm ${getSequenceConfig().compact ? 'mb-2' : 'mb-3'} ${getSequenceConfig().descriptionLines === 1 ? 'line-clamp-1' : getSequenceConfig().descriptionLines === 2 ? 'line-clamp-2' : getSequenceConfig().descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{sequence.description || 'Sin descripción'}</p>
+              )}
               
               {/* Tags de la secuencia */}
               {getSequenceConfig().showTags && (
@@ -241,47 +260,54 @@ const SequenceGallery = ({
               {/* Stats del video */}
               {getSequenceConfig().showStats && (
                 <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
-                <div className="flex items-center space-x-2">
-                  <span className="font-medium">
-                    {getTotalDuration(sequence.videos)}
-                  </span>
-                  <span className="text-gray-400">•</span>
-                  <span className="text-gray-600">
-                    {sequence.resolution && sequence.resolution !== 'Unknown' ? 
-                      sequence.resolution : 
-                      'HD'
-                    }
-                  </span>
-                  <span className="text-gray-400">•</span>
-                  <span className="text-gray-600">
-                    {formatDate(sequence.createdAt)}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4" />
+                    <span className="font-medium">
+                      {getTotalDuration(sequence.videos)}
+                    </span>
+                    <span className="text-gray-400">•</span>
+                    <Users className="w-4 h-4" />
+                    <span className="text-gray-600">
+                      {sequence.videos.length} videos
+                    </span>
+                    <span className="text-gray-400">•</span>
+                    <span className="text-gray-600">
+                      {sequence.resolution && sequence.resolution !== 'Unknown' ? 
+                        sequence.resolution : 
+                        'HD'
+                      }
+                    </span>
+                    <span className="text-gray-400">•</span>
+                    <Calendar className="w-4 h-4" />
+                    <span className="text-gray-600">
+                      {formatDate(sequence.createdAt)}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleDownloadSequence(sequence)}
+                      className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
+                      title="Descargar secuencia"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => onEditSequence(sequence)}
+                      className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                      title="Editar secuencia"
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(sequence)}
+                      className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
+                      title="Eliminar secuencia"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
-                                 <div className="flex items-center space-x-2">
-                   <button
-                     onClick={() => handleDownloadSequence(sequence)}
-                     className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
-                     title="Descargar secuencia"
-                   >
-                     <Download className="h-4 w-4" />
-                   </button>
-                   <button
-                     onClick={() => onEditSequence(sequence)}
-                     className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
-                     title="Editar secuencia"
-                   >
-                     <Edit3 className="h-4 w-4" />
-                   </button>
-                   <button
-                     onClick={() => handleDeleteClick(sequence)}
-                     className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
-                     title="Eliminar secuencia"
-                   >
-                     <Trash2 className="h-4 w-4" />
-                   </button>
-                                  </div>
-               </div>
-             )}
+              )}
            </div>
          </div>
        ))}
