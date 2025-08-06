@@ -26,13 +26,49 @@ const NotasPage = () => {
   const [expandedCommits, setExpandedCommits] = useState(new Set())
 
   const categories = [
-            { name: 'TODAS', icon: FileText, count: 56 },
-        { name: 'PÁGINAS', icon: Home, count: 10 },
-        { name: 'SISTEMAS', icon: Settings, count: 25 },
-        { name: 'CONTENIDO', icon: Video, count: 21 }
+            { name: 'TODAS', icon: FileText, count: 59 },
+        { name: 'PÁGINAS', icon: Home, count: 12 },
+        { name: 'SISTEMAS', icon: Settings, count: 28 },
+        { name: 'CONTENIDO', icon: Video, count: 19 }
   ]
 
         const commits = [
+        {
+          id: 43,
+          hash: 'm2n3o4p',
+          date: '2025-01-27',
+          time: '19:15:30',
+          title: 'Commit #043 - Actualizar documentación completa del proyecto',
+          description: 'Actualización de NOTAS_COMMITS.md, TODO.md y PLAN_COMPLETO.md con estado actual',
+          files: ['NOTAS_COMMITS.md', 'TODO.md', 'PLAN_COMPLETO.md'],
+          notes: 'Actualización completa de documentación: NOTAS_COMMITS.md actualizado a 43 commits con detalles de constructor de secuencias, VideoPlayer avanzado, sistema de descarga y modal personalizado. TODO.md reestructurado con funcionalidades completadas recientemente. PLAN_COMPLETO.md actualizado con constructor de secuencias completo integrado. Estado actual del proyecto reflejado en toda la documentación.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 42,
+          hash: 'l1k2j3i',
+          date: '2025-01-27',
+          time: '19:10:15',
+          title: 'Commit #042 - Convertir advertencia de edición de secuencia en modal personalizado',
+          description: 'Reemplazar window.confirm con ConfirmModal para mejor UX',
+          files: ['src/pages/FigurasPage.jsx'],
+          notes: 'Conversión de window.confirm a modal personalizado: nuevo estado editSequenceModal, funciones handleConfirmEditSequence y handleCancelEditSequence, ConfirmModal con título "🎬 Cargar Secuencia", mensaje explicativo sobre reemplazo de secuencia actual, botones "Cargar Secuencia" y "Cancelar", diseño consistente con otros modales de la aplicación.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 41,
+          hash: 'h9g8f7e',
+          date: '2025-01-27',
+          time: '19:05:45',
+          title: 'Commit #041 - Arreglar verificación de secuencia en construcción al editar',
+          description: 'Usar variables del contexto en lugar del parámetro de función',
+          files: ['src/pages/FigurasPage.jsx'],
+          notes: 'Corrección del diálogo de confirmación: renombrado parámetro de sequence a sequenceToEdit para evitar shadowing de variables del contexto, verificación correcta de secuencia actual en construcción usando sequence y sequenceName del contexto, diálogo de confirmación ahora aparece correctamente cuando hay una secuencia activa.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
         {
           id: 40,
           hash: 'k9l8m7n',
@@ -616,26 +652,107 @@ const NotasPage = () => {
       date: '2025-01-27',
       priority: 'Alta',
       status: 'Completado'
+    },
+    {
+      id: 13,
+      title: 'Sistema de gestión de videos completo',
+      description: 'Upload, reproducción, edición y eliminación de videos',
+      category: 'CONTENIDO',
+      date: '2025-01-27',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
+      id: 14,
+      title: 'VideoPlayer profesional',
+      description: 'Controles avanzados, resoluciones múltiples, navegación intuitiva',
+      category: 'CONTENIDO',
+      date: '2025-01-27',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
+      id: 15,
+      title: 'Constructor de secuencias integrado',
+      description: 'Sistema completo de creación y edición de secuencias de baile',
+      category: 'CONTENIDO',
+      date: '2025-01-27',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
+      id: 16,
+      title: 'Sistema de descarga de videos',
+      description: 'Descarga directa desde tarjetas y reproductor',
+      category: 'CONTENIDO',
+      date: '2025-01-27',
+      priority: 'Media',
+      status: 'Completado'
+    },
+    {
+      id: 17,
+      title: 'Sistema de tags iniciales y finales',
+      description: 'Lógica de compatibilidad para secuencias',
+      category: 'SISTEMAS',
+      date: '2025-01-27',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
+      id: 18,
+      title: 'Galerías independientes por estilo',
+      description: 'Filtrado dinámico por estilo de baile',
+      category: 'PÁGINAS',
+      date: '2025-01-27',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
+      id: 19,
+      title: 'Sistema de búsqueda avanzada',
+      description: 'Búsqueda inteligente y filtrado por categorías',
+      category: 'SISTEMAS',
+      date: '2025-01-27',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
+      id: 20,
+      title: 'Sincronización en tiempo real',
+      description: 'Firebase Firestore con actualizaciones automáticas',
+      category: 'SISTEMAS',
+      date: '2025-01-27',
+      priority: 'Alta',
+      status: 'Completado'
     }
   ]
 
   const cosasEnProceso = [
     {
       id: 1,
-      title: 'Sistema de gestión de videos',
-      description: 'Upload, reproducción y gestión de metadatos con etiquetas plegables',
-      category: 'CONTENIDO',
+      title: 'Página de Escuela',
+      description: 'Preparando réplica de Figuras con sistema de tabs y constructor de secuencias',
+      category: 'PÁGINAS',
       priority: 'Alta',
-      progress: 5,
+      progress: 15,
       status: 'En Progreso'
     },
     {
       id: 2,
-      title: 'HomePage - Dashboard principal',
-      description: 'Página de inicio con estadísticas y videos destacados',
+      title: 'Página de Eventos',
+      description: 'Preparando réplica de Figuras con sistema de tabs y constructor de secuencias',
       category: 'PÁGINAS',
+      priority: 'Alta',
+      progress: 10,
+      status: 'En Progreso'
+    },
+    {
+      id: 3,
+      title: 'Adaptación de orientación móvil',
+      description: 'Última funcionalidad del VideoPlayer para dispositivos móviles',
+      category: 'CONTENIDO',
       priority: 'Media',
-      progress: 25,
+      progress: 30,
       status: 'En Progreso'
     }
   ]
@@ -645,7 +762,7 @@ const NotasPage = () => {
     {
       id: 1,
       title: 'Sistema de recomendaciones',
-      description: 'Algoritmo para recomendar videos y contenido',
+      description: 'Algoritmo para recomendar videos y contenido basado en historial',
       category: 'SISTEMAS',
       priority: 'Baja',
       estimatedTime: '5 días',
@@ -653,17 +770,44 @@ const NotasPage = () => {
     },
     {
       id: 2,
-      title: 'Analytics y estadísticas',
-      description: 'Métricas de uso y comportamiento de usuarios',
+      title: 'Analytics avanzados',
+      description: 'Métricas de uso de secuencias y comportamiento de usuarios',
       category: 'SISTEMAS',
       priority: 'Baja',
       estimatedTime: '3 días',
       status: 'Futuro'
     },
+    {
+      id: 3,
+      title: 'Testing automatizado',
+      description: 'Tests unitarios y E2E para todas las funcionalidades',
+      category: 'SISTEMAS',
+      priority: 'Media',
+      estimatedTime: '4 días',
+      status: 'Futuro'
+    },
+    {
+      id: 4,
+      title: 'Deploy a producción',
+      description: 'Firebase Hosting con configuración de producción',
+      category: 'SISTEMAS',
+      priority: 'Media',
+      estimatedTime: '2 días',
+      status: 'Futuro'
+    },
     
     // PÁGINAS
     {
-      id: 3,
+      id: 5,
+      title: 'HomePage - Dashboard principal',
+      description: 'Página de inicio con estadísticas y videos destacados',
+      category: 'PÁGINAS',
+      priority: 'Media',
+      estimatedTime: '3 días',
+      status: 'Futuro'
+    },
+    {
+      id: 6,
       title: 'CategoriesPage - Gestión de categorías',
       description: 'Página para gestionar categorías y etiquetas',
       category: 'PÁGINAS',
@@ -672,7 +816,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 4,
+      id: 7,
       title: 'Página de búsqueda avanzada',
       description: 'Búsqueda con filtros por categorías y estilos',
       category: 'PÁGINAS',
@@ -681,72 +825,18 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     
-    // CONTENIDO - SISTEMA DE VIDEOS
-    {
-      id: 5,
-      title: 'Componente de Upload de Videos',
-      description: 'Modal de subida con drag & drop, múltiples archivos, barra de progreso',
-      category: 'CONTENIDO',
-      priority: 'Alta',
-      estimatedTime: '2 días',
-      status: 'Futuro'
-    },
-    {
-      id: 6,
-      title: 'Sistema de Etiquetas Plegables',
-      description: 'Tags normales/iniciales/finales organizados por categorías con colores',
-      category: 'CONTENIDO',
-      priority: 'Alta',
-      estimatedTime: '2 días',
-      status: 'Futuro'
-    },
-    {
-      id: 7,
-      title: 'Gestión de Metadatos de Videos',
-      description: 'Título automático, thumbnail automático, edición de metadatos',
-      category: 'CONTENIDO',
-      priority: 'Alta',
-      estimatedTime: '2 días',
-      status: 'Futuro'
-    },
+    // CONTENIDO
     {
       id: 8,
-      title: 'Detección de Duplicados',
-      description: 'Prevenir subida de videos duplicados, mensajes de éxito/error',
+      title: 'Exportación de secuencias',
+      description: 'Videos combinados descargables desde secuencias',
       category: 'CONTENIDO',
-      priority: 'Alta',
-      estimatedTime: '1 día',
+      priority: 'Media',
+      estimatedTime: '3 días',
       status: 'Futuro'
     },
     {
       id: 9,
-      title: 'Reproductor de Videos',
-      description: 'Reproductor integrado con controles personalizados',
-      category: 'CONTENIDO',
-      priority: 'Alta',
-      estimatedTime: '2 días',
-      status: 'Futuro'
-    },
-    {
-      id: 10,
-      title: 'Cards de Videos con Edición',
-      description: 'Grid de videos con botón de edición, preview, thumbnail',
-      category: 'CONTENIDO',
-      priority: 'Alta',
-      estimatedTime: '2 días',
-      status: 'Futuro'
-    },
-    {
-      id: 11,
-      title: 'Constructor de secuencias',
-      description: 'Herramienta para crear secuencias de baile',
-      category: 'CONTENIDO',
-      priority: 'Media',
-      estimatedTime: '4 días',
-      status: 'Futuro'
-    },
-    {
-      id: 12,
       title: 'Sistema de comentarios',
       description: 'Comentarios en videos y sistema de ratings',
       category: 'CONTENIDO',
@@ -755,7 +845,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 13,
+      id: 10,
       title: 'Sistema de favoritos',
       description: 'Guardar videos favoritos y crear playlists',
       category: 'CONTENIDO',
@@ -764,7 +854,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 14,
+      id: 11,
       title: 'Notificaciones',
       description: 'Sistema de notificaciones para nuevos videos y eventos',
       category: 'CONTENIDO',
@@ -775,25 +865,52 @@ const NotasPage = () => {
     
     // FUNCIONALIDADES AVANZADAS
     {
-      id: 15,
-      title: 'Modo offline',
-      description: 'Descargar videos para ver sin conexión',
+      id: 12,
+      title: 'Inteligencia artificial',
+      description: 'Sugerencias automáticas de secuencias',
       category: 'SISTEMAS',
       priority: 'Baja',
-      estimatedTime: '4 días',
+      estimatedTime: '7 días',
       status: 'Futuro'
     },
     {
-      id: 11,
+      id: 13,
+      title: 'Sistema de colaboración',
+      description: 'Secuencias compartidas entre usuarios',
+      category: 'SISTEMAS',
+      priority: 'Baja',
+      estimatedTime: '5 días',
+      status: 'Futuro'
+    },
+    {
+      id: 14,
+      title: 'Aplicación móvil',
+      description: 'Versión nativa para iOS/Android',
+      category: 'SISTEMAS',
+      priority: 'Baja',
+      estimatedTime: '15 días',
+      status: 'Futuro'
+    },
+    {
+      id: 15,
       title: 'Integración con redes sociales',
-      description: 'Compartir videos en Facebook, Instagram, etc.',
+      description: 'Compartir secuencias en redes sociales',
       category: 'CONTENIDO',
       priority: 'Baja',
       estimatedTime: '3 días',
       status: 'Futuro'
     },
     {
-      id: 12,
+      id: 16,
+      title: 'Funcionalidades premium',
+      description: 'Contenido exclusivo para usuarios avanzados',
+      category: 'CONTENIDO',
+      priority: 'Baja',
+      estimatedTime: '4 días',
+      status: 'Futuro'
+    },
+    {
+      id: 17,
       title: 'Sistema de certificaciones',
       description: 'Certificados de cursos completados',
       category: 'CONTENIDO',
@@ -802,7 +919,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 13,
+      id: 18,
       title: 'Calendario de eventos',
       description: 'Calendario interactivo para eventos de salsa',
       category: 'PÁGINAS',
@@ -811,7 +928,7 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 14,
+      id: 19,
       title: 'Sistema de mensajería',
       description: 'Chat entre usuarios e instructores',
       category: 'SISTEMAS',
