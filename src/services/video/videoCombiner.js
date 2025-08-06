@@ -107,11 +107,11 @@ class VideoCombiner {
         canvas.width = 1920
         canvas.height = 1080
         
-        // Crear MediaRecorder con calidad optimizada
-        const stream = canvas.captureStream(60) // 60 FPS
+        // Crear MediaRecorder con máxima calidad
+        const stream = canvas.captureStream(30) // 30 FPS para estabilidad
         const mediaRecorder = new MediaRecorder(stream, {
           mimeType: 'video/webm;codecs=vp9',
-          videoBitsPerSecond: 12000000 // 12 Mbps para buena calidad
+          videoBitsPerSecond: 20000000 // 20 Mbps para máxima calidad
         })
         
         const chunks = []
@@ -149,20 +149,47 @@ class VideoCombiner {
           
           video.onloadedmetadata = () => {
             video.currentTime = 0
+            video.muted = false
+            video.volume = 1.0
             video.play()
           }
           
           video.ontimeupdate = () => {
-            // Dibujar el frame actual en el canvas con calidad optimizada
+            // Dibujar el frame actual en el canvas con máxima calidad
             ctx.imageSmoothingEnabled = true
             ctx.imageSmoothingQuality = 'high'
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+            
+            // Limpiar canvas antes de dibujar
+            ctx.clearRect(0, 0, canvas.width, canvas.height)
+            
+            // Calcular dimensiones para mantener proporción
+            const videoAspect = video.videoWidth / video.videoHeight
+            const canvasAspect = canvas.width / canvas.height
+            
+            let drawWidth, drawHeight, offsetX, offsetY
+            
+            if (videoAspect > canvasAspect) {
+              // Video más ancho que canvas
+              drawWidth = canvas.width
+              drawHeight = canvas.width / videoAspect
+              offsetX = 0
+              offsetY = (canvas.height - drawHeight) / 2
+            } else {
+              // Video más alto que canvas
+              drawHeight = canvas.height
+              drawWidth = canvas.height * videoAspect
+              offsetX = (canvas.width - drawWidth) / 2
+              offsetY = 0
+            }
+            
+            // Dibujar video centrado y escalado
+            ctx.drawImage(video, offsetX, offsetY, drawWidth, drawHeight)
           }
           
           video.onended = () => {
             URL.revokeObjectURL(videoUrl)
             currentVideoIndex++
-            setTimeout(processNextVideo, 50) // Pausa más corta para mejor transición
+            setTimeout(processNextVideo, 100) // Pausa para transición suave
           }
           
           video.src = videoUrl
