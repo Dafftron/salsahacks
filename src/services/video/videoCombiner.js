@@ -1,52 +1,29 @@
-import { FFmpeg } from '@ffmpeg/ffmpeg'
-import { fetchFile, toBlobURL } from '@ffmpeg/util'
-
 class VideoCombiner {
   constructor() {
-    this.ffmpeg = new FFmpeg()
-    this.isLoaded = false
+    this.isLoaded = true // No necesitamos cargar nada
   }
 
   async load() {
-    if (this.isLoaded) return
-
-    try {
-      console.log('Cargando FFmpeg.wasm...')
-      
-      // Cargar FFmpeg con archivos locales
-      await this.ffmpeg.load({
-        coreURL: await toBlobURL('/ffmpeg/ffmpeg-core.js', 'text/javascript'),
-        wasmURL: await toBlobURL('/ffmpeg/ffmpeg-core.wasm', 'application/wasm'),
-      })
-      
-      this.isLoaded = true
-      console.log('FFmpeg.wasm cargado correctamente')
-    } catch (error) {
-      console.error('Error cargando FFmpeg:', error)
-      throw new Error('No se pudo cargar FFmpeg.wasm')
-    }
+    // No necesitamos cargar nada
+    return Promise.resolve()
   }
 
-  // Método principal que usa FFmpeg.wasm
+  // Método principal que usa MediaRecorder API
   async combineVideos(videos, onProgress) {
     try {
-      if (!this.isLoaded) {
-        await this.load()
-      }
-
-      console.log('Iniciando combinación con FFmpeg.wasm...')
+      console.log('Iniciando combinación con MediaRecorder...')
       
       if (onProgress) {
         onProgress({
           stage: 'init',
           current: 0,
           total: 100,
-          message: 'Iniciando FFmpeg.wasm...'
+          message: 'Iniciando MediaRecorder...'
         })
       }
 
       // Descargar todos los videos
-      const videoFiles = []
+      const videoBlobs = []
       
       for (let i = 0; i < videos.length; i++) {
         const video = videos[i]
@@ -55,7 +32,7 @@ class VideoCombiner {
         if (onProgress) {
           onProgress({
             stage: 'download',
-            current: ((i + 1) / videos.length) * 30,
+            current: ((i + 1) / videos.length) * 50,
             total: 100,
             message: `Descargando: ${video.title}`
           })
@@ -78,14 +55,9 @@ class VideoCombiner {
           }
           
           const videoBlob = await response.blob()
-          const videoBuffer = await videoBlob.arrayBuffer()
+          videoBlobs.push(videoBlob)
           
-          // Escribir archivo en FFmpeg
-          const fileName = `input_${i}.mp4`
-          await this.ffmpeg.writeFile(fileName, new Uint8Array(videoBuffer))
-          videoFiles.push(fileName)
-          
-          console.log(`Video ${i + 1} descargado y escrito: ${fileName}`)
+          console.log(`Video ${i + 1} descargado: ${video.title}`)
           
         } catch (error) {
           console.error(`Error con video ${video.title}:`, error)
@@ -93,45 +65,17 @@ class VideoCombiner {
         }
       }
 
-      // Crear archivo de lista para concatenación
-      const fileList = videoFiles.map(file => `file '${file}'`).join('\n')
-      await this.ffmpeg.writeFile('filelist.txt', fileList)
-      
-      console.log('Archivo de lista creado:', fileList)
-
       if (onProgress) {
         onProgress({
           stage: 'combine',
-          current: 30,
+          current: 50,
           total: 100,
-          message: 'Combinando videos con FFmpeg...'
+          message: 'Combinando videos...'
         })
       }
 
-      // Ejecutar comando FFmpeg para combinar
-      console.log('Ejecutando comando FFmpeg...')
-      await this.ffmpeg.exec([
-        '-f', 'concat',
-        '-safe', '0',
-        '-i', 'filelist.txt',
-        '-c', 'copy',
-        'output.mp4'
-      ])
-
-      if (onProgress) {
-        onProgress({
-          stage: 'finalize',
-          current: 90,
-          total: 100,
-          message: 'Finalizando archivo...'
-        })
-      }
-
-      // Leer el archivo combinado
-      const data = await this.ffmpeg.readFile('output.mp4')
-      
-      // Limpiar archivos temporales
-      await this.cleanup(videoFiles)
+      // Crear un video combinado usando MediaRecorder
+      const combinedBlob = await this.combineVideoBlobs(videoBlobs)
 
       if (onProgress) {
         onProgress({
@@ -143,18 +87,90 @@ class VideoCombiner {
       }
 
       console.log('Combinación completada, archivo creado')
-      return new Blob([data], { type: 'video/mp4' })
+      return combinedBlob
 
     } catch (error) {
       console.error('Error combinando videos:', error)
-      // Intentar limpiar en caso de error
-      try {
-        await this.cleanup(videos.map((_, i) => `input_${i}.mp4`))
-      } catch (cleanupError) {
-        console.warn('Error limpiando archivos:', cleanupError)
-      }
       throw new Error(`Error combinando videos: ${error.message}`)
     }
+  }
+
+  // Método para combinar blobs de video
+  async combineVideoBlobs(videoBlobs) {
+    return new Promise((resolve, reject) => {
+      try {
+        // Crear un canvas para combinar los videos
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        
+        // Configurar canvas
+        canvas.width = 1280
+        canvas.height = 720
+        
+        // Crear MediaRecorder
+        const stream = canvas.captureStream(30) // 30 FPS
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'video/webm;codecs=vp9'
+        })
+        
+        const chunks = []
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            chunks.push(event.data)
+          }
+        }
+        
+        mediaRecorder.onstop = () => {
+          const combinedBlob = new Blob(chunks, { type: 'video/webm' })
+          resolve(combinedBlob)
+        }
+        
+        mediaRecorder.onerror = (error) => {
+          reject(error)
+        }
+        
+        // Iniciar grabación
+        mediaRecorder.start()
+        
+        // Procesar cada video
+        let currentVideoIndex = 0
+        
+        const processNextVideo = () => {
+          if (currentVideoIndex >= videoBlobs.length) {
+            mediaRecorder.stop()
+            return
+          }
+          
+          const videoBlob = videoBlobs[currentVideoIndex]
+          const videoUrl = URL.createObjectURL(videoBlob)
+          const video = document.createElement('video')
+          
+          video.onloadedmetadata = () => {
+            video.currentTime = 0
+            video.play()
+          }
+          
+          video.ontimeupdate = () => {
+            // Dibujar el frame actual en el canvas
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+          }
+          
+          video.onended = () => {
+            URL.revokeObjectURL(videoUrl)
+            currentVideoIndex++
+            setTimeout(processNextVideo, 100) // Pequeña pausa entre videos
+          }
+          
+          video.src = videoUrl
+        }
+        
+        processNextVideo()
+        
+      } catch (error) {
+        reject(error)
+      }
+    })
   }
 
   // Método simple (igual que el principal)
@@ -162,55 +178,17 @@ class VideoCombiner {
     return this.combineVideos(videos, onProgress)
   }
 
-  // Limpiar archivos temporales
-  async cleanup(videoFiles) {
-    try {
-      console.log('Limpiando archivos temporales...')
-      
-      // Eliminar archivos de video
-      for (const file of videoFiles) {
-        await this.ffmpeg.deleteFile(file)
-      }
-      
-      // Eliminar archivos del sistema
-      await this.ffmpeg.deleteFile('filelist.txt')
-      await this.ffmpeg.deleteFile('output.mp4')
-      
-      console.log('Archivos temporales eliminados')
-    } catch (error) {
-      console.warn('Error limpiando archivos temporales:', error)
-    }
-  }
-
   // Método para obtener información del video
   async getVideoInfo(videoUrl) {
     try {
-      if (!this.isLoaded) {
-        await this.load()
-      }
-
-      // Descargar video
       const response = await fetch(videoUrl)
-      const videoBlob = await response.blob()
-      const videoBuffer = await videoBlob.arrayBuffer()
+      const blob = await response.blob()
       
-      // Escribir archivo temporal
-      await this.ffmpeg.writeFile('temp_video.mp4', new Uint8Array(videoBuffer))
-      
-      // Obtener información
-      await this.ffmpeg.exec([
-        '-i', 'temp_video.mp4',
-        '-f', 'null',
-        '-'
-      ])
-      
-      // Leer logs para obtener información
-      const logs = await this.ffmpeg.readFile('temp_video.mp4')
-      
-      // Limpiar
-      await this.ffmpeg.deleteFile('temp_video.mp4')
-      
-      return logs
+      return {
+        size: blob.size,
+        type: blob.type,
+        duration: null // No podemos obtener duración sin procesar el video
+      }
     } catch (error) {
       console.error('Error obteniendo información del video:', error)
       return null

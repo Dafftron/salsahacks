@@ -31,6 +31,7 @@ import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
 import SequenceBuilder from '../components/sequence/SequenceBuilder'
 import SequenceGallery from '../components/sequence/SequenceGallery'
+import CardSizeSelector from '../components/common/CardSizeSelector'
 import { useSequenceBuilderContext } from '../contexts/SequenceBuilderContext'
 
 import { 
@@ -61,6 +62,7 @@ import {
 } from '../services/firebase/storage'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
+import { useCardSize } from '../contexts/CardSizeContext'
 
 const FigurasPage = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
@@ -84,6 +86,7 @@ const FigurasPage = () => {
   const [sequencesLoading, setSequencesLoading] = useState(true)
   
   const { user } = useAuth()
+  const { getVideoConfig, getSequenceConfig } = useCardSize()
   
   // Usar el contexto de constructor de secuencias
   const {
@@ -1072,7 +1075,10 @@ const FigurasPage = () => {
                 Videos de {selectedStyle.toLowerCase()} ({filteredVideos.length})
               </h2>
               <div className="flex items-center space-x-4">
-                {/* Botón de modo ancho completo */}
+                {/* Selector de tamaño de cards */}
+                <CardSizeSelector type="video" />
+                
+                {/* Botón de modo ancho completo (mantener por compatibilidad) */}
                 <button
                   onClick={() => setIsFullWidth(!isFullWidth)}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
@@ -1139,11 +1145,7 @@ const FigurasPage = () => {
               <p className="text-gray-400 text-sm mt-2">Sube tu primer video de {selectedStyle.toLowerCase()} usando el botón de arriba</p>
             </div>
                      ) : (
-             <div className={`grid gap-6 ${
-               isFullWidth 
-                 ? 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' 
-                 : 'md:grid-cols-2'
-             }`}>
+             <div className={`grid gap-6 ${getVideoConfig().grid}`}>
                {filteredVideos.map((video) => (
                 <div 
                   key={video.id} 
@@ -1154,7 +1156,7 @@ const FigurasPage = () => {
                   }`}
                 >
                   <div className="relative group">
-                    <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+                    <div className={`w-full ${getVideoConfig().aspect} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
                       {video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? (
                         <img
                           src={video.thumbnailUrl}
@@ -1527,7 +1529,7 @@ const FigurasPage = () => {
                   
                                      <div className="p-4">
                      <div className="flex items-center justify-between mb-2">
-                       <h3 className="font-semibold text-gray-800 text-lg">{video.title}</h3>
+                       <h3 className={`font-semibold text-gray-800 ${getVideoConfig().titleSize}`}>{video.title}</h3>
                        <div className="flex items-center space-x-1">
                          {[1, 2, 3, 4, 5].map(star => {
                            const isFilled = (video.rating || 0) >= star

@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { ThemeProvider } from './contexts/ThemeContext'
 import { AuthProvider } from './contexts/AuthContext'
 import { SequenceBuilderProvider } from './contexts/SequenceBuilderContext'
+import { CardSizeProvider } from './contexts/CardSizeContext'
 import Navigation from './components/layout/Navigation'
 import HomePage from './pages/HomePage'
 import NotasPage from './pages/NotasPage'
@@ -47,9 +48,11 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <SequenceBuilderProvider>
-          <Router>
-            <AppContent />
-          </Router>
+          <CardSizeProvider>
+            <Router>
+              <AppContent />
+            </Router>
+          </CardSizeProvider>
         </SequenceBuilderProvider>
       </AuthProvider>
     </ThemeProvider>
