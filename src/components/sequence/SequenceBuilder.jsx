@@ -301,8 +301,14 @@ const SequenceBuilder = ({
   
   // Funciones para manejar BPM
   const handleBPMChange = (newBPM) => {
-    setCurrentBPM(newBPM)
-    console.log('🎵 BPM cambiado a:', newBPM)
+    // Si newBPM es null, significa que el control BPM está desactivado
+    if (newBPM === null) {
+      setCurrentBPM(null)
+      console.log('🎵 Control BPM desactivado - usando BPMs originales')
+    } else {
+      setCurrentBPM(newBPM)
+      console.log('🎵 BPM cambiado a:', newBPM)
+    }
   }
   
   // Función para obtener resoluciones disponibles basadas en la resolución del video

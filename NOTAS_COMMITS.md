@@ -55,6 +55,22 @@
 - **Archivos modificados**:
   - `src/components/sequence/SequenceBuilder.jsx` - Agregada función `handlePlayVideo` y botón play en thumbnails
 
+### 🎬 **PASO 2 COMPLETADO: TOGGLE CONTROL BPM** - 2024-12-19
+- **Implementado**: Toggle switch ON/OFF para Control de BPM en el Constructor de Secuencias
+- **Funcionalidad**: 
+  - Cuando DESACTIVADO: cada video mantiene su BPM original
+  - Cuando ACTIVADO: el slider ajusta todos los videos al BPM global
+- **Interfaz**: 
+  - Toggle switch elegante con iconos Zap/ZapOff
+  - Sección colapsable cuando control está OFF (ahorra espacio)
+  - Botón de expandir/colapsar cuando está activado
+  - Lista de videos actualizada según el estado
+  - Botón "Generar" eliminado (se generará automáticamente al guardar)
+  - Información de ayuda contextual
+- **Archivos modificados**:
+  - `src/components/sequence/BPMController.jsx` - Toggle switch, sección colapsable y eliminación de botón generar
+  - `src/components/sequence/SequenceBuilder.jsx` - Manejo de estado null para BPM
+
 ### 🖼️ **UPGRADE: GENERACIÓN DE THUMBNAILS DE ALTA CALIDAD** - 2024-12-19
 - **Problema**: Los thumbnails generados automáticamente tenían baja resolución y calidad
 - **Solución**: Mejorado significativamente el sistema de generación de thumbnails
