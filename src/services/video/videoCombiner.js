@@ -14,27 +14,38 @@ class VideoCombiner {
   // Método principal que usa MediaRecorder
   async combineVideos(videos, onProgress) {
     try {
-      // Descargar todos los videos primero usando XMLHttpRequest para evitar CORS
-      const videoBlobs = []
+      // Obtener URLs directas de Firebase Storage
+      const videoUrls = []
       
       for (let i = 0; i < videos.length; i++) {
         const video = videos[i]
-        console.log(`Descargando video ${i + 1}/${videos.length}: ${video.title}`)
+        console.log(`Obteniendo URL para video ${i + 1}/${videos.length}: ${video.title}`)
         
-        const blob = await this.downloadVideoWithXHR(video.videoUrl)
-        videoBlobs.push(blob)
+        let videoUrl
+        if (video.videoUrl && video.videoUrl.startsWith('https://firebasestorage.googleapis.com')) {
+          // Si ya es una URL directa de Firebase, usarla
+          videoUrl = video.videoUrl
+        } else if (video.videoPath) {
+          // Si tenemos la ruta, obtener la URL usando Firebase SDK
+          const storageRef = ref(storage, video.videoPath)
+          videoUrl = await getDownloadURL(storageRef)
+        } else {
+          throw new Error(`No se puede obtener URL para video ${video.title}`)
+        }
+        
+        videoUrls.push(videoUrl)
         
         if (onProgress) {
           onProgress({
             stage: 'download',
             current: i + 1,
             total: videos.length,
-            message: `Descargando: ${video.title}`
+            message: `Obteniendo URL: ${video.title}`
           })
         }
       }
 
-      // Combinar usando MediaRecorder
+      // Combinar usando MediaRecorder con URLs directas
       if (onProgress) {
         onProgress({
           stage: 'combine',
@@ -44,7 +55,7 @@ class VideoCombiner {
         })
       }
 
-      const combinedBlob = await this.combineWithMediaRecorder(videoBlobs, onProgress)
+      const combinedBlob = await this.combineWithMediaRecorder(videoUrls, onProgress)
 
       if (onProgress) {
         onProgress({
@@ -63,43 +74,17 @@ class VideoCombiner {
     }
   }
 
-  // Método para descargar video usando XMLHttpRequest (evita CORS)
-  downloadVideoWithXHR(url) {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
-      xhr.open('GET', url, true)
-      xhr.responseType = 'blob'
-      
-      xhr.onload = function() {
-        if (xhr.status === 200) {
-          resolve(xhr.response)
-        } else {
-          reject(new Error(`Error descargando video: ${xhr.status} ${xhr.statusText}`))
-        }
-      }
-      
-      xhr.onerror = function() {
-        reject(new Error('Error de red al descargar video'))
-      }
-      
-      xhr.send()
-    })
-  }
-
   // Método simple (igual que el principal ahora)
   async combineVideosSimple(videos, onProgress) {
     return this.combineVideos(videos, onProgress)
   }
 
-  async combineWithMediaRecorder(videoBlobs, onProgress) {
+  async combineWithMediaRecorder(videoUrls, onProgress) {
     return new Promise((resolve, reject) => {
       try {
-        console.log('Iniciando combinación con MediaRecorder...')
+        console.log('Iniciando combinación con MediaRecorder usando URLs directas...')
         
-        // Crear URLs para los videos
-        const videoUrls = videoBlobs.map(blob => URL.createObjectURL(blob))
-        
-        // Crear elementos de video
+        // Crear elementos de video directamente desde las URLs de Firebase
         const videoElements = videoUrls.map(url => {
           const video = document.createElement('video')
           video.src = url
@@ -130,8 +115,6 @@ class VideoCombiner {
 
         mediaRecorder.onstop = () => {
           console.log('MediaRecorder detenido, creando blob...')
-          // Limpiar URLs
-          videoUrls.forEach(url => URL.revokeObjectURL(url))
           
           const combinedBlob = new Blob(chunks, { type: 'video/webm' })
           console.log('Blob combinado creado:', combinedBlob.size, 'bytes')
