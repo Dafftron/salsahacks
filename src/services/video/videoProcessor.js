@@ -1,5 +1,6 @@
 // Servicio para procesamiento de video usando FFmpeg.wasm
-import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg'
+import { FFmpeg } from '@ffmpeg/ffmpeg'
+import { fetchFile } from '@ffmpeg/util'
 
 let ffmpeg = null
 
@@ -8,10 +9,7 @@ export const initFFmpeg = async () => {
   if (ffmpeg) return ffmpeg
   
   console.log('🎬 Inicializando FFmpeg...')
-  ffmpeg = createFFmpeg({ 
-    log: true,
-    corePath: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/ffmpeg-core.js'
-  })
+  ffmpeg = new FFmpeg()
   
   await ffmpeg.load()
   console.log('✅ FFmpeg inicializado correctamente')

@@ -11,8 +11,8 @@ const BPMController = ({
   const [localBPM, setLocalBPM] = useState(currentBPM || 120)
   const [isPreviewMode, setIsPreviewMode] = useState(false)
   
-  // BPM presets con saltos de 5
-  const bpmPresets = Array.from({length: 29}, (_, i) => 60 + i * 5) // 60, 65, 70... 200
+  // BPM presets con saltos de 5 (ahora hasta 300)
+  const bpmPresets = Array.from({length: 49}, (_, i) => 60 + i * 5) // 60, 65, 70... 300
   
   // Efecto para sincronizar BPM local con prop
   useEffect(() => {
@@ -30,7 +30,8 @@ const BPMController = ({
     if (bpm < 120) return 'Medio'
     if (bpm < 140) return 'Rápido'
     if (bpm < 160) return 'Muy rápido'
-    return 'Extremadamente rápido'
+    if (bpm < 200) return 'Extremadamente rápido'
+    return 'Hiper rápido'
   }
   
   // Obtener color del BPM
@@ -38,7 +39,17 @@ const BPMController = ({
     if (bpm < 80) return 'text-blue-600'
     if (bpm < 120) return 'text-green-600'
     if (bpm < 160) return 'text-orange-600'
-    return 'text-red-600'
+    if (bpm < 200) return 'text-red-600'
+    return 'text-purple-600'
+  }
+  
+  // Obtener color del slider basado en BPM
+  const getSliderColor = (bpm) => {
+    if (bpm < 80) return '#3b82f6' // blue
+    if (bpm < 120) return '#10b981' // green
+    if (bpm < 160) return '#f59e0b' // orange
+    if (bpm < 200) return '#ef4444' // red
+    return '#8b5cf6' // purple
   }
   
   // Manejar cambio de BPM
@@ -94,14 +105,14 @@ const BPMController = ({
           </button>
         </div>
         
-        <div className="text-center mb-2">
+        <div className="text-center mb-4">
           <span className={`text-3xl font-bold ${getBPMColor(localBPM)}`}>
             {localBPM}
           </span>
           <span className="text-sm text-gray-500 ml-2">BPM</span>
         </div>
         
-        <div className="text-center">
+        <div className="text-center mb-4">
           <span className="text-sm text-gray-600">
             {getBPMDescription(localBPM)}
           </span>
@@ -115,34 +126,51 @@ const BPMController = ({
       
       {/* BPM Slider */}
       <div className="mb-6">
-        <input
-          type="range"
-          min="60"
-          max="200"
-          step="5"
-          value={localBPM}
-          onChange={(e) => handleBPMChange(parseInt(e.target.value))}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-        />
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-gray-600">BPM Global</span>
+          <button
+            onClick={handleResetBPM}
+            className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            title="Reset a BPM original"
+          >
+            <RotateCcw className="h-3 w-3" />
+            <span>Reset</span>
+          </button>
+        </div>
         
-        {/* BPM Presets */}
-        <div className="mt-4">
-          <div className="text-sm font-medium text-gray-600 mb-2">Presets:</div>
-          <div className="flex flex-wrap gap-2">
-            {bpmPresets.map(bpm => (
-              <button
-                key={bpm}
-                onClick={() => handleBPMChange(bpm)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  localBPM === bpm
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {bpm}
-              </button>
-            ))}
-          </div>
+        <div className="text-center mb-4">
+          <span className={`text-3xl font-bold ${getBPMColor(localBPM)}`}>
+            {localBPM}
+          </span>
+          <span className="text-sm text-gray-500 ml-2">BPM</span>
+        </div>
+        
+        <div className="text-center mb-4">
+          <span className="text-sm text-gray-600">
+            {getBPMDescription(localBPM)}
+          </span>
+          {baseBPM !== localBPM && (
+            <span className="text-xs text-gray-400 ml-2">
+              (Original: {baseBPM} BPM)
+            </span>
+          )}
+        </div>
+        
+        {/* Solo el slider sin números */}
+        <div className="px-2">
+          <input
+            type="range"
+            min="60"
+            max="300"
+            step="5"
+            value={localBPM}
+            onChange={(e) => handleBPMChange(parseInt(e.target.value))}
+            className="w-full h-3 rounded-lg appearance-none cursor-pointer slider"
+            style={{
+              '--slider-value': `${((localBPM - 60) / (300 - 60)) * 100}%`,
+              background: `linear-gradient(to right, ${getSliderColor(localBPM)} 0%, ${getSliderColor(localBPM)} ${((localBPM - 60) / (300 - 60)) * 100}%, #e5e7eb ${((localBPM - 60) / (300 - 60)) * 100}%, #e5e7eb 100%)`
+            }}
+          />
         </div>
       </div>
       

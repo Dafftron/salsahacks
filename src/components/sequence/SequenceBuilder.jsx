@@ -26,7 +26,8 @@ import Toast from '../common/Toast'
 import ConfirmModal from '../common/ConfirmModal'
 import VideoPlayer from '../video/VideoPlayer'
 import BPMController from './BPMController'
-import { processVideoSequence } from '../../services/video/videoProcessor'
+// TEMPORALMENTE COMENTADO PARA DIAGNÓSTICO
+// import { processVideoSequence } from '../../services/video/videoProcessor'
 
 const SequenceBuilder = ({ 
   isOpen, 

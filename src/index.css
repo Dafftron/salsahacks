@@ -6,52 +6,84 @@
 .slider {
   -webkit-appearance: none;
   appearance: none;
-  background: transparent;
-  cursor: pointer;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  background: linear-gradient(to right, #3b82f6 0%, #3b82f6 var(--slider-value, 50%), #e5e7eb var(--slider-value, 50%), #e5e7eb 100%);
+}
+
+.slider:hover {
+  opacity: 1;
 }
 
 .slider::-webkit-slider-track {
-  background: #e5e7eb;
   height: 8px;
   border-radius: 4px;
+  background: transparent;
 }
 
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  background: #8b5cf6;
-  height: 20px;
   width: 20px;
+  height: 20px;
   border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #6b7280;
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
 }
 
 .slider::-webkit-slider-thumb:hover {
-  background: #7c3aed;
   transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .slider::-moz-range-track {
-  background: #e5e7eb;
   height: 8px;
   border-radius: 4px;
+  background: transparent;
   border: none;
 }
 
 .slider::-moz-range-thumb {
-  background: #8b5cf6;
-  height: 20px;
   width: 20px;
+  height: 20px;
   border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #6b7280;
   cursor: pointer;
-  border: none;
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
 }
 
 .slider::-moz-range-thumb:hover {
-  background: #7c3aed;
   transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Colores específicos para el slider de BPM */
+.slider.bg-blue-500 {
+  background: linear-gradient(to right, #3b82f6 0%, #3b82f6 var(--slider-value, 50%), #e5e7eb var(--slider-value, 50%), #e5e7eb 100%);
+}
+
+.slider.bg-green-500 {
+  background: linear-gradient(to right, #10b981 0%, #10b981 var(--slider-value, 50%), #e5e7eb var(--slider-value, 50%), #e5e7eb 100%);
+}
+
+.slider.bg-orange-500 {
+  background: linear-gradient(to right, #f59e0b 0%, #f59e0b var(--slider-value, 50%), #e5e7eb var(--slider-value, 50%), #e5e7eb 100%);
+}
+
+.slider.bg-red-500 {
+  background: linear-gradient(to right, #ef4444 0%, #ef4444 var(--slider-value, 50%), #e5e7eb var(--slider-value, 50%), #e5e7eb 100%);
+}
+
+.slider.bg-purple-500 {
+  background: linear-gradient(to right, #8b5cf6 0%, #8b5cf6 var(--slider-value, 50%), #e5e7eb var(--slider-value, 50%), #e5e7eb 100%);
 }
 
 :root {
