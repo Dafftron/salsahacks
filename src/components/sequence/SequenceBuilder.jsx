@@ -51,10 +51,11 @@ const SequenceBuilder = ({
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [showVideoModal, setShowVideoModal] = useState(false)
   
-  // Estados para preview de secuencia
+  // Estados para preview en tiempo real
   const [isCreatingPreview, setIsCreatingPreview] = useState(false)
   const [previewVideoUrl, setPreviewVideoUrl] = useState(null)
-  const [showPreviewModal, setShowPreviewModal] = useState(false)
+  const [previewError, setPreviewError] = useState(null)
+  const [lastPreviewData, setLastPreviewData] = useState(null) // Para cache
 
   // Funciones auxiliares para tags (actualizadas para usar categoriesList)
   const getOrderedTags = (video) => {
@@ -147,6 +148,7 @@ const SequenceBuilder = ({
     sequence,
     sequenceName,
     sequenceDescription,
+    editingSequenceId, // Obtener el ID de la secuencia que se está editando
     addVideoToSequence,
     removeVideoFromSequence,
     reorderSequence,
@@ -244,6 +246,7 @@ const SequenceBuilder = ({
     console.log('📝 Nombre:', sequenceName)
     console.log('📋 Videos en secuencia:', sequence.length)
     console.log('🎨 Estilo:', style)
+    console.log('🔄 Editando secuencia ID:', editingSequenceId)
     
     if (!sequenceName.trim()) {
       addToast('Por favor, añade un nombre a la secuencia', 'error')
@@ -264,10 +267,22 @@ const SequenceBuilder = ({
         createdAt: new Date().toISOString()
       }
       
+      // Si estamos editando una secuencia existente, incluir el ID
+      if (editingSequenceId) {
+        sequenceData.id = editingSequenceId
+        console.log('🔄 Guardando como EDICIÓN de secuencia existente:', editingSequenceId)
+      } else {
+        console.log('🆕 Guardando como NUEVA secuencia')
+      }
+      
       console.log('📦 Datos de secuencia a guardar:', sequenceData)
       await onSaveSequence(sequenceData)
       
-      addToast('✅ Secuencia guardada exitosamente. Ve a "GALERÍA DE SECUENCIAS" para verla.')
+      const message = editingSequenceId 
+        ? '✅ Secuencia actualizada exitosamente'
+        : '✅ Secuencia guardada exitosamente. Ve a "GALERÍA DE SECUENCIAS" para verla.'
+      
+      addToast(message)
       clearSequence()
       if (onToggleBuilder) {
         onToggleBuilder()
@@ -315,6 +330,24 @@ const SequenceBuilder = ({
       console.log('🎵 BPM cambiado a:', newBPM)
     }
   }
+
+  // Efecto para generar preview en tiempo real cuando cambie la secuencia o BPM
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      generateRealtimePreview()
+    }, 500) // Debounce de 500ms para evitar demasiadas regeneraciones
+
+    return () => clearTimeout(timeoutId)
+  }, [sequence, currentBPM]) // Se ejecuta cuando cambia la secuencia o el BPM
+
+  // Cleanup de URLs cuando se desmonte el componente
+  useEffect(() => {
+    return () => {
+      if (previewVideoUrl) {
+        URL.revokeObjectURL(previewVideoUrl)
+      }
+    }
+  }, [previewVideoUrl])
   
   // Función para obtener resoluciones disponibles basadas en la resolución del video
   const getAvailableResolutions = (video) => {
@@ -349,29 +382,39 @@ const SequenceBuilder = ({
     addToast(`🎬 Reproduciendo: ${video.title}`, 'info')
   }
 
-  // Función para manejar preview de secuencia
-  const handlePreviewSequence = async (previewData) => {
+  // Función para generar preview en tiempo real
+  const generateRealtimePreview = async () => {
     if (!sequence || sequence.length === 0) {
-      addToast('No hay videos en la secuencia para previsualizar', 'error')
+      setPreviewVideoUrl(null)
+      setPreviewError(null)
+      return
+    }
+    
+    // Crear clave de cache para verificar si necesitamos regenerar
+    const previewKey = JSON.stringify({
+      videos: sequence.map(v => v.id),
+      useBPMControl: currentBPM !== null,
+      targetBPM: currentBPM,
+      sequenceLength: sequence.length
+    })
+    
+    // Si ya tenemos el mismo preview, no regenerar
+    if (lastPreviewData === previewKey && previewVideoUrl) {
       return
     }
     
     setIsCreatingPreview(true)
-    addToast('🎬 Creando preview de secuencia...', 'info')
+    setPreviewError(null)
     
     try {
-      console.log('🎬 Iniciando preview de secuencia:', previewData)
+      console.log('🎬 Generando preview en tiempo real...')
       
       // Obtener archivos de video desde Firebase Storage
       const videosWithFiles = []
       
-      addToast('📥 Descargando archivos de video...', 'info')
-      
       for (let i = 0; i < sequence.length; i++) {
         const video = sequence[i]
         try {
-          addToast(`📥 Descargando ${i + 1}/${sequence.length}: ${video.title}`, 'info')
-          
           // Obtener el archivo desde Firebase Storage
           const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
           const storage = getStorage()
@@ -386,8 +429,6 @@ const SequenceBuilder = ({
             ...video,
             file: blob
           })
-          
-          console.log(`✅ Archivo descargado para: ${video.title}`)
         } catch (error) {
           console.error(`❌ Error al descargar archivo de ${video.title}:`, error)
           throw new Error(`No se pudo descargar el archivo de ${video.title}`)
@@ -395,27 +436,31 @@ const SequenceBuilder = ({
       }
       
       // Crear preview de secuencia
-      addToast('🎬 Procesando preview de secuencia...', 'info')
       const result = await createSequencePreview(
         videosWithFiles, 
-        previewData.useBPMControl, 
-        previewData.targetBPM
+        currentBPM !== null, 
+        currentBPM
       )
       
       if (result.success) {
+        // Limpiar URL anterior si existe
+        if (previewVideoUrl) {
+          URL.revokeObjectURL(previewVideoUrl)
+        }
+        
         // Crear blob y URL para el preview
         const blob = new Blob([result.data], { type: 'video/mp4' })
         const url = URL.createObjectURL(blob)
         
         setPreviewVideoUrl(url)
-        setShowPreviewModal(true)
-        addToast('✅ Preview de secuencia creado exitosamente', 'success')
+        setLastPreviewData(previewKey)
+        console.log('✅ Preview en tiempo real generado exitosamente')
       } else {
         throw new Error(result.error)
       }
     } catch (error) {
-      console.error('❌ Error al crear preview de secuencia:', error)
-      addToast(`❌ Error al crear preview: ${error.message}`, 'error')
+      console.error('❌ Error al generar preview en tiempo real:', error)
+      setPreviewError(error.message)
     } finally {
       setIsCreatingPreview(false)
     }
@@ -599,6 +644,50 @@ const SequenceBuilder = ({
               </button>
             </div>
           </div>
+
+          {/* Preview en tiempo real */}
+          <div className="mb-6">
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                <Play className="h-5 w-5 text-blue-600 mr-2" />
+                Preview en Tiempo Real
+              </h3>
+              
+              {isCreatingPreview && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                  <span className="text-gray-600">Generando preview...</span>
+                </div>
+              )}
+              
+              {previewError && (
+                <div className="flex items-center justify-center py-8 text-red-600">
+                  <span>❌ Error: {previewError}</span>
+                </div>
+              )}
+              
+              {!isCreatingPreview && !previewError && previewVideoUrl && (
+                <div className="bg-black rounded-lg overflow-hidden">
+                  <VideoPlayer
+                    src={previewVideoUrl}
+                    className="w-full h-64 object-contain"
+                    showControls={true}
+                    autoplay={false}
+                    loop={false}
+                    muted={false}
+                    size="medium"
+                    videoTitle="Preview de Secuencia"
+                  />
+                </div>
+              )}
+              
+              {!isCreatingPreview && !previewError && !previewVideoUrl && sequence.length === 0 && (
+                <div className="flex items-center justify-center py-8 text-gray-500">
+                  <span>Añade videos a la secuencia para ver el preview</span>
+                </div>
+              )}
+            </div>
+          </div>
           
           {/* Control de BPM */}
           {sequence.length > 0 && (
@@ -609,7 +698,6 @@ const SequenceBuilder = ({
                 currentBPM={currentBPM}
                 onProcessSequence={handleProcessSequence}
                 isProcessing={isProcessingSequence}
-                onPreviewSequence={handlePreviewSequence}
               />
             </div>
           )}
@@ -830,7 +918,7 @@ const SequenceBuilder = ({
               className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
             >
               <Save className="w-4 h-4" />
-              <span>Guardar Secuencia</span>
+              <span>{editingSequenceId ? 'Actualizar Secuencia' : 'Guardar Secuencia'}</span>
             </button>
             <button
               onClick={handleCancel}
@@ -884,45 +972,7 @@ const SequenceBuilder = ({
         </div>
       )}
 
-      {/* Modal de Preview de Secuencia */}
-      {showPreviewModal && previewVideoUrl && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowPreviewModal(false)}
-        >
-          <div
-            className="bg-black rounded-lg overflow-hidden w-full max-w-6xl max-h-[95vh] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-900">
-              <h3 className="text-xl font-semibold text-white">Preview de Secuencia</h3>
-              <button
-                onClick={() => setShowPreviewModal(false)}
-                className="text-gray-400 hover:text-white text-2xl font-bold p-2 hover:bg-gray-800 rounded transition-colors"
-              >
-                &times;
-              </button>
-            </div>
 
-            {/* Video Player */}
-            <div className="flex-1 bg-black flex items-center justify-center p-4">
-              <div className="w-full h-full flex items-center justify-center">
-                <VideoPlayer
-                  src={previewVideoUrl}
-                  className="max-w-full max-h-full object-contain"
-                  showControls={true}
-                  autoplay={false}
-                  loop={false}
-                  muted={false}
-                  size="fullscreen"
-                  videoTitle="Preview de Secuencia"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Modales */}
       <ConfirmModal

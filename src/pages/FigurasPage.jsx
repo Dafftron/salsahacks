@@ -49,7 +49,8 @@ import {
   createSequence,
   getSequencesByStyle,
   deleteSequence,
-  subscribeToSequencesByStyle
+  subscribeToSequencesByStyle,
+  updateSequence
 } from '../services/firebase/sequences'
 import { 
   deleteVideo, 
@@ -301,10 +302,21 @@ const FigurasPage = () => {
       }
       
       console.log('🎨 Secuencia con estilo:', sequenceWithStyle)
-      const result = await createSequence(sequenceWithStyle)
-      console.log('✅ Secuencia creada exitosamente:', result)
       
-      addToast('✅ Secuencia guardada exitosamente. Ve a "GALERÍA DE SECUENCIAS" para verla.')
+      // Verificar si es una edición o una nueva secuencia
+      if (sequenceData.id) {
+        // Es una edición - actualizar secuencia existente
+        console.log('🔄 Actualizando secuencia existente:', sequenceData.id)
+        const result = await updateSequence(sequenceData.id, sequenceWithStyle)
+        console.log('✅ Secuencia actualizada exitosamente:', result)
+        addToast('✅ Secuencia actualizada exitosamente')
+      } else {
+        // Es una nueva secuencia - crear nueva
+        console.log('🆕 Creando nueva secuencia')
+        const result = await createSequence(sequenceWithStyle)
+        console.log('✅ Secuencia creada exitosamente:', result)
+        addToast('✅ Secuencia guardada exitosamente. Ve a "GALERÍA DE SECUENCIAS" para verla.')
+      }
     } catch (error) {
       console.error('❌ Error al guardar secuencia:', error)
       addToast('Error al guardar la secuencia', 'error')

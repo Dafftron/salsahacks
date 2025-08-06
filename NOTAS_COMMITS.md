@@ -87,6 +87,41 @@
   - `src/components/sequence/SequenceBuilder.jsx` - Estados de preview, función handlePreviewSequence y modal
   - `src/services/video/videoProcessor.js` - Nueva función createSequencePreview
 
+### 🔧 **CORRECCIÓN CRÍTICA: EDICIÓN DE SECUENCIAS** - 2024-12-19
+- **Problema**: Al editar una secuencia existente y guardar, se creaba una nueva secuencia duplicada en lugar de actualizar la original
+- **Solución**: Implementado sistema de detección de edición vs creación
+- **Funcionalidad**:
+  - Estado `editingSequenceId` en SequenceBuilderContext para rastrear secuencias en edición
+  - Función `loadSequence` actualizada para guardar el ID de la secuencia que se está editando
+  - `handleSaveSequence` detecta automáticamente si es edición o nueva secuencia
+  - Uso de `updateSequence()` para ediciones y `createSequence()` para nuevas secuencias
+  - Botón de guardar cambia texto dinámicamente ("Guardar" vs "Actualizar")
+- **Archivos modificados**:
+  - `src/contexts/SequenceBuilderContext.jsx` - Estado editingSequenceId y lógica de carga
+  - `src/components/sequence/SequenceBuilder.jsx` - Detección de edición y texto dinámico
+  - `src/pages/FigurasPage.jsx` - Importación de updateSequence y lógica de guardado
+
+### 🎬 **PASO 4 COMPLETADO: PREVIEW EN TIEMPO REAL INTEGRADO** - 2024-12-19
+- **Implementado**: Preview en tiempo real integrado en el constructor
+- **Funcionalidad**:
+  - **Eliminado botón** "Previsualizar Secuencia" del BPMController
+  - **Preview automático** que se actualiza cuando cambia la secuencia o BPM
+  - **Debounce de 500ms** para evitar procesamiento excesivo
+  - **Cache inteligente** para no regenerar previews idénticos
+  - **Indicador visual** de "Generando preview..." durante el procesamiento
+- **Interfaz**:
+  - Sección de preview arriba del control BPM
+  - VideoPlayer integrado con controles completos
+  - Estados de carga, error y vacío
+  - Cleanup automático de URLs para evitar memory leaks
+- **Optimizaciones**:
+  - Regeneración solo cuando cambia secuencia o BPM
+  - Limpieza de URLs anteriores antes de crear nuevas
+  - Manejo de errores con feedback visual
+- **Archivos modificados**:
+  - `src/components/sequence/BPMController.jsx` - Eliminado botón y función de preview
+  - `src/components/sequence/SequenceBuilder.jsx` - Preview en tiempo real, estados y lógica
+
 ### 🖼️ **UPGRADE: GENERACIÓN DE THUMBNAILS DE ALTA CALIDAD** - 2024-12-19
 - **Problema**: Los thumbnails generados automáticamente tenían baja resolución y calidad
 - **Solución**: Mejorado significativamente el sistema de generación de thumbnails

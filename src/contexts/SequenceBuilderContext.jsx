@@ -18,6 +18,7 @@ export const SequenceBuilderProvider = ({ children }) => {
   const [sequenceDescription, setSequenceDescription] = useState('')
   const [isBuilderOpen, setIsBuilderOpen] = useState(false)
   const [showAllVideos, setShowAllVideos] = useState(false)
+  const [editingSequenceId, setEditingSequenceId] = useState(null) // ID de la secuencia que se está editando
 
   // Función auxiliar para extraer todos los tags de un objeto de tags por categorías
   const extractAllTags = useCallback((tagsObj) => {
@@ -150,6 +151,7 @@ export const SequenceBuilderProvider = ({ children }) => {
     setSequence([])
     setSequenceName('')
     setSequenceDescription('')
+    setEditingSequenceId(null) // Limpiar también el ID de edición
   }, [])
 
   // Función para alternar el constructor
@@ -173,6 +175,7 @@ export const SequenceBuilderProvider = ({ children }) => {
     setSequence(sequenceData.videos || [])
     setSequenceName(sequenceData.name || '')
     setSequenceDescription(sequenceData.description || '')
+    setEditingSequenceId(sequenceData.id || null) // Guardar el ID para saber que estamos editando
     setIsBuilderOpen(true)
   }, [])
 
@@ -230,6 +233,7 @@ export const SequenceBuilderProvider = ({ children }) => {
     sequenceDescription,
     isBuilderOpen,
     showAllVideos,
+    editingSequenceId, // Exponer el ID de la secuencia que se está editando
     
     // Setters
     setSequenceName,
