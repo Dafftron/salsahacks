@@ -2441,43 +2441,6 @@ src/
   - 🚧 Unificación de páginas pendiente
   - ⏳ Deploy a producción próximo
 
-### 📋 **COMMIT #047 - AGRUPACIÓN VISUAL POR CATEGORÍAS CON SEPARADORES** - 2024-12-19
-- **Problema**: Necesidad de distinguir claramente a qué categoría pertenece cada grupo de videos cuando se agrupan por categorías
-- **Solución**: Implementación de sistema de agrupación visual con títulos, líneas separadoras y contadores
-- **Funcionalidades implementadas**:
-  - **Agrupación Visual**: Videos agrupados por categorías con separadores visuales
-  - **Títulos de Categoría**: Nombres de categorías con colores dinámicos del sistema
-  - **Líneas Separadoras**: Gradientes de color que coinciden con cada categoría
-  - **Contadores Dinámicos**: Muestra el número de videos en cada categoría
-  - **Mensaje de Sin Resultados**: Interfaz amigable cuando no hay videos en categorías seleccionadas
-  - **Botón de Limpiar Filtros**: Acceso rápido para resetear todos los filtros
-- **Interfaz implementada**:
-  - Separadores con diseño moderno y gradientes
-  - Títulos con colores dinámicos del sistema de categorías
-  - Líneas separadoras con gradientes que coinciden con cada categoría
-  - Contadores con badges estilizados
-  - Mensaje de "sin resultados" con icono y botón de acción
-- **Lógica de Agrupación**:
-  - **Función getGroupedVideos()**: Agrupa videos por categorías activas
-  - **Renderizado Condicional**: Solo muestra separadores cuando hay chips activos
-  - **Manejo de Estados Vacíos**: Interfaz especial para cuando no hay resultados
-  - **Compatibilidad**: Funciona con todos los filtros existentes (búsqueda, tags, favoritos)
-- **Archivos modificados**:
-  - `src/pages/FigurasPage.jsx` - Implementación completa del sistema de agrupación visual
-  - `NOTAS_COMMITS.md` - Documentación actualizada
-- **Beneficios**:
-  - **Navegación Clara**: Fácil identificación de videos por categoría
-  - **Organización Visual**: Separación clara entre grupos de videos
-  - **UX Mejorada**: Interfaz intuitiva con contadores y separadores
-  - **Consistencia**: Colores y estilos que coinciden con el sistema de categorías
-  - **Accesibilidad**: Mensajes claros cuando no hay resultados
-- **Estado del proyecto**:
-  - ✅ 47 commits completados exitosamente
-  - ✅ Sistema de agrupación visual implementado
-  - ✅ Separadores de categorías con títulos y líneas
-  - 🚧 Unificación de páginas pendiente
-  - ⏳ Deploy a producción próximo
-
 ### 📋 **COMMIT #044 - ACTUALIZACIÓN COMPLETA DEL PROYECTO** - 2025-01-27
 - **Problema**: Necesidad de actualizar toda la documentación del proyecto para reflejar el estado actual
 - **Solución**: Actualización completa de todos los documentos de seguimiento
@@ -2507,3 +2470,66 @@ src/
   - ✅ Sistema de secuencias funcional (sin BPM)
   - 🚧 Unificación de páginas pendiente
   - ⏳ Deploy a producción próximo
+
+---
+
+## 📊 **ESTADO ACTUAL DEL PROYECTO**
+- **Progreso**: 85% completado
+- **Commits totales**: 47
+- **Última actualización**: Diciembre 2024
+- **Estado**: Sistema funcional con filtros dinámicos y gestión avanzada
+
+---
+
+## 🚀 **COMMIT #047 - MEJORA DE FILTROS CON TÍTULOS CLICKEABLES**
+
+### 📅 **Fecha**: Diciembre 2024
+### 🎯 **Objetivo**: Mejorar la UX de los filtros de categorías
+
+### ✨ **Funcionalidades Implementadas:**
+
+#### 🔧 **Mejoras en la Interfaz de Filtros:**
+- **Títulos de categorías clickeables**: Los títulos de las categorías (Estilo, Dificultad, etc.) ahora son botones clickeables
+- **Indicador visual activo**: Cuando una categoría está activa, muestra "ACTIVO" y cambia de color
+- **Eliminación de chips separados**: Removido el componente CategoryChips separado para una interfaz más limpia
+- **Botones de ordenamiento integrados**: Selector de ordenamiento y botón de favoritos integrados en la interfaz principal
+
+#### 🎨 **Mejoras de UX:**
+- **Interfaz más intuitiva**: Los usuarios pueden hacer click directamente en los títulos de categorías
+- **Feedback visual mejorado**: Cambios de color y escala al hacer hover
+- **Consistencia visual**: Todos los controles de filtrado en un solo lugar
+- **Reducción de complejidad**: Menos componentes separados, más integración
+
+#### 🔄 **Funcionalidad Técnica:**
+- **Función `handleCategoryTitleClick`**: Maneja el toggle de categorías activas
+- **Estado compartido**: Mantiene la funcionalidad de filtrado existente
+- **Compatibilidad**: Mantiene todos los filtros de tags individuales
+
+#### 🐛 **Correcciones de Errores:**
+- **Función `getFilteredVideos`**: Agregada importación faltante del contexto
+- **Función `isVideoInSequence`**: Agregada importación faltante del contexto
+- **Función `isVideoCompatible`**: Agregada importación faltante del contexto
+- **Función `checkCompatibility`**: Agregada importación faltante del contexto
+- **Variable `sequence`**: Corregida referencia de `sequenceVideos` a `sequence`
+
+### 📁 **Archivos Modificados:**
+- `src/pages/FigurasPage.jsx`
+  - Agregada función `handleCategoryTitleClick`
+  - Modificada sección de filtros avanzados
+  - Integrados botones de ordenamiento y favoritos
+  - Removido componente CategoryChips separado
+  - **Corregidas importaciones faltantes del contexto**
+  - **Agregadas todas las funciones necesarias del SequenceBuilderContext**
+
+### 🎯 **Beneficios:**
+1. **UX mejorada**: Interfaz más intuitiva y directa
+2. **Menos clics**: Acceso directo a filtros de categorías
+3. **Mejor organización**: Todos los controles de filtrado en un lugar
+4. **Feedback visual claro**: Indicadores de estado activo
+5. **Mantenimiento simplificado**: Menos componentes separados
+6. **Estabilidad mejorada**: Todas las dependencias del contexto correctamente importadas
+
+### 🔄 **Próximos Pasos:**
+- Testing de la nueva interfaz
+- Posibles ajustes de estilo según feedback
+- Considerar aplicar el mismo patrón a otras páginas

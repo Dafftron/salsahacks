@@ -98,25 +98,39 @@ const FigurasPage = () => {
   // Usar el contexto de constructor de secuencias
   const {
     addVideoToSequence,
-    isVideoInSequence,
+    removeVideoFromSequence,
+    sequence,
+    clearSequence,
     isBuilderOpen,
     toggleBuilder,
-    isVideoCompatible,
-    getFilteredVideos,
     showAllVideos,
     toggleShowAllVideos,
-    loadSequence,
-    sequence,
-    sequenceName
+    getFilteredVideos,
+    isVideoInSequence,
+    isVideoCompatible,
+    checkCompatibility
   } = useSequenceBuilderContext()
+
+  // Hook para categorías
+  const { categoriesList, getColorClasses } = useCategories()
+  
+  // Función para manejar click en título de categoría
+  const handleCategoryTitleClick = (categoryKey) => {
+    setActiveCategoryChips(prev => {
+      // Si ya está activa, la removemos
+      if (prev.includes(categoryKey)) {
+        return prev.filter(chip => chip !== categoryKey)
+      }
+      // Si no está activa, la agregamos
+      return [...prev, categoryKey]
+    })
+  }
   
   // Usar el nuevo sistema de categorías
   const { 
     selectedStyle, 
     setSelectedStyle, 
     availableStyles,
-    categoriesList,
-    getColorClasses,
     getGradientClasses
   } = useCategories('figuras', 'salsa')
 
@@ -851,40 +865,6 @@ const FigurasPage = () => {
   // Aplicar ordenamiento final
   const filteredVideos = sortVideos(baseCompatibilityFiltered)
 
-  // Función para agrupar videos por categorías cuando hay chips activos
-  const getGroupedVideos = () => {
-    // Si no hay chips activos, mostrar todos los videos sin agrupar
-    if (activeCategoryChips.length === 0) {
-      return [{ groupName: null, videos: filteredVideos }]
-    }
-
-    // Agrupar videos por categorías activas
-    const groupedVideos = []
-    
-    activeCategoryChips.forEach(chipKey => {
-      const category = categoriesList.find(cat => cat.key === chipKey)
-      if (!category) return
-      
-      const videosInCategory = filteredVideos.filter(video => hasCategoryTags(video, chipKey))
-      
-      if (videosInCategory.length > 0) {
-        groupedVideos.push({
-          groupName: category.name,
-          groupKey: chipKey,
-          groupColor: category.color,
-          videos: videosInCategory
-        })
-      }
-    })
-
-    // Si no hay videos en ninguna categoría, mostrar mensaje
-    if (groupedVideos.length === 0) {
-      return [{ groupName: 'Sin resultados', videos: [], isEmpty: true }]
-    }
-
-    return groupedVideos
-  }
-
   // Función para descargar video usando Firebase Storage
   const downloadVideo = async (video) => {
     try {
@@ -990,19 +970,7 @@ const FigurasPage = () => {
           )}
         </div>
 
-        {/* Category Chips - Nuevo sistema de filtros */}
-        <CategoryChips
-          videos={videos}
-          onFilterChange={handleCategoryChipFilter}
-          onSortChange={handleSortChange}
-          onShowFavorites={handleShowFavorites}
-          selectedStyle={selectedStyle}
-          activeChips={activeCategoryChips}
-          sortBy={sortBy}
-          showFavorites={showFavorites}
-        />
-
-        {/* Tag Filters - Collapsible (mantener para compatibilidad) */}
+        {/* Tag Filters - Collapsible con títulos clickeables */}
         {categoriesList.length > 0 && (
           <div className="mb-8">
             <button
@@ -1025,7 +993,26 @@ const FigurasPage = () => {
               <div className="space-y-4 bg-gray-50 rounded-lg p-6 border border-gray-200">
                 {categoriesList.map((category) => (
                   <div key={category.key} className="space-y-2">
-                    <h4 className="font-medium text-gray-700 text-center">{category.name}</h4>
+                    {/* Título clickeable de categoría */}
+                    <button
+                      onClick={() => handleCategoryTitleClick(category.key)}
+                      className={`w-full text-center font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 ${
+                        activeCategoryChips.includes(category.key)
+                          ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
+                          : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center space-x-2">
+                        <span>{category.name}</span>
+                        {activeCategoryChips.includes(category.key) && (
+                          <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded">
+                            ACTIVO
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                    
+                    {/* Tags de la categoría */}
                     <div className="flex flex-wrap justify-center gap-2">
                       {category.tags.map(tag => (
                         <button
@@ -1047,6 +1034,38 @@ const FigurasPage = () => {
             </div>
           </div>
         )}
+
+        {/* Botones de ordenamiento y favoritos */}
+        <div className="flex flex-wrap justify-center gap-4 mb-6">
+          {/* Selector de ordenamiento */}
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium text-gray-700">Ordenar por:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => handleSortChange(e.target.value)}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            >
+              <option value="none">Sin ordenar</option>
+              <option value="name">Nombre A-Z</option>
+              <option value="name-desc">Nombre Z-A</option>
+              <option value="rating">Puntuación</option>
+              <option value="likes">Me gusta</option>
+            </select>
+          </div>
+          
+          {/* Botón de favoritos */}
+          <button
+            onClick={() => handleShowFavorites(!showFavorites)}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              showFavorites
+                ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Heart className="h-4 w-4" />
+            <span>{showFavorites ? 'Ocultar Favoritos' : 'Mostrar Solo Favoritos'}</span>
+          </button>
+        </div>
 
 
 
@@ -1270,53 +1289,8 @@ const FigurasPage = () => {
               <p className="text-gray-400 text-sm mt-2">Sube tu primer video de {selectedStyle.toLowerCase()} usando el botón de arriba</p>
             </div>
                      ) : (
-             <div className="space-y-8">
-               {getGroupedVideos().map((group, groupIndex) => (
-                 <div key={groupIndex}>
-                   {/* Separador de categoría con título y línea */}
-                   {group.groupName && !group.isEmpty && (
-                     <div className="mb-6">
-                       <div className="flex items-center space-x-4 mb-4">
-                         <h3 className={`text-2xl font-bold ${getColorClasses(group.groupColor)}`}>
-                           {group.groupName}
-                         </h3>
-                         <div className={`flex-1 h-0.5 ${getGradientClasses(group.groupColor)}`}></div>
-                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${getColorClasses(group.groupColor)} bg-opacity-10`}>
-                           {group.videos.length} {group.videos.length === 1 ? 'video' : 'videos'}
-                         </span>
-                       </div>
-                     </div>
-                   )}
-                   
-                   {/* Mensaje cuando no hay videos en las categorías seleccionadas */}
-                   {group.isEmpty && (
-                     <div className="text-center py-12">
-                       <div className="mb-4">
-                         <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33" />
-                         </svg>
-                       </div>
-                       <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron videos</h3>
-                       <p className="text-gray-500 mb-4">
-                         No hay videos que coincidan con las categorías seleccionadas: <strong>{activeCategoryChips.map(chipKey => categoriesList.find(cat => cat.key === chipKey)?.name || chipKey).join(', ')}</strong>
-                       </p>
-                       <button
-                         onClick={() => {
-                           setActiveCategoryChips([])
-                           setSortBy('none')
-                           setShowFavorites(false)
-                         }}
-                         className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:from-pink-600 hover:to-purple-600 transition-all duration-200"
-                       >
-                         Limpiar filtros
-                       </button>
-                     </div>
-                   )}
-                   
-                   {/* Galería de videos del grupo */}
-                   {!group.isEmpty && (
-                     <div className={`grid gap-6 ${getVideoConfig().grid}`}>
-                       {group.videos.map((video) => (
+             <div className={`grid gap-6 ${getVideoConfig().grid}`}>
+               {filteredVideos.map((video) => (
                 <div 
                   key={video.id} 
                   className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${
@@ -1902,12 +1876,7 @@ const FigurasPage = () => {
                   </div>
                 </div>
               ))}
-                       </div>
-                     )}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            </div>
            )}
          </div>
         )}
