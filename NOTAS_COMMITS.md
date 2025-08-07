@@ -153,6 +153,28 @@
   - Mejor experiencia visual
   - Controles accesibles
 
+### 🎬 **COMMIT #071: REDUCCIÓN DE TAMAÑO DE BOTONES ANTERIOR/SIGUIENTE** - 2024-12-19
+- **Problema**: Los botones "Anterior" y "Siguiente" en el reproductor de secuencias se cortaban
+- **Solución**: Reducido el tamaño de los botones a la mitad para evitar cortes
+- **Cambios**:
+  - **Botón Anterior**: 
+    - Padding reducido de `p-3` a `p-2`
+    - Círculo reducido de `w-6 h-6` a `w-3 h-3`
+    - Icono reducido de `w-3 h-3` a `w-1.5 h-1.5`
+    - Texto reducido de `text-sm` a `text-xs`
+  - **Botón Siguiente**: 
+    - Padding reducido de `p-3` a `p-2`
+    - Círculo reducido de `w-6 h-6` a `w-3 h-3`
+    - Icono reducido de `w-3 h-3` a `w-1.5 h-1.5`
+    - Texto reducido de `text-sm` a `text-xs`
+- **Archivos modificados**:
+  - `src/components/sequence/SequenceVideoPlayer.jsx` - Tamaños de botones de navegación
+- **Beneficios**:
+  - Botones más compactos y elegantes
+  - No se cortan en el modal
+  - Mantienen funcionalidad completa
+  - Mejor experiencia visual
+
 ### 🎬 **FEATURE: GENERACIÓN DE VIDEOS CON AJUSTE DE BPM** - 2024-12-19
 - **Problema**: No existía funcionalidad para generar videos combinados con ajuste automático de BPM
 - **Solución**: Implementado sistema completo de generación de videos con procesamiento de BPM

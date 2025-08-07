@@ -527,7 +527,7 @@ const SequenceVideoPlayer = ({
               <button
                 onClick={goToPreviousVideo}
                 disabled={currentVideoIndex === 0}
-                className={`p-3 rounded-full transition-colors z-10 ${
+                className={`p-2 rounded-full transition-colors z-10 ${
                   currentVideoIndex === 0 
                     ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
                     : 'bg-black/60 text-white hover:bg-black/80'
@@ -535,10 +535,10 @@ const SequenceVideoPlayer = ({
                 title="Video anterior (Ctrl+←)"
               >
                 <div className="flex items-center space-x-1">
-                  <div className="w-6 h-6 rounded-full border-2 border-current flex items-center justify-center">
-                    <SkipBack className="w-3 h-3" />
+                  <div className="w-3 h-3 rounded-full border-2 border-current flex items-center justify-center">
+                    <SkipBack className="w-1.5 h-1.5" />
                   </div>
-                  <span className="text-sm font-medium">Anterior</span>
+                  <span className="text-xs font-medium">Anterior</span>
                 </div>
               </button>
 
@@ -582,7 +582,7 @@ const SequenceVideoPlayer = ({
               <button
                 onClick={goToNextVideo}
                 disabled={currentVideoIndex === videos.length - 1}
-                className={`p-3 rounded-full transition-colors z-10 ${
+                className={`p-2 rounded-full transition-colors z-10 ${
                   currentVideoIndex === videos.length - 1 
                     ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
                     : 'bg-black/60 text-white hover:bg-black/80'
@@ -590,9 +590,9 @@ const SequenceVideoPlayer = ({
                 title="Siguiente video (Ctrl+→)"
               >
                 <div className="flex items-center space-x-1">
-                  <span className="text-sm font-medium">Siguiente</span>
-                  <div className="w-6 h-6 rounded-full border-2 border-current flex items-center justify-center">
-                    <SkipForward className="w-3 h-3" />
+                  <span className="text-xs font-medium">Siguiente</span>
+                  <div className="w-3 h-3 rounded-full border-2 border-current flex items-center justify-center">
+                    <SkipForward className="w-1.5 h-1.5" />
                   </div>
                 </div>
               </button>
