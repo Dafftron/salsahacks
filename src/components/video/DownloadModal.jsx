@@ -63,59 +63,71 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
       
       let result
       
-             // Verificar si es una secuencia o un video individual
-       if (video.videos && Array.isArray(video.videos)) {
-         // Es una secuencia
-         console.log('🎬 Procesando secuencia...')
-         result = await generateSequenceVideo(video, format, resolution)
-       } else if (video.file) {
-         // Es un video individual
-         console.log('🎬 Procesando video individual...')
-         result = await convertVideoFormat(video.file, format, resolution)
-       } else {
-         throw new Error('Formato de video no válido')
-       }
+      try {
+        // Verificar si es una secuencia o un video individual
+        if (video.videos && Array.isArray(video.videos)) {
+          // Es una secuencia
+          console.log('🎬 Procesando secuencia...')
+          result = await generateSequenceVideo(video, format, resolution)
+        } else if (video.file) {
+          // Es un video individual
+          console.log('🎬 Procesando video individual...')
+          result = await convertVideoFormat(video.file, format, resolution)
+        } else {
+          throw new Error('Formato de video no válido')
+        }
+        
+        // Limpiar intervalo y establecer progreso al 100%
+        clearInterval(progressInterval)
+        setProgress(100)
+        
+        // Pequeña pausa para mostrar el 100%
+        await new Promise(resolve => setTimeout(resolve, 200))
+      } catch (error) {
+        clearInterval(progressInterval)
+        throw error
+      }
       
-      clearInterval(progressInterval)
-      setProgress(100)
-      
-             if (result.success) {
-         // Crear blob y descargar
-         const blob = new Blob([result.data], { type: `video/${result.format || format}` })
-         
-         try {
-           const dirHandle = await selectDownloadFolder()
-           
-           if (dirHandle) {
-             // Usar File System Access API
-             const fileName = `${video.title || video.name}_${resolution}.${result.format || format}`
-             const fileHandle = await dirHandle.getFileHandle(fileName, { create: true })
-             const writable = await fileHandle.createWritable()
-             await writable.write(blob)
-             await writable.close()
-             console.log('✅ Video guardado en carpeta seleccionada')
-           } else {
-             // Descarga normal
-             const url = URL.createObjectURL(blob)
-             const a = document.createElement('a')
-             a.href = url
-             a.download = `${video.title || video.name}_${resolution}.${result.format || format}`
-             document.body.appendChild(a)
-             a.click()
-             document.body.removeChild(a)
-             URL.revokeObjectURL(url)
-             console.log('✅ Video descargado correctamente')
-           }
-           
-           onDownloadComplete && onDownloadComplete()
-           onClose()
-         } catch (error) {
-           console.error('Error al guardar archivo:', error)
-           throw new Error('Error al guardar el archivo')
-         }
-       } else {
-         throw new Error(result.error)
-       }
+                          if (result.success) {
+          // Crear blob y descargar
+          const mimeType = result.format === 'zip' ? 'application/zip' : `video/${result.format || format}`
+          const blob = new Blob([result.data], { type: mimeType })
+          
+          try {
+            const dirHandle = await selectDownloadFolder()
+            
+            if (dirHandle) {
+              // Usar File System Access API
+              const extension = result.format === 'zip' ? 'zip' : (result.format || format)
+              const fileName = `${video.title || video.name}_${resolution}.${extension}`
+              const fileHandle = await dirHandle.getFileHandle(fileName, { create: true })
+              const writable = await fileHandle.createWritable()
+              await writable.write(blob)
+              await writable.close()
+              console.log('✅ Archivo guardado en carpeta seleccionada')
+            } else {
+              // Descarga normal
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              const extension = result.format === 'zip' ? 'zip' : (result.format || format)
+              a.download = `${video.title || video.name}_${resolution}.${extension}`
+              document.body.appendChild(a)
+              a.click()
+              document.body.removeChild(a)
+              URL.revokeObjectURL(url)
+              console.log('✅ Archivo descargado correctamente')
+            }
+            
+            onDownloadComplete && onDownloadComplete()
+            onClose()
+          } catch (error) {
+            console.error('Error al guardar archivo:', error)
+            throw new Error('Error al guardar el archivo')
+          }
+        } else {
+          throw new Error(result.error)
+        }
     } catch (error) {
       console.error('❌ Error al descargar video:', error)
       alert(`Error al procesar video: ${error.message}`)

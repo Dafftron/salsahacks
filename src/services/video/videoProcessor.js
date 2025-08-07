@@ -6,14 +6,23 @@ let ffmpeg = null
 
 // Inicializar FFmpeg
 export const initFFmpeg = async () => {
-  if (ffmpeg) return ffmpeg
+  if (ffmpeg && ffmpeg.FS) {
+    console.log('✅ FFmpeg ya inicializado, reutilizando instancia')
+    return ffmpeg
+  }
   
   console.log('🎬 Inicializando FFmpeg...')
   ffmpeg = new FFmpeg()
   
-  await ffmpeg.load()
-  console.log('✅ FFmpeg inicializado correctamente')
-  return ffmpeg
+  try {
+    await ffmpeg.load()
+    console.log('✅ FFmpeg inicializado correctamente')
+    return ffmpeg
+  } catch (error) {
+    console.error('❌ Error al inicializar FFmpeg:', error)
+    ffmpeg = null
+    throw new Error('No se pudo inicializar FFmpeg')
+  }
 }
 
 // Ajustar velocidad de un video
@@ -22,6 +31,11 @@ export const adjustVideoSpeed = async (videoFile, speedFactor, outputName = 'out
     console.log(`🎬 Ajustando velocidad del video: factor ${speedFactor}`)
     
     const ffmpegInstance = await initFFmpeg()
+    
+    // Verificar que FFmpeg esté correctamente inicializado
+    if (!ffmpegInstance || !ffmpegInstance.FS) {
+      throw new Error('FFmpeg no está correctamente inicializado')
+    }
     
     // Escribir archivo de entrada
     ffmpegInstance.FS('writeFile', 'input.mp4', await fetchFile(videoFile))
@@ -86,6 +100,11 @@ export const concatenateVideos = async (videoFiles, outputName = 'concatenated.m
     console.log(`🎬 Concatenando ${videoFiles.length} videos...`)
     
     const ffmpegInstance = await initFFmpeg()
+    
+    // Verificar que FFmpeg esté correctamente inicializado
+    if (!ffmpegInstance || !ffmpegInstance.FS) {
+      throw new Error('FFmpeg no está correctamente inicializado')
+    }
     
     // Escribir archivos de entrada
     for (let i = 0; i < videoFiles.length; i++) {
@@ -283,111 +302,119 @@ export const createSequencePreview = async (videos, useBPMControl = false, targe
     const ffmpegInstance = await initFFmpeg()
     const processedVideos = []
     
-         // Procesar cada video según el estado del control BPM
-     for (let i = 0; i < videos.length; i++) {
-       const video = videos[i]
-       
-       // Descargar video desde Firebase Storage si no tiene file
-       let videoBlob
-       if (video.file) {
-         videoBlob = video.file
-       } else if (video.videoUrl) {
-         console.log(`📥 Descargando video ${i + 1}/${videos.length} desde URL: ${video.videoUrl}`)
-         
-         try {
-           // Intentar descarga directa primero
-           const response = await fetch(video.videoUrl, {
-             mode: 'cors',
-             credentials: 'omit',
-             headers: {
-               'Accept': 'video/*,*/*;q=0.9',
-               'Cache-Control': 'no-cache'
-             }
-           })
-           
-           if (!response.ok) {
-             throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-           }
-           
-           videoBlob = await response.blob()
-           console.log(`✅ Video descargado exitosamente: ${videoBlob.size} bytes`)
-         } catch (fetchError) {
-           console.warn(`⚠️ Error en fetch directo: ${fetchError.message}`)
-           
-           // Si falla, intentar con Firebase Storage SDK
-           try {
-             const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
-             const storage = getStorage()
-             
-             // Si videoUrl es una URL completa, extraer la ruta
-             let storagePath = video.videoUrl
-             if (video.videoUrl.includes('firebasestorage.googleapis.com')) {
-               // Extraer la ruta del bucket de la URL
-               const urlParts = video.videoUrl.split('/o/')
-               if (urlParts.length > 1) {
-                 storagePath = decodeURIComponent(urlParts[1].split('?')[0])
-               }
-             }
-             
-             const videoRef = ref(storage, storagePath)
-             const downloadURL = await getDownloadURL(videoRef)
-             
-             const response = await fetch(downloadURL)
-             if (!response.ok) {
-               throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-             }
-             
-             videoBlob = await response.blob()
-             console.log(`✅ Video descargado via Firebase SDK: ${videoBlob.size} bytes`)
-           } catch (storageError) {
-             throw new Error(`Error descargando video ${i + 1} (${video.title}): ${storageError.message}`)
-           }
-         }
-       } else {
-         throw new Error(`Video ${i + 1} (${video.title}) no tiene archivo ni URL asociada`)
-       }
-       
-       if (useBPMControl && targetBPM && video.bpm) {
-         // Ajustar velocidad según BPM
-         const speedFactor = targetBPM / video.bpm
-         console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM}, factor: ${speedFactor.toFixed(2)}x)`)
-         
-         const result = await adjustVideoSpeed(videoBlob, speedFactor, `preview${i}.mp4`)
-         if (!result.success) {
-           throw new Error(`Error al procesar video ${i + 1} (${video.title}): ${result.error}`)
-         }
-         processedVideos.push(result.data)
-               } else {
-          // Usar video original sin ajuste
-          console.log(`🎬 Usando video ${i + 1}/${videos.length}: ${video.title} (BPM original: ${video.bpm})`)
-          // Para videos sin ajuste, necesitamos los datos del blob, no fetchFile
-          processedVideos.push(videoBlob)
+    // Optimización: Si no hay control BPM, procesar más rápido
+    const needsProcessing = useBPMControl && targetBPM
+    
+    // Procesar cada video según el estado del control BPM
+    for (let i = 0; i < videos.length; i++) {
+      const video = videos[i]
+      
+      // Descargar video desde Firebase Storage si no tiene file
+      let videoBlob
+      if (video.file) {
+        videoBlob = video.file
+        console.log(`✅ Video ${i + 1}/${videos.length}: ${video.title} (archivo local)`)
+      } else if (video.videoUrl) {
+        console.log(`📥 Descargando video ${i + 1}/${videos.length} desde URL...`)
+        
+        try {
+          // Intentar descarga directa primero
+          const response = await fetch(video.videoUrl, {
+            mode: 'cors',
+            credentials: 'omit',
+            headers: {
+              'Accept': 'video/*,*/*;q=0.9',
+              'Cache-Control': 'no-cache'
+            }
+          })
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          }
+          
+          videoBlob = await response.blob()
+          console.log(`✅ Video ${i + 1}/${videos.length}: ${video.title} descargado (${videoBlob.size} bytes)`)
+        } catch (fetchError) {
+          console.warn(`⚠️ Error en fetch directo: ${fetchError.message}`)
+          
+          // Si falla, intentar con Firebase Storage SDK
+          try {
+            const { getStorage, ref, getDownloadURL } = await import('firebase/storage')
+            const storage = getStorage()
+            
+            // Si videoUrl es una URL completa, extraer la ruta
+            let storagePath = video.videoUrl
+            if (video.videoUrl.includes('firebasestorage.googleapis.com')) {
+              // Extraer la ruta del bucket de la URL
+              const urlParts = video.videoUrl.split('/o/')
+              if (urlParts.length > 1) {
+                storagePath = decodeURIComponent(urlParts[1].split('?')[0])
+              }
+            }
+            
+            const videoRef = ref(storage, storagePath)
+            const downloadURL = await getDownloadURL(videoRef)
+            
+            const response = await fetch(downloadURL)
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+            }
+            
+            videoBlob = await response.blob()
+            console.log(`✅ Video ${i + 1}/${videos.length}: ${video.title} descargado via Firebase (${videoBlob.size} bytes)`)
+          } catch (storageError) {
+            throw new Error(`Error descargando video ${i + 1} (${video.title}): ${storageError.message}`)
+          }
         }
-     }
+      } else {
+        throw new Error(`Video ${i + 1} (${video.title}) no tiene archivo ni URL asociada`)
+      }
+      
+      if (needsProcessing && video.bpm) {
+        // Ajustar velocidad según BPM
+        const speedFactor = targetBPM / video.bpm
+        console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM}, factor: ${speedFactor.toFixed(2)}x)`)
+        
+        const result = await adjustVideoSpeed(videoBlob, speedFactor, `preview${i}.mp4`)
+        if (!result.success) {
+          throw new Error(`Error al procesar video ${i + 1} (${video.title}): ${result.error}`)
+        }
+        processedVideos.push(result.data)
+      } else {
+        // Usar video original sin ajuste (más rápido)
+        console.log(`🎬 Usando video ${i + 1}/${videos.length}: ${video.title} (sin procesamiento)`)
+        processedVideos.push(videoBlob)
+      }
+    }
     
-    // Concatenar videos
-    console.log('🎬 Concatenando videos para preview...')
-    
-         // Escribir videos procesados
+         // Concatenar videos
+     console.log('🎬 Concatenando videos para preview...')
+     
+     // Escribir videos procesados
      for (let i = 0; i < processedVideos.length; i++) {
        const videoData = processedVideos[i]
        // Si es un blob, convertirlo a Uint8Array, si ya es Uint8Array, usarlo directamente
        const dataToWrite = videoData instanceof Blob ? await fetchFile(videoData) : videoData
        ffmpegInstance.FS('writeFile', `preview${i}.mp4`, dataToWrite)
+       console.log(`📝 Video ${i + 1}/${processedVideos.length} escrito al sistema de archivos`)
      }
-    
-    // Crear archivo de lista
-    const fileList = processedVideos.map((_, i) => `file preview${i}.mp4`).join('\n')
-    ffmpegInstance.FS('writeFile', 'filelist.txt', fileList)
-    
-    // Concatenar
-    await ffmpegInstance.run(
-      '-f', 'concat',
-      '-safe', '0',
-      '-i', 'filelist.txt',
-      '-c', 'copy',
-      'sequence_preview.mp4'
-    )
+     
+     // Crear archivo de lista
+     const fileList = processedVideos.map((_, i) => `file preview${i}.mp4`).join('\n')
+     ffmpegInstance.FS('writeFile', 'filelist.txt', fileList)
+     console.log('📋 Lista de archivos creada')
+     
+     // Concatenar (optimizado para velocidad)
+     console.log('🔗 Iniciando concatenación...')
+     await ffmpegInstance.run(
+       '-f', 'concat',
+       '-safe', '0',
+       '-i', 'filelist.txt',
+       '-c', 'copy',
+       '-avoid_negative_ts', 'make_zero',
+       'sequence_preview.mp4'
+     )
+     console.log('✅ Concatenación completada')
     
     // Leer resultado final
     const finalData = ffmpegInstance.FS('readFile', 'sequence_preview.mp4')
@@ -499,6 +526,86 @@ export const convertVideoFormat = async (videoFile, format = 'mp4', resolution =
   }
 }
 
+// Descarga directa de secuencia sin FFmpeg (más rápida)
+export const downloadSequenceDirect = async (sequence) => {
+  try {
+    console.log(`📥 Descarga directa de secuencia: ${sequence.name}`)
+    
+    if (!sequence.videos || sequence.videos.length === 0) {
+      throw new Error('La secuencia no tiene videos')
+    }
+    
+    // Si solo hay un video, descargarlo directamente
+    if (sequence.videos.length === 1) {
+      const video = sequence.videos[0]
+      if (video.file) {
+        return {
+          success: true,
+          data: video.file,
+          format: 'mp4',
+          error: null
+        }
+      } else if (video.videoUrl) {
+        const response = await fetch(video.videoUrl)
+        if (!response.ok) throw new Error('Error descargando video')
+        const blob = await response.blob()
+        return {
+          success: true,
+          data: blob,
+          format: 'mp4',
+          error: null
+        }
+      }
+    }
+    
+         // Para múltiples videos, crear un archivo ZIP con todos los videos
+     const JSZip = await import('jszip')
+     const zip = new JSZip.default()
+     
+     // Obtener nombre base de la secuencia (limpio para nombres de archivo)
+     const sequenceName = (sequence.name || sequence.title || 'secuencia')
+       .replace(/[^a-zA-Z0-9\s]/g, '') // Remover caracteres especiales
+       .replace(/\s+/g, '_') // Reemplazar espacios con guiones bajos
+       .toLowerCase()
+     
+     for (let i = 0; i < sequence.videos.length; i++) {
+       const video = sequence.videos[i]
+       let videoBlob
+       
+       if (video.file) {
+         videoBlob = video.file
+       } else if (video.videoUrl) {
+         const response = await fetch(video.videoUrl)
+         if (!response.ok) throw new Error(`Error descargando video ${i + 1}`)
+         videoBlob = await response.blob()
+       } else {
+         throw new Error(`Video ${i + 1} no tiene archivo ni URL`)
+       }
+       
+       // Nombrar archivo con formato: secuencia_1.mp4, secuencia_2.mp4, etc.
+       const fileName = `${sequenceName}_${i + 1}.mp4`
+       zip.file(fileName, videoBlob)
+       console.log(`📁 Agregando al ZIP: ${fileName}`)
+     }
+    
+    const zipBlob = await zip.generateAsync({ type: 'blob' })
+    return {
+      success: true,
+      data: zipBlob,
+      format: 'zip',
+      error: null
+    }
+  } catch (error) {
+    console.error('❌ Error en descarga directa:', error)
+    return {
+      success: false,
+      data: null,
+      format: null,
+      error: error.message
+    }
+  }
+}
+
 // Generar video final de secuencia para descarga
 export const generateSequenceVideo = async (sequence, format = 'mp4', resolution = '720p') => {
   try {
@@ -515,21 +622,41 @@ export const generateSequenceVideo = async (sequence, format = 'mp4', resolution
     
     console.log(`🎵 Configuración BPM: ${useBPMControl ? 'Activado' : 'Desactivado'}, BPM: ${targetBPM}`)
     
-    // Generar el video combinado
+    // Si no hay control BPM, usar descarga directa (más rápida)
+    if (!useBPMControl || !targetBPM) {
+      console.log('🚀 Usando descarga directa (sin FFmpeg)')
+      return await downloadSequenceDirect(sequence)
+    }
+    
+    // Intentar inicializar FFmpeg con timeout
+    console.log('🎬 Intentando inicializar FFmpeg...')
+    const ffmpegPromise = initFFmpeg()
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout inicializando FFmpeg')), 10000)
+    )
+    
+    try {
+      await Promise.race([ffmpegPromise, timeoutPromise])
+    } catch (error) {
+      console.warn('⚠️ FFmpeg no pudo inicializarse, usando descarga directa')
+      return await downloadSequenceDirect(sequence)
+    }
+    
+    // Generar el video combinado con FFmpeg
     const result = await createSequencePreview(sequence.videos, useBPMControl, targetBPM)
     
     if (!result.success) {
       throw new Error(`Error generando video: ${result.error}`)
     }
     
-         // Si se requiere un formato específico o resolución diferente, convertir
-     if (format !== 'mp4' || resolution !== '720p') {
-       console.log(`🔄 Convirtiendo a formato ${format} con resolución ${resolution}...`)
-       const convertResult = await convertVideoFormat(
-         new Blob([result.data], { type: 'video/mp4' }), 
-         format, 
-         resolution
-       )
+    // Si se requiere un formato específico o resolución diferente, convertir
+    if (format !== 'mp4' || resolution !== '720p') {
+      console.log(`🔄 Convirtiendo a formato ${format} con resolución ${resolution}...`)
+      const convertResult = await convertVideoFormat(
+        new Blob([result.data], { type: 'video/mp4' }), 
+        format, 
+        resolution
+      )
       
       if (!convertResult.success) {
         throw new Error(`Error convirtiendo formato: ${convertResult.error}`)
