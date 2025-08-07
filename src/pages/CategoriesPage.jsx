@@ -28,7 +28,7 @@ const CategoriesPage = () => {
         salsa: {
           name: 'SALSA',
           icon: Music,
-          color: 'pink',
+          color: 'salsa',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -55,7 +55,7 @@ const CategoriesPage = () => {
         bachata: {
           name: 'BACHATA',
           icon: Heart,
-          color: 'red',
+          color: 'bachata',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -82,7 +82,7 @@ const CategoriesPage = () => {
         kizomba: {
           name: 'KIZOMBA',
           icon: Zap,
-          color: 'yellow',
+          color: 'kizomba',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -109,7 +109,7 @@ const CategoriesPage = () => {
         zouk: {
           name: 'ZOUK',
           icon: Star,
-          color: 'purple',
+          color: 'zouk',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -136,7 +136,7 @@ const CategoriesPage = () => {
         merengue: {
           name: 'MERENGUE',
           icon: Sun,
-          color: 'orange',
+          color: 'merengue',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -166,16 +166,16 @@ const CategoriesPage = () => {
       name: 'ESCUELA',
       icon: GraduationCap,
       styles: {
-        salsa: {
-          name: 'SALSA',
-          icon: Music,
-          color: 'pink',
-          categories: {
-            nivel: {
-              name: 'NIVEL',
-              color: 'green',
-              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
-            },
+              salsa: {
+        name: 'SALSA',
+        icon: Music,
+        color: 'salsa',
+        categories: {
+          nivel: {
+            name: 'NIVEL',
+            color: 'green',
+            tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+          },
             tipo: {
               name: 'TIPO DE CURSO',
               color: 'blue',
@@ -199,16 +199,16 @@ const CategoriesPage = () => {
       name: 'EVENTOS',
       icon: Calendar,
       styles: {
-        salsa: {
-          name: 'SALSA',
-          icon: Music,
-          color: 'pink',
-          categories: {
-            tipo: {
-              name: 'TIPO DE EVENTO',
-              color: 'green',
-              tags: ['Competición', 'Encuentro', 'Congreso', 'Workshop', 'Fiesta']
-            },
+              salsa: {
+        name: 'SALSA',
+        icon: Music,
+        color: 'salsa',
+        categories: {
+          tipo: {
+            name: 'TIPO DE EVENTO',
+            color: 'green',
+            tags: ['Competición', 'Encuentro', 'Congreso', 'Workshop', 'Fiesta']
+          },
             ubicacion: {
               name: 'UBICACIÓN',
               color: 'blue',
@@ -232,6 +232,14 @@ const CategoriesPage = () => {
 
   const getColorClasses = (color) => {
     const colorMap = {
+      // Colores específicos de estilos de baile
+      salsa: 'bg-orange-500 text-white',
+      bachata: 'bg-emerald-500 text-white',
+      merengue: 'bg-cyan-500 text-white',
+      zouk: 'bg-violet-500 text-white',
+      kizomba: 'bg-amber-500 text-white',
+      
+      // Colores genéricos para categorías
       pink: 'bg-pink-500 text-white',
       red: 'bg-red-500 text-white',
       yellow: 'bg-yellow-500 text-white',
@@ -245,6 +253,14 @@ const CategoriesPage = () => {
 
   const getGradientClasses = (color) => {
     const gradientMap = {
+      // Gradientes específicos de estilos de baile
+      salsa: 'bg-gradient-to-r from-orange-400 to-pink-500',
+      bachata: 'bg-gradient-to-r from-emerald-400 to-teal-600',
+      merengue: 'bg-gradient-to-r from-cyan-400 to-blue-600',
+      zouk: 'bg-gradient-to-r from-violet-400 to-indigo-600',
+      kizomba: 'bg-gradient-to-r from-amber-400 to-orange-600',
+      
+      // Gradientes genéricos para categorías
       pink: 'bg-gradient-to-r from-orange-500 to-pink-500',
       red: 'bg-gradient-to-r from-red-500 to-pink-500',
       yellow: 'bg-gradient-to-r from-yellow-500 to-orange-500',

@@ -62,10 +62,10 @@ const categoryStructure = {
           }
         }
       },
-             kizomba: {
-         name: 'KIZOMBA',
-         icon: 'Zap',
-         color: 'kizomba',
+      kizomba: {
+        name: 'KIZOMBA',
+        icon: 'Zap',
+        color: 'kizomba',
         categories: {
           estilo: {
             name: 'ESTILO',
@@ -89,10 +89,10 @@ const categoryStructure = {
           }
         }
       },
-             zouk: {
-         name: 'ZOUK',
-         icon: 'Star',
-         color: 'zouk',
+      zouk: {
+        name: 'ZOUK',
+        icon: 'Star',
+        color: 'zouk',
         categories: {
           estilo: {
             name: 'ESTILO',
@@ -189,23 +189,23 @@ const categoryStructure = {
         categories: {
           tipo: {
             name: 'TIPO DE EVENTO',
-            color: 'blue',
-            tags: ['Congreso', 'Festival', 'Workshop', 'Social', 'Competencia']
+            color: 'green',
+            tags: ['Competición', 'Encuentro', 'Congreso', 'Workshop', 'Fiesta']
           },
           ubicacion: {
             name: 'UBICACIÓN',
-            color: 'green',
+            color: 'blue',
             tags: ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao']
           },
-          duracion: {
-            name: 'DURACIÓN',
+          nivel: {
+            name: 'NIVEL',
             color: 'orange',
-            tags: ['1 día', '2 días', '3 días', '1 semana', 'Fines de semana']
+            tags: ['Todos los niveles', 'Intermedio-Avanzado', 'Solo avanzado']
           },
-          organizador: {
-            name: 'ORGANIZADOR',
+          fecha: {
+            name: 'FECHA',
             color: 'purple',
-            tags: ['SalsaHacks', 'Dance Studio', 'Eventos Salsa', 'Congresos Pro']
+            tags: ['Este mes', 'Próximo mes', 'Este trimestre', 'Este año']
           }
         }
       }

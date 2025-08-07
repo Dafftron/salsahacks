@@ -251,6 +251,29 @@
   - Interfaz completamente consistente
   - Mejor experiencia de usuario
 
+### 🏷️ **COMMIT #076: CATEGORÍAS Y TAGS ÚNICOS POR ESTILO DE BAILE** - 2024-12-19
+- **Problema**: Las categorías y tags no eran específicos para cada estilo de baile, y los colores no coincidían con la pestaña de Categorías
+- **Solución**: Sincronizado completamente las categorías y tags con la pestaña de Categorías y aplicado colores corporativos
+- **Cambios**:
+  - **Categorías sincronizadas**: Usar exactamente las mismas categorías y tags que están en CategoriesPage.jsx
+  - **Colores corporativos**: Aplicados los nuevos colores corporativos a CategoriesPage.jsx
+  - **Estructura consistente**: Cada estilo tiene sus propias categorías únicas:
+    - **Salsa**: Estilo, Subestilo/Técnica, Tipo de Figura, Manos/Técnica de Agarre
+    - **Bachata**: Estilo (Bachata dominicana, moderna, sensual, urbana), Subestilo/Técnica, Tipo de Figura, Manos/Técnica de Agarre
+    - **Kizomba**: Estilo (Kizomba tradicional, urbana, Tarraxinha, Semba), Subestilo/Técnica, Tipo de Figura, Manos/Técnica de Agarre
+    - **Zouk**: Estilo (Zouk brasileño, flow, neofusion, tradicional), Subestilo/Técnica, Tipo de Figura, Manos/Técnica de Agarre
+    - **Merengue**: Estilo (Merengue dominicano, tradicional, moderno), Subestilo/Técnica, Tipo de Figura, Manos/Técnica de Agarre
+  - **Modal de subida**: Usa las categorías del estilo seleccionado automáticamente
+  - **Modal de edición**: Incluye tags iniciales y finales específicos del estilo
+- **Archivos modificados**:
+  - `src/hooks/useCategories.js` - Categorías sincronizadas con CategoriesPage.jsx
+  - `src/pages/CategoriesPage.jsx` - Colores corporativos aplicados
+- **Beneficios**:
+  - Cada estilo tiene su identidad única y completa
+  - Categorías y tags consistentes en toda la aplicación
+  - Modal de subida y edición usan las categorías correctas del estilo
+  - Interfaz visualmente coherente con colores corporativos
+
 ### 🎬 **FEATURE: GENERACIÓN DE VIDEOS CON AJUSTE DE BPM** - 2024-12-19
 - **Problema**: No existía funcionalidad para generar videos combinados con ajuste automático de BPM
 - **Solución**: Implementado sistema completo de generación de videos con procesamiento de BPM
