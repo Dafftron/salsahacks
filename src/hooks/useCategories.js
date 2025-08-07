@@ -62,10 +62,10 @@ const categoryStructure = {
           }
         }
       },
-      kizomba: {
-        name: 'KIZOMBA',
-        icon: 'Zap',
-        color: 'yellow',
+             kizomba: {
+         name: 'KIZOMBA',
+         icon: 'Zap',
+         color: 'kizomba',
         categories: {
           estilo: {
             name: 'ESTILO',
@@ -289,6 +289,7 @@ export const useCategories = (page = 'figuras', style = 'salsa') => {
        bachata: 'bg-emerald-100 text-emerald-800 border-emerald-200',
        merengue: 'bg-cyan-100 text-cyan-800 border-cyan-200',
        zouk: 'bg-violet-100 text-violet-800 border-violet-200',
+       kizomba: 'bg-amber-100 text-amber-800 border-amber-200',
       
       // Colores genéricos para categorías
       pink: 'bg-pink-100 text-pink-800 border-pink-200',
@@ -310,6 +311,7 @@ export const useCategories = (page = 'figuras', style = 'salsa') => {
        bachata: 'from-emerald-400 to-teal-600',   // Verde esmeralda suave a verde azulado intenso
        merengue: 'from-cyan-400 to-blue-600',     // Cian suave a azul intenso
        zouk: 'from-violet-400 to-indigo-600',     // Violeta suave a índigo intenso
+       kizomba: 'from-amber-400 to-orange-600',   // Ámbar suave a naranja intenso
       
       // Gradientes genéricos para categorías
       pink: 'from-pink-500 to-rose-500',

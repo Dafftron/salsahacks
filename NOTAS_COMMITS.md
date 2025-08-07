@@ -219,6 +219,38 @@
   - Mejor experiencia de usuario
   - Interfaz más cohesiva y organizada
 
+### 🎨 **COMMIT #074: COLOR CORPORATIVO EN GALERÍAS DE VIDEOS Y SECUENCIAS** - 2024-12-19
+- **Problema**: Los botones de las galerías de videos y secuencias no usaban el color corporativo del estilo
+- **Solución**: Aplicado color corporativo a los botones de navegación entre galerías
+- **Cambios**:
+  - **Botón "GALERÍA DE VIDEOS"**: Usa gradiente del estilo cuando está activo
+  - **Botón "GALERÍA DE SECUENCIAS"**: Usa gradiente del estilo cuando está activo
+  - **Botón "Modo ancho completo"**: Usa gradiente del estilo cuando está activo
+  - **Consistencia visual**: Todos los botones de navegación ahora usan el color corporativo
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Botones de galerías con color corporativo
+- **Beneficios**:
+  - Identidad visual completamente unificada
+  - Mejor experiencia de usuario
+  - Interfaz más profesional y cohesiva
+  - Distinción clara del estilo activo en todos los elementos
+
+### 🎨 **COMMIT #075: COLOR CORPORATIVO PARA KIZOMBA** - 2024-12-19
+- **Problema**: Kizomba no tenía colores específicos y se veía gris en todos los botones excepto el principal
+- **Solución**: Agregado color corporativo específico para Kizomba
+- **Cambios**:
+  - **Color específico**: `kizomba` en lugar de `yellow` genérico
+  - **Fondo**: `bg-amber-100 text-amber-800 border-amber-200`
+  - **Gradiente**: `from-amber-400 to-orange-600` (ámbar suave a naranja intenso)
+  - **Consistencia**: Ahora todos los estilos tienen colores específicos
+- **Archivos modificados**:
+  - `src/hooks/useCategories.js` - Colores y gradientes específicos para Kizomba
+- **Beneficios**:
+  - Kizomba tiene su identidad visual única
+  - Todos los botones usan el color corporativo correcto
+  - Interfaz completamente consistente
+  - Mejor experiencia de usuario
+
 ### 🎬 **FEATURE: GENERACIÓN DE VIDEOS CON AJUSTE DE BPM** - 2024-12-19
 - **Problema**: No existía funcionalidad para generar videos combinados con ajuste automático de BPM
 - **Solución**: Implementado sistema completo de generación de videos con procesamiento de BPM
