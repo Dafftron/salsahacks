@@ -140,16 +140,9 @@ const SequenceVideoPlayer = ({
         videoRef.current.currentTime = loopStart
         videoRef.current.play()
       }
-    } else if (currentVideoIndex < videos.length - 1) {
-      // Play next video
-      setCurrentVideoIndex(prev => prev + 1)
-      setCurrentTime(0)
-    } else if (loop) {
-      // Loop back to first video
-      setCurrentVideoIndex(0)
-      setCurrentTime(0)
     } else {
-      // Stop at last video
+      // No cambiar automáticamente al siguiente video
+      // Solo pausar el video actual
       setIsPlaying(false)
     }
   }

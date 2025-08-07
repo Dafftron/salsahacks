@@ -31,6 +31,7 @@ import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
 import SequenceBuilder from '../components/sequence/SequenceBuilder'
 import SequenceGallery from '../components/sequence/SequenceGallery'
+import SequenceVideoPlayer from '../components/sequence/SequenceVideoPlayer'
 import CardSizeSelector from '../components/common/CardSizeSelector'
 import CompactCardActions from '../components/common/CompactCardActions'
 import CategoryChips from '../components/common/CategoryChips'
@@ -82,6 +83,14 @@ const FigurasPage = () => {
   const [editSequenceModal, setEditSequenceModal] = useState({ isOpen: false, sequence: null })
   const [downloadSequenceModal, setDownloadSequenceModal] = useState({ isOpen: false, sequence: null })
   const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
+  
+  // Estados para reproductor de video individual
+  const [selectedVideo, setSelectedVideo] = useState(null)
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false)
+  
+  // Estados para reproductor de secuencias
+  const [selectedSequence, setSelectedSequence] = useState(null)
+  const [showSequencePlayer, setShowSequencePlayer] = useState(false)
   
   // Estados para el sistema de chips y filtros
   const [activeCategoryChips, setActiveCategoryChips] = useState([])
@@ -364,9 +373,10 @@ const FigurasPage = () => {
   }
 
   const handlePlaySequence = (sequence) => {
-    // TODO: Implementar reproducción de secuencia
-    console.log('Reproduciendo secuencia:', sequence)
-    addToast('Funcionalidad de reproducción en desarrollo')
+    console.log('🎬 Reproduciendo secuencia:', sequence.name)
+    setSelectedSequence(sequence)
+    setShowSequencePlayer(true)
+    addToast(`🎬 Reproduciendo secuencia: ${sequence.name}`, 'info')
   }
 
   const handleEditSequence = (sequenceToEdit) => {
@@ -404,6 +414,26 @@ const FigurasPage = () => {
 
   const handleCloseDownloadSequence = () => {
     setDownloadSequenceModal({ isOpen: false, sequence: null })
+  }
+  
+  // Función para reproducir video individual
+  const handlePlayVideo = (video) => {
+    console.log('🎬 Reproduciendo video individual:', video.title)
+    setSelectedVideo(video)
+    setShowVideoPlayer(true)
+    addToast(`🎬 Reproduciendo: ${video.title}`, 'info')
+  }
+  
+  // Función para cerrar el reproductor
+  const handleCloseVideoPlayer = () => {
+    setShowVideoPlayer(false)
+    setSelectedVideo(null)
+  }
+  
+  // Función para cerrar el reproductor de secuencias
+  const handleCloseSequencePlayer = () => {
+    setShowSequencePlayer(false)
+    setSelectedSequence(null)
   }
 
 
@@ -1821,9 +1851,7 @@ const FigurasPage = () => {
                           onDelete={() => openDeleteModal(video)}
                           onAddToSequence={() => handleAddVideoToSequence(video)}
                           onDownload={() => downloadVideo(video)}
-                          onPlay={() => {
-                            // Función de reproducción
-                          }}
+                          onPlay={() => handlePlayVideo(video)}
                           isVideoInSequence={isVideoInSequence(video)}
                           isBuilderOpen={isBuilderOpen}
                           isVideoCompatible={isVideoCompatible(video)}
@@ -1853,6 +1881,13 @@ const FigurasPage = () => {
                             )}
                           </div>
                           <div className="flex items-center space-x-4">
+                            <button 
+                              onClick={() => handlePlayVideo(video)}
+                              className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                              title="Reproducir video"
+                            >
+                              <Play className="h-4 w-4" />
+                            </button>
                             <button 
                               onClick={() => handleVideoLike(video)}
                               className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${
@@ -2042,6 +2077,78 @@ Esta acción NO se puede deshacer.`}
          cancelText="Cancelar"
          type="danger"
        />
+
+       {/* Video Player Modal */}
+       {showVideoPlayer && selectedVideo && (
+         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+           <div className="relative w-full max-w-3xl h-auto max-h-[85vh] bg-white rounded-lg overflow-hidden flex flex-col">
+             {/* Header */}
+             <div className="flex items-center justify-between p-4 bg-gray-50 border-b flex-shrink-0">
+               <h3 className="text-lg font-semibold text-gray-800">
+                 🎬 {selectedVideo.title}
+               </h3>
+               <button
+                 onClick={handleCloseVideoPlayer}
+                 className="text-gray-500 hover:text-gray-700 transition-colors"
+               >
+                 <X className="h-6 w-6" />
+               </button>
+             </div>
+             
+             {/* Video Player */}
+             <div className="flex-1 min-h-0 p-4">
+               <div className="w-full h-full max-h-[65vh] flex items-center justify-center">
+                 <div className="w-full max-w-md">
+                   <SequenceVideoPlayer
+                     videos={[selectedVideo]}
+                     className="w-full h-full"
+                     showControls={true}
+                     autoplay={true}
+                     loop={false}
+                     muted={false}
+                   />
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+       )}
+
+       {/* Sequence Player Modal */}
+       {showSequencePlayer && selectedSequence && (
+         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+           <div className="relative w-full max-w-3xl h-auto max-h-[85vh] bg-white rounded-lg overflow-hidden flex flex-col">
+             {/* Header */}
+             <div className="flex items-center justify-between p-4 bg-gray-50 border-b flex-shrink-0">
+               <h3 className="text-lg font-semibold text-gray-800">
+                 🎬 Secuencia: {selectedSequence.name}
+               </h3>
+               <button
+                 onClick={handleCloseSequencePlayer}
+                 className="text-gray-500 hover:text-gray-700 transition-colors"
+               >
+                 <X className="h-6 w-6" />
+               </button>
+             </div>
+             
+             {/* Sequence Player */}
+             <div className="flex-1 min-h-0 p-4">
+               <div className="w-full h-full max-h-[65vh] flex items-center justify-center">
+                 <div className="w-full max-w-md">
+                   <SequenceVideoPlayer
+                     videos={selectedSequence.videos}
+                     className="w-full h-full"
+                     showControls={true}
+                     autoplay={true}
+                     loop={false}
+                     muted={false}
+                   />
+                 </div>
+               </div>
+               </div>
+           </div>
+         </div>
+       )}
 
        {/* Download Sequence Modal */}
        <DownloadModal

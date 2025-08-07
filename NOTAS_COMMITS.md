@@ -2,6 +2,157 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🎴 **COMMIT #062: TAMAÑO GRANDE POR DEFECTO EN GALERÍAS** - 2024-12-19
+- **Problema**: Las galerías de videos y secuencias se cargaban con tamaño mediano por defecto
+- **Solución**: Configurado tamaño "grande" como predeterminado para ambas galerías
+- **Cambios**:
+  - `videoCardSize` cambiado de `'medium'` a `'large'` por defecto
+  - `sequenceCardSize` cambiado de `'medium'` a `'large'` por defecto
+  - Mejor experiencia visual al cargar las páginas
+  - Cards más grandes muestran más información y son más fáciles de interactuar
+- **Archivos modificados**:
+  - `src/contexts/CardSizeContext.jsx` - Estados por defecto actualizados
+- **Beneficios**:
+  - Mejor usabilidad en dispositivos de escritorio
+  - Más información visible por defecto (tags, estadísticas, descripciones)
+  - Interfaz más profesional y espaciosa
+  - Usuarios pueden cambiar a tamaños más pequeños si lo prefieren
+
+### 🎬 **COMMIT #063: CONTROL MANUAL DE NAVEGACIÓN EN REPRODUCTOR DE SECUENCIAS** - 2024-12-19
+- **Problema**: El reproductor del constructor de secuencias cambiaba automáticamente al siguiente video al terminar el actual
+- **Solución**: Modificado para que solo cambie cuando el usuario haga clic en "siguiente"
+- **Cambios**:
+  - Eliminada la navegación automática en `handleVideoEnd`
+  - El video se pausa al terminar en lugar de cambiar automáticamente
+  - El usuario debe usar los botones "anterior" y "siguiente" para navegar
+  - Mantiene funcionalidad de loop cuando está activado
+- **Archivos modificados**:
+  - `src/components/sequence/SequenceVideoPlayer.jsx` - Lógica de navegación actualizada
+- **Beneficios**:
+  - Control total del usuario sobre la reproducción
+  - Mejor experiencia para revisar videos individuales
+  - Evita cambios inesperados de video
+  - Mantiene funcionalidad de loop para práctica
+
+### 🎬 **COMMIT #064: REPRODUCTOR DE SECUENCIAS EN GALERÍA DE VIDEOS** - 2024-12-19
+- **Problema**: No había forma de reproducir videos individuales desde la galería usando el reproductor de secuencias
+- **Solución**: Implementado botón de reproducir que abre el reproductor de secuencias con el video seleccionado
+- **Cambios**:
+  - Agregado botón de reproducir (▶️) en cards pequeñas y grandes
+  - Implementada función `handlePlayVideo` que abre modal con reproductor
+  - Modal tipo cine con `SequenceVideoPlayer` para reproducción individual
+  - Autoplay activado para mejor experiencia de usuario
+  - Toast informativo al reproducir video
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Estados, funciones y modal de reproducción
+  - `src/components/common/CompactCardActions.jsx` - Botón de reproducir funcional
+- **Beneficios**:
+  - Reproducción consistente usando el mismo reproductor que secuencias
+  - Interfaz unificada y profesional
+  - Control total sobre la reproducción (pausa, volumen, velocidad)
+  - Experiencia de usuario mejorada
+
+### 🎬 **COMMIT #065: REPRODUCTOR DE SECUENCIAS FUNCIONAL** - 2024-12-19
+- **Problema**: El botón de play en las secuencias solo mostraba "Funcionalidad de reproducción en desarrollo"
+- **Solución**: Implementada funcionalidad completa de reproducción de secuencias
+- **Cambios**:
+  - Reemplazada función `handlePlaySequence` con implementación real
+  - Agregados estados separados para reproductor de secuencias (`selectedSequence`, `showSequencePlayer`)
+  - Modal dedicado para reproducción de secuencias con todos los videos
+  - Función `handleCloseSequencePlayer` para cerrar el reproductor
+  - Toast informativo al reproducir secuencia
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Estados, funciones y modal de reproducción de secuencias
+- **Beneficios**:
+  - Reproducción completa de secuencias con todos sus videos
+  - Navegación manual entre videos de la secuencia
+  - Interfaz consistente con el reproductor de videos individuales
+  - Experiencia de usuario completa y funcional
+
+### 🎬 **COMMIT #066: CORRECCIÓN DE TAMAÑO EN MODALES DE REPRODUCTOR** - 2024-12-19
+- **Problema**: Los videos se escapaban del modal y se veían demasiado grandes
+- **Solución**: Ajustado el CSS y estructura de los modales para controlar el tamaño
+- **Cambios**:
+  - Reducido tamaño máximo del modal de `max-w-6xl` a `max-w-4xl`
+  - Cambiado altura de `h-full max-h-[90vh]` a `h-auto max-h-[80vh]`
+  - Agregado contenedor con `max-h-[60vh]` para el reproductor
+  - Implementado layout flexbox con `flex flex-col` para mejor control
+  - Agregado `flex-shrink-0` al header y `min-h-0` al contenedor del video
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Estructura y CSS de modales de reproducción
+- **Beneficios**:
+  - Videos se mantienen dentro de los límites del modal
+  - Tamaño más apropiado y manejable
+  - Mejor experiencia visual
+  - Responsive design mejorado
+
+### 🎬 **COMMIT #067: REDUCCIÓN DE TAMAÑO DE MODALES A LA MITAD** - 2024-12-19
+- **Problema**: Los modales seguían siendo muy grandes y se cortaban en pantalla
+- **Solución**: Reducido el tamaño de los modales a la mitad para mejor visualización
+- **Cambios**:
+  - Reducido ancho máximo de `max-w-4xl` a `max-w-2xl` (la mitad)
+  - Reducido altura máxima de `max-h-[80vh]` a `max-h-[60vh]`
+  - Reducido altura del reproductor de `max-h-[60vh]` a `max-h-[40vh]`
+  - Reducido padding de `p-4` a `p-3` para ahorrar espacio
+  - Reducido tamaño de título de `text-lg` a `text-base`
+  - Reducido tamaño de icono X de `h-6 w-6` a `h-5 w-5`
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Tamaños de modales de reproducción
+- **Beneficios**:
+  - Modales más compactos y manejables
+  - No se cortan en pantalla
+  - Mejor proporción visual
+  - Más espacio para el contenido principal
+
+### 🎬 **COMMIT #068: AJUSTE DE TAMAÑO ÓPTIMO PARA MODALES** - 2024-12-19
+- **Problema**: Los modales eran demasiado pequeños y el video se cortaba
+- **Solución**: Ajustado a un tamaño intermedio que contenga el video completo
+- **Cambios**:
+  - Aumentado ancho máximo de `max-w-2xl` a `max-w-3xl` (tamaño intermedio)
+  - Aumentado altura máxima de `max-h-[60vh]` a `max-h-[85vh]`
+  - Aumentado altura del reproductor de `max-h-[40vh]` a `max-h-[65vh]`
+  - Restaurado padding de `p-3` a `p-4` para mejor espaciado
+  - Restaurado tamaño de título de `text-base` a `text-lg`
+  - Restaurado tamaño de icono X de `h-5 w-5` a `h-6 w-6`
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Tamaños optimizados de modales
+- **Beneficios**:
+  - Video se ve completo sin cortarse
+  - Tamaño equilibrado ni muy grande ni muy pequeño
+  - Mejor experiencia visual
+  - Controles más accesibles
+
+### 🎬 **COMMIT #069: REDUCCIÓN DE TAMAÑO DEL VIDEO A LA MITAD** - 2024-12-19
+- **Problema**: El video seguía cortándose dentro del modal
+- **Solución**: Reducido el tamaño del video a la mitad manteniendo el modal
+- **Cambios**:
+  - Reducido altura del reproductor de `max-h-[65vh]` a `max-h-[32vh]` (la mitad)
+  - Mantenido tamaño del modal sin cambios
+  - Aplicado tanto a videos individuales como a secuencias
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Altura del reproductor de video
+- **Beneficios**:
+  - Video se ve completo sin cortarse
+  - Modal mantiene su tamaño óptimo
+  - Mejor proporción visual
+  - Controles accesibles y visibles
+
+### 🎬 **COMMIT #070: CORRECCIÓN - VIDEO PEQUEÑO DENTRO DE MODAL GRANDE** - 2024-12-19
+- **Problema**: El cambio anterior reducía el tamaño del modal en lugar del video
+- **Solución**: Mantener el modal grande y hacer el video pequeño dentro
+- **Cambios**:
+  - Restaurado contenedor del modal a `max-h-[65vh]`
+  - Agregado contenedor interno con `max-w-md` para limitar ancho del video
+  - Centrado el video con `flex items-center justify-center`
+  - El video ahora es más pequeño pero el modal mantiene su tamaño
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Estructura del contenedor de video
+- **Beneficios**:
+  - Modal mantiene su tamaño completo
+  - Video es más pequeño y no se corta
+  - Mejor experiencia visual
+  - Controles accesibles
+
 ### 🎬 **FEATURE: GENERACIÓN DE VIDEOS CON AJUSTE DE BPM** - 2024-12-19
 - **Problema**: No existía funcionalidad para generar videos combinados con ajuste automático de BPM
 - **Solución**: Implementado sistema completo de generación de videos con procesamiento de BPM

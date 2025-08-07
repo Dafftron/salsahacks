@@ -14,8 +14,8 @@ export const useCardSize = () => {
 
 export const CardSizeProvider = ({ children }) => {
   // Estados para diferentes tipos de galerías
-  const [videoCardSize, setVideoCardSize] = useState('medium') // small, medium, large, extra-large
-  const [sequenceCardSize, setSequenceCardSize] = useState('medium') // small, medium, large, extra-large
+  const [videoCardSize, setVideoCardSize] = useState('large') // small, medium, large, extra-large
+  const [sequenceCardSize, setSequenceCardSize] = useState('large') // small, medium, large, extra-large
 
   // Configuraciones de tamaños para videos
   const videoSizeConfig = {
