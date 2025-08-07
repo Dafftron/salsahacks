@@ -25,7 +25,7 @@ export const CardSizeProvider = ({ children }) => {
       titleSize: 'text-xs',
       descriptionLines: 1,
       showStats: false,
-      showTags: false,
+      showTags: true,
       compact: true
     },
     medium: {
@@ -34,7 +34,7 @@ export const CardSizeProvider = ({ children }) => {
       titleSize: 'text-sm',
       descriptionLines: 1,
       showStats: false,
-      showTags: false,
+      showTags: true,
       compact: true
     },
     large: {
@@ -64,7 +64,7 @@ export const CardSizeProvider = ({ children }) => {
       aspect: 'aspect-square',
       titleSize: 'text-xs',
       descriptionLines: 0, // Sin descripción, solo iconos
-      showStats: false,
+      showStats: true,
       showTags: false,
       showIcons: true, // Mostrar iconos en lugar de descripción
       compact: true
@@ -74,7 +74,7 @@ export const CardSizeProvider = ({ children }) => {
       aspect: 'aspect-video',
       titleSize: 'text-sm',
       descriptionLines: 0, // Sin descripción, solo iconos
-      showStats: false,
+      showStats: true,
       showTags: false,
       showIcons: true, // Mostrar iconos en lugar de descripción
       compact: true

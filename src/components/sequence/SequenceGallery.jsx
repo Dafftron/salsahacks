@@ -252,40 +252,45 @@ const SequenceGallery = ({
               {/* Stats del video */}
               {getSequenceConfig().showStats && (
                 <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
-                  <div className="flex items-center space-x-2">
-                    <Users className="w-4 h-4" />
-                    <span className="font-medium">
-                      {sequence.videos.length} videos
-                    </span>
-                    <span className="text-gray-400">•</span>
-                    <span className="text-gray-600">
-                      {sequence.resolution && sequence.resolution !== 'Unknown' ? 
-                        sequence.resolution : 
-                        'HD'
-                      }
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
+                  {/* Información de stats - solo en tamaños grandes */}
+                  {!getSequenceConfig().compact && (
+                    <div className="flex items-center space-x-2">
+                      <Users className="w-4 h-4" />
+                      <span className="font-medium">
+                        {sequence.videos.length} videos
+                      </span>
+                      <span className="text-gray-400">•</span>
+                      <span className="text-gray-600">
+                        {sequence.resolution && sequence.resolution !== 'Unknown' ? 
+                          sequence.resolution : 
+                          'HD'
+                        }
+                      </span>
+                    </div>
+                  )}
+                  
+                  {/* Botones de acción - siempre visibles */}
+                  <div className={`flex items-center space-x-2 ${getSequenceConfig().compact ? 'w-full justify-center' : ''}`}>
                     <button
                       onClick={() => handleDownloadSequence(sequence)}
                       className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
                       title="Descargar secuencia"
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className={`${getSequenceConfig().compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                     </button>
                     <button
                       onClick={() => onEditSequence(sequence)}
                       className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
                       title="Editar secuencia"
                     >
-                      <Edit3 className="h-4 w-4" />
+                      <Edit3 className={`${getSequenceConfig().compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                     </button>
                     <button
                       onClick={() => handleDeleteClick(sequence)}
                       className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
                       title="Eliminar secuencia"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className={`${getSequenceConfig().compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                     </button>
                   </div>
                 </div>
