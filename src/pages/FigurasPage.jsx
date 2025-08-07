@@ -33,6 +33,7 @@ import SequenceBuilder from '../components/sequence/SequenceBuilder'
 import SequenceGallery from '../components/sequence/SequenceGallery'
 import CardSizeSelector from '../components/common/CardSizeSelector'
 import CompactCardActions from '../components/common/CompactCardActions'
+import CategoryChips from '../components/common/CategoryChips'
 import { useSequenceBuilderContext } from '../contexts/SequenceBuilderContext'
 
 import { 
@@ -81,6 +82,11 @@ const FigurasPage = () => {
   const [editSequenceModal, setEditSequenceModal] = useState({ isOpen: false, sequence: null })
   const [downloadSequenceModal, setDownloadSequenceModal] = useState({ isOpen: false, sequence: null })
   const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
+  
+  // Estados para el sistema de chips y filtros
+  const [activeCategoryChips, setActiveCategoryChips] = useState([])
+  const [sortBy, setSortBy] = useState('none')
+  const [showFavorites, setShowFavorites] = useState(false)
   
   // Estados para secuencias
   const [sequences, setSequences] = useState([])
@@ -632,6 +638,54 @@ const FigurasPage = () => {
     setSearchTerm('')
   }
 
+  // Funciones para el sistema de chips y filtros
+  const handleCategoryChipFilter = (chips) => {
+    setActiveCategoryChips(chips)
+  }
+
+  const handleSortChange = (sortKey) => {
+    setSortBy(sortKey)
+  }
+
+  const handleShowFavorites = (show) => {
+    setShowFavorites(show)
+  }
+
+  // Función para verificar si un video tiene tags de categoría específica
+  const hasCategoryTags = (video, categoryKey) => {
+    if (!video.tags) return false
+    
+    // Buscar en las categorías dinámicas del hook useCategories
+    const category = categoriesList.find(cat => cat.key === categoryKey)
+    if (!category) return false
+    
+    // Verificar si el video tiene tags para esta categoría
+    const categoryTags = video.tags[categoryKey]
+    return categoryTags && Array.isArray(categoryTags) && categoryTags.length > 0
+  }
+
+  // Función para ordenar videos
+  const sortVideos = (videosToSort) => {
+    if (sortBy === 'none') return videosToSort
+
+    const sortedVideos = [...videosToSort]
+    
+    switch (sortBy) {
+      case 'name-asc':
+        return sortedVideos.sort((a, b) => a.title.localeCompare(b.title))
+      case 'name-desc':
+        return sortedVideos.sort((a, b) => b.title.localeCompare(a.title))
+      case 'rating-high':
+        return sortedVideos.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      case 'rating-low':
+        return sortedVideos.sort((a, b) => (a.rating || 0) - (b.rating || 0))
+      case 'favorites':
+        return sortedVideos.sort((a, b) => (b.likes || 0) - (a.likes || 0))
+      default:
+        return sortedVideos
+    }
+  }
+
   // Función para obtener tags ordenados según el orden de categorías
   const getOrderedTags = (video) => {
     if (!video.tags || Object.keys(video.tags).length === 0) {
@@ -781,11 +835,21 @@ const FigurasPage = () => {
         return false
       })
 
-    return searchMatch && tagsMatch
+      // Filtro por chips de categorías
+  const categoryMatch = activeCategoryChips.length === 0 || 
+    activeCategoryChips.some(chip => hasCategoryTags(video, chip))
+
+  // Filtro por favoritos
+  const favoritesMatch = !showFavorites || video.isFavorite
+
+  return searchMatch && tagsMatch && categoryMatch && favoritesMatch
   })
 
   // Aplicar filtro de compatibilidad sobre los videos ya filtrados
-  const filteredVideos = getFilteredVideos(baseFilteredVideos)
+  const baseCompatibilityFiltered = getFilteredVideos(baseFilteredVideos)
+
+  // Aplicar ordenamiento final
+  const filteredVideos = sortVideos(baseCompatibilityFiltered)
 
   // Función para descargar video usando Firebase Storage
   const downloadVideo = async (video) => {
@@ -892,7 +956,19 @@ const FigurasPage = () => {
           )}
         </div>
 
-        {/* Tag Filters - Collapsible */}
+        {/* Category Chips - Nuevo sistema de filtros */}
+        <CategoryChips
+          videos={videos}
+          onFilterChange={handleCategoryChipFilter}
+          onSortChange={handleSortChange}
+          onShowFavorites={handleShowFavorites}
+          selectedStyle={selectedStyle}
+          activeChips={activeCategoryChips}
+          sortBy={sortBy}
+          showFavorites={showFavorites}
+        />
+
+        {/* Tag Filters - Collapsible (mantener para compatibilidad) */}
         {categoriesList.length > 0 && (
           <div className="mb-8">
             <button
@@ -900,7 +976,7 @@ const FigurasPage = () => {
               className="flex items-center justify-center space-x-2 mx-auto px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
             >
               <Filter className="h-5 w-5" />
-              <span>Filtros por Categorías - {selectedStyle}</span>
+              <span>Filtros Avanzados por Tags - {selectedStyle}</span>
               {showFilters ? (
                 <ChevronUp className="h-5 w-5" />
               ) : (
@@ -1072,9 +1148,18 @@ const FigurasPage = () => {
         {activeTab === 'videos' && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-gray-800">
-                Videos de {selectedStyle.toLowerCase()} ({filteredVideos.length})
-              </h2>
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  Videos de {selectedStyle.toLowerCase()} ({filteredVideos.length})
+                </h2>
+                {(activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites) && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {activeCategoryChips.length > 0 && `Filtrado por: ${activeCategoryChips.join(', ')} `}
+                    {sortBy !== 'none' && `• Ordenado por: ${sortBy} `}
+                    {showFavorites && '• Solo favoritos'}
+                  </p>
+                )}
+              </div>
               <div className="flex items-center space-x-4">
                 {/* Selector de tamaño de cards */}
                 <CardSizeSelector type="video" />
@@ -1124,12 +1209,17 @@ const FigurasPage = () => {
                   </button>
                 )}
                 
-                {selectedTags.length > 0 && (
+                {(selectedTags.length > 0 || activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites) && (
                   <button
-                    onClick={clearFilters}
+                    onClick={() => {
+                      clearFilters()
+                      setActiveCategoryChips([])
+                      setSortBy('none')
+                      setShowFavorites(false)
+                    }}
                     className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200"
                   >
-                    Limpiar filtros <X className="h-4 w-4 ml-1" />
+                    Limpiar todos los filtros <X className="h-4 w-4 ml-1" />
                   </button>
                 )}
               </div>

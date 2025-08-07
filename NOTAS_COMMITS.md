@@ -99,6 +99,36 @@
 - **Archivos modificados**:
   - `src/contexts/SequenceBuilderContext.jsx` - Estado editingSequenceId y lógica de carga
 
+### 🎯 **FEATURE: SISTEMA DE CHIPS PARA AGRUPACIÓN POR CATEGORÍAS** - 2024-12-19
+- **Problema**: Necesidad de agrupar videos por categorías (Normal, Iniciales, Finales) y ordenamiento avanzado
+- **Solución**: Implementado sistema completo de chips activables con filtros y ordenamiento
+- **Funcionalidades**:
+  - **Chips de Categorías**: Botones activables para Normal, Iniciales, Finales
+  - **Ordenamiento Avanzado**: A-Z, Z-A, por estrellas (↑↓), por favoritos
+  - **Filtro de Favoritos**: Botón para mostrar solo videos marcados como favoritos
+  - **Combinación de Filtros**: Múltiples chips activos + ordenamiento + favoritos
+  - **Indicadores Visuales**: Chips activos resaltados con gradientes
+  - **Contador Dinámico**: Muestra videos disponibles y filtros activos
+  - **Limpieza de Filtros**: Botón para limpiar todos los filtros de una vez
+- **Interfaz**:
+  - Componente `CategoryChips` independiente y reutilizable
+  - Diseño moderno con gradientes y animaciones
+  - Indicadores de filtros activos con colores diferenciados
+  - Integración perfecta con el sistema de filtros existente
+- **Lógica de Filtrado**:
+  - Detección inteligente de categorías basada en tags del video
+  - Ordenamiento por múltiples criterios (nombre, rating, likes)
+  - Filtro de favoritos integrado con el sistema de likes
+  - Compatibilidad con filtros de búsqueda existentes
+- **Archivos modificados**:
+  - `src/components/common/CategoryChips.jsx` - Nuevo componente de chips
+  - `src/pages/FigurasPage.jsx` - Integración completa del sistema
+- **Beneficios**:
+  - Navegación más intuitiva por categorías
+  - Ordenamiento flexible según necesidades del usuario
+  - Filtros combinables para búsquedas específicas
+  - Interfaz limpia y moderna
+
 ### 🎬 **PASO 4 COMPLETADO: PREVIEW EN TIEMPO REAL INTEGRADO** - 2024-12-19
 - **Implementado**: Preview en tiempo real integrado en el constructor de secuencias
 - **Funcionalidad**: 
@@ -2345,3 +2375,98 @@ src/
 **🎯 Objetivo: Sistema completo y funcional en 4 semanas.**
 **👨‍💻 Desarrollador: David Exile**
 **📊 Estado: Planificación completada, listo para implementación**
+
+### 📋 **COMMIT #045 - SISTEMA DE CHIPS PARA AGRUPACIÓN POR CATEGORÍAS** - 2024-12-19
+- **Problema**: Necesidad de agrupar videos por categorías dinámicas y ordenamiento avanzado
+- **Solución**: Implementado sistema completo de chips activables con categorías dinámicas del gestor
+- **Funcionalidades implementadas**:
+  - **Chips de Categorías Dinámicas**: Botones activables basados en categorías del gestor (estilo, subestilo, tipo, manos)
+  - **Ordenamiento Avanzado**: A-Z, Z-A, por estrellas (↑↓), por favoritos
+  - **Filtro de Favoritos**: Botón para mostrar solo videos marcados como favoritos
+  - **Combinación de Filtros**: Múltiples chips activos + ordenamiento + favoritos
+  - **Indicadores Visuales**: Chips activos resaltados con gradientes
+  - **Contador Dinámico**: Muestra videos disponibles por categoría y filtros activos
+  - **Limpieza de Filtros**: Botón para limpiar todos los filtros de una vez
+- **Interfaz implementada**:
+  - Componente `CategoryChips` independiente y reutilizable
+  - Diseño moderno con gradientes y animaciones
+  - Indicadores de filtros activos con colores diferenciados
+  - Integración perfecta con el sistema de filtros existente
+- **Lógica de Filtrado**:
+  - **Categorías Dinámicas**: Conectadas al hook `useCategories` y gestor de categorías
+  - **Detección Inteligente**: Basada en tags del video según categorías del gestor
+  - **Ordenamiento por Múltiples Criterios**: nombre, rating, likes
+  - **Filtro de Favoritos**: Integrado con el sistema de likes
+  - **Compatibilidad**: Con filtros de búsqueda existentes
+- **Archivos modificados**:
+  - `src/components/common/CategoryChips.jsx` - Componente de chips con categorías dinámicas
+  - `src/pages/FigurasPage.jsx` - Integración completa del sistema dinámico
+  - `NOTAS_COMMITS.md` - Documentación actualizada
+- **Beneficios**:
+  - **Gestión Admin**: Los admin pueden crear/modificar categorías y se actualizan automáticamente
+  - **Navegación Intuitiva**: Por categorías dinámicas del gestor
+  - **Ordenamiento Flexible**: Según necesidades del usuario
+  - **Filtros Combinables**: Para búsquedas específicas
+  - **Interfaz Moderna**: Limpia y responsive
+- **Estado del proyecto**:
+  - ✅ 45 commits completados exitosamente
+  - ✅ Sistema de chips dinámicos implementado
+  - 🚧 Unificación de páginas pendiente
+  - ⏳ Deploy a producción próximo
+
+---
+
+### 📋 **COMMIT #046 - CORRECCIÓN DE FILTRADO Y BOTÓN DE FAVORITOS** - 2024-12-19
+- **Problema**: 
+  - El filtrado por categorías no funcionaba correctamente (estado interno vs estado padre)
+  - El botón de favoritos siempre mostraba "Mostrar Solo Favoritos" sin indicar su estado
+- **Solución**: Corrección del estado compartido y mejora de la UX del botón de favoritos
+- **Correcciones implementadas**:
+  - **Estado Compartido**: CategoryChips ahora recibe props del estado padre (activeChips, sortBy, showFavorites)
+  - **Eliminación de Estado Interno**: Removido estado duplicado en CategoryChips que causaba desincronización
+  - **Botón de Favoritos Mejorado**: Texto dinámico que cambia entre "Mostrar Solo Favoritos" y "Ocultar Favoritos"
+  - **Debug Section**: Agregada sección de debug en desarrollo para facilitar troubleshooting
+- **Archivos modificados**:
+  - `src/components/common/CategoryChips.jsx` - Corrección del estado compartido y mejora del botón de favoritos
+  - `src/pages/FigurasPage.jsx` - Paso correcto de props al componente CategoryChips
+- **Beneficios**:
+  - **Filtrado Funcional**: Los chips de categorías ahora filtran correctamente los videos
+  - **UX Mejorada**: El botón de favoritos indica claramente su estado activo/inactivo
+  - **Debugging Facilitado**: Información de debug disponible en desarrollo
+  - **Estado Consistente**: Eliminación de desincronización entre componentes
+- **Estado del proyecto**:
+  - ✅ 46 commits completados exitosamente
+  - ✅ Sistema de filtrado por categorías corregido
+  - ✅ Botón de favoritos mejorado
+  - 🚧 Unificación de páginas pendiente
+  - ⏳ Deploy a producción próximo
+
+### 📋 **COMMIT #044 - ACTUALIZACIÓN COMPLETA DEL PROYECTO** - 2025-01-27
+- **Problema**: Necesidad de actualizar toda la documentación del proyecto para reflejar el estado actual
+- **Solución**: Actualización completa de todos los documentos de seguimiento
+  - **NOTAS_COMMITS.md**: Actualizado con estado actual del proyecto
+  - **TODO.md**: Tareas completadas y pendientes actualizadas
+  - **PLAN_COMPLETO.md**: Hoja de ruta y arquitectura actualizada
+  - **Estado del proyecto**: Revisión completa de funcionalidades implementadas
+- **Funcionalidades documentadas**:
+  - Sistema completo de secuencias (funcional)
+  - VideoPlayer profesional con controles avanzados
+  - Sistema de categorías y tags jerárquico
+  - Constructor de secuencias integrado
+  - Panel de administración completo
+  - Sistema de invitaciones por enlace
+  - Búsqueda avanzada y filtrado inteligente
+  - Sincronización en tiempo real con Firebase
+- **Próximos pasos definidos**:
+  - Unificar EscuelaPage y EventosPage
+  - Resolver problema de descarga de videos
+  - Testing y optimización para producción
+- **Archivos modificados**:
+  - `NOTAS_COMMITS.md` - Documentación completa actualizada
+  - `TODO.md` - Estado de tareas actualizado
+  - `PLAN_COMPLETO.md` - Hoja de ruta actualizada
+- **Estado del proyecto**:
+  - ✅ 44 commits completados exitosamente
+  - ✅ Sistema de secuencias funcional (sin BPM)
+  - 🚧 Unificación de páginas pendiente
+  - ⏳ Deploy a producción próximo
