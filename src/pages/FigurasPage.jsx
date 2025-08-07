@@ -100,6 +100,7 @@ const FigurasPage = () => {
     addVideoToSequence,
     removeVideoFromSequence,
     sequence,
+    sequenceName,
     clearSequence,
     isBuilderOpen,
     toggleBuilder,
@@ -108,7 +109,8 @@ const FigurasPage = () => {
     getFilteredVideos,
     isVideoInSequence,
     isVideoCompatible,
-    checkCompatibility
+    checkCompatibility,
+    loadSequence
   } = useSequenceBuilderContext()
 
   // Hook para categorías
