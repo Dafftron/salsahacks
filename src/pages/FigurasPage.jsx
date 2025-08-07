@@ -685,16 +685,18 @@ const FigurasPage = () => {
     const sortedVideos = [...videosToSort]
     
     switch (sortBy) {
-      case 'name-asc':
+      case 'name':
         return sortedVideos.sort((a, b) => a.title.localeCompare(b.title))
       case 'name-desc':
         return sortedVideos.sort((a, b) => b.title.localeCompare(a.title))
-      case 'rating-high':
+      case 'rating':
         return sortedVideos.sort((a, b) => (b.rating || 0) - (a.rating || 0))
-      case 'rating-low':
+      case 'rating-desc':
         return sortedVideos.sort((a, b) => (a.rating || 0) - (b.rating || 0))
-      case 'favorites':
+      case 'likes':
         return sortedVideos.sort((a, b) => (b.likes || 0) - (a.likes || 0))
+      case 'likes-desc':
+        return sortedVideos.sort((a, b) => (a.likes || 0) - (b.likes || 0))
       default:
         return sortedVideos
     }
@@ -1035,37 +1037,7 @@ const FigurasPage = () => {
           </div>
         )}
 
-        {/* Botones de ordenamiento y favoritos */}
-        <div className="flex flex-wrap justify-center gap-4 mb-6">
-          {/* Selector de ordenamiento */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-700">Ordenar por:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => handleSortChange(e.target.value)}
-              className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            >
-              <option value="none">Sin ordenar</option>
-              <option value="name">Nombre A-Z</option>
-              <option value="name-desc">Nombre Z-A</option>
-              <option value="rating">Puntuación</option>
-              <option value="likes">Me gusta</option>
-            </select>
-          </div>
-          
-          {/* Botón de favoritos */}
-          <button
-            onClick={() => handleShowFavorites(!showFavorites)}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              showFavorites
-                ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            <Heart className="h-4 w-4" />
-            <span>{showFavorites ? 'Ocultar Favoritos' : 'Mostrar Solo Favoritos'}</span>
-          </button>
-        </div>
+
 
 
 
@@ -1088,6 +1060,68 @@ const FigurasPage = () => {
           >
             <Shuffle className="h-5 w-5" />
             <span>{isBuilderOpen ? 'OCULTAR SECUENCIA' : 'CREAR SECUENCIA'}</span>
+          </button>
+        </div>
+
+        {/* Botones de ordenamiento y favoritos - Nueva ubicación */}
+        <div className="flex flex-wrap justify-center gap-3 mb-6">
+          {/* Botón A-Z/Z-A combinado */}
+          <button
+            onClick={() => handleSortChange(sortBy === 'name' ? 'name-desc' : 'name')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              sortBy === 'name' || sortBy === 'name-desc'
+                ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <span>{sortBy === 'name' ? 'A-Z' : sortBy === 'name-desc' ? 'Z-A' : 'A-Z'}</span>
+          </button>
+          
+          {/* Botón Puntuación */}
+          <button
+            onClick={() => handleSortChange(sortBy === 'rating' ? 'rating-desc' : 'rating')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              sortBy === 'rating' || sortBy === 'rating-desc'
+                ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg'
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Star className="h-4 w-4" />
+            <span>{sortBy === 'rating' ? 'Puntuación ↓' : sortBy === 'rating-desc' ? 'Puntuación ↑' : 'Puntuación'}</span>
+          </button>
+          
+          {/* Botón Favoritos */}
+          <button
+            onClick={() => {
+              if (!showFavorites) {
+                // Si no está mostrando favoritos, activar y ordenar por likes descendente
+                setShowFavorites(true)
+                setSortBy('likes')
+              } else if (sortBy === 'likes') {
+                // Si está mostrando favoritos y ordenado por likes, cambiar a ascendente
+                setSortBy('likes-desc')
+              } else if (sortBy === 'likes-desc') {
+                // Si está en ascendente, volver a descendente
+                setSortBy('likes')
+              } else {
+                // Si está en otro ordenamiento, desactivar favoritos
+                setShowFavorites(false)
+                setSortBy('none')
+              }
+            }}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              showFavorites
+                ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Heart className="h-4 w-4" />
+            <span>
+              {!showFavorites ? 'Mostrar Favoritos' : 
+               sortBy === 'likes' ? 'Favoritos ↓' : 
+               sortBy === 'likes-desc' ? 'Favoritos ↑' : 
+               'Ocultar Favoritos'}
+            </span>
           </button>
         </div>
 
@@ -1179,8 +1213,8 @@ const FigurasPage = () => {
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
-            <Music className="h-4 w-4" />
-                            <span>GALERÍA DE VIDEOS</span>
+            <Music className="h-6 w-6" />
+            <span>GALERÍA DE VIDEOS</span>
           </button>
           <button
             onClick={() => setActiveTab('secuencias')}
@@ -1190,7 +1224,7 @@ const FigurasPage = () => {
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-6 w-6" />
             <span>GALERÍA DE SECUENCIAS ({sequences.length})</span>
           </button>
         </div>

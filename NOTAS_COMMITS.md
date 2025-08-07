@@ -2475,7 +2475,7 @@ src/
 
 ## 📊 **ESTADO ACTUAL DEL PROYECTO**
 - **Progreso**: 85% completado
-- **Commits totales**: 47
+- **Commits totales**: 51
 - **Última actualización**: Diciembre 2024
 - **Estado**: Sistema funcional con filtros dinámicos y gestión avanzada
 
@@ -2533,3 +2533,211 @@ src/
 - Testing de la nueva interfaz
 - Posibles ajustes de estilo según feedback
 - Considerar aplicar el mismo patrón a otras páginas
+
+---
+
+## 🚀 **COMMIT #048 - CONVERSIÓN DE DROPDOWN A BOTONES DE ORDENAMIENTO**
+
+### 📅 **Fecha**: Diciembre 2024
+### 🎯 **Objetivo**: Mejorar la UX de los controles de ordenamiento
+
+### ✨ **Funcionalidades Implementadas:**
+
+#### 🔧 **Conversión de Dropdown a Botones:**
+- **Eliminación del dropdown**: Removido el selector desplegable "Ordenar por"
+- **Botones individuales**: Convertido en botones separados para cada opción de ordenamiento
+- **Nueva ubicación**: Movidos a la zona entre botones de acción y galería (como solicitado)
+
+#### 🎨 **Botones de Ordenamiento Implementados:**
+- **Botón A-Z**: Ordenamiento alfabético ascendente (azul-morado cuando activo)
+- **Botón Z-A**: Ordenamiento alfabético descendente (azul-morado cuando activo)
+- **Botón Puntuación**: Ordenamiento por estrellas/rating (amarillo-naranja cuando activo)
+- **Botón Me gusta**: Ordenamiento por likes (rojo-rosa cuando activo)
+- **Botón Favoritos**: Mostrar/ocultar solo favoritos (rosa-naranja cuando activo)
+
+#### 🎯 **Mejoras de UX:**
+- **Acceso directo**: Un click para cada tipo de ordenamiento
+- **Feedback visual claro**: Cada botón cambia de color cuando está activo
+- **Iconos descriptivos**: Star para puntuación, Heart para me gusta y favoritos
+- **Ubicación estratégica**: Entre los botones de acción principales y la galería
+- **Diseño consistente**: Mismo estilo que otros botones de la interfaz
+
+#### 🔄 **Funcionalidad Técnica:**
+- **Mantiene estado**: Usa las mismas funciones `handleSortChange` y `handleShowFavorites`
+- **Estados visuales**: Cambio de colores basado en `sortBy` y `showFavorites`
+- **Responsive**: Botones se adaptan a diferentes tamaños de pantalla
+
+### 📁 **Archivos Modificados:**
+- `src/pages/FigurasPage.jsx`
+  - Eliminada sección de dropdown de ordenamiento
+  - Agregada nueva sección de botones de ordenamiento
+  - Reposicionados controles entre botones de acción y galería
+
+### 🎯 **Beneficios:**
+1. **UX mejorada**: Acceso directo a cada opción de ordenamiento
+2. **Menos clics**: No hay que abrir dropdown y seleccionar
+3. **Feedback visual**: Estado activo claramente visible
+4. **Mejor organización**: Controles en ubicación más lógica
+5. **Consistencia**: Mismo patrón que otros botones de la interfaz
+
+### 🔄 **Próximos Pasos:**
+- Testing de la nueva interfaz de botones
+- Posibles ajustes de colores o iconos
+- Considerar aplicar el mismo patrón a otras páginas
+
+---
+
+## 🚀 **COMMIT #049 - MEJORAS EN BOTONES DE ORDENAMIENTO Y PESTAÑAS**
+
+### 📅 **Fecha**: Diciembre 2024
+### 🎯 **Objetivo**: Optimizar la interfaz de controles de ordenamiento y pestañas
+
+### ✨ **Funcionalidades Implementadas:**
+
+#### 🔧 **Optimización de Botones de Ordenamiento:**
+- **Eliminación del botón "Me gusta"**: Removido para simplificar la interfaz
+- **Combinación A-Z/Z-A**: Un solo botón que alterna entre ordenamiento ascendente y descendente
+- **Lógica de toggle**: Al hacer click cambia automáticamente entre A-Z y Z-A
+- **Texto dinámico**: El botón muestra "A-Z" o "Z-A" según el estado actual
+
+#### 🎨 **Mejoras en Pestañas de Galería:**
+- **Iconos más grandes**: Cambiados de `h-4 w-4` a `h-6 w-6` para mejor visibilidad
+- **Mejor jerarquía visual**: Iconos más prominentes en las pestañas principales
+- **Consistencia visual**: Ambos iconos (Music y Plus) tienen el mismo tamaño
+
+#### 🎯 **Funcionalidad del Botón Combinado:**
+- **Estado inicial**: Muestra "A-Z" por defecto
+- **Primer click**: Cambia a "Z-A" y ordena descendente
+- **Segundo click**: Vuelve a "A-Z" y ordena ascendente
+- **Feedback visual**: Mantiene el color azul-morado cuando está activo
+
+### 📁 **Archivos Modificados:**
+- `src/pages/FigurasPage.jsx`
+  - Eliminado botón "Me gusta" de ordenamiento
+  - Combinados botones A-Z y Z-A en uno solo con toggle
+  - Aumentado tamaño de iconos en pestañas de galería
+  - Mejorada lógica de cambio de estado en botón alfabético
+
+### 🎯 **Beneficios:**
+1. **Interfaz más limpia**: Menos botones, más espacio
+2. **UX mejorada**: Un click para alternar ordenamiento alfabético
+3. **Mejor visibilidad**: Iconos más grandes en pestañas principales
+4. **Funcionalidad intuitiva**: Toggle natural entre A-Z y Z-A
+5. **Consistencia**: Mismo patrón de diseño en toda la interfaz
+
+### 🔄 **Próximos Pasos:**
+- Testing de la nueva funcionalidad de toggle
+- Posibles ajustes de colores o tamaños
+- Considerar aplicar el mismo patrón a otros controles
+
+---
+
+## 🚀 **COMMIT #050 - CORRECCIÓN DE ORDENAMIENTO POR PUNTUACIÓN Y TOGGLE**
+
+### 📅 **Fecha**: Diciembre 2024
+### 🎯 **Objetivo**: Corregir ordenamiento por puntuación y agregar funcionalidad de toggle
+
+### ✨ **Funcionalidades Implementadas:**
+
+#### 🔧 **Corrección de Ordenamiento por Puntuación:**
+- **Problema identificado**: Los casos del switch no coincidían con los valores de los botones
+- **Solución aplicada**: Corregidos los casos para que coincidan con `'name'`, `'rating'`, `'likes'`
+- **Funcionalidad restaurada**: El ordenamiento por puntuación ahora funciona correctamente
+
+#### 🎯 **Funcionalidad de Toggle para Puntuación:**
+- **Botón combinado**: Un solo botón que alterna entre mayor a menor y menor a mayor
+- **Lógica de toggle**: Al hacer click cambia entre `'rating'` y `'rating-desc'`
+- **Texto dinámico**: Muestra "Puntuación ↓" (mayor a menor) o "Puntuación ↑" (menor a mayor)
+- **Feedback visual**: Mantiene el color amarillo-naranja cuando está activo
+
+#### 🔄 **Casos de Ordenamiento Implementados:**
+- **`'name'`**: Ordenamiento A-Z (ascendente)
+- **`'name-desc'`**: Ordenamiento Z-A (descendente)
+- **`'rating'`**: Puntuación mayor a menor (5⭐ → 4⭐ → 3⭐ → 2⭐ → 1⭐ → 0⭐)
+- **`'rating-desc'`**: Puntuación menor a mayor (0⭐ → 1⭐ → 2⭐ → 3⭐ → 4⭐ → 5⭐)
+- **`'likes'`**: Me gusta mayor a menor
+
+### 📁 **Archivos Modificados:**
+- `src/pages/FigurasPage.jsx`
+  - Corregidos casos del switch en función `sortVideos`
+  - Agregado caso `'rating-desc'` para ordenamiento ascendente
+  - Implementado toggle en botón de puntuación
+  - Agregado texto dinámico con flechas indicativas
+
+### 🎯 **Beneficios:**
+1. **Ordenamiento funcional**: Puntuación ahora ordena correctamente
+2. **UX mejorada**: Toggle intuitivo entre mayor y menor puntuación
+3. **Feedback visual**: Flechas indican la dirección del ordenamiento
+4. **Consistencia**: Mismo patrón que el botón A-Z/Z-A
+5. **Funcionalidad completa**: Todos los ordenamientos funcionan correctamente
+
+### 🔄 **Funcionalidad del Botón Puntuación:**
+- **Estado inicial**: "Puntuación" (sin ordenamiento)
+- **Primer click**: "Puntuación ↓" (mayor a menor)
+- **Segundo click**: "Puntuación ↑" (menor a mayor)
+- **Tercer click**: Vuelve a "Puntuación ↓" (mayor a menor)
+
+### 🔄 **Próximos Pasos:**
+- Testing de la nueva funcionalidad de toggle
+- Verificar que todos los ordenamientos funcionen correctamente
+- Considerar aplicar el mismo patrón a otros controles
+
+---
+
+## 🚀 **COMMIT #051 - FUNCIONALIDAD DE ORDENAMIENTO EN FAVORITOS**
+
+### 📅 **Fecha**: Diciembre 2024
+### 🎯 **Objetivo**: Agregar ordenamiento por me gustas en la funcionalidad de favoritos
+
+### ✨ **Funcionalidades Implementadas:**
+
+#### 🔧 **Funcionalidad de Ordenamiento en Favoritos:**
+- **Integración completa**: El botón de favoritos ahora incluye ordenamiento por me gustas
+- **Lógica inteligente**: Al activar favoritos, automáticamente ordena por likes descendente
+- **Toggle de ordenamiento**: Permite alternar entre mayor a menor y menor a mayor me gustas
+- **Texto dinámico**: Muestra la dirección del ordenamiento con flechas
+
+#### 🎯 **Estados del Botón Favoritos:**
+- **Estado inicial**: "Mostrar Favoritos" (sin filtro ni ordenamiento)
+- **Primer click**: "Favoritos ↓" (muestra favoritos ordenados por me gustas descendente)
+- **Segundo click**: "Favoritos ↑" (muestra favoritos ordenados por me gustas ascendente)
+- **Tercer click**: "Favoritos ↓" (vuelve a descendente)
+- **Click adicional**: "Ocultar Favoritos" (desactiva filtro y ordenamiento)
+
+#### 🔄 **Casos de Ordenamiento Agregados:**
+- **`'likes-desc'`**: Me gusta menor a mayor (0 likes → 1 like → 2 likes → etc.)
+- **Integración con `'likes'`**: Me gusta mayor a menor (más likes primero)
+
+#### 🎨 **Mejoras de UX:**
+- **Feedback visual**: Flechas indican la dirección del ordenamiento
+- **Lógica intuitiva**: Al activar favoritos, automáticamente ordena por popularidad
+- **Consistencia**: Mismo patrón que otros botones de ordenamiento
+- **Funcionalidad completa**: Filtro + ordenamiento en un solo botón
+
+### 📁 **Archivos Modificados:**
+- `src/pages/FigurasPage.jsx`
+  - Modificada lógica del botón de favoritos para incluir ordenamiento
+  - Agregado caso `'likes-desc'` en función `sortVideos`
+  - Implementada lógica de estados múltiples para el botón
+  - Agregado texto dinámico con flechas indicativas
+
+### 🎯 **Beneficios:**
+1. **Funcionalidad integrada**: Filtro y ordenamiento en un solo control
+2. **UX mejorada**: Los favoritos se muestran ordenados por popularidad automáticamente
+3. **Flexibilidad**: Permite ver favoritos tanto por mayor como menor popularidad
+4. **Feedback visual**: Flechas indican claramente la dirección del ordenamiento
+5. **Lógica intuitiva**: Al activar favoritos, automáticamente ordena por me gustas
+
+### 🔄 **Funcionalidad Completa del Botón:**
+- **Mostrar Favoritos** → **Favoritos ↓** → **Favoritos ↑** → **Favoritos ↓** → **Ocultar Favoritos**
+- **Cada estado**: Filtra favoritos y ordena por me gustas en la dirección indicada
+- **Integración**: Funciona perfectamente con otros botones de ordenamiento
+
+### 🔄 **Próximos Pasos:**
+- Testing de la nueva funcionalidad integrada
+- Verificar que la lógica de estados funcione correctamente
+- Considerar aplicar el mismo patrón a otros filtros
+
+---
+
+## 🚀 **COMMIT #050 - CORRECCIÓN DE ORDENAMIENTO POR PUNTUACIÓN Y TOGGLE**
