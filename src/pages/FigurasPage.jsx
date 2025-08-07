@@ -1030,7 +1030,7 @@ const FigurasPage = () => {
                       onClick={() => handleCategoryTitleClick(category.key)}
                       className={`w-full text-center font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 ${
                         activeCategoryChips.includes(category.key)
-                          ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
+                          ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
                           : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
                       }`}
                     >
@@ -1052,7 +1052,7 @@ const FigurasPage = () => {
                           onClick={() => handleTagFilter(tag)}
                           className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
                             selectedTags.includes(tag)
-                              ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
+                              ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
                               : `${getColorClasses(category.color)} hover:bg-opacity-80`
                           }`}
                         >
@@ -1085,7 +1085,7 @@ const FigurasPage = () => {
             className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 ${
               isBuilderOpen 
                 ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
-                : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white'
+                : `bg-gradient-to-r ${getGradientClasses(selectedStyle)} hover:opacity-90 text-white`
             }`}
           >
             <Shuffle className="h-5 w-5" />
@@ -1100,7 +1100,7 @@ const FigurasPage = () => {
             onClick={() => handleSortChange(sortBy === 'name' ? 'name-desc' : 'name')}
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
               sortBy === 'name' || sortBy === 'name-desc'
-                ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
@@ -1112,7 +1112,7 @@ const FigurasPage = () => {
             onClick={() => handleSortChange(sortBy === 'rating' ? 'rating-desc' : 'rating')}
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
               sortBy === 'rating' || sortBy === 'rating-desc'
-                ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
@@ -1141,7 +1141,7 @@ const FigurasPage = () => {
             }}
             className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
               showFavorites
-                ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >

@@ -195,6 +195,30 @@
   - Interfaz más profesional y organizada
   - Identificación rápida del estilo activo
 
+### 🎨 **COMMIT #073: GRADIENTES MEJORADOS Y COLOR CORPORATIVO UNIFICADO** - 2024-12-19
+- **Problema**: Los gradientes eran muy planos y solo algunos botones usaban el color corporativo del estilo
+- **Solución**: Mejorados los gradientes y aplicado color corporativo a todos los botones de acción
+- **Cambios**:
+  - **Gradientes mejorados**:
+    - **Salsa**: `from-orange-400 to-pink-500` (naranja suave a rosa)
+    - **Bachata**: `from-emerald-400 to-teal-600` (verde suave a verde azulado intenso)
+    - **Merengue**: `from-cyan-400 to-blue-600` (cian suave a azul intenso)
+    - **Zouk**: `from-violet-400 to-indigo-600` (violeta suave a índigo intenso)
+  - **Color corporativo unificado**:
+    - **Botones de ordenamiento**: A-Z/Z-A, Puntuación, Favoritos
+    - **Botón de crear secuencia**: Usa gradiente del estilo
+    - **Títulos de categorías**: Cuando están activos
+    - **Tags individuales**: Cuando están seleccionados
+    - **Botón de subir videos**: Ya implementado
+- **Archivos modificados**:
+  - `src/hooks/useCategories.js` - Gradientes más suaves y naturales
+  - `src/pages/FigurasPage.jsx` - Aplicación de color corporativo a todos los botones
+- **Beneficios**:
+  - Gradientes más elegantes y profesionales
+  - Identidad visual consistente por estilo
+  - Mejor experiencia de usuario
+  - Interfaz más cohesiva y organizada
+
 ### 🎬 **FEATURE: GENERACIÓN DE VIDEOS CON AJUSTE DE BPM** - 2024-12-19
 - **Problema**: No existía funcionalidad para generar videos combinados con ajuste automático de BPM
 - **Solución**: Implementado sistema completo de generación de videos con procesamiento de BPM

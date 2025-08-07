@@ -306,10 +306,10 @@ export const useCategories = (page = 'figuras', style = 'salsa') => {
   const getGradientClasses = (color) => {
     const gradientMap = {
              // Gradientes específicos de estilos de baile
-       salsa: 'from-orange-500 to-pink-500',      // Naranja a rosa (original)
-       bachata: 'from-emerald-500 to-teal-500',   // Verde esmeralda a verde azulado
-       merengue: 'from-cyan-500 to-blue-500',     // Cian a azul (al revés de salsa)
-       zouk: 'from-violet-500 to-indigo-500',     // Violeta a índigo
+       salsa: 'from-orange-400 to-pink-500',      // Naranja suave a rosa
+       bachata: 'from-emerald-400 to-teal-600',   // Verde esmeralda suave a verde azulado intenso
+       merengue: 'from-cyan-400 to-blue-600',     // Cian suave a azul intenso
+       zouk: 'from-violet-400 to-indigo-600',     // Violeta suave a índigo intenso
       
       // Gradientes genéricos para categorías
       pink: 'from-pink-500 to-rose-500',
