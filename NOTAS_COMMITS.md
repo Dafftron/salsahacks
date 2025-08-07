@@ -2441,6 +2441,43 @@ src/
   - 🚧 Unificación de páginas pendiente
   - ⏳ Deploy a producción próximo
 
+### 📋 **COMMIT #047 - AGRUPACIÓN VISUAL POR CATEGORÍAS CON SEPARADORES** - 2024-12-19
+- **Problema**: Necesidad de distinguir claramente a qué categoría pertenece cada grupo de videos cuando se agrupan por categorías
+- **Solución**: Implementación de sistema de agrupación visual con títulos, líneas separadoras y contadores
+- **Funcionalidades implementadas**:
+  - **Agrupación Visual**: Videos agrupados por categorías con separadores visuales
+  - **Títulos de Categoría**: Nombres de categorías con colores dinámicos del sistema
+  - **Líneas Separadoras**: Gradientes de color que coinciden con cada categoría
+  - **Contadores Dinámicos**: Muestra el número de videos en cada categoría
+  - **Mensaje de Sin Resultados**: Interfaz amigable cuando no hay videos en categorías seleccionadas
+  - **Botón de Limpiar Filtros**: Acceso rápido para resetear todos los filtros
+- **Interfaz implementada**:
+  - Separadores con diseño moderno y gradientes
+  - Títulos con colores dinámicos del sistema de categorías
+  - Líneas separadoras con gradientes que coinciden con cada categoría
+  - Contadores con badges estilizados
+  - Mensaje de "sin resultados" con icono y botón de acción
+- **Lógica de Agrupación**:
+  - **Función getGroupedVideos()**: Agrupa videos por categorías activas
+  - **Renderizado Condicional**: Solo muestra separadores cuando hay chips activos
+  - **Manejo de Estados Vacíos**: Interfaz especial para cuando no hay resultados
+  - **Compatibilidad**: Funciona con todos los filtros existentes (búsqueda, tags, favoritos)
+- **Archivos modificados**:
+  - `src/pages/FigurasPage.jsx` - Implementación completa del sistema de agrupación visual
+  - `NOTAS_COMMITS.md` - Documentación actualizada
+- **Beneficios**:
+  - **Navegación Clara**: Fácil identificación de videos por categoría
+  - **Organización Visual**: Separación clara entre grupos de videos
+  - **UX Mejorada**: Interfaz intuitiva con contadores y separadores
+  - **Consistencia**: Colores y estilos que coinciden con el sistema de categorías
+  - **Accesibilidad**: Mensajes claros cuando no hay resultados
+- **Estado del proyecto**:
+  - ✅ 47 commits completados exitosamente
+  - ✅ Sistema de agrupación visual implementado
+  - ✅ Separadores de categorías con títulos y líneas
+  - 🚧 Unificación de páginas pendiente
+  - ⏳ Deploy a producción próximo
+
 ### 📋 **COMMIT #044 - ACTUALIZACIÓN COMPLETA DEL PROYECTO** - 2025-01-27
 - **Problema**: Necesidad de actualizar toda la documentación del proyecto para reflejar el estado actual
 - **Solución**: Actualización completa de todos los documentos de seguimiento

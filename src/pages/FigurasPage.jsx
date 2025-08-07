@@ -851,6 +851,40 @@ const FigurasPage = () => {
   // Aplicar ordenamiento final
   const filteredVideos = sortVideos(baseCompatibilityFiltered)
 
+  // Función para agrupar videos por categorías cuando hay chips activos
+  const getGroupedVideos = () => {
+    // Si no hay chips activos, mostrar todos los videos sin agrupar
+    if (activeCategoryChips.length === 0) {
+      return [{ groupName: null, videos: filteredVideos }]
+    }
+
+    // Agrupar videos por categorías activas
+    const groupedVideos = []
+    
+    activeCategoryChips.forEach(chipKey => {
+      const category = categoriesList.find(cat => cat.key === chipKey)
+      if (!category) return
+      
+      const videosInCategory = filteredVideos.filter(video => hasCategoryTags(video, chipKey))
+      
+      if (videosInCategory.length > 0) {
+        groupedVideos.push({
+          groupName: category.name,
+          groupKey: chipKey,
+          groupColor: category.color,
+          videos: videosInCategory
+        })
+      }
+    })
+
+    // Si no hay videos en ninguna categoría, mostrar mensaje
+    if (groupedVideos.length === 0) {
+      return [{ groupName: 'Sin resultados', videos: [], isEmpty: true }]
+    }
+
+    return groupedVideos
+  }
+
   // Función para descargar video usando Firebase Storage
   const downloadVideo = async (video) => {
     try {
@@ -1236,8 +1270,53 @@ const FigurasPage = () => {
               <p className="text-gray-400 text-sm mt-2">Sube tu primer video de {selectedStyle.toLowerCase()} usando el botón de arriba</p>
             </div>
                      ) : (
-             <div className={`grid gap-6 ${getVideoConfig().grid}`}>
-               {filteredVideos.map((video) => (
+             <div className="space-y-8">
+               {getGroupedVideos().map((group, groupIndex) => (
+                 <div key={groupIndex}>
+                   {/* Separador de categoría con título y línea */}
+                   {group.groupName && !group.isEmpty && (
+                     <div className="mb-6">
+                       <div className="flex items-center space-x-4 mb-4">
+                         <h3 className={`text-2xl font-bold ${getColorClasses(group.groupColor)}`}>
+                           {group.groupName}
+                         </h3>
+                         <div className={`flex-1 h-0.5 ${getGradientClasses(group.groupColor)}`}></div>
+                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${getColorClasses(group.groupColor)} bg-opacity-10`}>
+                           {group.videos.length} {group.videos.length === 1 ? 'video' : 'videos'}
+                         </span>
+                       </div>
+                     </div>
+                   )}
+                   
+                   {/* Mensaje cuando no hay videos en las categorías seleccionadas */}
+                   {group.isEmpty && (
+                     <div className="text-center py-12">
+                       <div className="mb-4">
+                         <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.34 0-4.47-.881-6.08-2.33" />
+                         </svg>
+                       </div>
+                       <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron videos</h3>
+                       <p className="text-gray-500 mb-4">
+                         No hay videos que coincidan con las categorías seleccionadas: <strong>{activeCategoryChips.map(chipKey => categoriesList.find(cat => cat.key === chipKey)?.name || chipKey).join(', ')}</strong>
+                       </p>
+                       <button
+                         onClick={() => {
+                           setActiveCategoryChips([])
+                           setSortBy('none')
+                           setShowFavorites(false)
+                         }}
+                         className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg hover:from-pink-600 hover:to-purple-600 transition-all duration-200"
+                       >
+                         Limpiar filtros
+                       </button>
+                     </div>
+                   )}
+                   
+                   {/* Galería de videos del grupo */}
+                   {!group.isEmpty && (
+                     <div className={`grid gap-6 ${getVideoConfig().grid}`}>
+                       {group.videos.map((video) => (
                 <div 
                   key={video.id} 
                   className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${
@@ -1823,7 +1902,12 @@ const FigurasPage = () => {
                   </div>
                 </div>
               ))}
-            </div>
+                       </div>
+                     )}
+                    </div>
+                  </div>
+                ))}
+              </div>
            )}
          </div>
         )}
