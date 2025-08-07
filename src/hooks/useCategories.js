@@ -11,7 +11,7 @@ const categoryStructure = {
       salsa: {
         name: 'SALSA',
         icon: 'Music',
-        color: 'pink',
+        color: 'salsa',
         categories: {
           estilo: {
             name: 'ESTILO',
@@ -38,7 +38,7 @@ const categoryStructure = {
       bachata: {
         name: 'BACHATA',
         icon: 'Heart',
-        color: 'red',
+        color: 'bachata',
         categories: {
           estilo: {
             name: 'ESTILO',
@@ -89,10 +89,10 @@ const categoryStructure = {
           }
         }
       },
-      zouk: {
-        name: 'ZOUK',
-        icon: 'Star',
-        color: 'purple',
+             zouk: {
+         name: 'ZOUK',
+         icon: 'Star',
+         color: 'zouk',
         categories: {
           estilo: {
             name: 'ESTILO',
@@ -119,7 +119,7 @@ const categoryStructure = {
       merengue: {
         name: 'MERENGUE',
         icon: 'Sun',
-        color: 'orange',
+        color: 'merengue',
         categories: {
           estilo: {
             name: 'ESTILO',
@@ -284,6 +284,13 @@ export const useCategories = (page = 'figuras', style = 'salsa') => {
   // Función para obtener colores de categorías
   const getColorClasses = (color) => {
     const colorMap = {
+             // Colores específicos de estilos de baile
+       salsa: 'bg-orange-100 text-orange-800 border-orange-200',
+       bachata: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+       merengue: 'bg-cyan-100 text-cyan-800 border-cyan-200',
+       zouk: 'bg-violet-100 text-violet-800 border-violet-200',
+      
+      // Colores genéricos para categorías
       pink: 'bg-pink-100 text-pink-800 border-pink-200',
       red: 'bg-red-100 text-red-800 border-red-200',
       orange: 'bg-orange-100 text-orange-800 border-orange-200',
@@ -298,6 +305,13 @@ export const useCategories = (page = 'figuras', style = 'salsa') => {
   // Función para obtener gradientes de categorías
   const getGradientClasses = (color) => {
     const gradientMap = {
+             // Gradientes específicos de estilos de baile
+       salsa: 'from-orange-500 to-pink-500',      // Naranja a rosa (original)
+       bachata: 'from-emerald-500 to-teal-500',   // Verde esmeralda a verde azulado
+       merengue: 'from-cyan-500 to-blue-500',     // Cian a azul (al revés de salsa)
+       zouk: 'from-violet-500 to-indigo-500',     // Violeta a índigo
+      
+      // Gradientes genéricos para categorías
       pink: 'from-pink-500 to-rose-500',
       red: 'from-red-500 to-pink-500',
       orange: 'from-orange-500 to-red-500',

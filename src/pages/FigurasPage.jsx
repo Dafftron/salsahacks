@@ -943,7 +943,7 @@ const FigurasPage = () => {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">
             <span className="text-pink-500">FIGURAS</span>
-            <span className="text-pink-600"> - {selectedStyle.toUpperCase()}</span>
+            <span className={`bg-gradient-to-r ${getGradientClasses(selectedStyle)} bg-clip-text text-transparent`}> - {selectedStyle.toUpperCase()}</span>
           </h1>
           <p className="text-gray-600 text-lg">Galería de videos de figuras de {selectedStyle.toLowerCase()}</p>
         </div>
@@ -953,10 +953,8 @@ const FigurasPage = () => {
           {availableStyles.map((style) => {
             const IconComponent = iconMap[style.icon]
                                       const isSelected = selectedStyle === style.key
-             // Usar el mismo degradado del botón de upload para SALSA
-             const gradientClass = style.key === 'salsa' 
-               ? 'from-orange-500 to-pink-500' 
-               : getGradientClasses(style.color)
+             // Usar gradientes específicos para cada estilo
+             const gradientClass = getGradientClasses(style.color)
             
             return (
                              <button
@@ -1077,7 +1075,7 @@ const FigurasPage = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
           <button 
             onClick={() => setIsUploadModalOpen(true)}
-            className="flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+            className={`flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105`}
           >
             <Upload className="h-5 w-5" />
             <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>

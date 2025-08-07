@@ -175,6 +175,26 @@
   - Mantienen funcionalidad completa
   - Mejor experiencia visual
 
+### 🎨 **COMMIT #072: SISTEMA DE COLORES ESPECÍFICOS POR ESTILO DE BAILE** - 2024-12-19
+- **Problema**: Los estilos de baile no tenían colores distintivos, especialmente Bachata se parecía a Salsa y Merengue era igual pero al revés
+- **Solución**: Implementado sistema de colores únicos para cada estilo de baile
+- **Cambios**:
+  - **Salsa**: Mantenido naranja a rosa (`from-orange-500 to-pink-500`)
+  - **Bachata**: Verde esmeralda a verde azulado (`from-emerald-500 to-teal-500`) - Más distinguible
+  - **Merengue**: Cian a azul (`from-cyan-500 to-blue-500`) - Al revés de salsa
+  - **Zouk**: Violeta a índigo (`from-violet-500 to-indigo-500`) - Color único
+  - **Títulos dinámicos**: El nombre del estilo usa gradiente específico
+  - **Botones de acción**: Botón de subir videos usa color del estilo seleccionado
+  - **Botones de estilo**: Cada estilo tiene su color distintivo
+- **Archivos modificados**:
+  - `src/hooks/useCategories.js` - Colores y gradientes específicos por estilo
+  - `src/pages/FigurasPage.jsx` - Aplicación de colores dinámicos
+- **Beneficios**:
+  - Cada estilo es visualmente distinguible
+  - Mejor experiencia de usuario
+  - Interfaz más profesional y organizada
+  - Identificación rápida del estilo activo
+
 ### 🎬 **FEATURE: GENERACIÓN DE VIDEOS CON AJUSTE DE BPM** - 2024-12-19
 - **Problema**: No existía funcionalidad para generar videos combinados con ajuste automático de BPM
 - **Solución**: Implementado sistema completo de generación de videos con procesamiento de BPM
