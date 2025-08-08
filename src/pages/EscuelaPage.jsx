@@ -1,149 +1,327 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect, lazy, Suspense } from 'react'
 import { 
   Search, 
   Upload, 
   Plus, 
-  Video, 
   Heart, 
-  Settings, 
-  Music, 
-  GraduationCap, 
-  Calendar, 
-  Home, 
-  Bell, 
-  Sun, 
-  User,
-  Zap,
-  Star,
-  BookOpen,
-  Clock,
-  Users,
+  Music,
+  Trash2,
   Filter,
-  Grid,
-  List,
-  Download,
-  Play,
+  X,
+  ChevronDown,
+  ChevronUp,
+  Star,
+  Zap,
   Edit,
-  Trash2
+  Download,
+  Maximize2,
+  Minimize2,
+  Play,
+  Shuffle,
+  Eye,
+  EyeOff,
+  Loader
 } from 'lucide-react'
+import { useCategories } from '../hooks/useCategories'
+import CategoryBadge from '../components/common/CategoryBadge'
+import ConfirmModal from '../components/common/ConfirmModal'
+import Toast from '../components/common/Toast'
+import CardSizeSelector from '../components/common/CardSizeSelector'
+import CompactCardActions from '../components/common/CompactCardActions'
+import CategoryChips from '../components/common/CategoryChips'
+import { useSequenceBuilderContext } from '../contexts/SequenceBuilderContext'
+
+// Lazy loading de componentes pesados
+const VideoUploadModal = lazy(() => import('../components/video/VideoUploadModal'))
+const VideoEditModal = lazy(() => import('../components/video/VideoEditModal'))
+const VideoPlayer = lazy(() => import('../components/video/VideoPlayer'))
+const DownloadModal = lazy(() => import('../components/video/DownloadModal'))
+const SequenceBuilder = lazy(() => import('../components/sequence/SequenceBuilder'))
+const SequenceGallery = lazy(() => import('../components/sequence/SequenceGallery'))
+const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVideoPlayer'))
+
+import { 
+  getVideos, 
+  deleteVideoDocument, 
+  subscribeToVideosByStyle,
+  deleteAllVideos,
+  updateVideoThumbnailPaths,
+  diagnoseVideos,
+  updateVideoDocument,
+  cleanupDuplicateTags,
+  toggleVideoLike,
+  checkUserLikedVideo,
+  checkUserFavorite
+} from '../services/firebase/firestore'
+import {
+  createSequence,
+  getSequencesByStyle,
+  deleteSequence,
+  subscribeToSequencesByStyle,
+  updateSequence
+} from '../services/firebase/sequences'
+import { 
+  deleteVideo, 
+  deleteAllVideoFiles, 
+  cleanupOrphanedFiles,
+  getFileURL,
+  migrateVideosToOrganizedStructure
+} from '../services/firebase/storage'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
-import { useCategories } from '../hooks/useCategories'
-import { getVideos, toggleVideoLike } from '../services/firebase/firestore'
-import { createSequence, getSequencesByStyle, deleteSequence } from '../services/firebase/sequences'
-import { useSequenceBuilderContext } from '../contexts/SequenceBuilderContext'
-import VideoUploadModal from '../components/video/VideoUploadModal'
-import VideoPlayer from '../components/video/VideoPlayer'
-import SequenceBuilder from '../components/sequence/SequenceBuilder'
-import SequenceGallery from '../components/sequence/SequenceGallery'
-import Toast from '../components/common/Toast'
-import ConfirmModal from '../components/common/ConfirmModal'
-import CategoryChips from '../components/common/CategoryChips'
+import { useCardSize } from '../contexts/CardSizeContext'
+
+// Componente de carga para lazy loading
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-8">
+    <Loader className="w-6 h-6 animate-spin text-blue-500" />
+    <span className="ml-2 text-gray-600">Cargando...</span>
+  </div>
+)
 
 const EscuelaPage = () => {
-  const { user } = useAuth()
-  const { isDark } = useTheme()
-  const [selectedStyle, setSelectedStyle] = useState('salsa')
-  const [activeTab, setActiveTab] = useState('videos')
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+  const [editModal, setEditModal] = useState({ isOpen: false, video: null })
   const [videos, setVideos] = useState([])
-  const [sequences, setSequences] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategories, setSelectedCategories] = useState([])
-  const [viewMode, setViewMode] = useState('grid')
-  const [showUploadModal, setShowUploadModal] = useState(false)
-  const [showBuilder, setShowBuilder] = useState(false)
-  const [selectedVideo, setSelectedVideo] = useState(null)
-  const [showVideoModal, setShowVideoModal] = useState(false)
   const [toasts, setToasts] = useState([])
-  const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: null })
-
-  // Usar el hook de categorías
-  const { categoriesList, getColorClasses } = useCategories('escuela', selectedStyle)
-
-  // Contexto del constructor de secuencias
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, video: null })
+  const [selectedTags, setSelectedTags] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showFilters, setShowFilters] = useState(false)
+  const [activeTab, setActiveTab] = useState('videos')
+  const [syncStatus, setSyncStatus] = useState('idle') // idle, syncing, error
+  const [cleanupModal, setCleanupModal] = useState({ isOpen: false, type: null })
+  const [editSequenceModal, setEditSequenceModal] = useState({ isOpen: false, sequence: null })
+  const [downloadSequenceModal, setDownloadSequenceModal] = useState({ isOpen: false, sequence: null })
+  const [migrationModal, setMigrationModal] = useState({ isOpen: false })
+  const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
+  
+  // Estados para reproductor de video individual
+  const [selectedVideo, setSelectedVideo] = useState(null)
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false)
+  
+  // Estados para reproductor de secuencias
+  const [selectedSequence, setSelectedSequence] = useState(null)
+  const [showSequencePlayer, setShowSequencePlayer] = useState(false)
+  
+  // Estados para el sistema de chips y filtros
+  const [activeCategoryChips, setActiveCategoryChips] = useState([])
+  const [sortBy, setSortBy] = useState('none')
+  const [showFavorites, setShowFavorites] = useState(false)
+  
+  // Estados para secuencias
+  const [sequences, setSequences] = useState([])
+  const [sequencesLoading, setSequencesLoading] = useState(true)
+  
+  const { user } = useAuth()
+  const { getVideoConfig, getSequenceConfig } = useCardSize()
+  
+  // Usar el contexto de constructor de secuencias
   const {
+    addVideoToSequence,
+    removeVideoFromSequence,
+    sequence,
+    sequenceName,
     clearSequence,
-    setSequenceName,
-    setSequenceDescription
+    isBuilderOpen,
+    toggleBuilder,
+    showAllVideos,
+    toggleShowAllVideos,
+    getFilteredVideos,
+    isVideoInSequence,
+    isVideoCompatible,
+    checkCompatibility,
+    loadSequence
   } = useSequenceBuilderContext()
 
-  const styles = [
-    { name: 'salsa', icon: Music, hasNotification: true },
-    { name: 'bachata', icon: Heart },
-    { name: 'kizomba', icon: Zap },
-    { name: 'zouk', icon: Star },
-    { name: 'merengue', icon: Sun }
-  ]
+  // Estado local para el estilo seleccionado
+  const [selectedStyle, setSelectedStyle] = useState('salsa')
+  
+  // Usar el sistema de categorías con estilo dinámico
+  const { 
+    availableStyles,
+    getGradientClasses,
+    categoriesList, 
+    getColorClasses
+  } = useCategories('escuela', selectedStyle)
 
-  // Cargar videos al cambiar el estilo
+  // Función para manejar click en título de categoría
+  const handleCategoryTitleClick = (categoryKey) => {
+    setActiveCategoryChips(prev => {
+      // Si ya está activa, la removemos
+      if (prev.includes(categoryKey)) {
+        return prev.filter(chip => chip !== categoryKey)
+      }
+      // Si no está activa, la agregamos
+      return [...prev, categoryKey]
+    })
+  }
+
+  // Función auxiliar para filtrar videos por estilo
+  const filterVideosByStyle = (videos, style) => {
+    return videos.filter(video => 
+      video.style === style || video.tags?.estilo?.includes(style)
+    )
+  }
+
+  // Función para añadir video al constructor
+  const handleAddVideoToSequence = (video) => {
+    addVideoToSequence(video)
+    if (!isBuilderOpen) {
+      toggleBuilder()
+    }
+  }
+
+  // Mapeo de iconos para los estilos
+  const iconMap = {
+    Music: Music,
+    Heart: Heart,
+    Star: Star,
+    Zap: Zap
+  }
+
+  // Sincronización en tiempo real con Firebase
   useEffect(() => {
-    loadVideos()
-  }, [selectedStyle])
-
-  // Cargar secuencias al cambiar el estilo
-  useEffect(() => {
-    loadSequences()
-  }, [selectedStyle])
-
-  const loadVideos = async () => {
-    try {
-      setLoading(true)
-      const videosData = await getVideos(selectedStyle, 'escuela')
+    setSyncStatus('syncing')
+    
+    // Suscribirse a cambios en tiempo real para el estilo seleccionado
+    const unsubscribe = subscribeToVideosByStyle(selectedStyle, (videosData) => {
       setVideos(videosData)
-    } catch (error) {
-      console.error('Error cargando videos:', error)
-      setError('Error cargando videos')
-    } finally {
       setLoading(false)
+      setSyncStatus('idle')
+    })
+    
+    // Cleanup al desmontar o cambiar estilo
+    return () => {
+      unsubscribe()
     }
-  }
+  }, [selectedStyle])
 
-  const loadSequences = async () => {
+  // Verificar estado de likes del usuario cuando se cargan videos
+  useEffect(() => {
+    if (videos.length > 0 && user) {
+      const checkUserLikesAndFavorites = async () => {
+        const updatedVideos = await Promise.all(
+          videos.map(async (video) => {
+            try {
+              const [likeResult, favoriteResult] = await Promise.all([
+                checkUserLikedVideo(video.id, user.uid),
+                checkUserFavorite(video.id, user.uid)
+              ])
+              return { 
+                ...video, 
+                userLiked: likeResult.userLiked,
+                isFavorite: favoriteResult.isFavorite
+              }
+            } catch (error) {
+              console.error('Error al verificar like/favorito para video:', video.id, error)
+              return { ...video, userLiked: false, isFavorite: false }
+            }
+          })
+        )
+        
+        setVideos(updatedVideos)
+      }
+      
+      checkUserLikesAndFavorites()
+    }
+  }, [videos.length, user])
+
+  // Sincronización en tiempo real para secuencias
+  useEffect(() => {
+    if (!selectedStyle) {
+      return
+    }
+    
+    setSequencesLoading(true)
+    
     try {
-      const sequencesData = await getSequencesByStyle(selectedStyle, 'escuela')
-      setSequences(sequencesData)
+      // Suscribirse a cambios en tiempo real para las secuencias del estilo seleccionado
+      const unsubscribe = subscribeToSequencesByStyle(selectedStyle, (sequencesData) => {
+        setSequences(sequencesData)
+        setSequencesLoading(false)
+      })
+      
+      // Cleanup al desmontar o cambiar estilo
+      return () => {
+        unsubscribe()
+      }
     } catch (error) {
-      console.error('Error cargando secuencias:', error)
+      console.error('❌ Error al suscribirse a secuencias:', error)
+      setSequencesLoading(false)
     }
+  }, [selectedStyle])
+
+
+
+
+
+  const handleCategoryChipFilter = (chips) => {
+    setActiveCategoryChips(chips)
   }
 
-  const handleVideoUpload = async (videoData) => {
-    try {
-      // Recargar videos después de subir
-      await loadVideos()
-      addToast('Video subido exitosamente', 'success')
-      setShowUploadModal(false)
-    } catch (error) {
-      console.error('Error subiendo video:', error)
-      addToast('Error subiendo video', 'error')
-    }
+  // Funciones de ordenamiento y filtros
+  const handleSortChange = (sortKey) => {
+    setSortBy(sortKey)
   }
 
-  const handleSaveSequence = async (sequenceData) => {
-    try {
-      await createSequence(sequenceData)
-      await loadSequences()
-      addToast('Secuencia guardada exitosamente', 'success')
-      setShowBuilder(false)
-    } catch (error) {
-      console.error('Error guardando secuencia:', error)
-      addToast('Error guardando secuencia', 'error')
-    }
+  const handleShowFavorites = (show) => {
+    setShowFavorites(show)
   }
 
-  const handleDeleteSequence = async (sequenceId) => {
-    try {
-      await deleteSequence(sequenceId)
-      await loadSequences()
-      addToast('Secuencia eliminada exitosamente', 'success')
-    } catch (error) {
-      console.error('Error eliminando secuencia:', error)
-      addToast('Error eliminando secuencia', 'error')
-    }
+  const hasCategoryTags = (video, categoryKey) => {
+    if (!video.tags || !video.tags[categoryKey]) return false
+    return Array.isArray(video.tags[categoryKey]) && video.tags[categoryKey].length > 0
   }
 
+  // Función de ordenamiento
+  const sortVideos = (videosToSort) => {
+    if (sortBy === 'none') return videosToSort
+    
+    return [...videosToSort].sort((a, b) => {
+      switch (sortBy) {
+        case 'name':
+          return (a.title || '').localeCompare(b.title || '')
+        case 'name-desc':
+          return (b.title || '').localeCompare(a.title || '')
+        case 'rating':
+          return (a.rating || 0) - (b.rating || 0)
+        case 'rating-desc':
+          return (b.rating || 0) - (a.rating || 0)
+        case 'likes':
+          return (a.likes || 0) - (b.likes || 0)
+        case 'likes-desc':
+          return (b.likes || 0) - (a.likes || 0)
+        default:
+          return 0
+      }
+    })
+  }
+
+  // Función para actualizar la lista de videos después de subir uno nuevo
+  const handleVideoUploaded = async (video) => {
+    addToast(`${video.title} subido exitosamente`, 'success')
+    // La sincronización en tiempo real se encargará de actualizar la lista automáticamente
+  }
+
+  // Función para abrir modal de edición
+  const openEditModal = (video) => {
+    setEditModal({ isOpen: true, video })
+  }
+
+  // Función para cerrar modal de edición
+  const closeEditModal = () => {
+    setEditModal({ isOpen: false, video: null })
+  }
+
+  // Función para manejar video actualizado
+  const handleVideoUpdated = (updatedVideo) => {
+    setVideos(prev => prev.map(v => v.id === updatedVideo.id ? updatedVideo : v))
+    addToast(`${updatedVideo.title} actualizado exitosamente`, 'success')
+  }
+
+  // Función para manejar likes
   const handleVideoLike = async (video) => {
     if (!user) {
       addToast('Debes iniciar sesión para dar like', 'error')
@@ -152,16 +330,28 @@ const EscuelaPage = () => {
 
     try {
       const result = await toggleVideoLike(video.id, user.uid)
+      
       if (result.success) {
         // Actualizar el video en el estado local
         setVideos(prevVideos => 
           prevVideos.map(v => 
             v.id === video.id 
-              ? { ...v, userLiked: result.userLiked, likes: result.newLikes }
+              ? { 
+                  ...v, 
+                  likes: result.likes, 
+                  likedBy: result.likedBy,
+                  userLiked: result.userLiked,
+                  isFavorite: result.isFavorite
+                }
               : v
           )
         )
-        addToast(`Has ${result.userLiked ? 'dado like a' : 'quitado like de'} "${video.title}"`, 'success')
+        
+        const action = result.userLiked ? 'dado like a' : 'quitado like de'
+        const favoriteAction = result.isFavorite ? 'y agregado a favoritos' : 'y removido de favoritos'
+        addToast(`Has ${action} "${video.title}" ${favoriteAction}`, 'success')
+      } else {
+        addToast('Error al actualizar like', 'error')
       }
     } catch (error) {
       console.error('Error al manejar like:', error)
@@ -169,49 +359,413 @@ const EscuelaPage = () => {
     }
   }
 
-  const handlePlayVideo = (video) => {
-    setSelectedVideo(video)
-    setShowVideoModal(true)
-  }
-
+  // Función para añadir notificaciones
   const addToast = (message, type = 'success') => {
     const id = Date.now()
     setToasts(prev => [...prev, { id, message, type }])
   }
 
+  // Función para eliminar notificaciones
   const removeToast = (id) => {
     setToasts(prev => prev.filter(toast => toast.id !== id))
   }
 
-  const handleToggleBuilder = () => {
-    if (showBuilder) {
-      clearSequence()
-      setSequenceName('')
-      setSequenceDescription('')
+  // Funciones para manejar secuencias
+  const handleSaveSequence = async (sequenceData) => {
+    try {
+      const sequenceWithStyle = {
+        ...sequenceData,
+        style: selectedStyle
+      }
+      
+      // Verificar si es una edición o una nueva secuencia
+      if (sequenceData.id) {
+        // Es una edición - actualizar secuencia existente
+        const result = await updateSequence(sequenceData.id, sequenceWithStyle)
+        addToast('✅ Secuencia actualizada exitosamente')
+      } else {
+        // Es una nueva secuencia - crear nueva
+        const result = await createSequence(sequenceWithStyle)
+        addToast('✅ Secuencia guardada exitosamente. Ve a "GALERÍA DE SECUENCIAS" para verla.')
+      }
+    } catch (error) {
+      console.error('❌ Error al guardar secuencia:', error)
+      addToast('Error al guardar la secuencia', 'error')
+      throw error
     }
-    setShowBuilder(!showBuilder)
   }
 
-  // Filtrar videos
-  const filteredVideos = videos.filter(video => {
-    const matchesSearch = video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         video.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesCategories = selectedCategories.length === 0 || 
-      selectedCategories.some(category => {
-        const [categoryKey, tag] = category.split(':')
-        return video.tags?.[categoryKey]?.includes(tag)
-      })
-    
-    return matchesSearch && matchesCategories
-  })
+  const handleDeleteSequence = async (sequenceId) => {
+    try {
+      await deleteSequence(sequenceId)
+      addToast('Secuencia eliminada exitosamente')
+    } catch (error) {
+      console.error('Error al eliminar secuencia:', error)
+      addToast('Error al eliminar la secuencia', 'error')
+      throw error
+    }
+  }
 
-  // Obtener tags ordenados para un video
+  const handlePlaySequence = (sequence) => {
+    setSelectedSequence(sequence)
+    setShowSequencePlayer(true)
+    addToast(`🎬 Reproduciendo secuencia: ${sequence.name}`, 'info')
+  }
+
+  const handleEditSequence = (sequenceToEdit) => {
+    // Verificar si hay una secuencia en construcción
+    if (sequence.length > 0 || sequenceName.trim()) {
+      // Abrir modal de confirmación
+      setEditSequenceModal({ isOpen: true, sequence: sequenceToEdit })
+    } else {
+      // Cargar directamente la secuencia
+      loadSequence(sequenceToEdit)
+      addToast(`Secuencia "${sequenceToEdit.name}" cargada para edición`)
+    }
+  }
+
+  const handleConfirmEditSequence = () => {
+    const sequenceToEdit = editSequenceModal.sequence
+    if (sequenceToEdit) {
+      loadSequence(sequenceToEdit)
+      addToast(`Secuencia "${sequenceToEdit.name}" cargada para edición`)
+    }
+    setEditSequenceModal({ isOpen: false, sequence: null })
+  }
+
+  const handleCancelEditSequence = () => {
+    setEditSequenceModal({ isOpen: false, sequence: null })
+  }
+
+  const handleDownloadSequence = (sequence) => {
+    setDownloadSequenceModal({ isOpen: true, sequence })
+  }
+
+  const handleCloseDownloadSequence = () => {
+    setDownloadSequenceModal({ isOpen: false, sequence: null })
+  }
+  
+  // Función para reproducir video individual
+  const handlePlayVideo = (video) => {
+    setSelectedVideo(video)
+    setShowVideoPlayer(true)
+    addToast(`🎬 Reproduciendo: ${video.title}`, 'info')
+  }
+  
+  // Función para cerrar el reproductor
+  const handleCloseVideoPlayer = () => {
+    setShowVideoPlayer(false)
+    setSelectedVideo(null)
+  }
+  
+  // Función para cerrar el reproductor de secuencias
+  const handleCloseSequencePlayer = () => {
+    setShowSequencePlayer(false)
+    setSelectedSequence(null)
+  }
+
+  // Función para eliminar video
+  const handleDeleteVideo = async (video) => {
+    try {
+      // Eliminar de Firebase Storage
+      const storageResult = await deleteVideo(video.videoPath, video.thumbnailPath)
+      
+      // Si hay error al eliminar archivos, intentar solo eliminar el video
+      if (!storageResult.success) {
+        
+        // Intentar eliminar solo el video si el thumbnail falló
+        if (storageResult.error && storageResult.error.includes('thumbnails')) {
+          const videoOnlyResult = await deleteVideo(video.videoPath, null)
+          if (!videoOnlyResult.success) {
+            addToast(`Error al eliminar archivos: ${storageResult.error}`, 'error')
+            return
+          }
+        } else {
+          addToast(`Error al eliminar archivos: ${storageResult.error}`, 'error')
+          return
+        }
+      }
+
+      // Eliminar de Firestore
+      const firestoreResult = await deleteVideoDocument(video.id)
+      
+      if (!firestoreResult.success) {
+        addToast(`Error al eliminar metadatos: ${firestoreResult.error}`, 'error')
+        return
+      }
+
+      // Actualizar lista local
+      setVideos(prev => {
+        const newVideos = prev.filter(v => v.id !== video.id)
+        return newVideos
+      })
+      
+      addToast(`${video.title} eliminado correctamente`, 'success')
+    } catch (error) {
+      console.error('❌ Error deleting video:', error)
+      addToast('Error inesperado al eliminar video', 'error')
+    }
+  }
+
+  // Función para abrir modal de eliminación
+  const openDeleteModal = (video) => {
+    setDeleteModal({ isOpen: true, video })
+  }
+
+  // Función para cerrar modal de eliminación
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, video: null })
+  }
+
+
+
+  // Funciones de filtrado
+  const handleTagFilter = (tag) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    )
+  }
+
+  const clearFilters = () => {
+    setSelectedTags([])
+    setSearchTerm('')
+  }
+
+  // Funciones de limpieza y sincronización
+  const handleCleanupData = async (type) => {
+    try {
+      setSyncStatus('syncing')
+      addToast('Iniciando limpieza de datos...', 'info')
+      
+      if (type === 'update') {
+        // Actualizar rutas de thumbnails existentes
+        const result = await updateVideoThumbnailPaths()
+        if (result.success) {
+          addToast(`✅ ${result.updatedCount} videos actualizados`, 'success')
+        } else {
+          addToast(`❌ Error: ${result.error}`, 'error')
+        }
+      } else if (type === 'cleanup') {
+        // Limpiar archivos huérfanos
+        const videosData = await getVideos()
+        const result = await cleanupOrphanedFiles(videosData)
+        if (result.success) {
+          addToast(`🧹 ${result.orphanedVideosDeleted} videos y ${result.orphanedThumbnailsDeleted} thumbnails huérfanos eliminados`, 'success')
+        } else {
+          addToast(`❌ Error: ${result.error}`, 'error')
+        }
+      } else if (type === 'cleanup-tags') {
+        // Limpiar tags duplicados
+        const result = await cleanupDuplicateTags()
+        if (result.success) {
+          addToast(`🏷️ ${result.updatedCount} videos actualizados con tags limpios`, 'success')
+        } else {
+          addToast(`❌ Error: ${result.error}`, 'error')
+        }
+      } else if (type === 'delete-all') {
+        // Eliminar todos los videos (confirmar primero)
+        const confirmed = window.confirm('¿Estás seguro de que quieres eliminar TODOS los videos? Esta acción no se puede deshacer.')
+        if (!confirmed) {
+          setSyncStatus('idle')
+          return
+        }
+        
+        // Eliminar de Firestore
+        const firestoreResult = await deleteAllVideos()
+        if (!firestoreResult.success) {
+          addToast(`❌ Error eliminando documentos: ${firestoreResult.error}`, 'error')
+          setSyncStatus('idle')
+          return
+        }
+        
+        // Eliminar archivos de Storage
+        const storageResult = await deleteAllVideoFiles()
+        if (!storageResult.success) {
+          addToast(`❌ Error eliminando archivos: ${storageResult.error}`, 'error')
+          setSyncStatus('idle')
+          return
+        }
+        
+        addToast(`🗑️ ${firestoreResult.deletedCount} videos eliminados completamente`, 'success')
+      }
+      
+      setSyncStatus('idle')
+      setCleanupModal({ isOpen: false, type: null })
+    } catch (error) {
+      console.error('Error en limpieza:', error)
+      addToast(`❌ Error inesperado: ${error.message}`, 'error')
+      setSyncStatus('idle')
+    }
+  }
+
+  const openCleanupModal = (type) => {
+    setCleanupModal({ isOpen: true, type })
+  }
+
+  const closeCleanupModal = () => {
+    setCleanupModal({ isOpen: false, type: null })
+  }
+
+  // Función para ejecutar diagnóstico de videos
+  const handleDiagnoseVideos = async () => {
+    try {
+      addToast('Ejecutando diagnóstico de videos...', 'info')
+      const result = await diagnoseVideos()
+      
+      if (result.success) {
+        let message = `Diagnóstico: ${result.totalVideos} videos total, ${result.salsaVideos} de salsa`
+        if (result.fig003Found) {
+          message += ` ✅ Fig003 encontrado`
+        } else {
+          message += ` ❌ Fig003 NO encontrado`
+        }
+        if (result.videosWithoutResolution > 0) {
+          message += ` ⚠️ ${result.videosWithoutResolution} sin resolución`
+        }
+        
+        addToast(message, 'success')
+      } else {
+        addToast(`Error en diagnóstico: ${result.error}`, 'error')
+      }
+    } catch (error) {
+      console.error('Error ejecutando diagnóstico:', error)
+      addToast('Error al ejecutar diagnóstico', 'error')
+    }
+  }
+
+  // Función para actualizar resoluciones de todos los videos
+  const handleUpdateAllResolutions = async () => {
+    try {
+      addToast('🔄 Actualizando resoluciones de videos...', 'info')
+      
+      // Obtener todos los videos
+      const allVideos = await getVideos()
+      const videosToUpdate = allVideos.filter(video => 
+        !video.resolution || video.resolution === 'Unknown'
+      )
+      
+      if (videosToUpdate.length === 0) {
+        addToast('✅ Todos los videos ya tienen resolución detectada', 'success')
+        return
+      }
+      
+      let updatedCount = 0
+      
+      for (const video of videosToUpdate) {
+        try {
+          // Detectar resolución del video
+          const videoElement = document.createElement('video')
+          videoElement.crossOrigin = 'anonymous'
+          
+          await new Promise((resolve, reject) => {
+            videoElement.onloadedmetadata = () => {
+              const videoWidth = videoElement.videoWidth
+              const videoHeight = videoElement.videoHeight
+              const maxDimension = Math.max(videoWidth, videoHeight)
+              
+              let resolution = 'Unknown'
+              if (maxDimension >= 3840) resolution = '4K'
+              else if (maxDimension >= 1920) resolution = '1080p'
+              else if (maxDimension >= 1280) resolution = '720p'
+              else if (maxDimension >= 854) resolution = '480p'
+              else resolution = '360p'
+              
+              // Actualizar en Firestore con resolución y dimensiones
+              updateVideoDocument(video.id, { 
+                resolution,
+                videoWidth,
+                videoHeight
+              })
+              updatedCount++
+              resolve()
+            }
+            
+            videoElement.onerror = reject
+            videoElement.src = video.videoUrl
+          })
+          
+          // Limpiar el elemento de video
+          videoElement.remove()
+          
+        } catch (error) {
+          console.error(`Error actualizando resolución para video ${video.id}:`, error)
+        }
+      }
+      
+      addToast(`✅ Resoluciones actualizadas: ${updatedCount} videos`, 'success')
+      
+    } catch (error) {
+      console.error('Error al actualizar resoluciones:', error)
+      addToast('Error al actualizar resoluciones', 'error')
+    }
+  }
+
+  // Función para migrar videos a estructura organizada
+  const handleMigrateVideos = async () => {
+    try {
+      addToast('🔄 Iniciando migración REAL de videos a estructura organizada...', 'info')
+      
+      const result = await migrateVideosToOrganizedStructure(videos)
+      
+      if (result.success) {
+        let message = `✅ Migración REAL completada: ${result.successfulMigrations} videos movidos físicamente`
+        if (result.alreadyOrganized > 0) {
+          message += `, ${result.alreadyOrganized} ya organizados`
+        }
+        if (result.failedMigrations > 0) {
+          message += `, ${result.failedMigrations} fallidos`
+        }
+        
+        addToast(message, 'success')
+        
+        // Recargar videos para reflejar los cambios
+        window.location.reload()
+      } else {
+        addToast(`❌ Error en migración: ${result.error}`, 'error')
+      }
+    } catch (error) {
+      console.error('Error ejecutando migración:', error)
+      addToast('❌ Error al ejecutar migración', 'error')
+    }
+  }
+
+  // Funciones de búsqueda
+  const normalizeText = (text) => {
+    return text.toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s]/g, '')
+  }
+
+  const advancedSearch = (video, searchTerms) => {
+    if (searchTerms.length === 0) return true
+    
+    const normalizedTitle = normalizeText(video.title || '')
+    const normalizedDescription = normalizeText(video.description || '')
+    const normalizedTags = (video.tags ? Object.values(video.tags).flat() : []).map(normalizeText)
+    
+    return searchTerms.every(searchWord => {
+      const normalizedSearchWord = normalizeText(searchWord)
+      
+      if (normalizedTitle.includes(normalizedSearchWord)) return true
+      if (normalizedDescription.includes(normalizedSearchWord)) return true
+      if (normalizedTags.some(tag => tag.includes(normalizedSearchWord))) return true
+      
+      return false
+    })
+  }
+
+
+
+  // Función para obtener tags ordenados según el orden de categorías
   const getOrderedTags = (video) => {
     if (!video.tags || Object.keys(video.tags).length === 0) {
       return []
     }
-    
+
+    // Crear array de tags ordenados según el orden de categoriesList
     const orderedTags = []
     
     categoriesList.forEach(category => {
@@ -226,303 +780,556 @@ const EscuelaPage = () => {
         })
       }
     })
-    
+
     return orderedTags
   }
 
+  // Función para obtener tags iniciales ordenados
+  const getOrderedTagsIniciales = (video) => {
+    if (!video.tagsIniciales || Object.keys(video.tagsIniciales).length === 0) {
+      return []
+    }
+
+    const orderedTags = []
+    
+    categoriesList.forEach(category => {
+      const categoryTags = video.tagsIniciales[category.key]
+      if (Array.isArray(categoryTags)) {
+        categoryTags.forEach(tag => {
+          orderedTags.push({
+            tag,
+            categoryKey: category.key,
+            color: category.color,
+            type: 'inicial'
+          })
+        })
+      }
+    })
+
+    return orderedTags
+  }
+
+  // Función para obtener tags finales ordenados
+  const getOrderedTagsFinales = (video) => {
+    if (!video.tagsFinales || Object.keys(video.tagsFinales).length === 0) {
+      return []
+    }
+
+    const orderedTags = []
+    
+    categoriesList.forEach(category => {
+      const categoryTags = video.tagsFinales[category.key]
+      if (Array.isArray(categoryTags)) {
+        categoryTags.forEach(tag => {
+          orderedTags.push({
+            tag,
+            categoryKey: category.key,
+            color: category.color,
+            type: 'final'
+          })
+        })
+      }
+    })
+
+    return orderedTags
+  }
+
+  // Filtrar videos basado en tags seleccionados y búsqueda avanzada
+  const baseFilteredVideos = videos.filter(video => {
+    // Dividir términos de búsqueda por espacios y filtrar vacíos
+    const searchTerms = searchTerm
+      .split(' ')
+      .map(term => term.trim())
+      .filter(term => term.length > 0)
+
+    // Filtro por búsqueda avanzada
+    const searchMatch = advancedSearch(video, searchTerms)
+
+    // Filtro por tags - EXCLUYENTE (todos los tags seleccionados deben estar presentes)
+    const tagsMatch = selectedTags.length === 0 || 
+      selectedTags.every(tag => {
+        // Buscar en todas las categorías de tags del video
+        if (video.tags) {
+          return Object.values(video.tags).some(categoryTags => 
+            Array.isArray(categoryTags) && categoryTags.includes(tag)
+          )
+        }
+        return false
+      })
+
+      // Filtro por chips de categorías
+  const categoryMatch = activeCategoryChips.length === 0 || 
+    activeCategoryChips.some(chip => hasCategoryTags(video, chip))
+
+  // Filtro por favoritos
+  const favoritesMatch = !showFavorites || video.isFavorite
+
+  return searchMatch && tagsMatch && categoryMatch && favoritesMatch
+  })
+
+  // Aplicar filtro de compatibilidad sobre los videos ya filtrados
+  const baseCompatibilityFiltered = getFilteredVideos(baseFilteredVideos)
+
+  // Aplicar ordenamiento final
+  const filteredVideos = sortVideos(baseCompatibilityFiltered)
+
+  // Función para descargar video usando el sistema optimizado
+  const downloadVideo = async (video) => {
+    try {
+      // Usar el sistema de descarga optimizado
+      const { ref, getDownloadURL } = await import('firebase/storage')
+      const { storage } = await import('../services/firebase/config')
+      
+      const videoRef = ref(storage, video.videoPath)
+      const downloadURL = await getDownloadURL(videoRef)
+      
+      // Descargar video con timeout y mejor manejo de errores
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 segundos timeout
+      
+      const response = await fetch(downloadURL, {
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+      
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status} ${response.statusText}`)
+      }
+      
+      const videoBlob = await response.blob()
+      
+      if (videoBlob.size === 0) {
+        throw new Error('Archivo de video vacío')
+      }
+      
+      // Crear enlace de descarga optimizado
+      const url = URL.createObjectURL(videoBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${video.title || 'video'}.mp4`
+      link.target = '_blank'
+      link.rel = 'noopener noreferrer'
+      
+      // Agregar al DOM y hacer clic
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      // Limpiar URL
+      URL.revokeObjectURL(url)
+      
+      addToast('✅ Descarga completada exitosamente', 'success')
+    } catch (error) {
+      console.error('❌ Error en descarga:', error)
+      addToast(`❌ Error al descargar: ${error.message}`, 'error')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-white">
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">
-            <span className="text-pink-500">ESCUELA</span>
-            <span className="text-pink-600"> - SALSA</span>
-          </h1>
-          <p className="text-gray-600 text-lg">Cursos y tutoriales estructurados para aprender salsa</p>
-        </div>
-
-        {/* Style Filters */}
-        <div className="flex flex-wrap justify-center gap-3 mb-8">
-          {styles.map((style) => (
-            <button
-              key={style.name}
-              onClick={() => setSelectedStyle(style.name)}
-              className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                selectedStyle === style.name
-                  ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg transform scale-105'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-              }`}
-            >
-              <style.icon className="h-4 w-4" />
-              <span>{style.name.toUpperCase()}</span>
-              {style.hasNotification && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Tabs */}
-        <div className="flex justify-center mb-8">
-          <div className="flex bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setActiveTab('videos')}
-              className={`px-6 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'videos'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <Video className="inline-block w-4 h-4 mr-2" />
-              Videos
-            </button>
-            <button
-              onClick={() => setActiveTab('secuencias')}
-              className={`px-6 py-2 rounded-md font-medium transition-colors ${
-                activeTab === 'secuencias'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              <BookOpen className="inline-block w-4 h-4 mr-2" />
-              Secuencias
-            </button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between py-6">
+            <div className="text-center sm:text-left mb-4 sm:mb-0">
+              <h1 className="text-3xl font-bold text-gray-900">
+                ESCUELA - SALSA
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Galería de videos de escuela de salsa
+              </p>
+            </div>
+            
+            {/* Style Selector */}
+            <div className="flex space-x-2">
+              {styles.map((style) => {
+                const Icon = style.icon
+                return (
+                  <button
+                    key={style.name}
+                    onClick={() => setSelectedStyle(style.name)}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                      selectedStyle === style.name
+                        ? `bg-gradient-to-r ${getGradientClasses(style.name)} text-white shadow-lg transform scale-105`
+                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="capitalize">{style.name}</span>
+                    {style.hasNotification && (
+                      <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1">
+                        NEW
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Videos Tab */}
-        {activeTab === 'videos' && (
-          <div>
-            {/* Controls */}
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              {/* Search */}
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Buscar videos..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <input
+              type="text"
+              placeholder={`Buscar en ${selectedStyle.toLowerCase()}... (múltiples palabras, sin tildes)`}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
+            />
+          </div>
+          
+          {/* Search Status Indicator */}
+          {searchTerm.trim() && (
+            <div className="mt-3 text-center">
+              <div className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <Search className="h-4 w-4 text-blue-500" />
+                <span className="text-sm text-blue-700">
+                  Buscando: <span className="font-medium">"{searchTerm}"</span>
+                </span>
+                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                  {filteredVideos.length} resultado{filteredVideos.length !== 1 ? 's' : ''}
+                </span>
               </div>
+            </div>
+          )}
+        </div>
 
-              {/* Categories Filter */}
-              <div className="flex-1">
-                <CategoryChips
-                  categories={categoriesList}
-                  selectedCategories={selectedCategories}
-                  onCategoryToggle={(category) => {
-                    setSelectedCategories(prev => 
-                      prev.includes(category)
-                        ? prev.filter(c => c !== category)
-                        : [...prev, category]
-                    )
-                  }}
-                />
-              </div>
-
-              {/* View Mode */}
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'grid'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <Grid className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 rounded-lg transition-colors ${
-                    viewMode === 'list'
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <List className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Upload Button */}
-              {user && (
-                <button
-                  onClick={() => setShowUploadModal(true)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-                >
-                  <Upload className="w-4 h-4" />
-                  <span>Subir Video</span>
-                </button>
+        {/* Tag Filters - Collapsible con títulos clickeables */}
+        {categoriesList.length > 0 && (
+          <div className="mb-8">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center justify-center space-x-2 mx-auto px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+            >
+              <Filter className="h-5 w-5" />
+              <span>Filtros Avanzados por Tags - {selectedStyle}</span>
+              {showFilters ? (
+                <ChevronUp className="h-5 w-5" />
+              ) : (
+                <ChevronDown className="h-5 w-5" />
               )}
+            </button>
+            
+            {/* Collapsible Content */}
+            <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
+              showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}>
+              <div className="space-y-4 bg-gray-50 rounded-lg p-6 border border-gray-200">
+                {categoriesList.map((category) => (
+                  <div key={category.key} className="space-y-2">
+                    {/* Título clickeable de categoría */}
+                    <button
+                      onClick={() => handleCategoryTitleClick(category.key)}
+                      className={`w-full text-center font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 ${
+                        activeCategoryChips.includes(category.key)
+                          ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                          : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center space-x-2">
+                        <span>{category.name}</span>
+                        {activeCategoryChips.includes(category.key) && (
+                          <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded">
+                            ACTIVO
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                    
+                    {/* Tags de la categoría */}
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {category.tags.map(tag => (
+                        <button
+                          key={tag}
+                          onClick={() => handleTagFilter(tag)}
+                          className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                            selectedTags.includes(tag)
+                              ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                              : `${getColorClasses(category.color)} hover:bg-opacity-80`
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons - Main Level */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+          <button 
+            onClick={() => setIsUploadModalOpen(true)}
+            className={`flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105`}
+          >
+            <Upload className="h-5 w-5" />
+            <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
+          </button>
+          <button 
+            onClick={toggleBuilder}
+            className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 ${
+              isBuilderOpen 
+                ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
+                : `bg-gradient-to-r ${getGradientClasses(selectedStyle)} hover:opacity-90 text-white`
+            }`}
+          >
+            <Shuffle className="h-5 w-5" />
+            <span>{isBuilderOpen ? 'OCULTAR SECUENCIA' : 'CREAR SECUENCIA'}</span>
+          </button>
+        </div>
+
+        {/* Botones de ordenamiento y favoritos */}
+        <div className="flex flex-wrap justify-center gap-3 mb-6">
+          {/* Botón A-Z/Z-A combinado */}
+          <button
+            onClick={() => handleSortChange(sortBy === 'name' ? 'name-desc' : 'name')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              sortBy === 'name' || sortBy === 'name-desc'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <span>{sortBy === 'name' ? 'A-Z' : sortBy === 'name-desc' ? 'Z-A' : 'A-Z'}</span>
+          </button>
+          
+          {/* Botón Puntuación */}
+          <button
+            onClick={() => handleSortChange(sortBy === 'rating' ? 'rating-desc' : 'rating')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              sortBy === 'rating' || sortBy === 'rating-desc'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Star className="h-4 w-4" />
+            <span>{sortBy === 'rating' ? 'Puntuación ↓' : sortBy === 'rating-desc' ? 'Puntuación ↑' : 'Puntuación'}</span>
+          </button>
+          
+          {/* Botón Favoritos */}
+          <button
+            onClick={() => {
+              if (!showFavorites) {
+                setShowFavorites(true)
+                setSortBy('likes')
+              } else if (sortBy === 'likes') {
+                setSortBy('likes-desc')
+              } else if (sortBy === 'likes-desc') {
+                setSortBy('likes')
+              } else {
+                setShowFavorites(false)
+                setSortBy('none')
+              }
+            }}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              showFavorites
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Heart className="h-4 w-4" />
+            <span>
+              {!showFavorites ? 'Mostrar Favoritos' : 
+               sortBy === 'likes' ? 'Favoritos ↓' : 
+               sortBy === 'likes-desc' ? 'Favoritos ↑' : 
+               'Ocultar Favoritos'}
+            </span>
+          </button>
+        </div>
+
+        {/* Sequence Builder - Collapsible */}
+        {isBuilderOpen && (
+          <Suspense fallback={<LoadingSpinner />}>
+            <SequenceBuilder
+              isOpen={true}
+              videos={videos}
+              onSaveSequence={handleSaveSequence}
+              onToggleShowAll={toggleShowAllVideos}
+              showAllVideos={showAllVideos}
+              style={selectedStyle}
+              onToggleBuilder={toggleBuilder}
+            />
+          </Suspense>
+        )}
+
+        {/* Gallery Tabs */}
+        <div className="flex justify-center gap-4 mb-8">
+          <button
+            onClick={() => setActiveTab('videos')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              activeTab === 'videos'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg transform scale-105`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Music className="h-6 w-6" />
+            <span>GALERÍA DE VIDEOS</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('secuencias')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              activeTab === 'secuencias'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg transform scale-105`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Plus className="h-6 w-6" />
+            <span>GALERÍA DE SECUENCIAS ({sequences.length})</span>
+          </button>
+        </div>
+
+        {/* Videos Grid */}
+        {activeTab === 'videos' && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  Videos de {selectedStyle.toLowerCase()} ({filteredVideos.length})
+                </h2>
+                {(activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites) && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {activeCategoryChips.length > 0 && `Filtrado por: ${activeCategoryChips.join(', ')} `}
+                    {sortBy !== 'none' && `• Ordenado por: ${sortBy} `}
+                    {showFavorites && '• Solo favoritos'}
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center space-x-4">
+                {/* Selector de tamaño de cards */}
+                <CardSizeSelector type="video" />
+                
+                {/* Botón de modo ancho completo */}
+                <button
+                  onClick={() => setIsFullWidth(!isFullWidth)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    isFullWidth
+                      ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                      : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                  }`}
+                  title={isFullWidth ? "Modo compacto" : "Modo ancho completo"}
+                >
+                  {isFullWidth ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {isFullWidth ? "Compacto" : "Ancho completo"}
+                  </span>
+                </button>
+              </div>
             </div>
 
-            {/* Constructor Button */}
-            <div className="mb-6">
-              <button
-                onClick={handleToggleBuilder}
-                className="flex items-center space-x-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                <span>{showBuilder ? 'Ocultar Constructor' : 'Constructor de Secuencias'}</span>
-              </button>
-            </div>
-
-            {/* Constructor de Secuencias */}
-            {showBuilder && (
-              <SequenceBuilder
-                isOpen={showBuilder}
-                onClose={handleToggleBuilder}
-                videos={videos}
-                onSaveSequence={handleSaveSequence}
-                style={selectedStyle}
-                isIntegrated={true}
-                onToggleBuilder={handleToggleBuilder}
-              />
-            )}
-
-            {/* Videos Grid/List */}
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-3 text-gray-600">Cargando videos...</span>
-              </div>
-            ) : error ? (
-              <div className="text-center py-12 text-red-600">
-                <span>{error}</span>
-              </div>
-            ) : filteredVideos.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <Video className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No se encontraron videos</p>
-                <p className="text-sm">Intenta ajustar los filtros o subir un nuevo video</p>
+            {/* Videos Grid */}
+            {filteredVideos.length === 0 ? (
+              <div className="text-center py-12">
+                <Music className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No se encontraron videos
+                </h3>
+                <p className="text-gray-600">
+                  {searchTerm ? 'Intenta con otros términos de búsqueda' : 'No hay videos disponibles'}
+                </p>
               </div>
             ) : (
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
+              <div className={`grid gap-6 ${
+                isFullWidth 
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'
+                  : cardSize === 'small' 
+                    ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'
+                    : cardSize === 'medium'
+                      ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                      : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+              }`}>
                 {filteredVideos.map((video) => (
                   <div
                     key={video.id}
-                    className={`bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 ${
-                      viewMode === 'list' ? 'flex' : ''
+                    className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden ${
+                      cardSize === 'small' ? 'max-w-xs' : cardSize === 'medium' ? 'max-w-sm' : 'max-w-md'
                     }`}
                   >
-                    {/* Thumbnail */}
-                    <div className={`relative group ${viewMode === 'list' ? 'w-48 flex-shrink-0' : ''}`}>
-                      <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
-                        {video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? (
-                          <img
-                            src={video.thumbnailUrl}
-                            alt={video.title}
-                            className="w-full h-full object-cover"
-                            loading="lazy"
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                              e.target.nextSibling.style.display = 'flex';
-                            }}
-                          />
-                        ) : null}
-                        <div className={`flex flex-col items-center justify-center text-gray-500 ${video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? 'hidden' : 'flex'}`}>
-                          <svg className="w-12 h-12 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                          <span className="text-sm font-medium">{video.title}</span>
+                    {/* Video Thumbnail */}
+                    <div className="relative group">
+                      <img
+                        src={video.thumbnailURL || '/placeholder-video.jpg'}
+                        alt={video.title}
+                        className={`w-full object-cover transition-transform duration-200 group-hover:scale-105 ${
+                          cardSize === 'small' ? 'h-32' : cardSize === 'medium' ? 'h-40' : 'h-48'
+                        }`}
+                      />
+                      
+                      {/* Overlay con controles */}
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2">
+                          <button
+                            onClick={() => handlePlayVideo(video)}
+                            className="bg-white bg-opacity-90 text-gray-800 p-2 rounded-full hover:bg-opacity-100 transition-all duration-200"
+                          >
+                            <Play className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => downloadVideo(video)}
+                            className="bg-white bg-opacity-90 text-gray-800 p-2 rounded-full hover:bg-opacity-100 transition-all duration-200"
+                          >
+                            <Download className="h-4 w-4" />
+                          </button>
                         </div>
-                        
-                        {/* Play Button */}
-                        <button
-                          onClick={() => handlePlayVideo(video)}
-                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                        >
-                          <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z"/>
-                          </svg>
-                        </button>
                       </div>
                     </div>
-                    
-                    {/* Content */}
-                    <div className={`p-4 ${viewMode === 'list' ? 'flex-1' : ''}`}>
-                      {/* Title and Rating */}
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-gray-800 text-lg truncate">{video.title}</h3>
-                        <div className="flex items-center space-x-1">
-                          {[1, 2, 3, 4, 5].map(star => {
-                            const isFilled = (video.rating || 0) >= star
-                            return (
-                              <svg 
-                                key={star}
-                                className={`h-4 w-4 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'}`} 
-                                fill="currentColor" 
-                                viewBox="0 0 24 24"
-                              >
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                              </svg>
-                            )
-                          })}
-                          <span className="text-xs font-medium text-gray-500 ml-1">({video.rating || 0})</span>
-                        </div>
-                      </div>
 
-                      {/* Description */}
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">{video.description || 'Sin descripción'}</p>
+                    {/* Video Info */}
+                    <div className="p-4">
+                      <h3 className={`font-semibold text-gray-900 mb-2 line-clamp-2 ${
+                        cardSize === 'small' ? 'text-sm' : cardSize === 'medium' ? 'text-base' : 'text-lg'
+                      }`}>
+                        {video.title}
+                      </h3>
                       
                       {/* Tags */}
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {(() => {
-                          const orderedTags = getOrderedTags(video)
-                          if (orderedTags.length > 0) {
-                            return orderedTags.slice(0, 3).map(({ tag, categoryKey, color }) => (
-                              <span
-                                key={`${categoryKey}-${tag}`}
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
-                              >
-                                {tag}
-                              </span>
-                            ))
-                          } else {
-                            return <span className="text-gray-400 text-sm">Sin etiquetas</span>
-                          }
-                        })()}
-                        {getOrderedTags(video).length > 3 && (
-                          <span className="text-xs text-gray-500">+{getOrderedTags(video).length - 3} más</span>
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {getOrderedTags(video).slice(0, cardSize === 'small' ? 2 : cardSize === 'medium' ? 3 : 4).map((tagInfo, index) => (
+                          <CategoryBadge
+                            key={index}
+                            tag={tagInfo.tag}
+                            category={tagInfo.category}
+                            colorClasses={tagInfo.color}
+                            size={cardSize === 'small' ? 'xs' : 'sm'}
+                          />
+                        ))}
+                        {getOrderedTags(video).length > (cardSize === 'small' ? 2 : cardSize === 'medium' ? 3 : 4) && (
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                            +{getOrderedTags(video).length - (cardSize === 'small' ? 2 : cardSize === 'medium' ? 3 : 4)}
+                          </span>
                         )}
                       </div>
-                      
-                      {/* Stats */}
-                      <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium">
-                            {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
-                          </span>
-                          <span className="text-gray-400">•</span>
-                          <span className="text-gray-600">
-                            {video.resolution && video.resolution !== 'Unknown' ? 
-                              video.resolution : 
-                              'HD'
-                            }
-                          </span>
-                          <span className="text-gray-400">•</span>
-                          <div className="flex items-center space-x-1">
-                            <Music className="h-3 w-3 text-purple-500" />
-                            <span className="font-medium text-purple-600">{video.bpm || 'N/A'} BPM</span>
-                          </div>
-                        </div>
-                        <button 
-                          onClick={() => handleVideoLike(video)}
-                          className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${
-                            video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-                          }`}
-                          title={video.userLiked ? 'Quitar like' : 'Dar like'}
-                        >
-                          <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
-                          <span className="font-medium">{video.likes || 0}</span>
-                        </button>
-                      </div>
+
+                      {/* Actions */}
+                      <CompactCardActions
+                        video={video}
+                        onPlay={() => handlePlayVideo(video)}
+                        onEdit={() => openEditModal(video)}
+                        onDelete={() => openDeleteModal(video)}
+                        onDownload={() => downloadVideo(video)}
+                        onLike={() => handleVideoLike(video)}
+                        size={cardSize}
+                      />
                     </div>
                   </div>
                 ))}
@@ -531,77 +1338,95 @@ const EscuelaPage = () => {
           </div>
         )}
 
-        {/* Secuencias Tab */}
+        {/* Sequences Gallery */}
         {activeTab === 'secuencias' && (
-          <SequenceGallery
-            sequences={sequences}
-            onDeleteSequence={handleDeleteSequence}
-            style={selectedStyle}
-            category="escuela"
-          />
+          <Suspense fallback={<LoadingSpinner />}>
+            <SequenceGallery
+              sequences={sequences}
+              onPlaySequence={handlePlaySequence}
+              onEditSequence={handleEditSequence}
+              onDeleteSequence={handleDeleteSequence}
+              onDownloadSequence={handleDownloadSequence}
+              style={selectedStyle}
+            />
+          </Suspense>
         )}
       </div>
 
       {/* Modals */}
-      {showUploadModal && (
-        <VideoUploadModal
-          isOpen={showUploadModal}
-          onClose={() => setShowUploadModal(false)}
-          onUpload={handleVideoUpload}
-          style={selectedStyle}
-          category="escuela"
-        />
-      )}
+      <Suspense fallback={<LoadingSpinner />}>
+        {/* Video Upload Modal */}
+        {isUploadModalOpen && (
+          <VideoUploadModal
+            isOpen={isUploadModalOpen}
+            onClose={() => setIsUploadModalOpen(false)}
+            onVideoUploaded={handleVideoUploaded}
+            style={selectedStyle}
+            page="escuela"
+          />
+        )}
 
-      {/* Video Player Modal */}
-      {showVideoModal && selectedVideo && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowVideoModal(false)}
-        >
-          <div
-            className="bg-black rounded-lg overflow-hidden w-full max-w-6xl max-h-[95vh] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-900">
-              <h3 className="text-xl font-semibold text-white">{selectedVideo.title}</h3>
-              <button 
-                onClick={() => setShowVideoModal(false)}
-                className="text-gray-400 hover:text-white text-2xl font-bold p-2 hover:bg-gray-800 rounded transition-colors"
-              >
-                &times;
-              </button>
-            </div>
-            
-            {/* Video Player */}
-            <div className="flex-1 bg-black flex items-center justify-center p-4">
-              <div className="w-full h-full flex items-center justify-center">
-                <VideoPlayer
-                  src={selectedVideo.videoUrl}
-                  className="max-w-full max-h-full object-contain"
-                  showControls={true}
-                  autoplay={false}
-                  loop={false}
-                  muted={false}
-                  videoTitle={selectedVideo.title}
-                  size="fullscreen"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+        {/* Video Edit Modal */}
+        {editModal.isOpen && (
+          <VideoEditModal
+            isOpen={editModal.isOpen}
+            onClose={closeEditModal}
+            video={editModal.video}
+            onVideoUpdated={handleVideoUpdated}
+          />
+        )}
 
-      {/* Toasts */}
-      {toasts.map(toast => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          onClose={() => removeToast(toast.id)}
-        />
-      ))}
+        {/* Video Player Modal */}
+        {showVideoModal && selectedVideo && (
+          <VideoPlayer
+            video={selectedVideo}
+            onClose={handleCloseVideoPlayer}
+            onDownload={() => downloadVideo(selectedVideo)}
+          />
+        )}
+
+        {/* Sequence Video Player Modal */}
+        {showSequencePlayer && selectedSequence && (
+          <SequenceVideoPlayer
+            sequence={selectedSequence}
+            onClose={handleCloseSequencePlayer}
+          />
+        )}
+
+        {/* Download Sequence Modal */}
+        {downloadSequenceModal.isOpen && downloadSequenceModal.sequence && (
+          <DownloadModal
+            isOpen={downloadSequenceModal.isOpen}
+            onClose={handleCloseDownloadSequence}
+            videos={downloadSequenceModal.sequence.videos}
+            sequenceName={downloadSequenceModal.sequence.name}
+          />
+        )}
+      </Suspense>
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={() => handleDeleteVideo(deleteModal.video)}
+        title="Eliminar Video"
+        message={`¿Estás seguro de que quieres eliminar "${deleteModal.video?.title}"? Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        confirmColor="red"
+      />
+
+      {/* Toast Notifications */}
+      <div className="fixed top-4 right-4 z-50 space-y-2">
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
+      </div>
     </div>
   )
 }
