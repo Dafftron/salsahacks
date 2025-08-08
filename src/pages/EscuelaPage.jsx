@@ -113,11 +113,21 @@ const EscuelaPage = () => {
   const [activeCategoryChips, setActiveCategoryChips] = useState([])
   
   // Estados para builder de secuencias
-  const { 
-    isBuilderOpen, 
-    toggleBuilder, 
-    showAllVideos, 
-    toggleShowAllVideos 
+  const {
+    addVideoToSequence,
+    removeVideoFromSequence,
+    sequence,
+    sequenceName,
+    clearSequence,
+    isBuilderOpen,
+    toggleBuilder,
+    showAllVideos,
+    toggleShowAllVideos,
+    getFilteredVideos,
+    isVideoInSequence,
+    isVideoCompatible,
+    checkCompatibility,
+    loadSequence
   } = useSequenceBuilderContext()
   
   // Contextos
