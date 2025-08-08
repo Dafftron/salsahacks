@@ -569,31 +569,55 @@ export const uploadFigureVideo = async (file, figureId) => {
 // Eliminar video completo (archivo + thumbnail)
 export const deleteVideo = async (videoPath, thumbnailPath) => {
   try {
+    console.log('🗑️ Iniciando eliminación de archivos:')
+    console.log('📁 Video path:', videoPath)
+    console.log('🖼️ Thumbnail path:', thumbnailPath)
+    
     const promises = [];
     
     // Eliminar archivo de video
     if (videoPath) {
+      console.log('🎬 Eliminando video:', videoPath)
       const videoRef = ref(storage, videoPath);
       promises.push(deleteObject(videoRef));
+    } else {
+      console.log('⚠️ No hay ruta de video para eliminar')
     }
     
     // Eliminar thumbnail (solo si existe y no es null)
-    if (thumbnailPath && thumbnailPath !== null) {
+    if (thumbnailPath && thumbnailPath !== null && thumbnailPath !== '') {
+      console.log('🖼️ Eliminando thumbnail:', thumbnailPath)
       const thumbnailRef = ref(storage, thumbnailPath);
       promises.push(deleteObject(thumbnailRef));
+    } else {
+      console.log('⚠️ No hay ruta de thumbnail para eliminar (thumbnailPath:', thumbnailPath, ')')
+    }
+    
+    console.log(`📊 Archivos a eliminar: ${promises.length}`)
+    
+    if (promises.length === 0) {
+      console.log('⚠️ No hay archivos para eliminar')
+      return { 
+        success: true, 
+        error: null,
+        deletedCount: 0
+      };
     }
     
     await Promise.all(promises);
     
+    console.log('✅ Archivos eliminados exitosamente')
     return { 
       success: true, 
-      error: null 
+      error: null,
+      deletedCount: promises.length
     };
   } catch (error) {
-    console.error('Error deleting video:', error);
+    console.error('❌ Error deleting video:', error);
     return { 
       success: false, 
-      error: error.message 
+      error: error.message,
+      deletedCount: 0
     };
   }
 };
