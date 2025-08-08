@@ -99,7 +99,7 @@ const EscuelaPage = () => {
   
   // Estados para reproductor de video individual
   const [selectedVideo, setSelectedVideo] = useState(null)
-  const [showVideoPlayer, setShowVideoPlayer] = useState(false)
+  const [showVideoModal, setShowVideoModal] = useState(false)
   
   // Estados para reproductor de secuencias
   const [selectedSequence, setSelectedSequence] = useState(null)
@@ -448,13 +448,13 @@ const EscuelaPage = () => {
   // Función para reproducir video individual
   const handlePlayVideo = (video) => {
     setSelectedVideo(video)
-    setShowVideoPlayer(true)
+    setShowVideoModal(true)
     addToast(`🎬 Reproduciendo: ${video.title}`, 'info')
   }
   
   // Función para cerrar el reproductor
   const handleCloseVideoPlayer = () => {
-    setShowVideoPlayer(false)
+    setShowVideoModal(false)
     setSelectedVideo(null)
   }
   
@@ -951,7 +951,7 @@ const EscuelaPage = () => {
             
             {/* Style Selector */}
             <div className="flex space-x-2">
-              {styles.map((style) => {
+              {availableStyles.map((style) => {
                 const Icon = style.icon
                 return (
                   <button
@@ -1249,30 +1249,18 @@ const EscuelaPage = () => {
                 </p>
               </div>
             ) : (
-              <div className={`grid gap-6 ${
-                isFullWidth 
-                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'
-                  : cardSize === 'small' 
-                    ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'
-                    : cardSize === 'medium'
-                      ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                      : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-              }`}>
+              <div className={`grid gap-6 ${getVideoConfig().grid}`}>
                 {filteredVideos.map((video) => (
                   <div
                     key={video.id}
-                    className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden ${
-                      cardSize === 'small' ? 'max-w-xs' : cardSize === 'medium' ? 'max-w-sm' : 'max-w-md'
-                    }`}
+                    className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden ${getVideoConfig().maxWidth}`}
                   >
                     {/* Video Thumbnail */}
                     <div className="relative group">
                       <img
                         src={video.thumbnailURL || '/placeholder-video.jpg'}
                         alt={video.title}
-                        className={`w-full object-cover transition-transform duration-200 group-hover:scale-105 ${
-                          cardSize === 'small' ? 'h-32' : cardSize === 'medium' ? 'h-40' : 'h-48'
-                        }`}
+                        className={`w-full object-cover transition-transform duration-200 group-hover:scale-105 ${getVideoConfig().aspect}`}
                       />
                       
                       {/* Overlay con controles */}
@@ -1296,26 +1284,24 @@ const EscuelaPage = () => {
 
                     {/* Video Info */}
                     <div className="p-4">
-                      <h3 className={`font-semibold text-gray-900 mb-2 line-clamp-2 ${
-                        cardSize === 'small' ? 'text-sm' : cardSize === 'medium' ? 'text-base' : 'text-lg'
-                      }`}>
+                      <h3 className={`font-semibold text-gray-900 mb-2 line-clamp-2 ${getVideoConfig().titleSize}`}>
                         {video.title}
                       </h3>
                       
                       {/* Tags */}
                       <div className="flex flex-wrap gap-1 mb-3">
-                        {getOrderedTags(video).slice(0, cardSize === 'small' ? 2 : cardSize === 'medium' ? 3 : 4).map((tagInfo, index) => (
+                        {getOrderedTags(video).slice(0, getVideoConfig().maxTags).map((tagInfo, index) => (
                           <CategoryBadge
                             key={index}
                             tag={tagInfo.tag}
                             category={tagInfo.category}
                             colorClasses={tagInfo.color}
-                            size={cardSize === 'small' ? 'xs' : 'sm'}
+                            size={getVideoConfig().tagSize}
                           />
                         ))}
-                        {getOrderedTags(video).length > (cardSize === 'small' ? 2 : cardSize === 'medium' ? 3 : 4) && (
+                        {getOrderedTags(video).length > getVideoConfig().maxTags && (
                           <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                            +{getOrderedTags(video).length - (cardSize === 'small' ? 2 : cardSize === 'medium' ? 3 : 4)}
+                            +{getOrderedTags(video).length - getVideoConfig().maxTags}
                           </span>
                         )}
                       </div>
@@ -1328,7 +1314,7 @@ const EscuelaPage = () => {
                         onDelete={() => openDeleteModal(video)}
                         onDownload={() => downloadVideo(video)}
                         onLike={() => handleVideoLike(video)}
-                        size={cardSize}
+                        size={getVideoConfig().size}
                       />
                     </div>
                   </div>
