@@ -98,53 +98,36 @@ const EscuelaPage = () => {
   const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
   
   // Estados para reproductor de video individual
-  const [selectedVideo, setSelectedVideo] = useState(null)
   const [showVideoModal, setShowVideoModal] = useState(false)
-  
-  // Estados para reproductor de secuencias
-  const [selectedSequence, setSelectedSequence] = useState(null)
+  const [selectedVideo, setSelectedVideo] = useState(null)
   const [showSequencePlayer, setShowSequencePlayer] = useState(false)
-  
-  // Estados para el sistema de chips y filtros
-  const [activeCategoryChips, setActiveCategoryChips] = useState([])
-  const [sortBy, setSortBy] = useState('none')
-  const [showFavorites, setShowFavorites] = useState(false)
+  const [selectedSequence, setSelectedSequence] = useState(null)
   
   // Estados para secuencias
   const [sequences, setSequences] = useState([])
   const [sequencesLoading, setSequencesLoading] = useState(true)
   
-  const { user } = useAuth()
-  const { getVideoConfig, getSequenceConfig } = useCardSize()
+  // Estados para filtros y ordenamiento
+  const [sortBy, setSortBy] = useState('none')
+  const [showFavorites, setShowFavorites] = useState(false)
+  const [activeCategoryChips, setActiveCategoryChips] = useState([])
   
-  // Usar el contexto de constructor de secuencias
-  const {
-    addVideoToSequence,
-    removeVideoFromSequence,
-    sequence,
-    sequenceName,
-    clearSequence,
-    isBuilderOpen,
-    toggleBuilder,
-    showAllVideos,
-    toggleShowAllVideos,
-    getFilteredVideos,
-    isVideoInSequence,
-    isVideoCompatible,
-    checkCompatibility,
-    loadSequence
-  } = useSequenceBuilderContext()
-
-  // Estado local para el estilo seleccionado
-  const [selectedStyle, setSelectedStyle] = useState('salsa')
-  
-  // Usar el sistema de categorías con estilo dinámico
+  // Estados para builder de secuencias
   const { 
-    availableStyles,
-    getGradientClasses,
-    categoriesList, 
-    getColorClasses
-  } = useCategories('escuela', selectedStyle)
+    isBuilderOpen, 
+    toggleBuilder, 
+    showAllVideos, 
+    toggleShowAllVideos 
+  } = useSequenceBuilderContext()
+  
+  // Contextos
+  const { user } = useAuth()
+  const { theme } = useTheme()
+  const { cardSize, getVideoConfig } = useCardSize()
+  
+  // Hook personalizado para categorías específicas de escuela
+  const [selectedStyle, setSelectedStyle] = useState('salsa')
+  const { availableStyles, categoriesList, getGradientClasses, getColorClasses } = useCategories(selectedStyle, 'escuela')
 
   // Función para manejar click en título de categoría
   const handleCategoryTitleClick = (categoryKey) => {
@@ -936,38 +919,43 @@ const EscuelaPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
+      {/* Header - Estilo La Malanga */}
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 shadow-lg border-b-4 border-yellow-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between py-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between py-8">
             <div className="text-center sm:text-left mb-4 sm:mb-0">
-              <h1 className="text-3xl font-bold text-gray-900">
-                ESCUELA - SALSA
+              <h1 className="text-4xl font-bold text-white mb-2">
+                🎓 LA MALANGA - ESCUELA
               </h1>
-              <p className="text-gray-600 mt-1">
-                Galería de videos de escuela de salsa
+              <p className="text-yellow-200 text-lg font-medium">
+                Academia de baile - Aprende salsa con los mejores
               </p>
+              <div className="flex items-center justify-center sm:justify-start mt-2 space-x-4">
+                <span className="text-yellow-300 text-sm">⭐ 4.8/5</span>
+                <span className="text-yellow-300 text-sm">👥 150+ estudiantes</span>
+                <span className="text-yellow-300 text-sm">🎯 95% éxito</span>
+              </div>
             </div>
             
-            {/* Style Selector */}
-            <div className="flex space-x-2">
+            {/* Style Selector - Estilo La Malanga */}
+            <div className="flex flex-wrap gap-3">
               {availableStyles.map((style) => {
                 const Icon = style.icon
                 return (
                   <button
                     key={style.name}
                     onClick={() => setSelectedStyle(style.name)}
-                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    className={`flex items-center space-x-3 px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
                       selectedStyle === style.name
-                        ? `bg-gradient-to-r ${getGradientClasses(style.name)} text-white shadow-lg transform scale-105`
-                        : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-2xl border-2 border-yellow-300'
+                        : 'bg-white bg-opacity-90 text-gray-700 border-2 border-white hover:bg-opacity-100 hover:border-yellow-300'
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
-                    <span className="capitalize">{style.name}</span>
+                    <Icon className="h-6 w-6" />
+                    <span className="text-lg capitalize">{style.name}</span>
                     {style.hasNotification && (
-                      <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1">
-                        NEW
+                      <span className="bg-red-500 text-white text-xs rounded-full px-3 py-1 font-bold animate-pulse">
+                        ¡NUEVO!
                       </span>
                     )}
                   </button>
@@ -980,17 +968,20 @@ const EscuelaPage = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search Bar */}
-        <div className="max-w-2xl mx-auto mb-8">
+        {/* Search Bar - Estilo La Malanga */}
+        <div className="max-w-3xl mx-auto mb-8">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-yellow-500 h-6 w-6" />
             <input
               type="text"
-              placeholder={`Buscar en ${selectedStyle.toLowerCase()}... (múltiples palabras, sin tildes)`}
+              placeholder={`🔍 Buscar en la academia de ${selectedStyle.toLowerCase()}... (técnicas, pasos, niveles)`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
+              className="w-full pl-12 pr-6 py-4 border-2 border-yellow-300 rounded-xl focus:ring-4 focus:ring-yellow-200 focus:border-yellow-500 transition-all duration-300 text-lg font-medium bg-white shadow-lg"
             />
+            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+              <span className="text-yellow-500 text-sm font-medium">🎓</span>
+            </div>
           </div>
           
           {/* Search Status Indicator */}
@@ -1009,58 +1000,58 @@ const EscuelaPage = () => {
           )}
         </div>
 
-        {/* Tag Filters - Collapsible con títulos clickeables */}
+        {/* Filtros Académicos - Estilo La Malanga */}
         {categoriesList.length > 0 && (
           <div className="mb-8">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center justify-center space-x-2 mx-auto px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+              className="flex items-center justify-center space-x-3 mx-auto px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 border-yellow-300"
             >
-              <Filter className="h-5 w-5" />
-              <span>Filtros Avanzados por Tags - {selectedStyle}</span>
+              <Filter className="h-6 w-6" />
+              <span>📚 FILTROS ACADÉMICOS - {selectedStyle.toUpperCase()}</span>
               {showFilters ? (
-                <ChevronUp className="h-5 w-5" />
+                <ChevronUp className="h-6 w-6" />
               ) : (
-                <ChevronDown className="h-5 w-5" />
+                <ChevronDown className="h-6 w-6" />
               )}
             </button>
             
-            {/* Collapsible Content */}
-            <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
+            {/* Contenido Académico */}
+            <div className={`mt-6 transition-all duration-300 ease-in-out overflow-hidden ${
               showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
             }`}>
-              <div className="space-y-4 bg-gray-50 rounded-lg p-6 border border-gray-200">
+              <div className="space-y-6 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8 border-2 border-yellow-200 shadow-xl">
                 {categoriesList.map((category) => (
-                  <div key={category.key} className="space-y-2">
-                    {/* Título clickeable de categoría */}
+                  <div key={category.key} className="space-y-3">
+                    {/* Título académico clickeable */}
                     <button
                       onClick={() => handleCategoryTitleClick(category.key)}
-                      className={`w-full text-center font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 ${
+                      className={`w-full text-center font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 ${
                         activeCategoryChips.includes(category.key)
-                          ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
-                          : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-2xl border-2 border-yellow-300'
+                          : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-lg'
                       }`}
                     >
-                      <div className="flex items-center justify-center space-x-2">
-                        <span>{category.name}</span>
+                      <div className="flex items-center justify-center space-x-3">
+                        <span className="text-lg">{category.name}</span>
                         {activeCategoryChips.includes(category.key) && (
-                          <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded">
-                            ACTIVO
+                          <span className="text-xs bg-white bg-opacity-20 px-3 py-1 rounded-full font-bold">
+                            🎯 ACTIVO
                           </span>
                         )}
                       </div>
                     </button>
                     
-                    {/* Tags de la categoría */}
-                    <div className="flex flex-wrap justify-center gap-2">
+                    {/* Tags académicos */}
+                    <div className="flex flex-wrap justify-center gap-3">
                       {category.tags.map(tag => (
                         <button
                           key={tag}
                           onClick={() => handleTagFilter(tag)}
-                          className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                          className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 transform hover:scale-110 ${
                             selectedTags.includes(tag)
-                              ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
-                              : `${getColorClasses(category.color)} hover:bg-opacity-80`
+                              ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-xl border-2 border-yellow-300'
+                              : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-100 hover:border-yellow-400 shadow-md'
                           }`}
                         >
                           {tag}
@@ -1074,53 +1065,53 @@ const EscuelaPage = () => {
           </div>
         )}
 
-        {/* Action Buttons - Main Level */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+        {/* Botones de Acción Académica - Estilo La Malanga */}
+        <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
           <button 
             onClick={() => setIsUploadModalOpen(true)}
-            className={`flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105`}
+            className="flex items-center justify-center space-x-3 px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 border-2 border-yellow-300"
           >
-            <Upload className="h-5 w-5" />
-            <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
+            <Upload className="h-6 w-6" />
+            <span className="text-lg">📚 SUBIR LECCIÓN A {selectedStyle.toUpperCase()}</span>
           </button>
           <button 
             onClick={toggleBuilder}
-            className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 ${
+            className={`flex items-center justify-center space-x-3 px-8 py-4 rounded-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 border-2 ${
               isBuilderOpen 
-                ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
-                : `bg-gradient-to-r ${getGradientClasses(selectedStyle)} hover:opacity-90 text-white`
+                ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-red-300' 
+                : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white border-blue-300 hover:from-blue-600 hover:to-purple-600'
             }`}
           >
-            <Shuffle className="h-5 w-5" />
-            <span>{isBuilderOpen ? 'OCULTAR SECUENCIA' : 'CREAR SECUENCIA'}</span>
+            <Shuffle className="h-6 w-6" />
+            <span className="text-lg">{isBuilderOpen ? '❌ CERRAR CURSO' : '🎓 CREAR CURSO'}</span>
           </button>
         </div>
 
-        {/* Botones de ordenamiento y favoritos */}
-        <div className="flex flex-wrap justify-center gap-3 mb-6">
+        {/* Botones de Ordenamiento Académico - Estilo La Malanga */}
+        <div className="flex flex-wrap justify-center gap-4 mb-8">
           {/* Botón A-Z/Z-A combinado */}
           <button
             onClick={() => handleSortChange(sortBy === 'name' ? 'name-desc' : 'name')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`flex items-center space-x-3 px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
               sortBy === 'name' || sortBy === 'name-desc'
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-xl border-2 border-yellow-300'
+                : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-lg'
             }`}
           >
-            <span>{sortBy === 'name' ? 'A-Z' : sortBy === 'name-desc' ? 'Z-A' : 'A-Z'}</span>
+            <span className="text-lg">📖 {sortBy === 'name' ? 'A-Z' : sortBy === 'name-desc' ? 'Z-A' : 'A-Z'}</span>
           </button>
           
           {/* Botón Puntuación */}
           <button
             onClick={() => handleSortChange(sortBy === 'rating' ? 'rating-desc' : 'rating')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`flex items-center space-x-3 px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
               sortBy === 'rating' || sortBy === 'rating-desc'
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-xl border-2 border-yellow-300'
+                : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-lg'
             }`}
           >
-            <Star className="h-4 w-4" />
-            <span>{sortBy === 'rating' ? 'Puntuación ↓' : sortBy === 'rating-desc' ? 'Puntuación ↑' : 'Puntuación'}</span>
+            <Star className="h-5 w-5" />
+            <span className="text-lg">⭐ {sortBy === 'rating' ? 'Puntuación ↓' : sortBy === 'rating-desc' ? 'Puntuación ↑' : 'Puntuación'}</span>
           </button>
           
           {/* Botón Favoritos */}
@@ -1138,18 +1129,18 @@ const EscuelaPage = () => {
                 setSortBy('none')
               }
             }}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`flex items-center space-x-3 px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
               showFavorites
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-xl border-2 border-yellow-300'
+                : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-lg'
             }`}
           >
-            <Heart className="h-4 w-4" />
-            <span>
-              {!showFavorites ? 'Mostrar Favoritos' : 
-               sortBy === 'likes' ? 'Favoritos ↓' : 
-               sortBy === 'likes-desc' ? 'Favoritos ↑' : 
-               'Ocultar Favoritos'}
+            <Heart className="h-5 w-5" />
+            <span className="text-lg">
+              {!showFavorites ? '💖 Mostrar Favoritos' : 
+               sortBy === 'likes' ? '💖 Favoritos ↓' : 
+               sortBy === 'likes-desc' ? '💖 Favoritos ↑' : 
+               '💖 Ocultar Favoritos'}
             </span>
           </button>
         </div>
@@ -1169,29 +1160,29 @@ const EscuelaPage = () => {
           </Suspense>
         )}
 
-        {/* Gallery Tabs */}
-        <div className="flex justify-center gap-4 mb-8">
+        {/* Pestañas Académicas - Estilo La Malanga */}
+        <div className="flex justify-center gap-6 mb-8">
           <button
             onClick={() => setActiveTab('videos')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`flex items-center space-x-3 px-8 py-4 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
               activeTab === 'videos'
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg transform scale-105`
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-2xl border-2 border-yellow-300 transform scale-110'
+                : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-xl'
             }`}
           >
-            <Music className="h-6 w-6" />
-            <span>GALERÍA DE VIDEOS</span>
+            <Music className="h-7 w-7" />
+            <span className="text-lg">🎓 LECCIONES DE {selectedStyle.toUpperCase()}</span>
           </button>
           <button
             onClick={() => setActiveTab('secuencias')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`flex items-center space-x-3 px-8 py-4 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
               activeTab === 'secuencias'
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg transform scale-105`
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-2xl border-2 border-yellow-300 transform scale-110'
+                : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-xl'
             }`}
           >
-            <Plus className="h-6 w-6" />
-            <span>GALERÍA DE SECUENCIAS ({sequences.length})</span>
+            <Plus className="h-7 w-7" />
+            <span className="text-lg">📚 CURSOS COMPLETOS ({sequences.length})</span>
           </button>
         </div>
 
@@ -1211,85 +1202,101 @@ const EscuelaPage = () => {
                   </p>
                 )}
               </div>
-              <div className="flex items-center space-x-4">
-                {/* Selector de tamaño de cards */}
-                <CardSizeSelector type="video" />
+              <div className="flex items-center space-x-6">
+                {/* Selector de tamaño académico */}
+                <div className="flex items-center space-x-3">
+                  <span className="text-gray-700 font-bold text-lg">📏 Tamaño:</span>
+                  <CardSizeSelector type="video" />
+                </div>
                 
                 {/* Botón de modo ancho completo */}
                 <button
                   onClick={() => setIsFullWidth(!isFullWidth)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
                     isFullWidth
-                      ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
-                      : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                      ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-xl border-2 border-yellow-300'
+                      : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-lg'
                   }`}
                   title={isFullWidth ? "Modo compacto" : "Modo ancho completo"}
                 >
                   {isFullWidth ? (
-                    <Minimize2 className="h-4 w-4" />
+                    <Minimize2 className="h-5 w-5" />
                   ) : (
-                    <Maximize2 className="h-4 w-4" />
+                    <Maximize2 className="h-5 w-5" />
                   )}
-                  <span className="hidden sm:inline">
-                    {isFullWidth ? "Compacto" : "Ancho completo"}
+                  <span className="hidden sm:inline text-lg">
+                    {isFullWidth ? "🔄 Compacto" : "🖥️ Ancho completo"}
                   </span>
                 </button>
               </div>
             </div>
 
-            {/* Videos Grid */}
+            {/* Grid de Lecciones */}
             {filteredVideos.length === 0 ? (
-              <div className="text-center py-12">
-                <Music className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No se encontraron videos
+              <div className="text-center py-16 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl border-2 border-yellow-200">
+                <div className="text-6xl mb-4">🎓</div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                  No se encontraron lecciones
                 </h3>
-                <p className="text-gray-600">
-                  {searchTerm ? 'Intenta con otros términos de búsqueda' : 'No hay videos disponibles'}
+                <p className="text-gray-600 text-lg">
+                  {searchTerm ? 'Intenta con otros términos de búsqueda académica' : 'No hay lecciones disponibles en la academia'}
                 </p>
+                <div className="mt-6">
+                  <button 
+                    onClick={() => setIsUploadModalOpen(true)}
+                    className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-8 py-3 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 border-2 border-yellow-300"
+                  >
+                    📚 Crear Primera Lección
+                  </button>
+                </div>
               </div>
             ) : (
-              <div className={`grid gap-6 ${getVideoConfig().grid}`}>
+              <div className={`grid gap-8 ${getVideoConfig().grid}`}>
                 {filteredVideos.map((video) => (
                   <div
                     key={video.id}
-                    className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden ${getVideoConfig().maxWidth}`}
+                    className={`bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-yellow-100 hover:border-yellow-300 transform hover:scale-105 ${getVideoConfig().maxWidth}`}
                   >
-                    {/* Video Thumbnail */}
+                    {/* Thumbnail de Lección */}
                     <div className="relative group">
                       <img
                         src={video.thumbnailURL || '/placeholder-video.jpg'}
                         alt={video.title}
-                        className={`w-full object-cover transition-transform duration-200 group-hover:scale-105 ${getVideoConfig().aspect}`}
+                        className={`w-full object-cover transition-transform duration-300 group-hover:scale-110 ${getVideoConfig().aspect}`}
                       />
                       
-                      {/* Overlay con controles */}
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-2">
+                      {/* Badge de Academia */}
+                      <div className="absolute top-3 left-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                        🎓 Academia
+                      </div>
+                      
+                      {/* Overlay con controles académicos */}
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-3">
                           <button
                             onClick={() => handlePlayVideo(video)}
-                            className="bg-white bg-opacity-90 text-gray-800 p-2 rounded-full hover:bg-opacity-100 transition-all duration-200"
+                            className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-3 rounded-full hover:shadow-xl transition-all duration-300 transform hover:scale-110"
                           >
-                            <Play className="h-4 w-4" />
+                            <Play className="h-5 w-5" />
                           </button>
                           <button
                             onClick={() => downloadVideo(video)}
-                            className="bg-white bg-opacity-90 text-gray-800 p-2 rounded-full hover:bg-opacity-100 transition-all duration-200"
+                            className="bg-white text-gray-800 p-3 rounded-full hover:shadow-xl transition-all duration-300 transform hover:scale-110"
                           >
-                            <Download className="h-4 w-4" />
+                            <Download className="h-5 w-5" />
                           </button>
                         </div>
                       </div>
                     </div>
 
-                    {/* Video Info */}
-                    <div className="p-4">
-                      <h3 className={`font-semibold text-gray-900 mb-2 line-clamp-2 ${getVideoConfig().titleSize}`}>
-                        {video.title}
+                    {/* Información de Lección */}
+                    <div className="p-6">
+                      <h3 className={`font-bold text-gray-900 mb-3 line-clamp-2 ${getVideoConfig().titleSize}`}>
+                        📚 {video.title}
                       </h3>
                       
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-1 mb-3">
+                      {/* Tags Académicos */}
+                      <div className="flex flex-wrap gap-2 mb-4">
                         {getOrderedTags(video).slice(0, getVideoConfig().maxTags).map((tagInfo, index) => (
                           <CategoryBadge
                             key={index}
@@ -1300,13 +1307,21 @@ const EscuelaPage = () => {
                           />
                         ))}
                         {getOrderedTags(video).length > getVideoConfig().maxTags && (
-                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                            +{getOrderedTags(video).length - getVideoConfig().maxTags}
+                          <span className="text-xs text-yellow-700 bg-yellow-100 px-3 py-1 rounded-full font-bold border border-yellow-300">
+                            +{getOrderedTags(video).length - getVideoConfig().maxTags} más
                           </span>
                         )}
                       </div>
 
-                      {/* Actions */}
+                      {/* Información Académica */}
+                      <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-3 mb-4 border border-yellow-200">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-yellow-700 font-bold">📊 Nivel: <span className="text-gray-700">Intermedio</span></span>
+                          <span className="text-yellow-700 font-bold">⏱️ Duración: <span className="text-gray-700">15 min</span></span>
+                        </div>
+                      </div>
+
+                      {/* Acciones Académicas */}
                       <CompactCardActions
                         video={video}
                         onPlay={() => handlePlayVideo(video)}
@@ -1324,18 +1339,28 @@ const EscuelaPage = () => {
           </div>
         )}
 
-        {/* Sequences Gallery */}
+        {/* Galería de Cursos Completos - Estilo La Malanga */}
         {activeTab === 'secuencias' && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <SequenceGallery
-              sequences={sequences}
-              onPlaySequence={handlePlaySequence}
-              onEditSequence={handleEditSequence}
-              onDeleteSequence={handleDeleteSequence}
-              onDownloadSequence={handleDownloadSequence}
-              style={selectedStyle}
-            />
-          </Suspense>
+          <div className="mb-8">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                📚 Cursos Completos de {selectedStyle.toUpperCase()}
+              </h2>
+              <p className="text-gray-600 text-lg">
+                Aprende paso a paso con nuestros cursos estructurados
+              </p>
+            </div>
+            <Suspense fallback={<LoadingSpinner />}>
+              <SequenceGallery
+                sequences={sequences}
+                onPlaySequence={handlePlaySequence}
+                onEditSequence={handleEditSequence}
+                onDeleteSequence={handleDeleteSequence}
+                onDownloadSequence={handleDownloadSequence}
+                style={selectedStyle}
+              />
+            </Suspense>
+          </div>
         )}
       </div>
 
