@@ -946,13 +946,12 @@ const FigurasPage = () => {
       console.log('Iniciando descarga de video individual:', video.title)
       
       // Usar Firebase SDK directamente para descargar
-      const { ref } = await import('firebase/storage')
+      const { ref, getDownloadURL } = await import('firebase/storage')
       const { storage } = await import('../services/firebase/config')
       
       const videoRef = ref(storage, video.videoPath)
       
       // Obtener la URL de descarga con token de acceso
-      const { getDownloadURL } = await import('firebase/storage')
       const downloadURL = await getDownloadURL(videoRef)
       
       console.log('URL de descarga obtenida:', downloadURL)

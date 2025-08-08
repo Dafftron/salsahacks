@@ -11,17 +11,45 @@
   - Implementada eliminación de archivos originales después de migración exitosa
   - Agregado manejo de errores robusto para videos y thumbnails por separado
   - Actualizado mensaje de éxito para indicar "migración REAL"
-  - Cambiado texto del botón a "📁 Migrar Videos REAL" con tooltip explicativo
-  - Agregada recarga automática de página después de migración exitosa
-- **Archivos modificados**:
-  - `src/services/firebase/storage.js` - Funciones de migración real implementadas
-  - `src/pages/FigurasPage.jsx` - Mensajes y botón actualizados
-- **Beneficios**:
-  - Los videos existentes se mueven físicamente a la estructura organizada
-  - Mejor organización en Firebase Storage (videos/page/style/)
-  - Eliminación automática de archivos duplicados
-  - Proceso transparente y seguro con manejo de errores
-  - Interfaz clara sobre el proceso de migración
+  - Cambiado texto del botón a "📁 Migrar Videos REAL"
+  - Recarga automática de página después de migración exitosa
+
+### 🎬 **COMMIT #080: DEBUG LOGS PARA ELIMINACIÓN DE VIDEOS** - 2024-12-19
+- **Problema**: Los videos se eliminaban de Storage pero no de Firestore
+- **Solución**: Agregados logs detallados para identificar el problema
+- **Cambios**:
+  - Agregados logs detallados en `handleDeleteVideo` para rastrear el proceso completo
+  - Agregados logs detallados en `deleteVideoDocument` para identificar problemas con Firestore
+  - Logs incluyen IDs de video, rutas de documentos y códigos de error
+  - Mejor debugging para identificar por qué los videos no se eliminan de Firestore
+
+### 🎬 **COMMIT #081: DEBUG LOGS PARA ELIMINACIÓN DE THUMBNAILS** - 2024-12-19
+- **Problema**: Los thumbnails no se eliminaban de Firebase Storage
+- **Solución**: Agregados logs detallados en función `deleteVideo`
+- **Cambios**:
+  - Agregados logs detallados en `deleteVideo` para rastrear eliminación de archivos
+  - Logs muestran rutas de video y thumbnail que se intentan eliminar
+  - Verificación mejorada de `thumbnailPath` (null, vacío, undefined)
+  - Contador de archivos eliminados en respuesta
+  - Mejor debugging para identificar por qué los thumbnails no se eliminan
+
+### 🎬 **COMMIT #082: ELIMINACIÓN COMPLETA DE VIDEOS FUNCIONANDO** - 2024-12-19
+- **Problema**: Sistema de eliminación incompleto
+- **Solución**: Sistema completamente funcional después de debugging
+- **Cambios**:
+  - Sistema de eliminación completamente funcional
+  - Videos y thumbnails se eliminan correctamente de Firebase Storage
+  - Documentos se eliminan correctamente de Firestore
+  - Logs de debug confirmaron que el sistema funciona perfectamente
+  - Eliminación de archivos y metadatos sincronizada correctamente
+
+### 🔒 **BACKUP ANTES DE LIMPIEZA TÉCNICA** - 2024-12-19
+- **Acción**: Backup completo del estado estable antes de limpieza técnica
+- **Backups creados**:
+  - **Branch**: `backup-before-cleanup` - Estado actual completo
+  - **Tag**: `v1.0.0-stable-before-cleanup` - Versión estable marcada
+- **Motivo**: Antes de proceder con limpieza de código, eliminación de componentes obsoletos y optimizaciones
+- **Estado actual**: Sistema de videos completamente funcional con migración y eliminación operativas
 
 ### 🎴 **COMMIT #062: TAMAÑO GRANDE POR DEFECTO EN GALERÍAS** - 2024-12-19
 - **Problema**: Las galerías de videos y secuencias se cargaban con tamaño mediano por defecto
@@ -66,7 +94,6 @@
   - Toast informativo al reproducir video
 - **Archivos modificados**:
   - `src/pages/FigurasPage.jsx` - Estados, funciones y modal de reproducción
-  - `src/components/common/CompactCardActions.jsx` - Botón de reproducir funcional
 - **Beneficios**:
   - Reproducción consistente usando el mismo reproductor que secuencias
   - Interfaz unificada y profesional

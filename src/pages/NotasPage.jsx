@@ -221,7 +221,7 @@ const NotasPage = () => {
           title: 'Commit #028 - Sistema de Galerías y Tabs en FigurasPage',
           description: 'Implementación completa del sistema de galerías con tabs y corrección de colores del botón SALSA',
           files: ['src/pages/FigurasPage.jsx', 'NOTAS_COMMITS.md'],
-          notes: 'Sistema de tabs funcional: Galería de Videos y Galería de Secuencias como en EscuelaPage. Colores del botón SALSA: degradado naranja-rosa (from-orange-500 to-pink-500) consistente. Jerarquía de botones: nivel principal (SUBIR VIDEO, CREAR SECUENCIA) y secundario (Galerías). Navegación por tabs con contador dinámico y transiciones suaves. Estado de tabs persistente. Filtros colapsados por defecto para interfaz más limpia. Corrección de navegación: SALSA pre-seleccionado al entrar a FIGURAS. Iconos corregidos con mapeo correcto para todos los estilos. Gradientes unificados: todos los botones activos usan el degradado de SALSA. Interfaz limpia: eliminación de componentes FirebaseStorageStatus innecesarios. Funcionalidad futura: preparado para implementación de secuencias.',
+          notes: 'Sistema de tabs funcional: Galería de Videos y Galería de Secuencias como en EscuelaPage. Colores del botón SALSA: degradado naranja-rosa (from-orange-500 to-pink-500) consistente. Jerarquía de botones: nivel principal (SUBIR VIDEO, CREAR SECUENCIA) y secundario (Galerías). Navegación por tabs con contador dinámico y transiciones suaves. Estado de tabs persistente. Filtros colapsados por defecto para interfaz más limpia. Corrección de navegación: SALSA pre-seleccionado al entrar a FIGURAS. Iconos corregidos con mapeo correcto para todos los estilos. Gradientes unificados: todos los botones activos usan el degradado de SALSA. Interfaz limpia y optimizada. Funcionalidad futura: preparado para implementación de secuencias.',
           status: 'Completado',
           category: 'PÁGINAS'
         },
@@ -376,7 +376,7 @@ const NotasPage = () => {
           time: '10:45:32',
           title: 'Commit #015 - Configuración Completa de Firebase',
           description: 'Auth, Firestore y Storage habilitados con credenciales reales',
-          files: ['src/services/firebase/*', 'src/components/FirebaseTest.jsx', 'NOTAS_COMMITS.md'],
+          files: ['src/services/firebase/*', 'NOTAS_COMMITS.md'],
           notes: 'Firebase completamente configurado, componente de prueba integrado, credenciales reales actualizadas',
           status: 'Completado',
           category: 'SISTEMAS'
