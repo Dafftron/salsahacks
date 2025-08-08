@@ -71,10 +71,7 @@ const SequenceBuilder = ({
 
   // Funciones auxiliares para tags (actualizadas para usar categoriesList)
   const getOrderedTags = (video) => {
-    console.log('🏷️ getOrderedTags - video:', video.title, 'tags:', video.tags)
-    
     if (!video.tags || Object.keys(video.tags).length === 0) {
-      console.log('❌ No hay tags en el video')
       return []
     }
     
@@ -83,7 +80,6 @@ const SequenceBuilder = ({
     categoriesList.forEach(category => {
       const categoryTags = video.tags[category.key]
       if (Array.isArray(categoryTags)) {
-        console.log(`📋 Categoría ${category.key}:`, categoryTags)
         categoryTags.forEach(tag => {
           orderedTags.push({
             tag,
@@ -94,15 +90,11 @@ const SequenceBuilder = ({
       }
     })
     
-    console.log('✅ Tags ordenados:', orderedTags)
     return orderedTags
   }
 
   const getOrderedTagsIniciales = (video) => {
-    console.log('🏷️ getOrderedTagsIniciales - video:', video.title, 'tagsIniciales:', video.tagsIniciales)
-    
     if (!video.tagsIniciales || Object.keys(video.tagsIniciales).length === 0) {
-      console.log('❌ No hay tagsIniciales en el video')
       return []
     }
     
@@ -111,7 +103,6 @@ const SequenceBuilder = ({
     categoriesList.forEach(category => {
       const categoryTags = video.tagsIniciales[category.key]
       if (Array.isArray(categoryTags)) {
-        console.log(`📋 Categoría inicial ${category.key}:`, categoryTags)
         categoryTags.forEach(tag => {
           orderedTags.push({
             tag,
@@ -123,15 +114,11 @@ const SequenceBuilder = ({
       }
     })
     
-    console.log('✅ Tags iniciales ordenados:', orderedTags)
     return orderedTags
   }
 
   const getOrderedTagsFinales = (video) => {
-    console.log('🏷️ getOrderedTagsFinales - video:', video.title, 'tagsFinales:', video.tagsFinales)
-    
     if (!video.tagsFinales || Object.keys(video.tagsFinales).length === 0) {
-      console.log('❌ No hay tagsFinales en el video')
       return []
     }
     
@@ -140,7 +127,6 @@ const SequenceBuilder = ({
     categoriesList.forEach(category => {
       const categoryTags = video.tagsFinales[category.key]
       if (Array.isArray(categoryTags)) {
-        console.log(`📋 Categoría final ${category.key}:`, categoryTags)
         categoryTags.forEach(tag => {
           orderedTags.push({
             tag,
@@ -152,7 +138,6 @@ const SequenceBuilder = ({
       }
     })
     
-    console.log('✅ Tags finales ordenados:', orderedTags)
     return orderedTags
   }
 
@@ -300,12 +285,7 @@ const SequenceBuilder = ({
       // Si estamos editando una secuencia existente, incluir el ID
       if (editingSequenceId) {
         sequenceData.id = editingSequenceId
-        console.log('🔄 Guardando como EDICIÓN de secuencia existente:', editingSequenceId)
-      } else {
-        console.log('🆕 Guardando como NUEVA secuencia')
       }
-      
-      console.log('📦 Datos de secuencia a guardar:', sequenceData)
       await onSaveSequence(sequenceData)
       
       const message = editingSequenceId 

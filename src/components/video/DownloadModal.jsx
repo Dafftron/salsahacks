@@ -48,7 +48,7 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
     setProgress(0)
     
          try {
-       console.log(`🎬 Iniciando descarga: ${format}, resolución: ${resolution}`)
+       // Iniciando descarga
       
       // Simular progreso
       const progressInterval = setInterval(() => {
@@ -67,11 +67,11 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
         // Verificar si es una secuencia o un video individual
         if (video.videos && Array.isArray(video.videos)) {
           // Es una secuencia
-          console.log('🎬 Procesando secuencia...')
+          // Procesando secuencia
           result = await generateSequenceVideo(video, format, resolution)
         } else if (video.file) {
           // Es un video individual
-          console.log('🎬 Procesando video individual...')
+                      // Procesando video individual
           result = await convertVideoFormat(video.file, format, resolution)
         } else {
           throw new Error('Formato de video no válido')
@@ -104,7 +104,7 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
               const writable = await fileHandle.createWritable()
               await writable.write(blob)
               await writable.close()
-              console.log('✅ Archivo guardado en carpeta seleccionada')
+              // Archivo guardado exitosamente
             } else {
               // Descarga normal
               const url = URL.createObjectURL(blob)
@@ -116,7 +116,7 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
               a.click()
               document.body.removeChild(a)
               URL.revokeObjectURL(url)
-              console.log('✅ Archivo descargado correctamente')
+              // Archivo descargado exitosamente
             }
             
             onDownloadComplete && onDownloadComplete()
@@ -146,11 +146,11 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
         return dirHandle
       } else {
         // Fallback: usar descarga normal
-        console.log('API de File System Access no disponible, usando descarga normal')
+        // API de File System Access no disponible, usando descarga normal
         return null
       }
     } catch (error) {
-      console.log('Usuario canceló la selección de carpeta o error:', error)
+              // Usuario canceló la selección de carpeta o error
       return null
     }
   }
@@ -172,7 +172,7 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
         const writable = await fileHandle.createWritable()
         await writable.write(video.file)
         await writable.close()
-        console.log('✅ Archivo guardado en carpeta seleccionada')
+                    // Archivo guardado exitosamente
       } else {
         // Descarga normal
         const url = URL.createObjectURL(video.file)

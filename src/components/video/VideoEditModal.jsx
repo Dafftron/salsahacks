@@ -235,7 +235,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
           resolution = resolutionData.resolution
           videoWidth = resolutionData.videoWidth
           videoHeight = resolutionData.videoHeight
-          console.log(`Resolución detectada: ${resolution} (${videoWidth}x${videoHeight})`)
+          // Resolución detectada
         } catch (error) {
           console.warn('No se pudo detectar la resolución:', error)
           resolution = 'Unknown'
@@ -319,10 +319,9 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                      resolutions={['auto', '4k', '1080p', '720p', '480p', '360p']}
                      currentResolution="auto"
                      videoTitle={video.title || 'video'}
-                     onResolutionChange={(resolution) => {
-                       console.log(`Resolución cambiada a: ${resolution}`)
-                       // Aquí se implementaría la lógica para cambiar la resolución del video
-                     }}
+                                           onResolutionChange={(resolution) => {
+                        // Aquí se implementaría la lógica para cambiar la resolución del video
+                      }}
                    />
                  </div>
                  <div className="flex items-center justify-between text-sm text-gray-600">

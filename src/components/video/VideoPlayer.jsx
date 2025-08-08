@@ -227,7 +227,6 @@ const VideoPlayer = ({
   }
 
   const togglePlay = () => {
-    console.log('Toggle play clicked!')
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause()
@@ -266,8 +265,6 @@ const VideoPlayer = ({
         // Detectar orientación del video
         const isVertical = height > width
         setVideoOrientation(isVertical ? 'vertical' : 'horizontal')
-        console.log(`Orientación del video: ${isVertical ? 'vertical' : 'horizontal'} (${width}x${height})`)
-        console.log(`Aspect ratio: ${width}:${height} = ${(width/height).toFixed(2)}`)
         
         const maxDimension = Math.max(width, height)
         let maxRes = '480p'
@@ -279,7 +276,6 @@ const VideoPlayer = ({
         else maxRes = '360p'
         
         setVideoMaxResolution(maxRes)
-        console.log(`Resolución máxima del video: ${maxRes} (${width}x${height})`)
       }
       
       if (autoplay) {
@@ -320,7 +316,6 @@ const VideoPlayer = ({
   }
 
   const toggleMute = () => {
-    console.log('Toggle mute clicked!')
     if (videoRef.current) {
       const newMutedState = !isMuted
       videoRef.current.muted = newMutedState
@@ -338,7 +333,6 @@ const VideoPlayer = ({
 
   const handleVolumeChange = (e) => {
     const newVolume = parseFloat(e.target.value)
-    console.log('Volume changed to:', newVolume)
     
     if (videoRef.current) {
       videoRef.current.volume = newVolume
@@ -387,26 +381,22 @@ const VideoPlayer = ({
         // Si ya existe el punto A, lo quitamos
         setHasPointA(false)
         setLoopStart(0)
-        console.log('Punto A eliminado')
       } else {
         // Establecer punto A
         setHasPointA(true)
         setLoopStart(currentTime)
         setSavedPointA(currentTime)
-        console.log(`Punto A establecido en: ${formatTime(currentTime)}`)
       }
     } else {
       if (hasPointB) {
         // Si ya existe el punto B, lo quitamos
         setHasPointB(false)
         setLoopEnd(0)
-        console.log('Punto B eliminado')
       } else {
         // Establecer punto B
         setHasPointB(true)
         setLoopEnd(currentTime)
         setSavedPointB(currentTime)
-        console.log(`Punto B establecido en: ${formatTime(currentTime)}`)
       }
     }
   }
@@ -504,12 +494,8 @@ const VideoPlayer = ({
   // Función para descargar video usando Firebase Storage
   const downloadVideo = async () => {
     try {
-      console.log('Iniciando descarga de video:', videoTitle)
-      
       // Si tenemos una URL de Firebase Storage, descargar directamente
       if (src && (src.includes('firebase') || src.includes('googleapis'))) {
-        console.log('Detectada URL de Firebase Storage, descargando...')
-        
         // Descargar el archivo como blob para evitar ventanas del navegador
         const response = await fetch(src)
         if (!response.ok) {
@@ -517,7 +503,6 @@ const VideoPlayer = ({
         }
         
         const blob = await response.blob()
-        console.log('Blob descargado:', blob.size, 'bytes')
         
         // Crear URL local del blob
         const blobUrl = URL.createObjectURL(blob)
@@ -537,11 +522,8 @@ const VideoPlayer = ({
         setTimeout(() => {
           URL.revokeObjectURL(blobUrl)
         }, 1000)
-        
-        console.log('Descarga completada exitosamente')
       } else {
         // Para URLs que no son de Firebase, usar el método original
-        console.log('Usando método de descarga directa para URL no-Firebase')
         const link = document.createElement('a')
         link.href = src
         link.download = videoTitle || 'video.mp4'
@@ -694,7 +676,6 @@ const VideoPlayer = ({
                       setLoopEnd(savedPointB)
                     }
                   }
-                  console.log(`Modo A-B ${newMode ? 'activado' : 'desactivado'}`)
                 }}
                 onTouchStart={activateControls}
                 className={`p-2 rounded-full transition-colors z-10 ${

@@ -51,6 +51,54 @@
 - **Motivo**: Antes de proceder con limpieza de código, eliminación de componentes obsoletos y optimizaciones
 - **Estado actual**: Sistema de videos completamente funcional con migración y eliminación operativas
 
+### ⚡ **COMMIT #083: LIMPIEZA TÉCNICA - ELIMINACIÓN DE COMPONENTES DE PRUEBA OBSOLETOS** - 2024-12-19
+- **Problema**: Componentes de prueba obsoletos aumentaban el bundle size innecesariamente
+- **Solución**: Eliminación completa de componentes de prueba y limpieza de referencias
+- **Cambios**:
+  - Eliminados componentes obsoletos: `FirebaseTest.jsx`, `FirebaseSimpleTest.jsx`, `FirebaseStorageTest.jsx`, `FirebaseStorageStatus.jsx`
+  - Limpiadas referencias en `NotasPage.jsx` a componentes eliminados
+  - Consolidados imports dinámicos de Firebase Storage en `FigurasPage.jsx`
+  - Reducido bundle size ligeramente
+  - Preparado para optimizaciones adicionales
+- **Archivos eliminados**:
+  - `src/components/FirebaseTest.jsx`
+  - `src/components/FirebaseSimpleTest.jsx`
+  - `src/components/FirebaseStorageTest.jsx`
+  - `src/components/FirebaseStorageStatus.jsx`
+- **Beneficios**:
+  - Código más limpio y mantenible
+  - Bundle size reducido
+  - Eliminación de código muerto
+  - Preparación para optimizaciones futuras
+
+### 🚀 **COMMIT #084: IMPLEMENTACIÓN DE CODE SPLITTING** - 2024-12-19
+- **Problema**: Bundle size grande (2.5MB) causaba carga lenta de la aplicación
+- **Solución**: Implementación de Code Splitting con React.lazy y Suspense
+- **Cambios**:
+  - Lazy loading de todas las páginas con `React.lazy()`
+  - Componente `LoadingSpinner` para mejor UX durante carga
+  - Bundle principal reducido de 2.5MB a 708KB (70% reducción)
+  - Chunks separados para cada página:
+    - `FigurasPage`: 200KB (se carga solo al entrar a FIGURAS)
+    - `NotasPage`: 39KB (se carga solo al entrar a NOTAS)
+    - `AdminPage`: 20KB (se carga solo al entrar a ADMIN)
+    - `SettingsPage`: 12KB (se carga solo al entrar a SETTINGS)
+    - `ProfilePage`: 10KB (se carga solo al entrar a PROFILE)
+    - `CategoriesPage`: 9KB (se carga solo al entrar a CATEGORÍAS)
+    - `HomePage`: 8KB (se carga solo al entrar a HOME)
+    - `EscuelaPage`: 8KB (se carga solo al entrar a ESCUELA)
+    - `EventosPage`: 7KB (se carga solo al entrar a EVENTOS)
+    - `AuthPage`: 5KB (se carga solo al entrar a AUTH)
+    - `InvitePage`: 7KB (se carga solo al entrar a INVITE)
+- **Archivos modificados**:
+  - `src/App.jsx` - Implementación de lazy loading y Suspense
+- **Beneficios**:
+  - Carga inicial 70% más rápida
+  - Mejor experiencia de usuario
+  - Optimización significativa de rendimiento
+  - Carga bajo demanda de funcionalidades
+  - Reducción de ancho de banda utilizado
+
 ### 🎴 **COMMIT #062: TAMAÑO GRANDE POR DEFECTO EN GALERÍAS** - 2024-12-19
 - **Problema**: Las galerías de videos y secuencias se cargaban con tamaño mediano por defecto
 - **Solución**: Configurado tamaño "grande" como predeterminado para ambas galerías

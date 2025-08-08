@@ -41,7 +41,7 @@ const VideoDownloadModal = ({
     })
 
     try {
-      console.log('Iniciando combinación con FFmpeg.wasm...')
+      // Iniciando combinación con FFmpeg.wasm
       const combinedBlob = await videoCombiner.combineVideos(videos, setProgress)
 
       // Crear URL para descarga

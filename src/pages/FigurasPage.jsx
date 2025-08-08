@@ -172,12 +172,10 @@ const FigurasPage = () => {
 
   // Sincronización en tiempo real con Firebase
   useEffect(() => {
-    console.log('🔄 Iniciando sincronización en tiempo real para:', selectedStyle)
     setSyncStatus('syncing')
     
     // Suscribirse a cambios en tiempo real para el estilo seleccionado
     const unsubscribe = subscribeToVideosByStyle(selectedStyle, (videosData) => {
-      console.log(`🔄 Actualización en tiempo real recibida: ${videosData.length} videos para ${selectedStyle}`)
       setVideos(videosData)
       setLoading(false)
       setSyncStatus('idle')
@@ -185,7 +183,6 @@ const FigurasPage = () => {
     
     // Cleanup al desmontar o cambiar estilo
     return () => {
-      console.log('🔄 Desuscribiendo de sincronización en tiempo real')
       unsubscribe()
     }
   }, [selectedStyle])
@@ -193,8 +190,6 @@ const FigurasPage = () => {
   // Verificar estado de likes del usuario cuando se cargan videos
   useEffect(() => {
     if (videos.length > 0 && user) {
-      console.log('❤️ Verificando estado de likes y favoritos del usuario para', videos.length, 'videos')
-      
       const checkUserLikesAndFavorites = async () => {
         const updatedVideos = await Promise.all(
           videos.map(async (video) => {
@@ -224,29 +219,21 @@ const FigurasPage = () => {
 
   // Sincronización en tiempo real para secuencias
   useEffect(() => {
-    console.log('🎬 FigurasPage: useEffect de secuencias ejecutándose')
-    console.log('🎬 selectedStyle actual:', selectedStyle)
-    console.log('🎬 subscribeToSequencesByStyle disponible:', typeof subscribeToSequencesByStyle)
-    
     if (!selectedStyle) {
-      console.log('⚠️ No hay selectedStyle, saltando suscripción')
       return
     }
     
-    console.log('🎬 Iniciando sincronización de secuencias para:', selectedStyle)
     setSequencesLoading(true)
     
     try {
       // Suscribirse a cambios en tiempo real para las secuencias del estilo seleccionado
       const unsubscribe = subscribeToSequencesByStyle(selectedStyle, (sequencesData) => {
-        console.log(`🎬 Actualización de secuencias recibida: ${sequencesData.length} secuencias para ${selectedStyle}`)
         setSequences(sequencesData)
         setSequencesLoading(false)
       })
       
       // Cleanup al desmontar o cambiar estilo
       return () => {
-        console.log('🎬 Desuscribiendo de sincronización de secuencias')
         unsubscribe()
       }
     } catch (error) {
@@ -259,7 +246,6 @@ const FigurasPage = () => {
 
   // Función para actualizar la lista de videos después de subir uno nuevo
   const handleVideoUploaded = async (video) => {
-    console.log('Video subido:', video)
     addToast(`${video.title} subido exitosamente`, 'success')
     // La sincronización en tiempo real se encargará de actualizar la lista automáticamente
   }
@@ -331,29 +317,20 @@ const FigurasPage = () => {
 
   // Funciones para manejar secuencias
   const handleSaveSequence = async (sequenceData) => {
-    console.log('🎬 FigurasPage: Recibida solicitud de guardar secuencia')
-    console.log('📦 Datos recibidos:', sequenceData)
-    
     try {
       const sequenceWithStyle = {
         ...sequenceData,
         style: selectedStyle
       }
       
-      console.log('🎨 Secuencia con estilo:', sequenceWithStyle)
-      
       // Verificar si es una edición o una nueva secuencia
       if (sequenceData.id) {
         // Es una edición - actualizar secuencia existente
-        console.log('🔄 Actualizando secuencia existente:', sequenceData.id)
         const result = await updateSequence(sequenceData.id, sequenceWithStyle)
-        console.log('✅ Secuencia actualizada exitosamente:', result)
         addToast('✅ Secuencia actualizada exitosamente')
       } else {
         // Es una nueva secuencia - crear nueva
-        console.log('🆕 Creando nueva secuencia')
         const result = await createSequence(sequenceWithStyle)
-        console.log('✅ Secuencia creada exitosamente:', result)
         addToast('✅ Secuencia guardada exitosamente. Ve a "GALERÍA DE SECUENCIAS" para verla.')
       }
     } catch (error) {
@@ -375,15 +352,12 @@ const FigurasPage = () => {
   }
 
   const handlePlaySequence = (sequence) => {
-    console.log('🎬 Reproduciendo secuencia:', sequence.name)
     setSelectedSequence(sequence)
     setShowSequencePlayer(true)
     addToast(`🎬 Reproduciendo secuencia: ${sequence.name}`, 'info')
   }
 
   const handleEditSequence = (sequenceToEdit) => {
-    console.log('🎬 Editando secuencia:', sequenceToEdit)
-    
     // Verificar si hay una secuencia en construcción
     if (sequence.length > 0 || sequenceName.trim()) {
       // Abrir modal de confirmación
@@ -405,12 +379,10 @@ const FigurasPage = () => {
   }
 
   const handleCancelEditSequence = () => {
-    console.log('❌ Usuario canceló la carga de secuencia')
     setEditSequenceModal({ isOpen: false, sequence: null })
   }
 
   const handleDownloadSequence = (sequence) => {
-    console.log('📥 Abriendo descarga de secuencia:', sequence)
     setDownloadSequenceModal({ isOpen: true, sequence })
   }
 
@@ -420,7 +392,6 @@ const FigurasPage = () => {
   
   // Función para reproducir video individual
   const handlePlayVideo = (video) => {
-    console.log('🎬 Reproduciendo video individual:', video.title)
     setSelectedVideo(video)
     setShowVideoPlayer(true)
     addToast(`🎬 Reproduciendo: ${video.title}`, 'info')
@@ -443,18 +414,11 @@ const FigurasPage = () => {
   // Función para eliminar video
   const handleDeleteVideo = async (video) => {
     try {
-      console.log('🗑️ Iniciando eliminación de video:', video)
-      console.log('📁 Video path:', video.videoPath)
-      console.log('🖼️ Thumbnail path:', video.thumbnailPath)
-      console.log('🆔 Video ID:', video.id)
-      
       // Eliminar de Firebase Storage
       const storageResult = await deleteVideo(video.videoPath, video.thumbnailPath)
-      console.log('📦 Resultado eliminación Storage:', storageResult)
       
       // Si hay error al eliminar archivos, intentar solo eliminar el video
       if (!storageResult.success) {
-        console.log('⚠️ Error eliminando archivos, intentando solo eliminar video...')
         
         // Intentar eliminar solo el video si el thumbnail falló
         if (storageResult.error && storageResult.error.includes('thumbnails')) {
@@ -470,9 +434,7 @@ const FigurasPage = () => {
       }
 
       // Eliminar de Firestore
-      console.log('🔥 Intentando eliminar documento de Firestore con ID:', video.id)
       const firestoreResult = await deleteVideoDocument(video.id)
-      console.log('🔥 Resultado eliminación Firestore:', firestoreResult)
       
       if (!firestoreResult.success) {
         addToast(`Error al eliminar metadatos: ${firestoreResult.error}`, 'error')
@@ -480,15 +442,12 @@ const FigurasPage = () => {
       }
 
       // Actualizar lista local
-      console.log('🔄 Actualizando lista local, eliminando video con ID:', video.id)
       setVideos(prev => {
         const newVideos = prev.filter(v => v.id !== video.id)
-        console.log(`📊 Lista actualizada: ${prev.length} -> ${newVideos.length} videos`)
         return newVideos
       })
       
       addToast(`${video.title} eliminado correctamente`, 'success')
-      console.log('✅ Eliminación completada exitosamente')
     } catch (error) {
       console.error('❌ Error deleting video:', error)
       addToast('Error inesperado al eliminar video', 'error')
@@ -497,7 +456,6 @@ const FigurasPage = () => {
 
   // Función para abrir modal de eliminación
   const openDeleteModal = (video) => {
-    console.log('🔘 Botón eliminar clickeado para video:', video)
     setDeleteModal({ isOpen: true, video })
   }
 
@@ -588,8 +546,6 @@ const FigurasPage = () => {
       const result = await diagnoseVideos()
       
       if (result.success) {
-        console.log('🔍 Resultado del diagnóstico:', result)
-        
         let message = `Diagnóstico: ${result.totalVideos} videos total, ${result.salsaVideos} de salsa`
         if (result.fig003Found) {
           message += ` ✅ Fig003 encontrado`
@@ -694,7 +650,6 @@ const FigurasPage = () => {
         }
         
         addToast(message, 'success')
-        console.log('📊 Resultados de migración REAL:', result.results)
         
         // Recargar videos para reflejar los cambios
         window.location.reload()
@@ -943,8 +898,6 @@ const FigurasPage = () => {
   // Función para descargar video usando Firebase Storage
   const downloadVideo = async (video) => {
     try {
-      console.log('Iniciando descarga de video individual:', video.title)
-      
       // Usar Firebase SDK directamente para descargar
       const { ref, getDownloadURL } = await import('firebase/storage')
       const { storage } = await import('../services/firebase/config')
@@ -953,8 +906,6 @@ const FigurasPage = () => {
       
       // Obtener la URL de descarga con token de acceso
       const downloadURL = await getDownloadURL(videoRef)
-      
-      console.log('URL de descarga obtenida:', downloadURL)
       
       // Crear enlace de descarga directo
       const link = document.createElement('a')
@@ -1608,7 +1559,6 @@ const FigurasPage = () => {
                              currentResolution: 'auto',
                              videoTitle: video.title || 'video',
                              onResolutionChange: (resolution) => {
-                               console.log(`Resolución cambiada a: ${resolution}`)
                                // Aquí se implementaría la lógica para cambiar la resolución del video
                              }
                            }))
@@ -1702,7 +1652,7 @@ const FigurasPage = () => {
                                   ratingText.textContent = newRating
                                   ratingContainer.title = `Puntuación: ${newRating}/5`
                                   
-                                  console.log(`Video "${video.title}" puntuado con ${newRating} estrellas`)
+                                  // Video puntuado exitosamente
                                 } catch (error) {
                                   console.error('Error al actualizar puntuación:', error)
                                 }
@@ -1763,7 +1713,6 @@ const FigurasPage = () => {
                                   likesText.textContent = result.likes
                                   
                                   const action = result.userLiked ? 'dado like a' : 'quitado like de'
-                                  console.log(`Has ${action} "${video.title}"`)
                                 } else {
                                   console.error('Error al actualizar like')
                                 }
@@ -1803,7 +1752,6 @@ const FigurasPage = () => {
                                    const newRating = currentRating >= star ? 0 : star
                                    await updateVideoDocument(video.id, { rating: newRating })
                                    video.rating = newRating
-                                   console.log(`Video "${video.title}" rated ${newRating} stars`)
                                  } catch (error) {
                                    console.error('Error updating rating:', error)
                                  }

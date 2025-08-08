@@ -78,9 +78,7 @@ const ProfilePage = () => {
   // Función para actualizar el rol de David a Super Admin
   const updateToSuperAdmin = async () => {
     try {
-      console.log('Actualizando rol a Super Admin...')
-      console.log('Rol actual:', userProfile?.role)
-      console.log('Email:', user.email)
+              // Actualizando rol a Super Admin
       
       const result = await updateUserProfile({
         ...userProfile,

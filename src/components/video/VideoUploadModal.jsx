@@ -408,14 +408,10 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       let bpm = null
       let bpmDetected = false
       try {
-        console.log('🎵 Detectando BPM para:', file.name)
         const bpmResult = await extractBPMFromVideo(file)
         if (bpmResult.success && validateBPM(bpmResult.bpm)) {
           bpm = bpmResult.bpm
           bpmDetected = true
-          console.log(`✅ BPM detectado: ${bpm} para ${file.name}`)
-        } else {
-          console.warn(`⚠️ No se pudo detectar BPM válido para ${file.name}`)
         }
       } catch (error) {
         console.error('❌ Error al detectar BPM:', error)
@@ -622,7 +618,6 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
                       currentResolution="auto"
                       videoTitle={videoData[file.name]?.title || file.name.replace(/\.[^/.]+$/, '')}
                       onResolutionChange={(resolution) => {
-                        console.log(`Resolución cambiada a: ${resolution}`)
                         // Aquí se implementaría la lógica para cambiar la resolución del video
                       }}
                     />

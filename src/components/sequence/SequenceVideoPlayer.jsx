@@ -287,26 +287,26 @@ const SequenceVideoPlayer = ({
         // Si ya existe el punto A, lo quitamos
         setHasPointA(false)
         setLoopStart(0)
-        console.log('Punto A eliminado')
+        // Punto A eliminado
       } else {
         // Establecer punto A
         setHasPointA(true)
         setLoopStart(currentTime)
         setSavedPointA(currentTime)
-        console.log(`Punto A establecido en: ${formatTime(currentTime)}`)
+                  // Punto A establecido
       }
     } else {
       if (hasPointB) {
         // Si ya existe el punto B, lo quitamos
         setHasPointB(false)
         setLoopEnd(0)
-        console.log('Punto B eliminado')
+                  // Punto B eliminado
       } else {
         // Establecer punto B
         setHasPointB(true)
         setLoopEnd(currentTime)
         setSavedPointB(currentTime)
-        console.log(`Punto B establecido en: ${formatTime(currentTime)}`)
+                  // Punto B establecido
       }
     }
   }
@@ -334,10 +334,7 @@ const SequenceVideoPlayer = ({
   // Función para descargar video
   const downloadVideo = async () => {
     try {
-      console.log('Iniciando descarga de video:', currentVideo.title)
-      
       if (currentVideo.videoUrl && (currentVideo.videoUrl.includes('firebase') || currentVideo.videoUrl.includes('googleapis'))) {
-        console.log('Detectada URL de Firebase Storage, descargando...')
         
         const response = await fetch(currentVideo.videoUrl)
         if (!response.ok) {
@@ -345,7 +342,6 @@ const SequenceVideoPlayer = ({
         }
         
         const blob = await response.blob()
-        console.log('Blob descargado:', blob.size, 'bytes')
         
         const blobUrl = URL.createObjectURL(blob)
         
@@ -362,9 +358,8 @@ const SequenceVideoPlayer = ({
           URL.revokeObjectURL(blobUrl)
         }, 1000)
         
-        console.log('Descarga completada exitosamente')
+        // Descarga completada exitosamente
       } else {
-        console.log('Usando método de descarga directa para URL no-Firebase')
         const link = document.createElement('a')
         link.href = currentVideo.videoUrl
         link.download = currentVideo.title || 'video.mp4'

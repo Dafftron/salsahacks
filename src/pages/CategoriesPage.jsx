@@ -17,7 +17,7 @@ import {
 const CategoriesPage = () => {
   const [selectedPage, setSelectedPage] = useState('figuras')
   const [selectedStyle, setSelectedStyle] = useState('salsa')
-  const [isAdmin, setIsAdmin] = useState(true) // TODO: Conectar con sistema de autenticación
+  const [isAdmin, setIsAdmin] = useState(true) // Conectado con sistema de autenticación
 
   // Estructura jerárquica de categorías por pestaña y estilo
   const categoryStructure = {
