@@ -1,395 +1,501 @@
-import React, { useState } from 'react'
-import { X, Download, Video, Settings, Check } from 'lucide-react'
-import { convertVideoFormat, generateSequenceVideo } from '../../services/video/videoProcessor'
+import React, { useState, useEffect } from 'react'
+import { X, Download, Video, Settings, Check, AlertCircle, Loader, Zap } from 'lucide-react'
+import VideoCombiner from '../../services/video/videoCombiner'
 
 const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
   const [format, setFormat] = useState('mp4')
-  const [resolution, setResolution] = useState('720p')
+  const [resolution, setResolution] = useState('4k')
   const [isProcessing, setIsProcessing] = useState(false)
-  const [progress, setProgress] = useState(0)
-  
-  // Opciones de formato
-  const formatOptions = [
-    { value: 'mp4', label: 'MP4', description: 'Formato estándar, compatible con todo' },
-    { value: 'avi', label: 'AVI', description: 'Formato clásico, buena calidad' },
-    { value: 'mov', label: 'MOV', description: 'Formato Apple, alta calidad' },
-    { value: 'webm', label: 'WebM', description: 'Formato web, archivos pequeños' }
-  ]
-  
-  // Opciones de resolución
-  const resolutionOptions = [
-    { value: '360p', label: '360p', description: 'Calidad baja, archivo pequeño' },
-    { value: '480p', label: '480p', description: 'Calidad estándar, balance' },
-    { value: '720p', label: '720p', description: 'HD, buena calidad' },
-    { value: '1080p', label: '1080p', description: 'Full HD, alta calidad' },
-    { value: '4k', label: '4K', description: 'Ultra HD, máxima calidad' }
-  ]
-  
-  // Obtener descripción del formato
-  const getFormatDescription = (formatValue) => {
-    const option = formatOptions.find(opt => opt.value === formatValue)
-    return option ? option.description : ''
-  }
-  
-  // Obtener descripción de la resolución
-  const getResolutionDescription = (resolutionValue) => {
-    const option = resolutionOptions.find(opt => opt.value === resolutionValue)
-    return option ? option.description : ''
-  }
-  
-  // Manejar descarga
-  const handleDownload = async () => {
-    if (!video) {
-      console.error('No hay video para descargar')
-      return
-    }
-    
-    setIsProcessing(true)
-    setProgress(0)
-    
-         try {
-       // Iniciando descarga
-      
-      // Simular progreso
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval)
-            return 90
-          }
-          return prev + 10
-        })
-      }, 500)
-      
-      let result
-      
-      try {
-        // Verificar si es una secuencia o un video individual
-        if (video.videos && Array.isArray(video.videos)) {
-          // Es una secuencia
-          // Procesando secuencia
-          result = await generateSequenceVideo(video, format, resolution)
-        } else if (video.file) {
-          // Es un video individual
-                      // Procesando video individual
-          result = await convertVideoFormat(video.file, format, resolution)
-        } else {
-          throw new Error('Formato de video no válido')
-        }
-        
-        // Limpiar intervalo y establecer progreso al 100%
-        clearInterval(progressInterval)
-        setProgress(100)
-        
-        // Pequeña pausa para mostrar el 100%
-        await new Promise(resolve => setTimeout(resolve, 200))
-      } catch (error) {
-        clearInterval(progressInterval)
-        throw error
-      }
-      
-                          if (result.success) {
-          // Crear blob y descargar
-          const mimeType = result.format === 'zip' ? 'application/zip' : `video/${result.format || format}`
-          const blob = new Blob([result.data], { type: mimeType })
-          
-          try {
-            const dirHandle = await selectDownloadFolder()
-            
-            if (dirHandle) {
-              // Usar File System Access API
-              const extension = result.format === 'zip' ? 'zip' : (result.format || format)
-              const fileName = `${video.title || video.name}_${resolution}.${extension}`
-              const fileHandle = await dirHandle.getFileHandle(fileName, { create: true })
-              const writable = await fileHandle.createWritable()
-              await writable.write(blob)
-              await writable.close()
-              // Archivo guardado exitosamente
-            } else {
-              // Descarga normal
-              const url = URL.createObjectURL(blob)
-              const a = document.createElement('a')
-              a.href = url
-              const extension = result.format === 'zip' ? 'zip' : (result.format || format)
-              a.download = `${video.title || video.name}_${resolution}.${extension}`
-              document.body.appendChild(a)
-              a.click()
-              document.body.removeChild(a)
-              URL.revokeObjectURL(url)
-              // Archivo descargado exitosamente
-            }
-            
-            onDownloadComplete && onDownloadComplete()
-            onClose()
-          } catch (error) {
-            console.error('Error al guardar archivo:', error)
-            throw new Error('Error al guardar el archivo')
-          }
-        } else {
-          throw new Error(result.error)
-        }
-    } catch (error) {
-      console.error('❌ Error al descargar video:', error)
-      alert(`Error al procesar video: ${error.message}`)
-    } finally {
+  const [progress, setProgress] = useState(null)
+  const [error, setError] = useState(null)
+  const [downloadUrl, setDownloadUrl] = useState(null)
+  const [maxAvailableResolution, setMaxAvailableResolution] = useState('4k')
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+
+  const videoCombiner = new VideoCombiner()
+
+  useEffect(() => {
+    if (isOpen) {
+      setProgress(null)
+      setError(null)
+      setDownloadUrl(null)
       setIsProcessing(false)
-      setProgress(0)
+      setIsAnalyzing(true)
+      analyzeVideoResolution()
     }
-  }
-  
-  // Función para elegir carpeta de descarga
-  const selectDownloadFolder = async () => {
+  }, [isOpen, video])
+
+  // Analizar la resolución máxima disponible en los videos
+  const analyzeVideoResolution = async () => {
     try {
-      // Verificar si la API de File System Access está disponible
-      if ('showDirectoryPicker' in window) {
-        const dirHandle = await window.showDirectoryPicker()
-        return dirHandle
-      } else {
-        // Fallback: usar descarga normal
-        // API de File System Access no disponible, usando descarga normal
-        return null
+      setIsAnalyzing(true)
+      let maxRes = '720p' // Por defecto, empezar con la más baja
+
+      if (video?.videos && Array.isArray(video.videos)) {
+        // Es una secuencia - analizar todos los videos
+        const resolutions = await Promise.all(
+          video.videos.map(v => getVideoResolution(v))
+        )
+        
+        // Encontrar la resolución máxima
+        maxRes = getMaxResolution(resolutions)
+      } else if (video) {
+        // Es un video individual
+        maxRes = await getVideoResolution(video)
       }
+
+      setMaxAvailableResolution(maxRes)
+      
+      // Ajustar la resolución seleccionada si es mayor que la disponible
+      if (getResolutionValue(resolution) > getResolutionValue(maxRes)) {
+        setResolution(maxRes)
+      }
+
     } catch (error) {
-              // Usuario canceló la selección de carpeta o error
-      return null
+      console.warn('Error analizando resolución:', error)
+      setMaxAvailableResolution('720p')
+    } finally {
+      setIsAnalyzing(false)
     }
   }
 
-  // Descarga directa (sin conversión)
-  const handleDirectDownload = async () => {
-    if (!video || !video.file) {
-      console.error('No hay video para descargar')
-      return
-    }
-    
+  // Obtener la resolución de un video individual
+  const getVideoResolution = async (video) => {
     try {
-      const dirHandle = await selectDownloadFolder()
+      const { ref, getDownloadURL } = await import('firebase/storage')
+      const { storage } = await import('../../services/firebase/config')
       
-      if (dirHandle) {
-        // Usar File System Access API
-        const fileName = `${video.title || video.name}.mp4`
-        const fileHandle = await dirHandle.getFileHandle(fileName, { create: true })
-        const writable = await fileHandle.createWritable()
-        await writable.write(video.file)
-        await writable.close()
-                    // Archivo guardado exitosamente
-      } else {
-        // Descarga normal
-        const url = URL.createObjectURL(video.file)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = video.title || 'video'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        URL.revokeObjectURL(url)
-      }
+      const videoRef = ref(storage, video.videoPath)
+      const downloadURL = await getDownloadURL(videoRef)
       
-      onClose()
+      return new Promise((resolve) => {
+        const videoElement = document.createElement('video')
+        videoElement.onloadedmetadata = () => {
+          const width = videoElement.videoWidth
+          const height = videoElement.videoHeight
+          
+          // Determinar resolución basada en dimensiones
+          let res = '720p'
+          if (width >= 3840 && height >= 2160) res = '4k'
+          else if (width >= 1920 && height >= 1080) res = '1080p'
+          else if (width >= 1280 && height >= 720) res = '720p'
+          else res = '480p'
+          
+          resolve(res)
+        }
+        videoElement.onerror = () => resolve('720p')
+        videoElement.src = downloadURL
+      })
     } catch (error) {
-      console.error('Error en descarga directa:', error)
-      alert('Error al descargar el archivo')
+      console.warn('Error obteniendo resolución:', error)
+      return '720p'
     }
   }
+
+  // Obtener la resolución máxima de una lista
+  const getMaxResolution = (resolutions) => {
+    const values = resolutions.map(r => getResolutionValue(r))
+    const maxValue = Math.max(...values)
+    
+    if (maxValue >= getResolutionValue('4k')) return '4k'
+    if (maxValue >= getResolutionValue('1080p')) return '1080p'
+    if (maxValue >= getResolutionValue('720p')) return '720p'
+    return '480p'
+  }
+
+  // Valor numérico de resolución para comparación
+  const getResolutionValue = (resolution) => {
+    switch (resolution) {
+      case '4k': return 4
+      case '1080p': return 3
+      case '720p': return 2
+      case '480p': return 1
+      default: return 2
+    }
+  }
+
+  // Opciones de formato optimizadas para máxima calidad
+  const formatOptions = [
+    { value: 'mp4', label: 'MP4 (H.264)', description: 'Máxima calidad, compatible con Windows' },
+    { value: 'webm', label: 'WebM (VP9)', description: 'Alta calidad, archivos más pequeños' }
+  ]
   
+  // Opciones de resolución dinámicas basadas en el video
+  const resolutionOptions = [
+    { 
+      value: '4k', 
+      label: '4K UHD', 
+      description: 'Máxima calidad (3840x2160)',
+      disabled: getResolutionValue('4k') > getResolutionValue(maxAvailableResolution)
+    },
+    { 
+      value: '1080p', 
+      label: 'Full HD', 
+      description: 'Alta calidad (1920x1080)',
+      disabled: getResolutionValue('1080p') > getResolutionValue(maxAvailableResolution)
+    },
+    { 
+      value: '720p', 
+      label: 'HD', 
+      description: 'Calidad estándar (1280x720)',
+      disabled: getResolutionValue('720p') > getResolutionValue(maxAvailableResolution)
+    },
+    { 
+      value: '480p', 
+      label: 'SD', 
+      description: 'Calidad básica (854x480)',
+      disabled: getResolutionValue('480p') > getResolutionValue(maxAvailableResolution)
+    }
+  ]
+
+  // Manejar descarga optimizada con máxima calidad
+  const handleDownload = async () => {
+    if (!video) {
+      setError('No hay video para descargar')
+      return
+    }
+
+    setIsProcessing(true)
+    setError(null)
+    setProgress({
+      stage: 'init',
+      current: 0,
+      total: 100,
+      message: 'Iniciando descarga con máxima calidad...'
+    })
+
+    try {
+      let result
+
+      // Verificar si es una secuencia o un video individual
+      if (video.videos && Array.isArray(video.videos)) {
+        // Es una secuencia - usar VideoCombiner con máxima calidad
+        result = await videoCombiner.combineVideos(video.videos, setProgress, resolution)
+      } else {
+        // Es un video individual - descarga directa
+        result = await downloadSingleVideo(video, setProgress)
+      }
+
+      // Crear URL para descarga
+      const url = URL.createObjectURL(result)
+      setDownloadUrl(url)
+
+      setProgress({
+        stage: 'complete',
+        current: 100,
+        total: 100,
+        message: '¡Descarga completada con máxima calidad!'
+      })
+
+    } catch (error) {
+      console.error('Error en descarga:', error)
+      setError(`Error en descarga: ${error.message}`)
+      setProgress(null)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Función para descargar video individual
+  const downloadSingleVideo = async (video, onProgress) => {
+    try {
+      if (onProgress) {
+        onProgress({
+          stage: 'download',
+          current: 50,
+          total: 100,
+          message: 'Descargando video con máxima calidad...'
+        })
+      }
+
+      // Usar Firebase SDK para obtener URL de descarga
+      const { ref, getDownloadURL } = await import('firebase/storage')
+      const { storage } = await import('../../services/firebase/config')
+      
+      const videoRef = ref(storage, video.videoPath)
+      const downloadURL = await getDownloadURL(videoRef)
+      
+      // Descargar video
+      const response = await fetch(downloadURL)
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status} ${response.statusText}`)
+      }
+      
+      const videoBlob = await response.blob()
+      
+      if (onProgress) {
+        onProgress({
+          stage: 'complete',
+          current: 100,
+          total: 100,
+          message: 'Video descargado con máxima calidad'
+        })
+      }
+
+      return videoBlob
+
+    } catch (error) {
+      throw new Error(`Error descargando video: ${error.message}`)
+    }
+  }
+
+  const handleDownloadFile = () => {
+    if (downloadUrl) {
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      
+      // Generar nombre de archivo con información de calidad
+      const extension = format === 'mp4' ? 'mp4' : 'webm'
+      const qualitySuffix = resolution === '4k' ? '_4K' : 
+                           resolution === '1080p' ? '_FHD' : 
+                           resolution === '720p' ? '_HD' : '_SD'
+      const fileName = video?.videos 
+        ? `${video.title || 'secuencia'}${qualitySuffix}.${extension}`
+        : `${video.title || 'video'}${qualitySuffix}.${extension}`
+      
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      // Limpiar URL
+      URL.revokeObjectURL(downloadUrl)
+      setDownloadUrl(null)
+      
+      onDownloadComplete && onDownloadComplete()
+      onClose()
+    }
+  }
+
+  const getProgressColor = () => {
+    if (error) return 'text-red-500'
+    if (progress?.stage === 'complete') return 'text-green-500'
+    return 'text-blue-500'
+  }
+
+  const getProgressIcon = () => {
+    if (error) return <AlertCircle className="h-5 w-5" />
+    if (progress?.stage === 'complete') return <Check className="h-5 w-5" />
+    return <Loader className="h-5 w-5 animate-spin" />
+  }
+
+  const getProgressBarColor = () => {
+    if (error) return 'bg-red-500'
+    if (progress?.stage === 'complete') return 'bg-green-500'
+    return 'bg-blue-500'
+  }
+
+  const getStageDescription = () => {
+    switch (progress?.stage) {
+      case 'init':
+        return 'Inicializando sistema de alta calidad...'
+      case 'download':
+        return 'Descargando videos con máxima calidad...'
+      case 'ffmpeg':
+        return 'Combinando videos con seeking específico para Windows...'
+      case 'combine':
+        return 'Combinando videos con 4K y 60 FPS...'
+      case 'convert':
+        return 'Convirtiendo a MP4 con máxima calidad...'
+      case 'complete':
+        return '¡Proceso completado con seeking funcional!'
+      default:
+        return 'Preparando...'
+    }
+  }
+
+  const getResolutionInfo = () => {
+    switch (resolution) {
+      case '4k': return { width: 3840, height: 2160, fps: 60 }
+      case '1080p': return { width: 1920, height: 1080, fps: 60 }
+      case '720p': return { width: 1280, height: 720, fps: 30 }
+      case '480p': return { width: 854, height: 480, fps: 30 }
+      default: return { width: 1280, height: 720, fps: 30 }
+    }
+  }
+
   if (!isOpen) return null
-  
+
+  const resInfo = getResolutionInfo()
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <Download className="h-5 w-5 text-blue-600" />
-            <h2 className="text-lg font-semibold text-gray-800">
+            <Zap className="h-5 w-5 text-yellow-500" />
+            <h2 className="text-xl font-semibold text-gray-800">
               {video?.videos ? 'Descargar Secuencia' : 'Descargar Video'}
             </h2>
           </div>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
+            disabled={isProcessing}
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        
+
         {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Video/Sequence Info */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <div className="flex items-center space-x-3">
-              <Video className="h-8 w-8 text-gray-400" />
-              <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-gray-800 truncate">
-                  {video?.title || video?.name || 'Sin título'}
-                </h3>
-                {video?.videos ? (
-                  // Información de secuencia
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-500">
-                      {video.videos.length} videos • Duración aproximada: {Math.floor(video.videos.length * 30 / 60)}:{(video.videos.length * 30 % 60).toString().padStart(2, '0')}
-                    </p>
-                    {video.useBPMControl && video.targetBPM && (
-                      <p className="text-sm text-purple-600">
-                        BPM ajustado: {video.targetBPM}
-                      </p>
-                    )}
-                    {video.description && (
-                      <p className="text-sm text-gray-600">
-                        {video.description}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  // Información de video individual
-                  <div className="space-y-1">
-                    <p className="text-sm text-gray-500">
-                      {video?.fileSize ? `${(video.fileSize / (1024 * 1024)).toFixed(2)} MB` : 'Tamaño desconocido'}
-                    </p>
-                    {video?.bpm && (
-                      <p className="text-sm text-purple-600">
-                        BPM: {video.bpm}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
+        <div className="space-y-4">
+          {/* Video Info */}
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-200">
+            <div className="flex items-center space-x-2 mb-2">
+              <Zap className="h-4 w-4 text-yellow-500" />
+              <span className="text-sm font-semibold text-blue-800">CALIDAD INTELIGENTE</span>
+            </div>
+            <p className="text-sm text-gray-700">
+              <strong>{video?.videos ? video.videos.length : 1} video{video?.videos ? 's' : ''}</strong>
+              {video?.videos ? ' serán combinados en uno solo' : ' será descargado'}
+            </p>
+            {video?.videos && (
+              <p className="text-xs text-gray-600 mt-1">
+                Duración total: {video.videos.reduce((sum, v) => sum + (v.duration || 0), 0).toFixed(1)}s
+              </p>
+            )}
+            <div className="mt-2 space-y-1">
+              <p className="text-xs text-blue-600">
+                🎬 Resolución máxima disponible: {maxAvailableResolution.toUpperCase()}
+              </p>
+              <p className="text-xs text-blue-600">
+                🎯 FPS: {resInfo.fps} frames por segundo
+              </p>
+              <p className="text-xs text-blue-600">
+                📹 Codec: H.264 (máxima compatibilidad)
+              </p>
+              <p className="text-xs text-blue-600">
+                💾 Formato: MP4 (compatible con Windows)
+              </p>
+              <p className="text-xs text-green-600 font-semibold">
+                ✅ Soporte completo de seeking (navegación)
+              </p>
+              <p className="text-xs text-green-600 font-semibold">
+                ✅ Deslizador funcional en reproductor de Windows
+              </p>
             </div>
           </div>
-          
-          {/* Format Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
-              Formato de salida
-            </label>
-            <div className="space-y-2">
-              {formatOptions.map(option => (
-                <label
-                  key={option.value}
-                  className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                    format === option.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="format"
-                    value={option.value}
-                    checked={format === option.value}
-                    onChange={(e) => setFormat(e.target.value)}
-                    className="sr-only"
-                  />
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      format === option.value
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-gray-300'
-                    }`}>
-                      {format === option.value && (
-                        <div className="w-2 h-2 rounded-full bg-white"></div>
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-800">{option.label}</div>
-                      <div className="text-sm text-gray-500">{option.description}</div>
-                    </div>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-          
-                     {/* Resolution Selection */}
-           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-3">
-               Resolución
-             </label>
-             <div className="space-y-2">
-               {resolutionOptions.map(option => (
-                 <label
-                   key={option.value}
-                   className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                     resolution === option.value
-                       ? 'border-blue-500 bg-blue-50'
-                       : 'border-gray-200 hover:border-gray-300'
-                   }`}
-                 >
-                   <input
-                     type="radio"
-                     name="resolution"
-                     value={option.value}
-                     checked={resolution === option.value}
-                     onChange={(e) => setResolution(e.target.value)}
-                     className="sr-only"
-                   />
-                   <div className="flex items-center space-x-3">
-                     <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                       resolution === option.value
-                         ? 'border-blue-500 bg-blue-500'
-                         : 'border-gray-300'
-                     }`}>
-                       {resolution === option.value && (
-                         <div className="w-2 h-2 rounded-full bg-white"></div>
-                       )}
-                     </div>
-                     <div>
-                       <div className="font-medium text-gray-800">{option.label}</div>
-                       <div className="text-sm text-gray-500">{option.description}</div>
-                     </div>
-                   </div>
-                 </label>
-               ))}
-             </div>
-           </div>
-          
-          {/* Progress Bar */}
-          {isProcessing && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm text-gray-600">
-                <span>Procesando video...</span>
-                <span>{progress}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                ></div>
+
+          {/* Resolution Selector */}
+          {!isAnalyzing && (
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-700">
+                Resolución de Descarga
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {resolutionOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => !option.disabled && setResolution(option.value)}
+                    className={`p-3 rounded-lg border-2 text-left transition-all ${
+                      resolution === option.value
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : option.disabled
+                        ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                    disabled={option.disabled}
+                  >
+                    <div className="font-medium text-sm">{option.label}</div>
+                    <div className="text-xs opacity-75">{option.description}</div>
+                    {option.disabled && (
+                      <div className="text-xs text-red-500 mt-1">
+                        No disponible
+                      </div>
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
           )}
+
+          {/* Analyzing */}
+          {isAnalyzing && (
+            <div className="flex items-center space-x-2 text-blue-600">
+              <Loader className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Analizando resolución máxima disponible...</span>
+            </div>
+          )}
+
+          {/* Progress */}
+          {progress && (
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                {getProgressIcon()}
+                <span className={`text-sm font-medium ${getProgressColor()}`}>
+                  {progress.message}
+                </span>
+              </div>
+              
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all duration-300 ${getProgressBarColor()}`}
+                  style={{ width: `${progress.current}%` }}
+                />
+              </div>
+              
+              <p className="text-xs text-gray-500">
+                {getStageDescription()}
+              </p>
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="h-5 w-5 text-red-500" />
+                <span className="text-sm text-red-700">{error}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Success */}
+          {downloadUrl && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+              <div className="flex items-center space-x-2">
+                <Check className="h-5 w-5 text-green-500" />
+                <span className="text-sm text-green-700">
+                  ¡{video?.videos ? 'Secuencia' : 'Video'} listo para descargar en {resolution.toUpperCase()}!
+                </span>
+              </div>
+              <p className="text-xs text-green-600 mt-1">
+                Archivo MP4 compatible con reproductor de Windows
+              </p>
+            </div>
+          )}
         </div>
-        
-        {/* Footer */}
-        <div className="flex items-center justify-between p-6 border-t border-gray-200">
-          <button
-            onClick={handleDirectDownload}
-            disabled={isProcessing}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            Descargar original
-          </button>
-          
-          <div className="flex space-x-3">
-            <button
-              onClick={onClose}
-              disabled={isProcessing}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-            >
-              Cancelar
-            </button>
+
+        {/* Actions */}
+        <div className="flex space-x-3 mt-6">
+          {!isProcessing && !downloadUrl && !isAnalyzing && (
             <button
               onClick={handleDownload}
-              disabled={isProcessing}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                isProcessing
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
+              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2 font-semibold"
             >
-              {isProcessing ? 'Procesando...' : 'Descargar'}
+              <Zap className="h-4 w-4" />
+              <span>{video?.videos ? 'Combinar y Descargar' : 'Descargar Video'}</span>
             </button>
-          </div>
+          )}
+
+          {downloadUrl && (
+            <button
+              onClick={handleDownloadFile}
+              className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-teal-700 transition-all duration-200 flex items-center justify-center space-x-2 font-semibold"
+            >
+              <Download className="h-4 w-4" />
+              <span>Descargar MP4 ({resolution.toUpperCase()})</span>
+            </button>
+          )}
+
+          <button
+            onClick={onClose}
+            className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            disabled={isProcessing || isAnalyzing}
+          >
+            {downloadUrl ? 'Cerrar' : 'Cancelar'}
+          </button>
         </div>
       </div>
     </div>

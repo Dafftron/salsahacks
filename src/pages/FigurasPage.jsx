@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, lazy, Suspense } from 'react'
 import { 
   Search, 
   Upload, 
@@ -19,23 +19,26 @@ import {
   Play,
   Shuffle,
   Eye,
-  EyeOff
+  EyeOff,
+  Loader
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
-import VideoUploadModal from '../components/video/VideoUploadModal'
-import VideoEditModal from '../components/video/VideoEditModal'
-import VideoPlayer from '../components/video/VideoPlayer'
-import DownloadModal from '../components/video/DownloadModal'
 import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
-import SequenceBuilder from '../components/sequence/SequenceBuilder'
-import SequenceGallery from '../components/sequence/SequenceGallery'
-import SequenceVideoPlayer from '../components/sequence/SequenceVideoPlayer'
 import CardSizeSelector from '../components/common/CardSizeSelector'
 import CompactCardActions from '../components/common/CompactCardActions'
 import CategoryChips from '../components/common/CategoryChips'
 import { useSequenceBuilderContext } from '../contexts/SequenceBuilderContext'
+
+// Lazy loading de componentes pesados
+const VideoUploadModal = lazy(() => import('../components/video/VideoUploadModal'))
+const VideoEditModal = lazy(() => import('../components/video/VideoEditModal'))
+const VideoPlayer = lazy(() => import('../components/video/VideoPlayer'))
+const DownloadModal = lazy(() => import('../components/video/DownloadModal'))
+const SequenceBuilder = lazy(() => import('../components/sequence/SequenceBuilder'))
+const SequenceGallery = lazy(() => import('../components/sequence/SequenceGallery'))
+const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVideoPlayer'))
 
 import { 
   getVideos, 
@@ -67,6 +70,14 @@ import {
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useCardSize } from '../contexts/CardSizeContext'
+
+// Componente de carga para lazy loading
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-8">
+    <Loader className="w-6 h-6 animate-spin text-blue-500" />
+    <span className="ml-2 text-gray-600">Cargando...</span>
+  </div>
+)
 
 const FigurasPage = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
@@ -895,22 +906,41 @@ const FigurasPage = () => {
   // Aplicar ordenamiento final
   const filteredVideos = sortVideos(baseCompatibilityFiltered)
 
-  // Función para descargar video usando Firebase Storage
+  // Función para descargar video usando el sistema optimizado
   const downloadVideo = async (video) => {
     try {
-      // Usar Firebase SDK directamente para descargar
+      // Usar el sistema de descarga optimizado
       const { ref, getDownloadURL } = await import('firebase/storage')
       const { storage } = await import('../services/firebase/config')
       
       const videoRef = ref(storage, video.videoPath)
-      
-      // Obtener la URL de descarga con token de acceso
       const downloadURL = await getDownloadURL(videoRef)
       
-      // Crear enlace de descarga directo
+      // Descargar video con timeout y mejor manejo de errores
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 segundos timeout
+      
+      const response = await fetch(downloadURL, {
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+      
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status} ${response.statusText}`)
+      }
+      
+      const videoBlob = await response.blob()
+      
+      if (videoBlob.size === 0) {
+        throw new Error('Archivo de video vacío')
+      }
+      
+      // Crear enlace de descarga optimizado
+      const url = URL.createObjectURL(videoBlob)
       const link = document.createElement('a')
-      link.href = downloadURL
-      link.download = video.title || 'video'
+      link.href = url
+      link.download = `${video.title || 'video'}.mp4`
       link.target = '_blank'
       link.rel = 'noopener noreferrer'
       
@@ -919,10 +949,13 @@ const FigurasPage = () => {
       link.click()
       document.body.removeChild(link)
       
-      addToast('Descarga iniciada', 'success')
+      // Limpiar URL
+      URL.revokeObjectURL(url)
+      
+      addToast('✅ Descarga completada exitosamente', 'success')
     } catch (error) {
-      console.error('Error en descarga:', error)
-      addToast('Error al descargar el video', 'error')
+      console.error('❌ Error en descarga:', error)
+      addToast(`❌ Error al descargar: ${error.message}`, 'error')
     }
   }
 
@@ -1148,15 +1181,17 @@ const FigurasPage = () => {
 
         {/* Sequence Builder - Collapsible */}
         {isBuilderOpen && (
-          <SequenceBuilder
-            isOpen={true}
-            videos={videos}
-            onSaveSequence={handleSaveSequence}
-            onToggleShowAll={toggleShowAllVideos}
-            showAllVideos={showAllVideos}
-            style={selectedStyle}
-            onToggleBuilder={toggleBuilder}
-          />
+          <Suspense fallback={<LoadingSpinner />}>
+            <SequenceBuilder
+              isOpen={true}
+              videos={videos}
+              onSaveSequence={handleSaveSequence}
+              onToggleShowAll={toggleShowAllVideos}
+              showAllVideos={showAllVideos}
+              style={selectedStyle}
+              onToggleBuilder={toggleBuilder}
+            />
+          </Suspense>
         )}
 
         {/* Sync Status and Cleanup Controls */}
@@ -1857,13 +1892,6 @@ const FigurasPage = () => {
                             <span className="font-medium">
                               {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
                             </span>
-                            <span className="text-gray-400">•</span>
-                            <span className="text-gray-600">
-                              {video.resolution && video.resolution !== 'Unknown' ? 
-                                video.resolution : 
-                                'HD'
-                              }
-                            </span>
                             {video.bpm && (
                               <>
                                 <span className="text-gray-400">•</span>
@@ -1874,7 +1902,7 @@ const FigurasPage = () => {
                               </>
                             )}
                           </div>
-                          <div className="flex items-center space-x-4">
+                          <div className="flex items-center space-x-2">
                             <button 
                               onClick={() => handlePlayVideo(video)}
                               className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
@@ -1891,20 +1919,6 @@ const FigurasPage = () => {
                             >
                               <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
                               <span className="font-medium">{video.likes || 0}</span>
-                            </button>
-                            <button 
-                              onClick={() => openEditModal(video)}
-                              className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
-                              title="Editar video"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </button>
-                            <button 
-                              onClick={() => openDeleteModal(video)}
-                              className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
-                              title="Eliminar video"
-                            >
-                              <Trash2 className="h-4 w-4" />
                             </button>
                             <button 
                               onClick={() => handleAddVideoToSequence(video)}
@@ -1934,6 +1948,20 @@ const FigurasPage = () => {
                               title="Descargar video"
                             >
                               <Download className="h-4 w-4" />
+                            </button>
+                            <button 
+                              onClick={() => openEditModal(video)}
+                              className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                              title="Editar video"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <button 
+                              onClick={() => openDeleteModal(video)}
+                              className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
+                              title="Eliminar video"
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
                         </div>
@@ -1973,13 +2001,15 @@ const FigurasPage = () => {
                 <span className="ml-3 text-gray-600">Cargando secuencias...</span>
               </div>
             ) : (
-              <SequenceGallery
-                sequences={sequences}
-                onDeleteSequence={handleDeleteSequence}
-                onPlaySequence={handlePlaySequence}
-                onEditSequence={handleEditSequence}
-                onDownloadSequence={handleDownloadSequence}
-              />
+              <Suspense fallback={<LoadingSpinner />}>
+                <SequenceGallery
+                  sequences={sequences}
+                  onDeleteSequence={handleDeleteSequence}
+                  onPlaySequence={handlePlaySequence}
+                  onEditSequence={handleEditSequence}
+                  onDownloadSequence={handleDownloadSequence}
+                />
+              </Suspense>
             )}
           </div>
         )}
@@ -1988,16 +2018,19 @@ const FigurasPage = () => {
       </div>
 
                            {/* Video Upload Modal */}
-                <VideoUploadModal
+                <Suspense fallback={<LoadingSpinner />}>
+                  <VideoUploadModal
            isOpen={isUploadModalOpen}
            onClose={() => setIsUploadModalOpen(false)}
            onVideoUploaded={handleVideoUploaded}
            page="figuras"
            style={selectedStyle}
          />
+                </Suspense>
 
         {/* Video Edit Modal */}
-        <VideoEditModal
+        <Suspense fallback={<LoadingSpinner />}>
+          <VideoEditModal
           isOpen={editModal.isOpen}
           onClose={closeEditModal}
           video={editModal.video}
@@ -2005,11 +2038,13 @@ const FigurasPage = () => {
           page="figuras"
           style={selectedStyle}
         />
+        </Suspense>
 
 
 
        {/* Cleanup Confirmation Modal */}
-       <ConfirmModal
+       <Suspense fallback={<LoadingSpinner />}>
+         <ConfirmModal
          isOpen={cleanupModal.isOpen}
          onClose={closeCleanupModal}
          onConfirm={() => handleCleanupData(cleanupModal.type)}
@@ -2036,9 +2071,11 @@ const FigurasPage = () => {
          }
          cancelText="Cancelar"
        />
+       </Suspense>
 
        {/* Confirm Edit Sequence Modal */}
-       <ConfirmModal
+       <Suspense fallback={<LoadingSpinner />}>
+         <ConfirmModal
          isOpen={editSequenceModal.isOpen}
          onClose={handleCancelEditSequence}
          onConfirm={handleConfirmEditSequence}
@@ -2052,14 +2089,16 @@ Esto reemplazará la secuencia actual en construcción y perderás todos los cam
          cancelText="Cancelar"
          type="warning"
        />
+       </Suspense>
 
        {/* Confirm Delete Modal */}
-       <ConfirmModal
-         isOpen={deleteModal.isOpen}
-         onClose={closeDeleteModal}
-         onConfirm={() => handleDeleteVideo(deleteModal.video)}
-         title="🗑️ Eliminar Video"
-         message={`¿Estás seguro de que quieres eliminar el video "${deleteModal.video?.title}"?
+       <Suspense fallback={<LoadingSpinner />}>
+         <ConfirmModal
+           isOpen={deleteModal.isOpen}
+           onClose={closeDeleteModal}
+           onConfirm={() => handleDeleteVideo(deleteModal.video)}
+           title="🗑️ Eliminar Video"
+           message={`¿Estás seguro de que quieres eliminar el video "${deleteModal.video?.title}"?
 
 Esta acción eliminará permanentemente:
 • El archivo de video de Firebase Storage
@@ -2067,10 +2106,11 @@ Esta acción eliminará permanentemente:
 • Los metadatos de Firestore
 
 Esta acción NO se puede deshacer.`}
-         confirmText="Sí, Eliminar"
-         cancelText="Cancelar"
-         type="danger"
-       />
+           confirmText="Sí, Eliminar"
+           cancelText="Cancelar"
+           type="danger"
+         />
+       </Suspense>
 
        {/* Video Player Modal */}
        {showVideoPlayer && selectedVideo && (
@@ -2093,14 +2133,16 @@ Esta acción NO se puede deshacer.`}
              <div className="flex-1 min-h-0 p-4">
                <div className="w-full h-full max-h-[65vh] flex items-center justify-center">
                  <div className="w-full max-w-md">
-                   <SequenceVideoPlayer
-                     videos={[selectedVideo]}
-                     className="w-full h-full"
-                     showControls={true}
-                     autoplay={true}
-                     loop={false}
-                     muted={false}
-                   />
+                   <Suspense fallback={<LoadingSpinner />}>
+                     <SequenceVideoPlayer
+                       videos={[selectedVideo]}
+                       className="w-full h-full"
+                       showControls={true}
+                       autoplay={true}
+                       loop={false}
+                       muted={false}
+                     />
+                   </Suspense>
                  </div>
                </div>
              </div>
@@ -2129,14 +2171,16 @@ Esta acción NO se puede deshacer.`}
              <div className="flex-1 min-h-0 p-4">
                <div className="w-full h-full max-h-[65vh] flex items-center justify-center">
                  <div className="w-full max-w-md">
-                   <SequenceVideoPlayer
-                     videos={selectedSequence.videos}
-                     className="w-full h-full"
-                     showControls={true}
-                     autoplay={true}
-                     loop={false}
-                     muted={false}
-                   />
+                   <Suspense fallback={<LoadingSpinner />}>
+                     <SequenceVideoPlayer
+                       videos={selectedSequence.videos}
+                       className="w-full h-full"
+                       showControls={true}
+                       autoplay={true}
+                       loop={false}
+                       muted={false}
+                     />
+                   </Suspense>
                  </div>
                </div>
                </div>
@@ -2145,7 +2189,8 @@ Esta acción NO se puede deshacer.`}
        )}
 
        {/* Download Sequence Modal */}
-       <DownloadModal
+       <Suspense fallback={<LoadingSpinner />}>
+         <DownloadModal
          isOpen={downloadSequenceModal.isOpen}
          onClose={handleCloseDownloadSequence}
          video={downloadSequenceModal.sequence ? {
@@ -2158,6 +2203,7 @@ Esta acción NO se puede deshacer.`}
            handleCloseDownloadSequence()
          }}
        />
+       </Suspense>
 
        {/* Toasts */}
        {toasts.map(toast => (
