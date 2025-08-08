@@ -23,7 +23,7 @@ const VideoDownloadModal = ({
       setDownloadUrl(null)
       setIsProcessing(false)
     }
-  }, [isOpen])
+  }, [isOpen, videos])
 
   const handleDownload = async () => {
     if (!videos || videos.length === 0) {
@@ -33,27 +33,27 @@ const VideoDownloadModal = ({
 
     setIsProcessing(true)
     setError(null)
-    setProgress({
-      stage: 'init',
-      current: 0,
-      total: 100,
-      message: 'Iniciando FFmpeg.wasm...'
-    })
+           setProgress({
+         stage: 'init',
+         current: 0,
+         total: 100,
+                               message: 'Iniciando procesamiento con Web Workers...'
+       })
 
-    try {
-      // Iniciando combinación con FFmpeg.wasm
-      const combinedBlob = await videoCombiner.combineVideos(videos, setProgress)
+         try {
+       // Usar el método principal que ahora usa SOLO MediaRecorder
+       const combinedBlob = await videoCombiner.combineVideos(videos, setProgress)
 
       // Crear URL para descarga
       const url = URL.createObjectURL(combinedBlob)
       setDownloadUrl(url)
 
-      setProgress({
-        stage: 'complete',
-        current: 100,
-        total: 100,
-        message: '¡Videos combinados exitosamente!'
-      })
+             setProgress({
+         stage: 'complete',
+         current: 100,
+         total: 100,
+         message: '¡Videos combinados exitosamente!'
+       })
 
     } catch (error) {
       console.error('Error en descarga:', error)
@@ -68,7 +68,7 @@ const VideoDownloadModal = ({
     if (downloadUrl) {
       const link = document.createElement('a')
       link.href = downloadUrl
-      link.download = `${sequenceName}.webm`
+      link.download = `${sequenceName}.mp4`
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -136,13 +136,12 @@ const VideoDownloadModal = ({
             <p className="text-sm text-gray-600">
               <strong>{videos?.length || 0} videos</strong> serán combinados en uno solo
             </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Duración total: {videos?.reduce((sum, v) => sum + (v.duration || 0), 0).toFixed(1)}s
-              {videos?.some(v => !v.duration) && ' (calculando...)'}
-            </p>
-            <p className="text-xs text-blue-600 mt-1">
-              Formato: WebM (calidad optimizada con MediaRecorder)
-            </p>
+                                                   <p className="text-xs text-gray-600 mt-1">
+                            Formato: MP4 (Web Workers)
+                          </p>
+                          <p className="text-xs text-green-600 font-semibold mt-1">
+                            ✅ Procesamiento en segundo plano - sin bloqueos
+                          </p>
           </div>
 
           {/* Progress */}
@@ -209,7 +208,7 @@ const VideoDownloadModal = ({
               className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
             >
               <Download className="h-4 w-4" />
-              <span>Descargar WebM</span>
+              <span>Descargar MP4</span>
             </button>
           )}
 

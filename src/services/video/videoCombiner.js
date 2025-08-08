@@ -60,10 +60,10 @@ class VideoCombiner {
     }
   }
 
-  // Método para combinar videos directamente con FFmpeg.wasm
-  async combineVideosWithFFmpegDirect(videoBlobs, onProgress) {
+  // Método SIMPLE para combinar videos SIN recodificar (mantiene formato original)
+  async combineVideosSimple(videoBlobs, onProgress) {
     try {
-      console.log('🔄 Combinando videos con FFmpeg.wasm...')
+      console.log('🔄 Combinando videos SIN recodificar (formato original)...')
       
       // Importar FFmpeg dinámicamente
       const { FFmpeg } = await import('@ffmpeg/ffmpeg')
@@ -99,19 +99,17 @@ class VideoCombiner {
       const fileList = videoFiles.map(file => `file '${file}'`).join('\n')
       await ffmpeg.writeFile('filelist.txt', fileList)
       
-      // Combinar videos usando concat demuxer con metadatos básicos
+      // Combinar videos SIN recodificar (mantiene formato original)
       const ffmpegArgs = [
         '-f', 'concat',
         '-safe', '0',
         '-i', 'filelist.txt',
-        '-c', 'copy',                    // Copiar sin recodificar
-        '-movflags', '+faststart',       // Optimización para streaming
-        '-metadata', 'title=Secuencia Combinada',
-        '-metadata', 'artist=SalsaHacks',
+        '-c', 'copy',                    // SOLO copiar, NO recodificar
+        '-movflags', '+faststart',       // Solo para streaming
         'output.mp4'
       ]
       
-      console.log('Ejecutando FFmpeg con args:', ffmpegArgs.join(' '))
+      console.log('Ejecutando FFmpeg SIN recodificar:', ffmpegArgs.join(' '))
       await ffmpeg.exec(ffmpegArgs)
       
       // Leer archivo MP4 resultante
@@ -123,12 +121,213 @@ class VideoCombiner {
       // Crear blob MP4
       const mp4Blob = new Blob([mp4Data], { type: 'video/mp4' })
       
-      console.log(`✅ Combinación FFmpeg completada: ${(mp4Blob.size / 1024 / 1024).toFixed(2)} MB`)
+      console.log(`✅ Combinación SIN recodificar completada: ${(mp4Blob.size / 1024 / 1024).toFixed(2)} MB`)
       return mp4Blob
       
     } catch (error) {
-      console.error('❌ Error en combinación FFmpeg:', error)
-      throw new Error(`Error en combinación FFmpeg: ${error.message || 'Error desconocido'}`)
+      console.error('❌ Error en combinación simple:', error)
+      throw new Error(`Error en combinación simple: ${error.message || 'Error desconocido'}`)
+    }
+  }
+
+  // Método ALTERNATIVO usando MediaRecorder optimizado para MP4
+  async combineVideosWithMediaRecorder(videoBlobs, onProgress) {
+    try {
+      console.log('🔄 Combinando videos con MediaRecorder optimizado...')
+      
+      return new Promise((resolve, reject) => {
+        // Crear canvas para combinar videos
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        
+        // Configurar canvas con resolución estándar
+        canvas.width = 1920
+        canvas.height = 1080
+        
+        // Configurar MediaRecorder para MP4
+        const options = {
+          mimeType: 'video/webm;codecs=vp9',
+          videoBitsPerSecond: 5000000 // 5 Mbps para buena calidad
+        }
+        
+        // Fallback si VP9 no está disponible
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          options.mimeType = 'video/webm;codecs=vp8'
+        }
+        
+        // Fallback si WebM no está disponible
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          options.mimeType = 'video/mp4'
+        }
+        
+        console.log('📹 Usando codec:', options.mimeType)
+        
+        const mediaRecorder = new MediaRecorder(canvas.captureStream(30), options)
+        const chunks = []
+        
+        let currentVideoIndex = 0
+        let currentVideo = null
+        let currentVideoElement = null
+        let totalDuration = 0
+        let startTime = 0
+        
+        // Función para procesar el siguiente video
+        const processNextVideo = () => {
+          if (currentVideoIndex >= videoBlobs.length) {
+            // Todos los videos procesados
+            mediaRecorder.stop()
+            return
+          }
+          
+          const videoBlob = videoBlobs[currentVideoIndex]
+          const videoUrl = URL.createObjectURL(videoBlob)
+          
+          // Crear elemento de video
+          currentVideoElement = document.createElement('video')
+          currentVideoElement.src = videoUrl
+          currentVideoElement.muted = true
+          currentVideoElement.playsInline = true
+          
+          currentVideoElement.onloadedmetadata = () => {
+            console.log(`🎬 Procesando video ${currentVideoIndex + 1}/${videoBlobs.length} (duración: ${currentVideoElement.duration}s)`)
+            
+            if (onProgress) {
+              onProgress({
+                stage: 'ffmpeg',
+                current: 70 + ((currentVideoIndex + 1) / videoBlobs.length) * 20,
+                total: 100,
+                message: `Combinando video ${currentVideoIndex + 1}/${videoBlobs.length}`
+              })
+            }
+            
+            // Iniciar reproducción
+            currentVideoElement.currentTime = 0
+            currentVideoElement.play()
+          }
+          
+          currentVideoElement.onended = () => {
+            // Video terminado, procesar siguiente
+            URL.revokeObjectURL(videoUrl)
+            currentVideoIndex++
+            processNextVideo()
+          }
+          
+          currentVideoElement.onerror = (error) => {
+            console.error(`Error reproduciendo video ${currentVideoIndex + 1}:`, error)
+            URL.revokeObjectURL(videoUrl)
+            reject(new Error(`Error procesando video ${currentVideoIndex + 1}`))
+          }
+        }
+        
+        // Configurar MediaRecorder
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            chunks.push(event.data)
+          }
+        }
+        
+        mediaRecorder.onstop = () => {
+          try {
+            // Crear blob con el tipo MIME correcto
+            const mimeType = options.mimeType.includes('mp4') ? 'video/mp4' : 'video/webm'
+            const combinedBlob = new Blob(chunks, { type: mimeType })
+            
+            console.log(`✅ Video combinado creado: ${(combinedBlob.size / 1024 / 1024).toFixed(2)} MB`)
+            
+            // Si es WebM, convertir a MP4 usando FFmpeg
+            if (mimeType === 'video/webm') {
+              this.convertWebmToMp4Simple(combinedBlob).then(mp4Blob => {
+                resolve(mp4Blob)
+              }).catch(error => {
+                console.warn('Error convirtiendo a MP4, usando WebM:', error)
+                resolve(combinedBlob)
+              })
+            } else {
+              resolve(combinedBlob)
+            }
+          } catch (error) {
+            reject(error)
+          }
+        }
+        
+        mediaRecorder.onerror = (error) => {
+          reject(new Error(`Error en MediaRecorder: ${error.message}`))
+        }
+        
+        // Función de renderizado
+        const renderFrame = () => {
+          if (currentVideoElement && !currentVideoElement.paused && !currentVideoElement.ended) {
+            // Dibujar frame actual en canvas
+            ctx.drawImage(currentVideoElement, 0, 0, canvas.width, canvas.height)
+            requestAnimationFrame(renderFrame)
+          }
+        }
+        
+        // Iniciar grabación
+        mediaRecorder.start(100) // Chunks cada 100ms
+        
+        // Iniciar procesamiento
+        processNextVideo()
+        
+        // Iniciar renderizado
+        renderFrame()
+      })
+      
+    } catch (error) {
+      console.error('❌ Error en combinación con MediaRecorder:', error)
+      throw new Error(`Error en combinación con MediaRecorder: ${error.message || 'Error desconocido'}`)
+    }
+  }
+
+  // Método simple para convertir WebM a MP4
+  async convertWebmToMp4Simple(webmBlob) {
+    try {
+      console.log('🔄 Convirtiendo WebM a MP4...')
+      
+      // Importar FFmpeg dinámicamente
+      const { FFmpeg } = await import('@ffmpeg/ffmpeg')
+      const { toBlobURL } = await import('@ffmpeg/util')
+      
+      const ffmpeg = new FFmpeg()
+      
+      // Cargar FFmpeg
+      await ffmpeg.load({
+        coreURL: await toBlobURL('/ffmpeg/ffmpeg-core.js', 'text/javascript'),
+        wasmURL: await toBlobURL('/ffmpeg/ffmpeg-core.wasm', 'application/wasm')
+      })
+      
+      // Escribir archivo WebM
+      const webmData = await webmBlob.arrayBuffer()
+      await ffmpeg.writeFile('input.webm', new Uint8Array(webmData))
+      
+      // Convertir a MP4 con configuración simple
+      await ffmpeg.exec([
+        '-i', 'input.webm',
+        '-c:v', 'libx264',
+        '-preset', 'fast',
+        '-crf', '23',
+        '-c:a', 'aac',
+        '-b:a', '128k',
+        '-movflags', '+faststart',
+        'output.mp4'
+      ])
+      
+      // Leer archivo MP4
+      const mp4Data = await ffmpeg.readFile('output.mp4')
+      
+      // Limpiar archivos
+      await ffmpeg.deleteFile('input.webm')
+      await ffmpeg.deleteFile('output.mp4')
+      
+      // Crear blob MP4
+      const mp4Blob = new Blob([mp4Data], { type: 'video/mp4' })
+      
+      console.log(`✅ Conversión completada: ${(mp4Blob.size / 1024 / 1024).toFixed(2)} MB`)
+      return mp4Blob
+      
+    } catch (error) {
+      console.error('❌ Error convirtiendo WebM a MP4:', error)
+      throw new Error(`Error en conversión: ${error.message || 'Error desconocido'}`)
     }
   }
 
@@ -213,7 +412,7 @@ class VideoCombiner {
   // Método específico para generar MP4 con seeking funcional en Windows
   async combineVideosWithWindowsSeeking(videoBlobs, onProgress, selectedResolution = '4k') {
     try {
-      console.log(`🔄 Combinando videos con seeking específico para Windows en ${selectedResolution}...`)
+      console.log(`🔄 Combinando videos manteniendo calidad original en ${selectedResolution}...`)
       
       const dimensions = this.getResolutionDimensions(selectedResolution)
       
@@ -251,43 +450,33 @@ class VideoCombiner {
       const fileList = videoFiles.map(file => `file '${file}'`).join('\n')
       await ffmpeg.writeFile('filelist.txt', fileList)
       
-      // Combinar videos con configuración específica para Windows seeking
+      // Combinar videos manteniendo la calidad del mejor video
       const ffmpegArgs = [
         '-f', 'concat',
         '-safe', '0',
         '-i', 'filelist.txt',
-        '-c:v', 'libx264',              // Recodificar video con H.264
-        '-preset', 'medium',             // Preset balanceado
-        '-crf', '20',                   // Calidad alta
-        '-c:a', 'aac',                  // Recodificar audio con AAC
-        '-b:a', '160k',                 // Bitrate de audio
-        '-movflags', '+faststart+write_colr+write_gama', // Metadatos completos
-        '-metadata', 'title=Secuencia de Figuras de Baile',
-        '-metadata', 'artist=SalsaHacks',
-        '-metadata', 'comment=Video combinado con seeking funcional',
-        '-metadata', 'handler_name=VideoHandler',
-        '-metadata', 'major_brand=mp42',
-        '-metadata', 'minor_version=0',
-        '-metadata', 'compatible_brands=mp42isomavc1',
-        '-metadata', 'creation_time=' + new Date().toISOString(),
-        '-metadata', 'encoder=FFmpeg',
-        '-g', '25',                     // GOP size para seeking suave
-        '-keyint_min', '25',            // Keyframe mínimo
-        '-sc_threshold', '0',           // Deshabilitar scene cut detection
-        '-force_key_frames', 'expr:gte(t,n_forced*1)', // Forzar keyframes regulares
-        '-profile:v', 'high',           // Perfil H.264 alto
-        '-level', '4.1',                // Nivel de compatibilidad
+        '-c:v', 'libx264',              // Codec H.264 estándar
+        '-preset', 'medium',            // Preset balanceado para calidad
+        '-crf', '18',                   // Calidad alta (mantener calidad original)
+        '-c:a', 'aac',                  // Codec AAC estándar
+        '-b:a', '160k',                 // Bitrate de audio alto
+        '-movflags', '+faststart',      // Solo faststart para compatibilidad
         '-pix_fmt', 'yuv420p',          // Formato de píxeles estándar
-        '-color_primaries', 'bt709',    // Espacio de color estándar
-        '-color_trc', 'bt709',          // Curva de transferencia
-        '-colorspace', 'bt709',         // Espacio de color
-        '-color_range', 'tv',           // Rango de color
-        '-vf', `scale=${dimensions.width}:${dimensions.height}:force_original_aspect_ratio=decrease,pad=${dimensions.width}:${dimensions.height}:(ow-iw)/2:(oh-ih)/2`, // Escalar a resolución seleccionada
-        '-r', dimensions.fps.toString(), // FPS específico
-        'output.mp4'
+        '-profile:v', 'high',           // Perfil alto para máxima calidad
+        '-level', '4.1',                // Nivel alto para calidad
+        '-g', '25',                     // GOP size para calidad
+        '-keyint_min', '25',            // Keyframe mínimo para calidad
+        '-vf', `scale=${dimensions.width}:${dimensions.height}:force_original_aspect_ratio=decrease,pad=${dimensions.width}:${dimensions.height}:(ow-iw)/2:(oh-ih)/2` // Escalar a resolución seleccionada (SIN forzar FPS)
       ]
       
-      console.log(`Ejecutando FFmpeg con configuración Windows seeking en ${selectedResolution}:`, ffmpegArgs.join(' '))
+      // Solo agregar FPS si se especifica (no forzar FPS)
+      if (dimensions.fps) {
+        ffmpegArgs.push('-r', dimensions.fps.toString())
+      }
+      
+      ffmpegArgs.push('output.mp4')
+      
+              console.log(`Ejecutando FFmpeg manteniendo calidad original en ${selectedResolution}:`, ffmpegArgs.join(' '))
       await ffmpeg.exec(ffmpegArgs)
       
       // Leer archivo MP4 resultante
@@ -299,12 +488,12 @@ class VideoCombiner {
       // Crear blob MP4
       const mp4Blob = new Blob([mp4Data], { type: 'video/mp4' })
       
-      console.log(`✅ Combinación Windows seeking completada en ${selectedResolution}: ${(mp4Blob.size / 1024 / 1024).toFixed(2)} MB`)
+              console.log(`✅ Combinación con calidad original completada en ${selectedResolution}: ${(mp4Blob.size / 1024 / 1024).toFixed(2)} MB`)
       return mp4Blob
           
         } catch (error) {
-      console.error('❌ Error en combinación Windows seeking:', error)
-      throw new Error(`Error en combinación Windows seeking: ${error.message || 'Error desconocido'}`)
+      console.error('❌ Error en combinación con calidad original:', error)
+      throw new Error(`Error en combinación con calidad original: ${error.message || 'Error desconocido'}`)
     }
   }
 
@@ -328,99 +517,184 @@ class VideoCombiner {
     }
   }
 
-  // Método principal optimizado con máxima calidad
+  // Método principal usando Web Workers para máxima compatibilidad
   async combineVideos(videos, onProgress, selectedResolution = '4k') {
     try {
-      console.log('🚀 Iniciando combinación con máxima calidad...')
+      console.log('🚀 Iniciando combinación con Web Workers...')
       
       if (onProgress) {
         onProgress({
           stage: 'init',
           current: 0,
           total: 100,
-          message: 'Inicializando sistema de alta calidad...'
+          message: 'Inicializando procesamiento con Web Workers...'
         })
       }
 
-      if (!videos || videos.length === 0) {
-        throw new Error('No hay videos para procesar')
-      }
-
-      // Descargar videos primero
       const videoBlobs = await this.downloadVideosWithConcurrency(videos, onProgress)
 
-      // Intentar primero con método específico para Windows seeking
-      try {
-        console.log('🔄 Intentando combinación con seeking específico para Windows...')
-        return await this.combineVideosWithWindowsSeeking(videoBlobs, onProgress, selectedResolution)
-      } catch (windowsError) {
-        console.warn('⚠️ Windows seeking falló, intentando FFmpeg básico:', windowsError)
-        
-        // Fallback con FFmpeg básico
-        try {
-          console.log('🔄 Intentando combinación con FFmpeg...')
-          return await this.combineVideosWithFFmpegDirect(videoBlobs, onProgress, selectedResolution)
-        } catch (ffmpegError) {
-          console.warn('⚠️ FFmpeg falló, intentando con recodificación para seeking:', ffmpegError)
-          
-          // Fallback con recodificación para seeking
-          if (onProgress) {
-            onProgress({
-              stage: 'ffmpeg',
-              current: 70,
-              total: 100,
-              message: 'Combinando videos con soporte de seeking...'
-            })
-          }
-
-          try {
-            const combinedBlob = await this.combineVideosWithSeekingSupport(videoBlobs, onProgress, selectedResolution)
-
-            if (onProgress) {
-              onProgress({
-                stage: 'complete',
-                current: 100,
-                total: 100,
-                message: '¡Combinación completada con soporte de seeking!'
-              })
-            }
-
-            console.log('✅ Combinación completada, archivo MP4 con seeking creado')
-            return combinedBlob
-          } catch (seekingError) {
-            console.warn('⚠️ Seeking también falló, usando MediaRecorder como último recurso:', seekingError)
-            
-            // Último fallback: MediaRecorder
+      // Método con Web Workers para máxima compatibilidad
+      console.log('🔄 Combinando videos con Web Workers...')
       if (onProgress) {
         onProgress({
-          stage: 'combine',
-                current: 70,
+          stage: 'ffmpeg',
+          current: 50,
           total: 100,
-                message: 'Combinando videos con MediaRecorder...'
+          message: 'Procesando videos con Web Workers...'
         })
       }
-
-            const combinedBlob = await this.combineVideoBlobsHighQuality(videoBlobs, onProgress, selectedResolution)
+      
+      const combinedBlob = await this.combineVideosWithWebWorker(videoBlobs, onProgress)
 
       if (onProgress) {
         onProgress({
           stage: 'complete',
           current: 100,
           total: 100,
-                message: '¡Combinación completada con MediaRecorder!'
+          message: '¡Combinación con Web Workers completada!'
         })
       }
 
-            console.log('✅ Combinación completada con MediaRecorder')
+      console.log('✅ Combinación con Web Workers completada')
       return combinedBlob
-          }
-        }
-      }
-
     } catch (error) {
-      console.error('❌ Error combinando videos:', error)
+      console.error('❌ Error en combinación con Web Workers:', error)
       throw new Error(`Error combinando videos: ${error.message || 'Error desconocido'}`)
     }
+  }
+
+  // Nuevo método usando Web Workers para procesamiento en segundo plano
+  async combineVideosWithWebWorker(videoBlobs, onProgress) {
+    return new Promise((resolve, reject) => {
+      try {
+        console.log('🎬 Iniciando Web Worker para combinación...')
+        
+        // Crear Web Worker
+        const workerCode = `
+          importScripts('https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/umd/ffmpeg.js');
+          
+          let ffmpeg = null;
+          
+          self.onmessage = async function(e) {
+            try {
+              const { videoBlobs, command } = e.data;
+              
+              if (command === 'init') {
+                // Inicializar FFmpeg
+                ffmpeg = new FFmpeg();
+                await ffmpeg.load();
+                self.postMessage({ type: 'progress', message: 'FFmpeg cargado correctamente' });
+                return;
+              }
+              
+              if (command === 'combine') {
+                // Escribir archivos de video
+                for (let i = 0; i < videoBlobs.length; i++) {
+                  const videoData = videoBlobs[i];
+                  const fileName = \`video_\${i}.mp4\`;
+                  await ffmpeg.writeFile(fileName, new Uint8Array(videoData));
+                  self.postMessage({ 
+                    type: 'progress', 
+                    message: \`Video \${i + 1}/\${videoBlobs.length} preparado\`,
+                    current: 30 + (i / videoBlobs.length) * 30
+                  });
+                }
+                
+                // Crear lista de archivos
+                const fileList = videoBlobs.map((_, i) => \`file 'video_\${i}.mp4'\`).join('\\n');
+                await ffmpeg.writeFile('filelist.txt', fileList);
+                
+                // Ejecutar FFmpeg
+                self.postMessage({ type: 'progress', message: 'Combinando videos...', current: 70 });
+                
+                await ffmpeg.run(
+                  '-f', 'concat',
+                  '-safe', '0',
+                  '-i', 'filelist.txt',
+                  '-c', 'copy',
+                  '-movflags', '+faststart',
+                  'output.mp4'
+                );
+                
+                // Leer resultado
+                const outputData = await ffmpeg.readFile('output.mp4');
+                
+                // Limpiar archivos
+                for (let i = 0; i < videoBlobs.length; i++) {
+                  await ffmpeg.deleteFile(\`video_\${i}.mp4\`);
+                }
+                await ffmpeg.deleteFile('filelist.txt');
+                await ffmpeg.deleteFile('output.mp4');
+                
+                self.postMessage({ 
+                  type: 'complete', 
+                  data: outputData.buffer,
+                  message: 'Combinación completada'
+                });
+              }
+              
+            } catch (error) {
+              self.postMessage({ type: 'error', error: error.message });
+            }
+          };
+        `;
+        
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        const worker = new Worker(URL.createObjectURL(blob));
+        
+        let isCompleted = false;
+        
+        worker.onmessage = function(e) {
+          const { type, message, current, data, error } = e.data;
+          
+          if (type === 'progress' && onProgress) {
+            onProgress({
+              stage: 'ffmpeg',
+              current: current || 50,
+              total: 100,
+              message: message
+            });
+          }
+          
+          if (type === 'complete') {
+            isCompleted = true;
+            const outputBlob = new Blob([data], { type: 'video/mp4' });
+            worker.terminate();
+            resolve(outputBlob);
+          }
+          
+          if (type === 'error') {
+            isCompleted = true;
+            worker.terminate();
+            reject(new Error(error));
+          }
+        };
+        
+        worker.onerror = function(error) {
+          if (!isCompleted) {
+            isCompleted = true;
+            worker.terminate();
+            reject(new Error('Error en Web Worker: ' + error.message));
+          }
+        };
+        
+        // Inicializar y ejecutar
+        worker.postMessage({ command: 'init' });
+        
+        setTimeout(() => {
+          const videoDataArray = videoBlobs.map(blob => blob.arrayBuffer());
+          Promise.all(videoDataArray).then(buffers => {
+            worker.postMessage({ 
+              command: 'combine', 
+              videoBlobs: buffers 
+            });
+          });
+        }, 1000);
+        
+      } catch (error) {
+        reject(new Error('Error creando Web Worker: ' + error.message));
+      }
+    });
   }
 
   // Método para descargar videos con límite de concurrencia
@@ -741,11 +1015,6 @@ class VideoCombiner {
     }
   }
 
-  // Método simple (igual que el principal)
-  async combineVideosSimple(videos, onProgress) {
-    return this.combineVideos(videos, onProgress)
-  }
-
   // Limpiar archivos temporales
   async cleanup(videoFiles) {
     try {
@@ -781,14 +1050,14 @@ class VideoCombiner {
     }
   }
 
-  // Obtener dimensiones basadas en la resolución seleccionada
+  // Obtener dimensiones basadas en la resolución seleccionada (SIN forzar FPS)
   getResolutionDimensions(resolution) {
     switch (resolution) {
-      case '4k': return { width: 3840, height: 2160, fps: 60 }
-      case '1080p': return { width: 1920, height: 1080, fps: 60 }
-      case '720p': return { width: 1280, height: 720, fps: 30 }
-      case '480p': return { width: 854, height: 480, fps: 30 }
-      default: return { width: 1920, height: 1080, fps: 60 }
+      case '4k': return { width: 3840, height: 2160, fps: null } // Mantener FPS original
+      case '1080p': return { width: 1920, height: 1080, fps: null } // Mantener FPS original
+      case '720p': return { width: 1280, height: 720, fps: null } // Mantener FPS original
+      case '480p': return { width: 854, height: 480, fps: null } // Mantener FPS original
+      default: return { width: 1920, height: 1080, fps: null } // Mantener FPS original
     }
   }
 }
