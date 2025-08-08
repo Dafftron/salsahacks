@@ -120,13 +120,14 @@ const VideoPlayer = ({
           e.preventDefault()
           setIsLoopEnabled(!isLoopEnabled)
           break
-        case 'KeyS':
+        case 'KeyS': {
           e.preventDefault()
           // Ciclar entre velocidades: 0.5x -> 1x -> 1.5x -> 2x -> 0.5x
           const currentIndex = availableSpeeds.indexOf(playbackSpeed)
           const nextIndex = (currentIndex + 1) % availableSpeeds.length
           handleSpeedChange(availableSpeeds[nextIndex])
           break
+        }
       }
     }
 

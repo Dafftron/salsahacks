@@ -241,7 +241,7 @@ const CategoryChips = ({
       )}
 
       {/* Debug Section - Solo en desarrollo */}
-      {process.env.NODE_ENV === 'development' && (
+      {import.meta.env.DEV && (
         <div className="mt-4 p-3 bg-gray-100 rounded-lg text-xs">
           <div className="font-medium text-gray-700 mb-2">🔧 Debug Info:</div>
           <div className="space-y-1 text-gray-600">

@@ -420,13 +420,14 @@ const SequenceVideoPlayer = ({
           e.preventDefault()
           setIsLoopEnabled(!isLoopEnabled)
           break
-        case 'KeyS':
+        case 'KeyS': {
           e.preventDefault()
           // Ciclar entre velocidades
           const currentIndex = availableSpeeds.indexOf(manualPlaybackSpeed)
           const nextIndex = (currentIndex + 1) % availableSpeeds.length
           handleSpeedChange(availableSpeeds[nextIndex])
           break
+        }
       }
     }
     

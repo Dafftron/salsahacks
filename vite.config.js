@@ -16,6 +16,23 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Librerías grandes separadas
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-router': ['react-router-dom'],
+          'vendor-jszip': ['jszip'],
+          'vendor-ffmpeg': ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
+          'vendor-icons': ['lucide-react'],
+          // Firebase por módulos específicos
+          'firebase-core': ['firebase/app'],
+          'firebase-auth': ['firebase/auth'],
+          'firebase-firestore': ['firebase/firestore'],
+          'firebase-storage': ['firebase/storage']
+        }
+      }
+    }
   }
 }) 
