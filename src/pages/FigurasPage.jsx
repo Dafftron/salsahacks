@@ -122,8 +122,16 @@ const FigurasPage = () => {
     loadSequence
   } = useSequenceBuilderContext()
 
-  // Hook para categorías
-  const { categoriesList, getColorClasses } = useCategories()
+  // Estado local para el estilo seleccionado
+  const [selectedStyle, setSelectedStyle] = useState('salsa')
+  
+  // Usar el sistema de categorías con estilo dinámico
+  const { 
+    availableStyles,
+    getGradientClasses,
+    categoriesList, 
+    getColorClasses
+  } = useCategories('figuras', selectedStyle)
   
   // Función para manejar click en título de categoría
   const handleCategoryTitleClick = (categoryKey) => {
@@ -136,14 +144,6 @@ const FigurasPage = () => {
       return [...prev, categoryKey]
     })
   }
-  
-  // Usar el nuevo sistema de categorías
-  const { 
-    selectedStyle, 
-    setSelectedStyle, 
-    availableStyles,
-    getGradientClasses
-  } = useCategories('figuras', 'salsa')
 
   // Función auxiliar para filtrar videos por estilo
   const filterVideosByStyle = (videos, style) => {

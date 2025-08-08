@@ -808,6 +808,26 @@
   - `src/components/video/VideoPlayer.jsx` - Video player principal
   - `src/index.css` - Estilos CSS para thumbnails
 
+### 🏷️ **COMMIT #077: CATEGORÍAS DINÁMICAS POR ESTILO DE BAILE** - 2024-12-19
+- **Problema**: Todos los estilos de baile usaban las categorías de salsa en lugar de sus propias categorías específicas
+- **Solución**: Implementado sistema de categorías dinámicas que cambia automáticamente según el estilo seleccionado
+- **Cambios**:
+  - Arreglado `useCategories` hook para usar estilo dinámico en lugar de 'salsa' hardcodeado
+  - Sincronizado `FigurasPage` para usar categorías específicas del estilo seleccionado
+  - Modal de subir videos ahora muestra categorías correctas para cada estilo
+  - Filtro avanzado actualizado para usar categorías dinámicas
+  - Agregado `useEffect` en hook para actualizar categorías cuando cambie el estilo
+  - Eliminada dependencia circular entre `selectedStyle` y `useCategories`
+- **Archivos modificados**:
+  - `src/hooks/useCategories.js` - Hook actualizado con sincronización dinámica
+  - `src/pages/FigurasPage.jsx` - Estado local de selectedStyle y uso correcto del hook
+- **Beneficios**:
+  - Cada estilo de baile ahora tiene sus propias categorías y tags específicos
+  - Al cambiar de estilo, las categorías se actualizan automáticamente
+  - Modal de subir videos muestra tags relevantes para el estilo seleccionado
+  - Filtro avanzado funciona correctamente con categorías específicas
+  - Sistema completamente sincronizado entre todas las páginas
+
 ---
 
 ## 📋 ÍNDICE

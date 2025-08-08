@@ -1,6 +1,6 @@
 // 🎯 HOOK PARA GESTIÓN DE CATEGORÍAS - SALSAHACKS V2.0
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 
 // Estructura jerárquica de categorías (copiada de CategoriesPage.jsx)
 const categoryStructure = {
@@ -216,6 +216,16 @@ const categoryStructure = {
 export const useCategories = (page = 'figuras', style = 'salsa') => {
   const [selectedPage, setSelectedPage] = useState(page)
   const [selectedStyle, setSelectedStyle] = useState(style)
+
+  // Actualizar el estilo cuando cambie el parámetro
+  useEffect(() => {
+    setSelectedStyle(style)
+  }, [style])
+
+  // Actualizar la página cuando cambie el parámetro
+  useEffect(() => {
+    setSelectedPage(page)
+  }, [page])
 
   // Obtener categorías para la página y estilo actual
   const currentCategories = useMemo(() => {

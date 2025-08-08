@@ -8,3 +8,13 @@
 [33mb3b80a8[m Update: $(date /t) $(time /t)
 [33mc18f2bc[m Add: Fase 1 completada - React + Vite + Estructura base + Todas las páginas
 [33m153bf64[m Add: Sistema de seguimiento de commits en NOTAS_COMMITS.md
+[33ma3239ee[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m COMMIT #076: Categorías y tags únicos por estilo de baile - Sincronizado categorías con CategoriesPage.jsx y aplicado colores corporativos
+[33m355f51b[m leviosa
+[33m26ac7cb[m leviosa
+[33ma05c5c4[m leviosa
+[33md22d912[m leviosa
+[33m29dbbca[m leviosa
+[33m42eb880[m leviosa
+[33mf9d7e89[m COMMIT #056 - Eliminación del botón de descarga del constructor de secuencias: Eliminado botón que generaba archivos WebM, función handleProcessSequence y estado isProcessingSequence
+[33ma7ff348[m COMMIT #054 - Optimización de botones en cards pequeñas de secuencias: Eliminación de información redundante, botones centrados, iconos adaptativos y mejor distribución del espacio
+[33m19748f7[m COMMIT #051 - FUNCIONALIDAD DE ORDENAMIENTO EN FAVORITOS - Integración completa de filtro y ordenamiento en botón de favoritos - Lógica inteligente que ordena automáticamente por me gustas al activar favoritos - Toggle entre mayor a menor y menor a mayor me gustas - Texto dinámico con flechas indicativas de dirección - Agregado caso likes-desc en función sortVideos - Funcionalidad completa e integrada en un solo control
