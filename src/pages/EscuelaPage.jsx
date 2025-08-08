@@ -137,7 +137,7 @@ const EscuelaPage = () => {
   
   // Hook personalizado para categorías específicas de escuela
   const [selectedStyle, setSelectedStyle] = useState('salsa')
-  const { availableStyles, categoriesList, getGradientClasses, getColorClasses } = useCategories(selectedStyle, 'escuela')
+  const { availableStyles, categoriesList, getGradientClasses, getColorClasses } = useCategories('escuela', selectedStyle)
 
   // Función para manejar click en título de categoría
   const handleCategoryTitleClick = (categoryKey) => {
@@ -928,70 +928,53 @@ const EscuelaPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header - Estilo La Malanga */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 shadow-lg border-b-4 border-yellow-400">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between py-8">
-            <div className="text-center sm:text-left mb-4 sm:mb-0">
-              <h1 className="text-4xl font-bold text-white mb-2">
-                🎓 LA MALANGA - ESCUELA
-              </h1>
-              <p className="text-yellow-200 text-lg font-medium">
-                Academia de baile - Aprende salsa con los mejores
-              </p>
-              <div className="flex items-center justify-center sm:justify-start mt-2 space-x-4">
-                <span className="text-yellow-300 text-sm">⭐ 4.8/5</span>
-                <span className="text-yellow-300 text-sm">👥 150+ estudiantes</span>
-                <span className="text-yellow-300 text-sm">🎯 95% éxito</span>
-              </div>
-            </div>
-            
-            {/* Style Selector - Estilo La Malanga */}
-            <div className="flex flex-wrap gap-3">
-              {availableStyles.map((style) => {
-                const Icon = style.icon
-                return (
-                  <button
-                    key={style.name}
-                    onClick={() => setSelectedStyle(style.name)}
-                    className={`flex items-center space-x-3 px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
-                      selectedStyle === style.name
-                        ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-2xl border-2 border-yellow-300'
-                        : 'bg-white bg-opacity-90 text-gray-700 border-2 border-white hover:bg-opacity-100 hover:border-yellow-300'
-                    }`}
-                  >
-                    <Icon className="h-6 w-6" />
-                    <span className="text-lg capitalize">{style.name}</span>
-                    {style.hasNotification && (
-                      <span className="bg-red-500 text-white text-xs rounded-full px-3 py-1 font-bold animate-pulse">
-                        ¡NUEVO!
-                      </span>
-                    )}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div className="min-h-screen bg-white">
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search Bar - Estilo La Malanga */}
-        <div className="max-w-3xl mx-auto mb-8">
+      <div className={`${isFullWidth ? 'w-full px-0' : 'max-w-6xl mx-auto px-6'} py-8`}>
+        {/* Title */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-2">
+            <span className="text-pink-500">ESCUELA</span>
+            <span className={`bg-gradient-to-r ${getGradientClasses(selectedStyle)} bg-clip-text text-transparent`}> - {selectedStyle.toUpperCase()}</span>
+          </h1>
+          <p className="text-gray-600 text-lg">Academia de baile - Aprende {selectedStyle.toLowerCase()} con los mejores</p>
+        </div>
+
+        {/* Style Filters */}
+        <div className="flex flex-wrap justify-center gap-3 mb-8">
+          {availableStyles.map((style) => {
+            const IconComponent = iconMap[style.icon]
+            const isSelected = selectedStyle === style.key
+            // Usar gradientes específicos para cada estilo
+            const gradientClass = getGradientClasses(style.color)
+            
+            return (
+              <button
+                key={style.name}
+                onClick={() => setSelectedStyle(style.key)}
+                className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                  isSelected
+                    ? `bg-gradient-to-r ${gradientClass} text-white shadow-lg transform scale-105`
+                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                }`}
+              >
+                {IconComponent && <IconComponent className="h-4 w-4" />}
+                <span>{style.name}</span>
+              </button>
+            )
+          })}
+        </div>
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto mb-8">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-yellow-500 h-6 w-6" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               type="text"
-              placeholder={`🔍 Buscar en la academia de ${selectedStyle.toLowerCase()}... (técnicas, pasos, niveles)`}
+              placeholder={`Buscar en ${selectedStyle.toLowerCase()}... (múltiples palabras, sin tildes)`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-6 py-4 border-2 border-yellow-300 rounded-xl focus:ring-4 focus:ring-yellow-200 focus:border-yellow-500 transition-all duration-300 text-lg font-medium bg-white shadow-lg"
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200"
             />
-            <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-              <span className="text-yellow-500 text-sm font-medium">🎓</span>
-            </div>
           </div>
           
           {/* Search Status Indicator */}
@@ -1010,58 +993,58 @@ const EscuelaPage = () => {
           )}
         </div>
 
-        {/* Filtros Académicos - Estilo La Malanga */}
+        {/* Tag Filters - Collapsible con títulos clickeables */}
         {categoriesList.length > 0 && (
           <div className="mb-8">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center justify-center space-x-3 mx-auto px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border-2 border-yellow-300"
+              className="flex items-center justify-center space-x-2 mx-auto px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
             >
-              <Filter className="h-6 w-6" />
-              <span>📚 FILTROS ACADÉMICOS - {selectedStyle.toUpperCase()}</span>
+              <Filter className="h-5 w-5" />
+              <span>Filtros Avanzados por Tags - {selectedStyle}</span>
               {showFilters ? (
-                <ChevronUp className="h-6 w-6" />
+                <ChevronUp className="h-5 w-5" />
               ) : (
-                <ChevronDown className="h-6 w-6" />
+                <ChevronDown className="h-5 w-5" />
               )}
             </button>
             
-            {/* Contenido Académico */}
-            <div className={`mt-6 transition-all duration-300 ease-in-out overflow-hidden ${
+            {/* Collapsible Content */}
+            <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
               showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
             }`}>
-              <div className="space-y-6 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-8 border-2 border-yellow-200 shadow-xl">
+              <div className="space-y-4 bg-gray-50 rounded-lg p-6 border border-gray-200">
                 {categoriesList.map((category) => (
                   <div key={category.key} className="space-y-3">
-                    {/* Título académico clickeable */}
+                    {/* Título clickeable */}
                     <button
                       onClick={() => handleCategoryTitleClick(category.key)}
-                      className={`w-full text-center font-bold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 ${
+                      className={`w-full text-center font-bold py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 ${
                         activeCategoryChips.includes(category.key)
-                          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-2xl border-2 border-yellow-300'
-                          : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-lg'
+                          ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg'
+                          : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
                       }`}
                     >
-                      <div className="flex items-center justify-center space-x-3">
-                        <span className="text-lg">{category.name}</span>
+                      <div className="flex items-center justify-center space-x-2">
+                        <span>{category.name}</span>
                         {activeCategoryChips.includes(category.key) && (
-                          <span className="text-xs bg-white bg-opacity-20 px-3 py-1 rounded-full font-bold">
-                            🎯 ACTIVO
+                          <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded-full">
+                            ACTIVO
                           </span>
                         )}
                       </div>
                     </button>
                     
-                    {/* Tags académicos */}
-                    <div className="flex flex-wrap justify-center gap-3">
+                    {/* Tags */}
+                    <div className="flex flex-wrap justify-center gap-2">
                       {category.tags.map(tag => (
                         <button
                           key={tag}
                           onClick={() => handleTagFilter(tag)}
-                          className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-300 transform hover:scale-110 ${
+                          className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 transform hover:scale-105 ${
                             selectedTags.includes(tag)
-                              ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-xl border-2 border-yellow-300'
-                              : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-100 hover:border-yellow-400 shadow-md'
+                              ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-md'
+                              : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
                           }`}
                         >
                           {tag}

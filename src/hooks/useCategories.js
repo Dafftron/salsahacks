@@ -152,7 +152,88 @@ const categoryStructure = {
       salsa: {
         name: 'SALSA',
         icon: 'Music',
-        color: 'pink',
+        color: 'salsa',
+        categories: {
+          nivel: {
+            name: 'NIVEL',
+            color: 'green',
+            tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+          },
+          tipo: {
+            name: 'TIPO DE CURSO',
+            color: 'blue',
+            tags: ['Básico', 'Técnica', 'Coreografía', 'Ritmo', 'Musicalidad']
+          },
+          duracion: {
+            name: 'DURACIÓN',
+            color: 'orange',
+            tags: ['5-15 min', '10-25 min', '15-45 min', '20-60 min']
+          },
+          instructor: {
+            name: 'INSTRUCTOR',
+            color: 'purple',
+            tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López']
+          }
+        }
+      },
+      bachata: {
+        name: 'BACHATA',
+        icon: 'Heart',
+        color: 'bachata',
+        categories: {
+          nivel: {
+            name: 'NIVEL',
+            color: 'green',
+            tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+          },
+          tipo: {
+            name: 'TIPO DE CURSO',
+            color: 'blue',
+            tags: ['Básico', 'Técnica', 'Coreografía', 'Ritmo', 'Musicalidad']
+          },
+          duracion: {
+            name: 'DURACIÓN',
+            color: 'orange',
+            tags: ['5-15 min', '10-25 min', '15-45 min', '20-60 min']
+          },
+          instructor: {
+            name: 'INSTRUCTOR',
+            color: 'purple',
+            tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López']
+          }
+        }
+      },
+      kizomba: {
+        name: 'KIZOMBA',
+        icon: 'Zap',
+        color: 'kizomba',
+        categories: {
+          nivel: {
+            name: 'NIVEL',
+            color: 'green',
+            tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+          },
+          tipo: {
+            name: 'TIPO DE CURSO',
+            color: 'blue',
+            tags: ['Básico', 'Técnica', 'Coreografía', 'Ritmo', 'Musicalidad']
+          },
+          duracion: {
+            name: 'DURACIÓN',
+            color: 'orange',
+            tags: ['5-15 min', '10-25 min', '15-45 min', '20-60 min']
+          },
+          instructor: {
+            name: 'INSTRUCTOR',
+            color: 'purple',
+            tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López']
+          }
+        }
+      },
+      zouk: {
+        name: 'ZOUK',
+        icon: 'Star',
+        color: 'zouk',
         categories: {
           nivel: {
             name: 'NIVEL',
