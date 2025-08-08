@@ -209,7 +209,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       // Si hay un thumbnail personalizado, usarlo
       if (videoData[file.name]?.customThumbnailFile) {
         const customThumbnailFile = videoData[file.name].customThumbnailFile
-        const thumbnailPath = `thumbnails/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`
+        const thumbnailPath = `thumbnails/${page}/${style}/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`
         const uploadResult = await uploadFile(customThumbnailFile, thumbnailPath)
         
         if (uploadResult.success) {
@@ -228,7 +228,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         
         if (result.success && result.blob) {
           // Subir thumbnail a Firebase Storage
-          const thumbnailPath = `thumbnails/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`
+          const thumbnailPath = `thumbnails/${page}/${style}/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`
           const uploadResult = await uploadFile(result.blob, thumbnailPath)
           
           if (uploadResult.success) {
@@ -249,7 +249,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         // Intentar usar el thumbnail nativo del archivo (si está disponible)
         const defaultThumbnail = await generateDefaultThumbnail(file)
         if (defaultThumbnail) {
-          const thumbnailPath = `thumbnails/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`
+          const thumbnailPath = `thumbnails/${page}/${style}/${Date.now()}_${file.name.replace(/\.[^/.]+$/, '.jpg')}`
           const uploadResult = await uploadFile(defaultThumbnail, thumbnailPath)
           
           if (uploadResult.success) {
@@ -351,8 +351,8 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       // Generar thumbnail
       const thumbnailResult = await generateThumbnail(file)
 
-      // Subir video
-      const videoPath = `videos/${Date.now()}_${file.name}`
+      // Subir video con estructura organizada por página y estilo
+      const videoPath = `videos/${page}/${style}/${Date.now()}_${file.name}`
       const uploadResult = await uploadVideo(file, videoPath, (progress) => {
         setUploadProgress(prev => ({ ...prev, [index]: progress }))
       })

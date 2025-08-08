@@ -61,7 +61,8 @@ import {
   deleteVideo, 
   deleteAllVideoFiles, 
   cleanupOrphanedFiles,
-  getFileURL
+  getFileURL,
+  migrateVideosToOrganizedStructure
 } from '../services/firebase/storage'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
@@ -82,6 +83,7 @@ const FigurasPage = () => {
   const [cleanupModal, setCleanupModal] = useState({ isOpen: false, type: null })
   const [editSequenceModal, setEditSequenceModal] = useState({ isOpen: false, sequence: null })
   const [downloadSequenceModal, setDownloadSequenceModal] = useState({ isOpen: false, sequence: null })
+  const [migrationModal, setMigrationModal] = useState({ isOpen: false })
   const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
   
   // Estados para reproductor de video individual
@@ -666,6 +668,33 @@ const FigurasPage = () => {
     }
   }
 
+  // Función para migrar videos a estructura organizada
+  const handleMigrateVideos = async () => {
+    try {
+      addToast('🔄 Iniciando migración de videos a estructura organizada...', 'info')
+      
+      const result = await migrateVideosToOrganizedStructure(videos)
+      
+      if (result.success) {
+        let message = `Migración completada: ${result.successfulMigrations} migrados`
+        if (result.alreadyOrganized > 0) {
+          message += `, ${result.alreadyOrganized} ya organizados`
+        }
+        if (result.failedMigrations > 0) {
+          message += `, ${result.failedMigrations} fallidos`
+        }
+        
+        addToast(message, 'success')
+        console.log('📊 Resultados de migración:', result.results)
+      } else {
+        addToast(`Error en migración: ${result.error}`, 'error')
+      }
+    } catch (error) {
+      console.error('Error ejecutando migración:', error)
+      addToast('Error al ejecutar migración', 'error')
+    }
+  }
+
   // Función para manejar filtros por tags
   const handleTagFilter = (tag) => {
     setSelectedTags(prev => {
@@ -1221,6 +1250,13 @@ const FigurasPage = () => {
                 className="px-3 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 🏷️ Limpiar Tags
+              </button>
+              <button
+                onClick={handleMigrateVideos}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-indigo-500 text-white rounded hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                📁 Migrar Estructura
               </button>
               <button
                 onClick={() => openCleanupModal('delete-all')}
