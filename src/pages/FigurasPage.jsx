@@ -671,12 +671,12 @@ const FigurasPage = () => {
   // Función para migrar videos a estructura organizada
   const handleMigrateVideos = async () => {
     try {
-      addToast('🔄 Iniciando migración de videos a estructura organizada...', 'info')
+      addToast('🔄 Iniciando migración REAL de videos a estructura organizada...', 'info')
       
       const result = await migrateVideosToOrganizedStructure(videos)
       
       if (result.success) {
-        let message = `Migración completada: ${result.successfulMigrations} migrados`
+        let message = `✅ Migración REAL completada: ${result.successfulMigrations} videos movidos físicamente`
         if (result.alreadyOrganized > 0) {
           message += `, ${result.alreadyOrganized} ya organizados`
         }
@@ -685,13 +685,16 @@ const FigurasPage = () => {
         }
         
         addToast(message, 'success')
-        console.log('📊 Resultados de migración:', result.results)
+        console.log('📊 Resultados de migración REAL:', result.results)
+        
+        // Recargar videos para reflejar los cambios
+        window.location.reload()
       } else {
-        addToast(`Error en migración: ${result.error}`, 'error')
+        addToast(`❌ Error en migración: ${result.error}`, 'error')
       }
     } catch (error) {
       console.error('Error ejecutando migración:', error)
-      addToast('Error al ejecutar migración', 'error')
+      addToast('❌ Error al ejecutar migración', 'error')
     }
   }
 
@@ -1255,8 +1258,9 @@ const FigurasPage = () => {
                 onClick={handleMigrateVideos}
                 disabled={syncStatus === 'syncing'}
                 className="px-3 py-1 text-xs bg-indigo-500 text-white rounded hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Mover físicamente videos existentes a estructura organizada (videos/page/style/)"
               >
-                📁 Migrar Estructura
+                📁 Migrar Videos REAL
               </button>
               <button
                 onClick={() => openCleanupModal('delete-all')}

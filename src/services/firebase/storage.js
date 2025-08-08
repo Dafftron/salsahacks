@@ -730,6 +730,31 @@ export const cleanupOrphanedFiles = async (videosFromFirestore) => {
   }
 }
 
+// Función auxiliar para descargar un archivo desde Firebase Storage
+const downloadFile = async (path) => {
+  try {
+    const fileRef = ref(storage, path)
+    const url = await getDownloadURL(fileRef)
+    
+    // Descargar el archivo usando fetch
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Error al descargar archivo: ${response.status}`)
+    }
+    
+    const blob = await response.blob()
+    return blob
+  } catch (error) {
+    console.error(`Error descargando archivo ${path}:`, error)
+    throw error
+  }
+}
+
+// Función auxiliar para convertir blob a File
+const blobToFile = (blob, filename) => {
+  return new File([blob], filename, { type: blob.type })
+}
+
 // Migrar videos existentes a la nueva estructura organizada
 export const migrateVideosToOrganizedStructure = async (videosFromFirestore) => {
   try {
@@ -768,9 +793,51 @@ export const migrateVideosToOrganizedStructure = async (videosFromFirestore) => 
         console.log(`   De: ${oldVideoPath}`)
         console.log(`   A: ${newVideoPath}`)
         
-        // Aquí se implementaría la lógica de mover archivos
-        // Por ahora, solo actualizamos las rutas en Firestore
-        // La migración real de archivos requeriría descargar y re-subir
+        // MIGRACIÓN REAL DE ARCHIVOS
+        let videoMigrated = false
+        let thumbnailMigrated = false
+        
+        // Migrar video
+        try {
+          console.log(`📥 Descargando video: ${oldVideoPath}`)
+          const videoBlob = await downloadFile(oldVideoPath)
+          const videoFile = blobToFile(videoBlob, oldVideoPath.split('/').pop())
+          
+          console.log(`📤 Subiendo video a nueva ubicación: ${newVideoPath}`)
+          await uploadFile(videoFile, newVideoPath)
+          videoMigrated = true
+          console.log(`✅ Video migrado exitosamente`)
+          
+          // Eliminar archivo original
+          console.log(`🗑️ Eliminando archivo original: ${oldVideoPath}`)
+          await deleteFile(oldVideoPath)
+          
+        } catch (error) {
+          console.error(`❌ Error migrando video ${video.title}:`, error)
+          throw new Error(`Error migrando video: ${error.message}`)
+        }
+        
+        // Migrar thumbnail si existe
+        if (oldThumbnailPath && newThumbnailPath) {
+          try {
+            console.log(`📥 Descargando thumbnail: ${oldThumbnailPath}`)
+            const thumbnailBlob = await downloadFile(oldThumbnailPath)
+            const thumbnailFile = blobToFile(thumbnailBlob, oldThumbnailPath.split('/').pop())
+            
+            console.log(`📤 Subiendo thumbnail a nueva ubicación: ${newThumbnailPath}`)
+            await uploadFile(thumbnailFile, newThumbnailPath)
+            thumbnailMigrated = true
+            console.log(`✅ Thumbnail migrado exitosamente`)
+            
+            // Eliminar archivo original
+            console.log(`🗑️ Eliminando thumbnail original: ${oldThumbnailPath}`)
+            await deleteFile(oldThumbnailPath)
+            
+          } catch (error) {
+            console.error(`❌ Error migrando thumbnail ${video.title}:`, error)
+            // No fallamos la migración completa si falla el thumbnail
+          }
+        }
         
         migrationResults.push({
           videoId: video.id,
@@ -779,7 +846,9 @@ export const migrateVideosToOrganizedStructure = async (videosFromFirestore) => 
           newVideoPath,
           oldThumbnailPath,
           newThumbnailPath,
-          status: 'paths_updated',
+          status: 'migrated',
+          videoMigrated,
+          thumbnailMigrated,
           error: null
         })
         
@@ -794,7 +863,7 @@ export const migrateVideosToOrganizedStructure = async (videosFromFirestore) => 
       }
     }
     
-    const successfulMigrations = migrationResults.filter(r => r.status === 'paths_updated').length
+    const successfulMigrations = migrationResults.filter(r => r.status === 'migrated').length
     const alreadyOrganized = migrationResults.filter(r => r.status === 'already_organized').length
     const failedMigrations = migrationResults.filter(r => r.status === 'error').length
     
