@@ -446,6 +446,7 @@ const FigurasPage = () => {
       console.log('🗑️ Iniciando eliminación de video:', video)
       console.log('📁 Video path:', video.videoPath)
       console.log('🖼️ Thumbnail path:', video.thumbnailPath)
+      console.log('🆔 Video ID:', video.id)
       
       // Eliminar de Firebase Storage
       const storageResult = await deleteVideo(video.videoPath, video.thumbnailPath)
@@ -469,6 +470,7 @@ const FigurasPage = () => {
       }
 
       // Eliminar de Firestore
+      console.log('🔥 Intentando eliminar documento de Firestore con ID:', video.id)
       const firestoreResult = await deleteVideoDocument(video.id)
       console.log('🔥 Resultado eliminación Firestore:', firestoreResult)
       
@@ -478,8 +480,15 @@ const FigurasPage = () => {
       }
 
       // Actualizar lista local
-      setVideos(prev => prev.filter(v => v.id !== video.id))
+      console.log('🔄 Actualizando lista local, eliminando video con ID:', video.id)
+      setVideos(prev => {
+        const newVideos = prev.filter(v => v.id !== video.id)
+        console.log(`📊 Lista actualizada: ${prev.length} -> ${newVideos.length} videos`)
+        return newVideos
+      })
+      
       addToast(`${video.title} eliminado correctamente`, 'success')
+      console.log('✅ Eliminación completada exitosamente')
     } catch (error) {
       console.error('❌ Error deleting video:', error)
       addToast('Error inesperado al eliminar video', 'error')

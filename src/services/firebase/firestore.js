@@ -720,12 +720,19 @@ export const getUserFavorites = async (userId) => {
 
 export const deleteVideoDocument = async (videoId) => {
   try {
-    console.log('🗑️ Eliminando video:', videoId)
-    await deleteDoc(doc(db, COLLECTIONS.VIDEOS, videoId))
-    console.log('✅ Video eliminado exitosamente')
+    console.log('🗑️ Eliminando video de Firestore:', videoId)
+    console.log('📁 Colección:', COLLECTIONS.VIDEOS)
+    
+    const docRef = doc(db, COLLECTIONS.VIDEOS, videoId)
+    console.log('📄 Referencia del documento:', docRef.path)
+    
+    await deleteDoc(docRef)
+    console.log('✅ Video eliminado exitosamente de Firestore')
     return { success: true, error: null }
   } catch (error) {
-    console.error('❌ Error al eliminar video:', error)
+    console.error('❌ Error al eliminar video de Firestore:', error)
+    console.error('❌ Código de error:', error.code)
+    console.error('❌ Mensaje de error:', error.message)
     return { success: false, error: error.message }
   }
 }
