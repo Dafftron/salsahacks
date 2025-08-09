@@ -171,20 +171,6 @@ const SequenceBuilder = ({
     }
   }, [sequence])
 
-  // Generar tags automáticamente cuando cambie la secuencia
-  useEffect(() => {
-    if (sequence.length > 0) {
-      const autoTags = generateSequenceTagsFromVideos()
-      if (Object.keys(autoTags).length > 0) {
-        setSequenceTags(autoTags)
-        console.log('🏷️ Tags actualizados automáticamente:', autoTags)
-      }
-    } else {
-      // Si no hay videos, limpiar tags
-      setSequenceTags({})
-    }
-  }, [sequence, generateSequenceTagsFromVideos])
-
   const {
     handleDragStart,
     handleDragOver,
@@ -241,6 +227,20 @@ const SequenceBuilder = ({
     console.log('🎯 Tags combinados generados:', combinedTags)
     return combinedTags
   }, [sequence])
+
+  // Generar tags automáticamente cuando cambie la secuencia
+  useEffect(() => {
+    if (sequence.length > 0) {
+      const autoTags = generateSequenceTagsFromVideos()
+      if (Object.keys(autoTags).length > 0) {
+        setSequenceTags(autoTags)
+        console.log('🏷️ Tags actualizados automáticamente:', autoTags)
+      }
+    } else {
+      // Si no hay videos, limpiar tags
+      setSequenceTags({})
+    }
+  }, [sequence, generateSequenceTagsFromVideos])
 
 
 
