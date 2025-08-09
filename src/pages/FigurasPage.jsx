@@ -1332,7 +1332,7 @@ const FigurasPage = () => {
                   }`}
                 >
                   <div className="relative group">
-                    <div className={`w-full ${getVideoConfig(isFullWidth).aspect} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
+                    <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
                       {video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? (
                         <img
                           src={video.thumbnailUrl}

@@ -24,6 +24,7 @@ export const CardSizeProvider = ({ children }) => {
       gridFullWidth: 'md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Consistente con las demás
+      thumbnailSize: 'thumbnail-small', // Clase CSS específica para thumbnails pequeños
       titleSize: 'text-xs',
       descriptionLines: 1,
       showStats: false,
@@ -36,6 +37,7 @@ export const CardSizeProvider = ({ children }) => {
       gridFullWidth: 'md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Llenar el área en video
+      thumbnailSize: 'thumbnail-medium', // Clase CSS específica para thumbnails medianos
       titleSize: 'text-sm',
       descriptionLines: 1,
       showStats: false,
@@ -48,6 +50,7 @@ export const CardSizeProvider = ({ children }) => {
       gridFullWidth: 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Llenar el área en video
+      thumbnailSize: 'thumbnail-large', // Clase CSS específica para thumbnails grandes
       titleSize: 'text-xl',
       descriptionLines: 3,
       showStats: true,
@@ -60,6 +63,7 @@ export const CardSizeProvider = ({ children }) => {
       gridFullWidth: 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Llenar el área en video
+      thumbnailSize: 'thumbnail-extra-large', // Clase CSS específica para thumbnails extra grandes
       titleSize: 'text-2xl',
       descriptionLines: 4,
       showStats: true,
@@ -76,6 +80,7 @@ export const CardSizeProvider = ({ children }) => {
       gridFullWidth: 'md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Consistente con las demás
+      thumbnailSize: 'thumbnail-small', // Clase CSS específica para thumbnails pequeños
       titleSize: 'text-xs',
       descriptionLines: 0, // Sin descripción, solo iconos
       showStats: true,
@@ -88,6 +93,7 @@ export const CardSizeProvider = ({ children }) => {
       gridFullWidth: 'md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Llenar el área en video
+      thumbnailSize: 'thumbnail-medium', // Clase CSS específica para thumbnails medianos
       titleSize: 'text-sm',
       descriptionLines: 0, // Sin descripción, solo iconos
       showStats: true,
@@ -100,6 +106,7 @@ export const CardSizeProvider = ({ children }) => {
       gridFullWidth: 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Llenar el área en video
+      thumbnailSize: 'thumbnail-large', // Clase CSS específica para thumbnails grandes
       titleSize: 'text-lg',
       descriptionLines: 2,
       showStats: true,
@@ -112,6 +119,7 @@ export const CardSizeProvider = ({ children }) => {
       gridFullWidth: 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Llenar el área en video
+      thumbnailSize: 'thumbnail-extra-large', // Clase CSS específica para thumbnails extra grandes
       titleSize: 'text-xl',
       descriptionLines: 3,
       showStats: true,

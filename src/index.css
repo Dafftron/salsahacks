@@ -737,4 +737,82 @@ body {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+}
+
+/* 🎯 THUMBNAILS ADAPTATIVOS POR TAMAÑO DE CARD - SALSAHACKS V2.0 */
+
+/* 
+ * El objetivo es que todos los thumbnails mantengan una apariencia similar
+ * independientemente del tamaño de la card, ajustando la escala de la imagen
+ * para compensar el cambio de tamaño del contenedor
+ */
+
+/* Thumbnails pequeños - Compensar el pequeño tamaño con imagen más grande */
+.thumbnail-small img {
+  min-height: 120px;
+  min-width: 213px; /* Mantener ratio 16:9 */
+  transform: scale(1.15); /* Escalar ligeramente para mostrar más detalle */
+  object-position: center; /* Centrar la imagen */
+}
+
+/* Thumbnails medianos - Tamaño base estándar */
+.thumbnail-medium img {
+  min-height: 150px;
+  min-width: 267px; /* Mantener ratio 16:9 */
+  transform: scale(1.05); /* Escalar ligeramente */
+  object-position: center;
+}
+
+/* Thumbnails grandes - Tamaño estándar sin escala adicional */
+.thumbnail-large img {
+  min-height: 180px;
+  min-width: 320px; /* Mantener ratio 16:9 */
+  transform: scale(1.0); /* Sin escala adicional */
+  object-position: center;
+}
+
+/* Thumbnails extra grandes - Mantener proporción sin sobre-escalar */
+.thumbnail-extra-large img {
+  min-height: 220px;
+  min-width: 391px; /* Mantener ratio 16:9 */
+  transform: scale(0.95); /* Ligeramente reducido para evitar recorte excesivo */
+  object-position: center;
+}
+
+/* Hover effects manteniendo la escala específica */
+.thumbnail-small:hover img {
+  transform: scale(1.2); /* Incrementar desde 1.15 */
+}
+
+.thumbnail-medium:hover img {
+  transform: scale(1.1); /* Incrementar desde 1.05 */
+}
+
+.thumbnail-large:hover img {
+  transform: scale(1.05); /* Incrementar desde 1.0 */
+}
+
+.thumbnail-extra-large:hover img {
+  transform: scale(1.0); /* Incrementar desde 0.95 */
+}
+
+/* Responsive adjustments para pantallas pequeñas */
+@media (max-width: 768px) {
+  .thumbnail-small img,
+  .thumbnail-medium img,
+  .thumbnail-large img,
+  .thumbnail-extra-large img {
+    min-height: auto;
+    min-width: auto;
+    transform: scale(1.0); /* Reset en móviles para mejor performance */
+  }
+}
+
+/* Asegurar transiciones suaves para todos los thumbnails adaptativos */
+.thumbnail-small img,
+.thumbnail-medium img, 
+.thumbnail-large img,
+.thumbnail-extra-large img {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 } 

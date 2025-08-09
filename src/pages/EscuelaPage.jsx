@@ -1272,7 +1272,7 @@ const EscuelaPage = () => {
                     className={`bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-yellow-100 hover:border-yellow-300 ${getVideoConfig(isFullWidth).maxWidth}`}
                   >
                     {/* Thumbnail de Clase */}
-                    <div className="relative group">
+                    <div className={`relative group ${getVideoConfig(isFullWidth).thumbnailSize}`}>
                       <img
                         src={video.thumbnailURL || '/placeholder-video.jpg'}
                         alt={video.title}

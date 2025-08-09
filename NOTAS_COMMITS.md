@@ -2,6 +2,48 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🎨 **COMMIT #103: MEJORA UI/UX - BOTONES DINÁMICOS Y MODO ANCHO OPTIMIZADO** - 2024-12-19 19:45:00
+- **Objetivo**: Implementar botones de tamaño con colores dinámicos y optimizar modo ancho completo
+- **Archivos modificados**: CardSizeSelector.jsx, CardSizeContext.jsx, FigurasPage.jsx, EscuelaPage.jsx
+
+#### ✨ **FUNCIONALIDADES IMPLEMENTADAS:**
+
+1. **Botones de tamaño con colores dinámicos**:
+   - Los botones ahora usan el color del estilo actual (salsa, bachata, merengue, etc.)
+   - Función `getStyleGradient()` que mapea cada estilo a su gradiente
+   - Prop `styleColor` para recibir el estilo activo
+   - Colores consistentes con la identidad visual de cada estilo
+
+2. **Relación de aspecto unificada**:
+   - Cards pequeñas cambiadas de `aspect-square` a `aspect-video`
+   - Todas las cards ahora usan `aspect-video` (16:9)
+   - `object-cover` en todos los tamaños para consistencia visual
+   - Thumbnails mantienen proporción correcta sin distorsión
+
+3. **Modo ancho completo optimizado**:
+   - Configuraciones `gridFullWidth` específicas para cada tamaño
+   - Funciones `getVideoConfig(isFullWidth)` y `getSequenceConfig(isFullWidth)`
+   - Solo se añaden más columnas, cards mantienen tamaño individual
+   - Thumbnails NO cambian de dimensión al activar modo ancho
+
+#### 🔧 **CAMBIOS TÉCNICOS:**
+- **CardSizeSelector.jsx**: Sistema de colores dinámico por estilo de baile
+- **CardSizeContext.jsx**: Configuraciones `gridFullWidth` para modo ancho
+- **FigurasPage.jsx**: Todas las referencias `getVideoConfig()` ahora incluyen `isFullWidth`
+- **EscuelaPage.jsx**: Actualizado para usar configuraciones dinámicas
+
+#### 🎯 **COMPORTAMIENTO POR TAMAÑO:**
+- **Small**: `grid-cols-4/5/6` → `grid-cols-5/6/8/10` en modo ancho
+- **Medium**: `grid-cols-3/4/5` → `grid-cols-4/5/6/7` en modo ancho  
+- **Large**: `grid-cols-2/3` → `grid-cols-3/4/5` en modo ancho
+- **Extra-large**: `grid-cols-1/2` → `grid-cols-2/3/4` en modo ancho
+
+#### 🎨 **RESULTADO:**
+- Botones de tamaño que reflejan la identidad visual del estilo
+- Thumbnails consistentes en todas las vistas
+- Modo ancho que añade contenido sin distorsionar elementos
+- Experiencia de usuario más coherente y profesional
+
 ### 🎨 **COMMIT #102: MEJORA UI/UX - ESTABILIZACIÓN COMPLETA** - 2025-08-09 12:39:13
 - **Objetivo**: Estabilizar interfaz eliminando cambios de tamaño indeseados en botones y mejorar thumbnails
 - **Archivos modificados**: CardSizeSelector.jsx, FigurasPage.jsx, EscuelaPage.jsx, CardSizeContext.jsx
