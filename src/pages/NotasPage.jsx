@@ -26,13 +26,37 @@ const NotasPage = () => {
   const [expandedCommits, setExpandedCommits] = useState(new Set())
 
   const categories = [
-            { name: 'TODAS', icon: FileText, count: 86 },
-        { name: 'PÁGINAS', icon: Home, count: 15 },
-        { name: 'SISTEMAS', icon: Settings, count: 45 },
+            { name: 'TODAS', icon: FileText, count: 116 },
+        { name: 'PÁGINAS', icon: Home, count: 17 },
+        { name: 'SISTEMAS', icon: Settings, count: 73 },
         { name: 'CONTENIDO', icon: Video, count: 26 }
   ]
 
         const commits = [
+        {
+          id: 116,
+          hash: '0737ab4',
+          date: '2024-12-20',
+          time: '01:45:00',
+          title: 'Commit #116 - Actualización completa NOTAS_COMMITS.md',
+          description: 'Estado del proyecto actualizado con funcionalidad eliminación completa',
+          files: ['NOTAS_COMMITS.md'],
+          notes: 'Documentación actualizada: Commit #115 documentado con funcionalidad eliminación. EscuelaPage 100% funcional y operativo. FigurasPage 100% funcional con secuencias. Análisis completo de próximos pasos. Recomendación: listo para subida masiva de videos. Ready for production use.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 115,
+          hash: '9b552a1',
+          date: '2024-12-20',
+          time: '01:30:00',
+          title: 'Commit #115 - Funcionalidad de eliminación completa en EscuelaPage',
+          description: 'Sistema completo de eliminación con Storage + Firestore + UI y reproductor corregido',
+          files: ['src/pages/EscuelaPage.jsx', 'src/components/video/VideoEditModal.jsx'],
+          notes: 'Eliminación completa implementada: handleDeleteVideo con manejo de errores robusto. Modal de confirmación ConfirmModal. Eliminación doble: Firebase Storage + Firestore + UI local. Reproductor modal corregido sin elementos flotantes. VideoEditModal contextual: Tags Iniciales/Finales solo en FigurasPage. Interface limpio en EscuelaPage. Error 400 solucionado con parámetro page correcto.',
+          status: 'Completado',
+          category: 'PÁGINAS'
+        },
         {
           id: 86,
           hash: 'dab5f06',
@@ -1393,74 +1417,92 @@ const NotasPage = () => {
       date: '2024-12-19',
       priority: 'Alta',
       status: 'Completado'
+    },
+    {
+      id: 38,
+      title: 'EscuelaPage - Sistema completo implementado',
+      description: 'Funcionalidad 100% completa: subida, eliminación, edición, reproductor, filtros, búsqueda',
+      category: 'PÁGINAS',
+      date: '2024-12-20',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
+      id: 39,
+      title: 'VideoEditModal contextual por página',
+      description: 'Tags Iniciales/Finales solo en FigurasPage, interface limpio en EscuelaPage',
+      category: 'SISTEMAS',
+      date: '2024-12-20',
+      priority: 'Media',
+      status: 'Completado'
     }
   ]
 
   const cosasEnProceso = [
     {
       id: 1,
-      title: 'Investigación del sistema de descarga',
-      description: 'Analizando y mejorando el sistema de descarga de videos desde Firebase Storage',
+      title: 'Subida masiva de videos de ESCUELA',
+      description: 'Comenzar a subir contenido educativo real a la plataforma - Sistema 100% operativo',
       category: 'CONTENIDO',
       priority: 'Alta',
-      progress: 25,
+      progress: 0,
       status: 'En Progreso'
     },
     {
       id: 2,
-      title: 'Replicación del sistema a EscuelaPage',
-      description: 'Preparando réplica del sistema completo de FigurasPage a EscuelaPage',
+      title: 'Replicación del sistema a EventosPage',
+      description: 'Implementar EventosPage con base de datos separada eventos-videos y eventos-sequences',
       category: 'PÁGINAS',
-      priority: 'Alta',
+      priority: 'Media',
       progress: 5,
       status: 'En Progreso'
     },
     {
       id: 3,
-      title: 'Replicación del sistema a EventosPage',
-      description: 'Preparando réplica del sistema completo de FigurasPage a EventosPage',
-      category: 'PÁGINAS',
-      priority: 'Alta',
-      progress: 5,
+      title: 'Optimización y limpieza de código',
+      description: 'Refactoring general, optimización de performance y documentación',
+      category: 'SISTEMAS',
+      priority: 'Baja',
+      progress: 75,
       status: 'En Progreso'
     }
   ]
 
   const cosasFuturas = [
-    // PRIORIDAD ALTA - PRÓXIMOS PASOS
+    // PRIORIDAD ALTA - PRÓXIMOS PASOS INMEDIATOS
     {
       id: 1,
-      title: 'Mejora del sistema de descarga',
-      description: 'Optimización y corrección de errores en descarga de videos desde Firebase Storage',
-      category: 'CONTENIDO',
+      title: 'Crear índice Firebase para consultas ESCUELA',
+      description: 'Configurar índices compuestos necesarios para queries de estilo + uploadedAt',
+      category: 'SISTEMAS',
       priority: 'Alta',
-      estimatedTime: '1 día',
+      estimatedTime: '10 minutos',
       status: 'Futuro'
     },
     {
       id: 2,
-      title: 'Optimización adicional de bundle',
-      description: 'Reducción adicional del bundle principal y optimización de chunks restantes',
-      category: 'SISTEMAS',
+      title: 'Subir primeros 10-15 videos de ESCUELA',
+      description: 'Probar el sistema completo con contenido real de diferentes estilos',
+      category: 'CONTENIDO',
       priority: 'Alta',
-      estimatedTime: '1 día',
+      estimatedTime: '2 horas',
       status: 'Futuro'
     },
     
-    // SISTEMAS
+    // DESARROLLO ADICIONAL
     {
       id: 3,
-      title: 'Testing automatizado',
-      description: 'Tests unitarios y E2E para todas las funcionalidades',
-      category: 'SISTEMAS',
+      title: 'EventosPage - Implementación completa',
+      description: 'Nueva página con base de datos separada eventos-videos y eventos-sequences',
+      category: 'PÁGINAS',
       priority: 'Media',
-      estimatedTime: '4 días',
+      estimatedTime: '3 días',
       status: 'Futuro'
     },
     {
       id: 4,
-      title: 'Deploy a producción',
-      description: 'Firebase Hosting con configuración de producción',
+      title: 'Sistema de notificaciones',
+      description: 'Notificaciones push para nuevos videos y eventos',
       category: 'SISTEMAS',
       priority: 'Media',
       estimatedTime: '2 días',
