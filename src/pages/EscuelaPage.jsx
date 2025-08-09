@@ -442,11 +442,8 @@ const EscuelaPage = () => {
   return searchMatch && tagsMatch && categoryMatch && favoritesMatch
   })
 
-  // Aplicar filtro de compatibilidad sobre los videos ya filtrados
-  const baseCompatibilityFiltered = getFilteredVideos(baseFilteredVideos)
-
   // Aplicar ordenamiento final
-  const filteredVideos = sortVideos(baseCompatibilityFiltered)
+  const filteredVideos = sortVideos(baseFilteredVideos)
 
   return (
     <div className="min-h-screen bg-white">
