@@ -134,9 +134,9 @@ const EscuelaPage = () => {
     checkCompatibility,
     loadSequence
   } = useSequenceBuilderContext()
-
+  
   // Estado local para el estilo seleccionado - CAMBIO PARA ESCUELA
-  const [selectedStyle, setSelectedStyle] = useState('escuela')
+  const [selectedStyle, setSelectedStyle] = useState('salsa')
   
   // Usar el sistema de categorías con estilo dinámico - CAMBIO PARA ESCUELA
   const { 
@@ -145,7 +145,7 @@ const EscuelaPage = () => {
     categoriesList, 
     getColorClasses
   } = useCategories('escuela', selectedStyle)
-  
+
   // Función para manejar click en título de categoría
   const handleCategoryTitleClick = (categoryKey) => {
     setActiveCategoryChips(prev => {
@@ -354,7 +354,7 @@ const EscuelaPage = () => {
     setSelectedVideo(video)
     setShowVideoPlayer(true)
   }
-
+  
   const handleCloseVideoPlayer = () => {
     setSelectedVideo(null)
     setShowVideoPlayer(false)
@@ -631,11 +631,12 @@ const EscuelaPage = () => {
           <p className="text-gray-600 text-lg">Galería de videos de escuela de {selectedStyle.toLowerCase()}</p>
         </div>
 
-        {/* Style Selector */}
+        {/* Style Filters */}
         <div className="flex flex-wrap justify-center gap-3 mb-8">
           {availableStyles.map((style) => {
-            const IconComponent = iconMap[style.icon] || Music
+            const IconComponent = iconMap[style.icon]
             const isSelected = selectedStyle === style.key
+            // Usar gradientes específicos para cada estilo
             const gradientClass = getGradientClasses(style.color)
             
             return (
@@ -644,15 +645,12 @@ const EscuelaPage = () => {
                 onClick={() => setSelectedStyle(style.key)}
                 className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                   isSelected
-                    ? `bg-gradient-to-r ${gradientClass} text-white shadow-lg transform scale-105 ring-2 ring-white ring-opacity-20`
-                    : `bg-white text-gray-700 border-2 border-transparent hover:border-gray-200 hover:shadow-md`
+                    ? `bg-gradient-to-r ${gradientClass} text-white shadow-lg transform scale-105`
+                    : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
                 }`}
               >
-                <IconComponent className="h-5 w-5" />
-                <span className="text-sm uppercase font-bold">{style.name}</span>
-                {isSelected && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent rounded-lg pointer-events-none"></div>
-                )}
+                {IconComponent && <IconComponent className="h-4 w-4" />}
+                <span>{style.name}</span>
               </button>
             )
           })}
@@ -660,19 +658,19 @@ const EscuelaPage = () => {
 
         {/* Search and Filters */}
         <div className="mb-6 space-y-4">
-          {/* Search Bar */}
+        {/* Search Bar */}
           <div className="flex items-center justify-center">
             <div className="relative max-w-md w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
+            <input
+              type="text"
                 placeholder="Buscar por título, descripción o tags..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            />
           </div>
+        </div>
 
           {/* Filters Toggle */}
           <div className="flex justify-center">
@@ -693,7 +691,7 @@ const EscuelaPage = () => {
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Filtrar por categorías:</h3>
                 <div className="flex flex-wrap gap-2">
-                  {categoriesList.map((category) => (
+                {categoriesList.map((category) => (
                     <button
                       key={category.key}
                       onClick={() => handleCategoryChipFilter(category.key)}
@@ -720,15 +718,15 @@ const EscuelaPage = () => {
 
               {/* Clear Filters */}
               <div className="flex justify-center">
-                <button
+                        <button
                   onClick={clearFilters}
                   className="text-sm text-gray-600 hover:text-gray-800 underline"
                 >
                   Limpiar todos los filtros
-                </button>
-              </div>
+                        </button>
             </div>
-          )}
+          </div>
+        )}
         </div>
 
         {/* Action Buttons - Main Level */}
@@ -794,7 +792,7 @@ const EscuelaPage = () => {
           </button>
         </div>
 
-      </div>
+        </div>
 
       {/* Toast notifications */}
       <div className="fixed bottom-4 right-4 space-y-2 z-50">
@@ -811,4 +809,4 @@ const EscuelaPage = () => {
   )
 }
 
-export default EscuelaPage
+export default EscuelaPage 
