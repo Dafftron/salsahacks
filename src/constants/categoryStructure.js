@@ -299,7 +299,7 @@ export const categoryStructure = {
       merengue: {
         name: 'MERENGUE',
         icon: Sun,
-        color: 'merengue',
+        color: 'escuela-merengue',
         categories: {
           curso: {
             name: 'CURSO',
@@ -324,7 +324,148 @@ export const categoryStructure = {
           estilo: {
             name: 'ESTILO',
             color: 'yellow',
-            tags: ['Salsa', 'Mambo', 'Coreografía']
+            tags: ['Merengue', 'Bachata-Merengue', 'Coreografía']
+          },
+          nivel: {
+            name: 'NIVEL',
+            color: 'red',
+            tags: ['Inicio', 'Intermedio I', 'Intermedio II', 'Intermedio III', 'Avanzado']
+          },
+          tipo: {
+            name: 'TIPO',
+            color: 'indigo',
+            tags: ['Intensivo']
+          },
+          profesores: {
+            name: 'PROFESORES',
+            color: 'pink',
+            tags: ['Talipo', 'Pepe y Marta', 'Dabbico y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
+          }
+        }
+      },
+      bachata: {
+        name: 'BACHATA',
+        icon: Heart,
+        color: 'escuela-bachata',
+        categories: {
+          curso: {
+            name: 'CURSO',
+            color: 'blue',
+            tags: ['Año 18-19', 'Año 19-20', 'Año 20-21', 'Año 21-22', 'Año 22-23', 'Año 23-24', 'Año 24-25', 'Año 25-26', 'Año 26-27', 'Año 27-28', 'Año 28-29']
+          },
+          mes: {
+            name: 'MES',
+            color: 'green',
+            tags: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+          },
+          dia: {
+            name: 'DÍA',
+            color: 'orange',
+            tags: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+          },
+          hora: {
+            name: 'HORA',
+            color: 'purple',
+            tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00']
+          },
+          estilo: {
+            name: 'ESTILO',
+            color: 'emerald',
+            tags: ['Bachata tradicional', 'Bachata moderna', 'Bachata sensual', 'Coreografía']
+          },
+          nivel: {
+            name: 'NIVEL',
+            color: 'red',
+            tags: ['Inicio', 'Intermedio I', 'Intermedio II', 'Intermedio III', 'Avanzado']
+          },
+          tipo: {
+            name: 'TIPO',
+            color: 'indigo',
+            tags: ['Intensivo']
+          },
+          profesores: {
+            name: 'PROFESORES',
+            color: 'pink',
+            tags: ['Talipo', 'Pepe y Marta', 'Dabbico y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
+          }
+        }
+      },
+      kizomba: {
+        name: 'KIZOMBA',
+        icon: Star,
+        color: 'escuela-kizomba',
+        categories: {
+          curso: {
+            name: 'CURSO',
+            color: 'blue',
+            tags: ['Año 18-19', 'Año 19-20', 'Año 20-21', 'Año 21-22', 'Año 22-23', 'Año 23-24', 'Año 24-25', 'Año 25-26', 'Año 26-27', 'Año 27-28', 'Año 28-29']
+          },
+          mes: {
+            name: 'MES',
+            color: 'green',
+            tags: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+          },
+          dia: {
+            name: 'DÍA',
+            color: 'orange',
+            tags: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+          },
+          hora: {
+            name: 'HORA',
+            color: 'purple',
+            tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00']
+          },
+          estilo: {
+            name: 'ESTILO',
+            color: 'amber',
+            tags: ['Kizomba', 'Urban Kiz', 'Tarraxinha', 'Coreografía']
+          },
+          nivel: {
+            name: 'NIVEL',
+            color: 'red',
+            tags: ['Inicio', 'Intermedio I', 'Intermedio II', 'Intermedio III', 'Avanzado']
+          },
+          tipo: {
+            name: 'TIPO',
+            color: 'indigo',
+            tags: ['Intensivo']
+          },
+          profesores: {
+            name: 'PROFESORES',
+            color: 'pink',
+            tags: ['Talipo', 'Pepe y Marta', 'Dabbico y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
+          }
+        }
+      },
+      zouk: {
+        name: 'ZOUK',
+        icon: Zap,
+        color: 'escuela-zouk',
+        categories: {
+          curso: {
+            name: 'CURSO',
+            color: 'blue',
+            tags: ['Año 18-19', 'Año 19-20', 'Año 20-21', 'Año 21-22', 'Año 22-23', 'Año 23-24', 'Año 24-25', 'Año 25-26', 'Año 26-27', 'Año 27-28', 'Año 28-29']
+          },
+          mes: {
+            name: 'MES',
+            color: 'green',
+            tags: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+          },
+          dia: {
+            name: 'DÍA',
+            color: 'orange',
+            tags: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+          },
+          hora: {
+            name: 'HORA',
+            color: 'purple',
+            tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00']
+          },
+          estilo: {
+            name: 'ESTILO',
+            color: 'violet',
+            tags: ['Brazilian Zouk', 'Lambazouk', 'Zouk Flow', 'Coreografía']
           },
           nivel: {
             name: 'NIVEL',
