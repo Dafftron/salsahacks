@@ -2,6 +2,45 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🎯 **COMMIT #105: SINCRONIZACIÓN COMPLETA GALERÍAS - VIDEOS Y SECUENCIAS UNIFICADAS** - 2024-12-19 20:45:00
+- **Objetivo**: Sincronizar completamente el comportamiento entre galería de videos y secuencias
+- **Archivos modificados**: SequenceGallery.jsx, FigurasPage.jsx, index.css
+
+#### ✨ **FUNCIONALIDADES IMPLEMENTADAS:**
+
+1. **Galería de secuencias sincronizada**:
+   - Mismo comportamiento de modo ancho completo que galería de videos
+   - Thumbnails adaptativos aplicados a todas las secuencias
+   - Consistencia total en controles y funcionalidad
+
+2. **Botón ancho completo unificado**:
+   - Reemplazado botón duplicado "CREAR SECUENCIA" por botón de ancho completo
+   - Misma interfaz en ambas galerías: Selector tamaño + Botón ancho
+   - Colores dinámicos que cambian según estilo actual
+
+3. **Corrección de marquito en thumbnails**:
+   - Eliminado "marquito" en cards extra grandes
+   - Cambio de `scale(0.95)` a `scale(1.05)` en thumbnails extra grandes
+   - Thumbnails llenan completamente el área disponible
+
+#### 🔧 **CAMBIOS TÉCNICOS:**
+- **SequenceGallery.jsx**: Recibe prop `isFullWidth` y usa `getSequenceConfig(isFullWidth)`
+- **FigurasPage.jsx**: Pasa `isFullWidth` a SequenceGallery y añade botón ancho completo
+- **CardSizeSelector**: Secuencias usan colores dinámicos del estilo actual
+- **CSS**: Ajuste de escala para thumbnails extra grandes sin marquito
+
+#### 🎯 **COMPORTAMIENTO UNIFICADO:**
+- **Modo ancho**: Solo añade columnas, mantiene tamaño de cards en ambas galerías
+- **Thumbnails**: Apariencia consistente en videos y secuencias
+- **Controles**: Misma interfaz y funcionalidad en ambas secciones
+- **Colores**: Botones usan color del estilo actual (salsa, bachata, etc.)
+
+#### 🎨 **RESULTADO:**
+- Experiencia de usuario completamente coherente
+- Sin duplicación de controles o funcionalidades
+- Interfaz profesional y consistente
+- Eliminado problema visual del marquito en thumbnails grandes
+
 ### 🎯 **COMMIT #104: SISTEMA THUMBNAILS ADAPTATIVOS - TAMAÑO CONSISTENTE** - 2024-12-19 20:15:00
 - **Objetivo**: Implementar thumbnails adaptativos que mantengan apariencia consistente en todos los tamaños de card
 - **Archivos modificados**: CardSizeContext.jsx, index.css, FigurasPage.jsx, EscuelaPage.jsx
