@@ -1099,14 +1099,14 @@ const FigurasPage = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
           <button 
             onClick={() => setIsUploadModalOpen(true)}
-            className={`flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105`}
+            className={`flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-colors duration-200`}
           >
             <Upload className="h-5 w-5" />
             <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
           </button>
           <button 
             onClick={toggleBuilder}
-            className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 ${
+            className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-colors duration-200 ${
               isBuilderOpen 
                 ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
                 : `bg-gradient-to-r ${getGradientClasses(selectedStyle)} hover:opacity-90 text-white`
@@ -1117,14 +1117,59 @@ const FigurasPage = () => {
           </button>
         </div>
 
-        {/* Botones de ordenamiento y favoritos - Nueva ubicación */}
-        <div className="flex flex-wrap justify-center gap-3 mb-6">
+
+
+        {/* Sequence Builder - Collapsible */}
+        {isBuilderOpen && (
+          <Suspense fallback={<LoadingSpinner />}>
+            <SequenceBuilder
+              isOpen={true}
+              videos={videos}
+              onSaveSequence={handleSaveSequence}
+              onToggleShowAll={toggleShowAllVideos}
+              showAllVideos={showAllVideos}
+              style={selectedStyle}
+              onToggleBuilder={toggleBuilder}
+            />
+          </Suspense>
+        )}
+
+
+
+        {/* Gallery Tabs */}
+        <div className="flex justify-center gap-4 mb-6">
+          <button
+            onClick={() => setActiveTab('videos')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+              activeTab === 'videos'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Music className="h-6 w-6" />
+            <span>GALERÍA DE VIDEOS</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('secuencias')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+              activeTab === 'secuencias'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Plus className="h-6 w-6" />
+            <span>GALERÍA DE SECUENCIAS ({sequences.length})</span>
+          </button>
+        </div>
+
+        {/* Botones de ordenamiento y favoritos - Debajo de las pestañas */}
+        <div className="flex flex-wrap justify-center gap-2 mb-6">
           {/* Botón A-Z/Z-A combinado */}
           <button
             onClick={() => handleSortChange(sortBy === 'name' ? 'name-desc' : 'name')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
               sortBy === 'name' || sortBy === 'name-desc'
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
@@ -1134,13 +1179,13 @@ const FigurasPage = () => {
           {/* Botón Puntuación */}
           <button
             onClick={() => handleSortChange(sortBy === 'rating' ? 'rating-desc' : 'rating')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
               sortBy === 'rating' || sortBy === 'rating-desc'
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
-            <Star className="h-4 w-4" />
+            <Star className="h-3 w-3" />
             <span>{sortBy === 'rating' ? 'Puntuación ↓' : sortBy === 'rating-desc' ? 'Puntuación ↑' : 'Puntuación'}</span>
           </button>
           
@@ -1163,133 +1208,19 @@ const FigurasPage = () => {
                 setSortBy('none')
               }
             }}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
               showFavorites
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
-            <Heart className="h-4 w-4" />
+            <Heart className="h-3 w-3" />
             <span>
               {!showFavorites ? 'Mostrar Favoritos' : 
                sortBy === 'likes' ? 'Favoritos ↓' : 
                sortBy === 'likes-desc' ? 'Favoritos ↑' : 
                'Ocultar Favoritos'}
             </span>
-          </button>
-        </div>
-
-        {/* Sequence Builder - Collapsible */}
-        {isBuilderOpen && (
-          <Suspense fallback={<LoadingSpinner />}>
-            <SequenceBuilder
-              isOpen={true}
-              videos={videos}
-              onSaveSequence={handleSaveSequence}
-              onToggleShowAll={toggleShowAllVideos}
-              showAllVideos={showAllVideos}
-              style={selectedStyle}
-              onToggleBuilder={toggleBuilder}
-            />
-          </Suspense>
-        )}
-
-        {/* Sync Status and Cleanup Controls */}
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Sync Status */}
-            <div className="flex items-center space-x-2">
-              <div className={`w-3 h-3 rounded-full ${
-                syncStatus === 'idle' ? 'bg-green-500' : 
-                syncStatus === 'syncing' ? 'bg-yellow-500 animate-pulse' : 
-                'bg-red-500'
-              }`}></div>
-              <span className="text-sm text-gray-600">
-                {syncStatus === 'idle' ? '✅ Sincronizado con Firebase' : 
-                 syncStatus === 'syncing' ? '🔄 Sincronizando...' : 
-                 '❌ Error de sincronización'}
-              </span>
-            </div>
-            
-            {/* Cleanup Buttons */}
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={handleDiagnoseVideos}
-                disabled={syncStatus === 'syncing'}
-                className="px-3 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                🔍 Diagnóstico
-              </button>
-              <button
-                onClick={handleUpdateAllResolutions}
-                disabled={syncStatus === 'syncing'}
-                className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                📐 Actualizar Resoluciones
-              </button>
-              <button
-                onClick={() => openCleanupModal('update')}
-                disabled={syncStatus === 'syncing'}
-                className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                🔧 Actualizar Rutas
-              </button>
-              <button
-                onClick={() => openCleanupModal('cleanup')}
-                disabled={syncStatus === 'syncing'}
-                className="px-3 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                🧹 Limpiar Huérfanos
-              </button>
-              <button
-                onClick={() => openCleanupModal('cleanup-tags')}
-                disabled={syncStatus === 'syncing'}
-                className="px-3 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                🏷️ Limpiar Tags
-              </button>
-              <button
-                onClick={handleMigrateVideos}
-                disabled={syncStatus === 'syncing'}
-                className="px-3 py-1 text-xs bg-indigo-500 text-white rounded hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Mover físicamente videos existentes a estructura organizada (videos/page/style/)"
-              >
-                📁 Migrar Videos REAL
-              </button>
-              <button
-                onClick={() => openCleanupModal('delete-all')}
-                disabled={syncStatus === 'syncing'}
-                className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                🗑️ Eliminar Todo
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Gallery Tabs */}
-        <div className="flex justify-center gap-4 mb-8">
-          <button
-            onClick={() => setActiveTab('videos')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              activeTab === 'videos'
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg transform scale-105`
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            <Music className="h-6 w-6" />
-            <span>GALERÍA DE VIDEOS</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('secuencias')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              activeTab === 'secuencias'
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg transform scale-105`
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            <Plus className="h-6 w-6" />
-            <span>GALERÍA DE SECUENCIAS ({sequences.length})</span>
           </button>
         </div>
 
@@ -1403,7 +1334,7 @@ const FigurasPage = () => {
                         <img
                           src={video.thumbnailUrl}
                           alt={video.title}
-                          className="w-full h-full object-cover"
+                          className={`w-full h-full ${getVideoConfig().imageObject || 'object-cover'}`}
                           loading="lazy"
                           onError={(e) => {
                             e.target.style.display = 'none';
@@ -2014,6 +1945,78 @@ const FigurasPage = () => {
           </div>
         )}
 
+        {/* Sync Status and Cleanup Controls */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Sync Status */}
+            <div className="flex items-center space-x-2">
+              <div className={`w-3 h-3 rounded-full ${
+                syncStatus === 'idle' ? 'bg-green-500' : 
+                syncStatus === 'syncing' ? 'bg-yellow-500 animate-pulse' : 
+                'bg-red-500'
+              }`}></div>
+              <span className="text-sm text-gray-600">
+                {syncStatus === 'idle' ? '✅ Sincronizado con Firebase' : 
+                 syncStatus === 'syncing' ? '🔄 Sincronizando...' : 
+                 '❌ Error de sincronización'}
+              </span>
+            </div>
+            
+            {/* Cleanup Buttons */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleDiagnoseVideos}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🔍 Diagnóstico
+              </button>
+              <button
+                onClick={handleUpdateAllResolutions}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                📐 Actualizar Resoluciones
+              </button>
+              <button
+                onClick={() => openCleanupModal('update')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🔧 Actualizar Rutas
+              </button>
+              <button
+                onClick={() => openCleanupModal('cleanup')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🧹 Limpiar Huérfanos
+              </button>
+              <button
+                onClick={() => openCleanupModal('cleanup-tags')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🏷️ Limpiar Tags
+              </button>
+              <button
+                onClick={handleMigrateVideos}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-indigo-500 text-white rounded hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Mover físicamente videos existentes a estructura organizada (videos/page/style/)"
+              >
+                📁 Migrar Videos REAL
+              </button>
+              <button
+                onClick={() => openCleanupModal('delete-all')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🗑️ Eliminar Todo
+              </button>
+            </div>
+          </div>
+        </div>
 
       </div>
 

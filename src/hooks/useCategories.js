@@ -372,49 +372,69 @@ export const useCategories = (page = 'figuras', style = 'salsa') => {
     }))
   }, [])
 
-  // Función para obtener colores de categorías
+    // Función para obtener colores de categorías
   const getColorClasses = (color) => {
+    // Crear clave específica para page-style
+    const specificKey = `${selectedPage}-${color}`
+    
     const colorMap = {
-             // Colores específicos de estilos de baile
-       salsa: 'bg-orange-100 text-orange-800 border-orange-200',
-       bachata: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-       merengue: 'bg-cyan-100 text-cyan-800 border-cyan-200',
-       zouk: 'bg-violet-100 text-violet-800 border-violet-200',
-       kizomba: 'bg-amber-100 text-amber-800 border-amber-200',
+      // Colores específicos por página y estilo
+      'escuela-salsa': 'bg-purple-100 text-purple-800 border-purple-200',  // Morado SOLO para escuela
+      'figuras-salsa': 'bg-orange-100 text-orange-800 border-orange-200',  // Naranja para figuras (original)
+      'eventos-salsa': 'bg-orange-100 text-orange-800 border-orange-200',  // Naranja para eventos (original)
       
-      // Colores genéricos para categorías
-      pink: 'bg-pink-100 text-pink-800 border-pink-200',
-      red: 'bg-red-100 text-red-800 border-red-200',
-      orange: 'bg-orange-100 text-orange-800 border-orange-200',
-      yellow: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      green: 'bg-green-100 text-green-800 border-green-200',
-      blue: 'bg-blue-100 text-blue-800 border-blue-200',
-      purple: 'bg-purple-100 text-purple-800 border-purple-200'
-    }
-    return colorMap[color] || 'bg-gray-100 text-gray-800 border-gray-200'
-  }
+      // Colores específicos de estilos de baile (genéricos)
+      salsa: 'bg-orange-100 text-orange-800 border-orange-200',  // Naranja (original)
+      bachata: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+      merengue: 'bg-cyan-100 text-cyan-800 border-cyan-200',
+      zouk: 'bg-violet-100 text-violet-800 border-violet-200',
+      kizomba: 'bg-amber-100 text-amber-800 border-amber-200',
+     
+     // Colores genéricos para categorías
+     pink: 'bg-pink-100 text-pink-800 border-pink-200',
+     red: 'bg-red-100 text-red-800 border-red-200',
+     orange: 'bg-orange-100 text-orange-800 border-orange-200',
+     yellow: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+     green: 'bg-green-100 text-green-800 border-green-200',
+     blue: 'bg-blue-100 text-blue-800 border-blue-200',
+     purple: 'bg-purple-100 text-purple-800 border-purple-200'
+   }
+   
+   // Primero intentar la clave específica, luego la genérica
+   return colorMap[specificKey] || colorMap[color] || 'bg-gray-100 text-gray-800 border-gray-200'
+ }
 
-  // Función para obtener gradientes de categorías
+    // Función para obtener gradientes de categorías
   const getGradientClasses = (color) => {
+    // Crear clave específica para page-style
+    const specificKey = `${selectedPage}-${color}`
+    
     const gradientMap = {
-             // Gradientes específicos de estilos de baile
-       salsa: 'from-orange-400 to-pink-500',      // Naranja suave a rosa
-       bachata: 'from-emerald-400 to-teal-600',   // Verde esmeralda suave a verde azulado intenso
-       merengue: 'from-cyan-400 to-blue-600',     // Cian suave a azul intenso
-       zouk: 'from-violet-400 to-indigo-600',     // Violeta suave a índigo intenso
-       kizomba: 'from-amber-400 to-orange-600',   // Ámbar suave a naranja intenso
+      // Gradientes específicos por página y estilo
+      'escuela-salsa': 'from-purple-500 to-pink-500',  // Morado a rosa SOLO para escuela
+      'figuras-salsa': 'from-orange-400 to-pink-500',  // Colores originales para figuras
+      'eventos-salsa': 'from-orange-400 to-pink-500',  // Colores originales para eventos
       
-      // Gradientes genéricos para categorías
-      pink: 'from-pink-500 to-rose-500',
-      red: 'from-red-500 to-pink-500',
-      orange: 'from-orange-500 to-red-500',
-      yellow: 'from-yellow-500 to-orange-500',
-      green: 'from-green-500 to-emerald-500',
-      blue: 'from-blue-500 to-cyan-500',
-      purple: 'from-purple-500 to-pink-500'
-    }
-    return gradientMap[color] || 'from-gray-500 to-gray-600'
-  }
+      // Gradientes específicos de estilos de baile (genéricos)
+      salsa: 'from-orange-400 to-pink-500',      // Naranja suave a rosa (original)
+      bachata: 'from-emerald-400 to-teal-600',   // Verde esmeralda suave a verde azulado intenso
+      merengue: 'from-cyan-400 to-blue-600',     // Cian suave a azul intenso
+      zouk: 'from-violet-400 to-indigo-600',     // Violeta suave a índigo intenso
+      kizomba: 'from-amber-400 to-orange-600',   // Ámbar suave a naranja intenso
+     
+     // Gradientes genéricos para categorías
+     pink: 'from-pink-500 to-rose-500',
+     red: 'from-red-500 to-pink-500',
+     orange: 'from-orange-500 to-red-500',
+     yellow: 'from-yellow-500 to-orange-500',
+     green: 'from-green-500 to-emerald-500',
+     blue: 'from-blue-500 to-cyan-500',
+     purple: 'from-purple-500 to-pink-500'
+   }
+   
+   // Primero intentar la clave específica, luego la genérica
+   return gradientMap[specificKey] || gradientMap[color] || 'from-gray-500 to-gray-600'
+ }
 
   return {
     // Estado

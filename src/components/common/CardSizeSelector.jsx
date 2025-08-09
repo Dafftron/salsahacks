@@ -43,15 +43,14 @@ const CardSizeSelector = ({ type = 'video' }) => {
           <button
             key={size}
             onClick={() => setSize(size)}
-            className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+            className={`flex items-center justify-center px-2 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
               currentSize === size
-                ? `bg-gradient-to-r ${sizeColors[size]} text-white shadow-lg transform scale-105`
+                ? `bg-gradient-to-r ${sizeColors[size]} text-white shadow-lg`
                 : 'text-gray-600 hover:text-gray-800 hover:bg-white'
             }`}
             title={`${sizeLabels[size]} - ${size} cards`}
           >
             {sizeIcons[size]}
-            <span className="hidden sm:inline">{sizeLabels[size]}</span>
           </button>
         ))}
       </div>

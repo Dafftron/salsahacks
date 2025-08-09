@@ -22,38 +22,46 @@ export const CardSizeProvider = ({ children }) => {
     small: {
       grid: 'md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
       aspect: 'aspect-square',
+      imageObject: 'object-contain', // Para que se vea completa en cuadrado
       titleSize: 'text-xs',
       descriptionLines: 1,
       showStats: false,
       showTags: true,
-      compact: true
+      compact: true,
+      maxTags: 2
     },
     medium: {
       grid: 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
       aspect: 'aspect-video',
+      imageObject: 'object-cover', // Llenar el área en video
       titleSize: 'text-sm',
       descriptionLines: 1,
       showStats: false,
       showTags: true,
-      compact: true
+      compact: true,
+      maxTags: 3
     },
     large: {
       grid: 'md:grid-cols-2 lg:grid-cols-3',
       aspect: 'aspect-video',
+      imageObject: 'object-cover', // Llenar el área en video
       titleSize: 'text-xl',
       descriptionLines: 3,
       showStats: true,
       showTags: true,
-      compact: false
+      compact: false,
+      maxTags: 5
     },
     'extra-large': {
       grid: 'md:grid-cols-1 lg:grid-cols-2',
       aspect: 'aspect-video',
+      imageObject: 'object-cover', // Llenar el área en video
       titleSize: 'text-2xl',
       descriptionLines: 4,
       showStats: true,
       showTags: true,
-      compact: false
+      compact: false,
+      maxTags: 8
     }
   }
 
@@ -62,6 +70,7 @@ export const CardSizeProvider = ({ children }) => {
     small: {
       grid: 'md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
       aspect: 'aspect-square',
+      imageObject: 'object-contain', // Para que se vea completa en cuadrado
       titleSize: 'text-xs',
       descriptionLines: 0, // Sin descripción, solo iconos
       showStats: true,
@@ -72,6 +81,7 @@ export const CardSizeProvider = ({ children }) => {
     medium: {
       grid: 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
       aspect: 'aspect-video',
+      imageObject: 'object-cover', // Llenar el área en video
       titleSize: 'text-sm',
       descriptionLines: 0, // Sin descripción, solo iconos
       showStats: true,
@@ -82,6 +92,7 @@ export const CardSizeProvider = ({ children }) => {
     large: {
       grid: 'md:grid-cols-2 lg:grid-cols-3',
       aspect: 'aspect-video',
+      imageObject: 'object-cover', // Llenar el área en video
       titleSize: 'text-lg',
       descriptionLines: 2,
       showStats: true,
@@ -92,6 +103,7 @@ export const CardSizeProvider = ({ children }) => {
     'extra-large': {
       grid: 'md:grid-cols-1 lg:grid-cols-2',
       aspect: 'aspect-video',
+      imageObject: 'object-cover', // Llenar el área en video
       titleSize: 'text-xl',
       descriptionLines: 3,
       showStats: true,

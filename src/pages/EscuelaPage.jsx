@@ -1058,85 +1058,29 @@ const EscuelaPage = () => {
           </div>
         )}
 
-        {/* Botones de Acción Académica - Estilo La Malanga */}
-        <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
+        {/* Action Buttons - Main Level */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
           <button 
             onClick={() => setIsUploadModalOpen(true)}
-            className="flex items-center justify-center space-x-3 px-8 py-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 border-2 border-yellow-300"
+            className={`flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-colors duration-200`}
           >
-            <Upload className="h-6 w-6" />
-            <span className="text-lg">📚 SUBIR LECCIÓN A {selectedStyle.toUpperCase()}</span>
+            <Upload className="h-5 w-5" />
+            <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
           </button>
           <button 
             onClick={toggleBuilder}
-            className={`flex items-center justify-center space-x-3 px-8 py-4 rounded-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 border-2 ${
+            className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-colors duration-200 ${
               isBuilderOpen 
-                ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white border-red-300' 
-                : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white border-blue-300 hover:from-blue-600 hover:to-purple-600'
+                ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
+                : `bg-gradient-to-r ${getGradientClasses(selectedStyle)} hover:opacity-90 text-white`
             }`}
           >
-            <Shuffle className="h-6 w-6" />
-            <span className="text-lg">{isBuilderOpen ? '❌ CERRAR CURSO' : '🎓 CREAR CURSO'}</span>
+            <Shuffle className="h-5 w-5" />
+            <span>{isBuilderOpen ? 'OCULTAR SECUENCIA' : 'CREAR SECUENCIA'}</span>
           </button>
         </div>
 
-        {/* Botones de Ordenamiento Académico - Estilo La Malanga */}
-        <div className="flex flex-wrap justify-center gap-4 mb-8">
-          {/* Botón A-Z/Z-A combinado */}
-          <button
-            onClick={() => handleSortChange(sortBy === 'name' ? 'name-desc' : 'name')}
-            className={`flex items-center space-x-3 px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
-              sortBy === 'name' || sortBy === 'name-desc'
-                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-xl border-2 border-yellow-300'
-                : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-lg'
-            }`}
-          >
-            <span className="text-lg">📖 {sortBy === 'name' ? 'A-Z' : sortBy === 'name-desc' ? 'Z-A' : 'A-Z'}</span>
-          </button>
-          
-          {/* Botón Puntuación */}
-          <button
-            onClick={() => handleSortChange(sortBy === 'rating' ? 'rating-desc' : 'rating')}
-            className={`flex items-center space-x-3 px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
-              sortBy === 'rating' || sortBy === 'rating-desc'
-                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-xl border-2 border-yellow-300'
-                : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-lg'
-            }`}
-          >
-            <Star className="h-5 w-5" />
-            <span className="text-lg">⭐ {sortBy === 'rating' ? 'Puntuación ↓' : sortBy === 'rating-desc' ? 'Puntuación ↑' : 'Puntuación'}</span>
-          </button>
-          
-          {/* Botón Favoritos */}
-          <button
-            onClick={() => {
-              if (!showFavorites) {
-                setShowFavorites(true)
-                setSortBy('likes')
-              } else if (sortBy === 'likes') {
-                setSortBy('likes-desc')
-              } else if (sortBy === 'likes-desc') {
-                setSortBy('likes')
-              } else {
-                setShowFavorites(false)
-                setSortBy('none')
-              }
-            }}
-            className={`flex items-center space-x-3 px-6 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
-              showFavorites
-                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-xl border-2 border-yellow-300'
-                : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-lg'
-            }`}
-          >
-            <Heart className="h-5 w-5" />
-            <span className="text-lg">
-              {!showFavorites ? '💖 Mostrar Favoritos' : 
-               sortBy === 'likes' ? '💖 Favoritos ↓' : 
-               sortBy === 'likes-desc' ? '💖 Favoritos ↑' : 
-               '💖 Ocultar Favoritos'}
-            </span>
-          </button>
-        </div>
+
 
         {/* Sequence Builder - Collapsible */}
         {isBuilderOpen && (
@@ -1153,29 +1097,91 @@ const EscuelaPage = () => {
           </Suspense>
         )}
 
-        {/* Pestañas Académicas - Estilo La Malanga */}
-        <div className="flex justify-center gap-6 mb-8">
+        {/* Gallery Tabs */}
+        <div className="flex justify-center gap-4 mb-6">
           <button
             onClick={() => setActiveTab('videos')}
-            className={`flex items-center space-x-3 px-8 py-4 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
               activeTab === 'videos'
-                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-2xl border-2 border-yellow-300 transform scale-110'
-                : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-xl'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
-            <Music className="h-7 w-7" />
-            <span className="text-lg">🎓 LECCIONES DE {selectedStyle.toUpperCase()}</span>
+            <Music className="h-6 w-6" />
+            <span>CLASES DE {selectedStyle.toUpperCase()}</span>
           </button>
           <button
             onClick={() => setActiveTab('secuencias')}
-            className={`flex items-center space-x-3 px-8 py-4 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
               activeTab === 'secuencias'
-                ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-2xl border-2 border-yellow-300 transform scale-110'
-                : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-xl'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
-            <Plus className="h-7 w-7" />
-            <span className="text-lg">📚 CURSOS COMPLETOS ({sequences.length})</span>
+            <Plus className="h-6 w-6" />
+            <span>CREADOR DE CURSOS ({sequences.length})</span>
+          </button>
+        </div>
+
+        {/* Botones de ordenamiento y favoritos - Debajo de las pestañas */}
+        <div className="flex flex-wrap justify-center gap-2 mb-6">
+          {/* Botón A-Z/Z-A combinado */}
+          <button
+            onClick={() => handleSortChange(sortBy === 'name' ? 'name-desc' : 'name')}
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              sortBy === 'name' || sortBy === 'name-desc'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <span>{sortBy === 'name' ? 'A-Z' : sortBy === 'name-desc' ? 'Z-A' : 'A-Z'}</span>
+          </button>
+          
+          {/* Botón Puntuación */}
+          <button
+            onClick={() => handleSortChange(sortBy === 'rating' ? 'rating-desc' : 'rating')}
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              sortBy === 'rating' || sortBy === 'rating-desc'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Star className="h-3 w-3" />
+            <span>{sortBy === 'rating' ? 'Puntuación ↓' : sortBy === 'rating-desc' ? 'Puntuación ↑' : 'Puntuación'}</span>
+          </button>
+          
+          {/* Botón Favoritos */}
+          <button
+            onClick={() => {
+              if (!showFavorites) {
+                // Si no está mostrando favoritos, activar y ordenar por likes descendente
+                setShowFavorites(true)
+                setSortBy('likes')
+              } else if (sortBy === 'likes') {
+                // Si está mostrando favoritos y ordenado por likes, cambiar a ascendente
+                setSortBy('likes-desc')
+              } else if (sortBy === 'likes-desc') {
+                // Si está en ascendente, volver a descendente
+                setSortBy('likes')
+              } else {
+                // Si está en otro ordenamiento, desactivar favoritos
+                setShowFavorites(false)
+                setSortBy('none')
+              }
+            }}
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              showFavorites
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Heart className="h-3 w-3" />
+            <span>
+              {!showFavorites ? 'Mostrar Favoritos' : 
+               sortBy === 'likes' ? 'Favoritos ↓' : 
+               sortBy === 'likes-desc' ? 'Favoritos ↑' : 
+               'Ocultar Favoritos'}
+            </span>
           </button>
         </div>
 
@@ -1205,7 +1211,7 @@ const EscuelaPage = () => {
                 {/* Botón de modo ancho completo */}
                 <button
                   onClick={() => setIsFullWidth(!isFullWidth)}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-xl font-bold transition-all duration-300 transform hover:scale-110 ${
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-xl font-bold transition-colors duration-300 ${
                     isFullWidth
                       ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-xl border-2 border-yellow-300'
                       : 'bg-white text-gray-700 border-2 border-yellow-200 hover:bg-yellow-50 hover:border-yellow-400 shadow-lg'
@@ -1224,22 +1230,22 @@ const EscuelaPage = () => {
               </div>
             </div>
 
-            {/* Grid de Lecciones */}
+            {/* Grid de Clases */}
             {filteredVideos.length === 0 ? (
               <div className="text-center py-16 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl border-2 border-yellow-200">
                 <div className="text-6xl mb-4">🎓</div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  No se encontraron lecciones
+                  No se encontraron clases
                 </h3>
                 <p className="text-gray-600 text-lg">
-                  {searchTerm ? 'Intenta con otros términos de búsqueda académica' : 'No hay lecciones disponibles en la academia'}
+                  {searchTerm ? 'Intenta con otros términos de búsqueda académica' : 'No hay clases disponibles en la academia'}
                 </p>
                 <div className="mt-6">
                   <button 
                     onClick={() => setIsUploadModalOpen(true)}
-                    className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-8 py-3 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 border-2 border-yellow-300"
+                    className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-8 py-3 rounded-xl font-bold shadow-xl hover:shadow-2xl transition-colors duration-300 border-2 border-yellow-300"
                   >
-                    📚 Crear Primera Lección
+                    📚 Crear Primera Clase
                   </button>
                 </div>
               </div>
@@ -1248,14 +1254,14 @@ const EscuelaPage = () => {
                 {filteredVideos.map((video) => (
                   <div
                     key={video.id}
-                    className={`bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-yellow-100 hover:border-yellow-300 transform hover:scale-105 ${getVideoConfig().maxWidth}`}
+                    className={`bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-yellow-100 hover:border-yellow-300 ${getVideoConfig().maxWidth}`}
                   >
-                    {/* Thumbnail de Lección */}
+                    {/* Thumbnail de Clase */}
                     <div className="relative group">
                       <img
                         src={video.thumbnailURL || '/placeholder-video.jpg'}
                         alt={video.title}
-                        className={`w-full object-cover transition-transform duration-300 group-hover:scale-110 ${getVideoConfig().aspect}`}
+                        className={`w-full ${getVideoConfig().imageObject || 'object-cover'} ${getVideoConfig().aspect}`}
                       />
                       
                       {/* Badge de Academia */}
@@ -1268,13 +1274,13 @@ const EscuelaPage = () => {
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-3">
                           <button
                             onClick={() => handlePlayVideo(video)}
-                            className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-3 rounded-full hover:shadow-xl transition-all duration-300 transform hover:scale-110"
+                            className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-3 rounded-full hover:shadow-xl transition-colors duration-300"
                           >
                             <Play className="h-5 w-5" />
                           </button>
                           <button
                             onClick={() => downloadVideo(video)}
-                            className="bg-white text-gray-800 p-3 rounded-full hover:shadow-xl transition-all duration-300 transform hover:scale-110"
+                            className="bg-white text-gray-800 p-3 rounded-full hover:shadow-xl transition-colors duration-300"
                           >
                             <Download className="h-5 w-5" />
                           </button>
@@ -1282,7 +1288,7 @@ const EscuelaPage = () => {
                       </div>
                     </div>
 
-                    {/* Información de Lección */}
+                    {/* Información de Clase */}
                     <div className="p-6">
                       <h3 className={`font-bold text-gray-900 mb-3 line-clamp-2 ${getVideoConfig().titleSize}`}>
                         📚 {video.title}
@@ -1306,7 +1312,7 @@ const EscuelaPage = () => {
                         )}
                       </div>
 
-                      {/* Información Académica */}
+                      {/* Información de la Clase */}
                       <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl p-3 mb-4 border border-yellow-200">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-yellow-700 font-bold">📊 Nivel: <span className="text-gray-700">Intermedio</span></span>
@@ -1355,6 +1361,80 @@ const EscuelaPage = () => {
             </Suspense>
           </div>
         )}
+
+        {/* Sync Status and Cleanup Controls */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Sync Status */}
+            <div className="flex items-center space-x-2">
+              <div className={`w-3 h-3 rounded-full ${
+                syncStatus === 'idle' ? 'bg-green-500' : 
+                syncStatus === 'syncing' ? 'bg-yellow-500 animate-pulse' : 
+                'bg-red-500'
+              }`}></div>
+              <span className="text-sm text-gray-600">
+                {syncStatus === 'idle' ? '✅ Sincronizado con Firebase' : 
+                 syncStatus === 'syncing' ? '🔄 Sincronizando...' : 
+                 '❌ Error de sincronización'}
+              </span>
+            </div>
+            
+            {/* Cleanup Buttons */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleDiagnoseVideos}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🔍 Diagnóstico
+              </button>
+              <button
+                onClick={handleUpdateAllResolutions}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                📐 Actualizar Resoluciones
+              </button>
+              <button
+                onClick={() => openCleanupModal('update')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🔧 Actualizar Rutas
+              </button>
+              <button
+                onClick={() => openCleanupModal('cleanup')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🧹 Limpiar Huérfanos
+              </button>
+              <button
+                onClick={() => openCleanupModal('cleanup-tags')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🏷️ Limpiar Tags
+              </button>
+              <button
+                onClick={handleMigrateVideos}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-indigo-500 text-white rounded hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Mover físicamente videos existentes a estructura organizada (videos/page/style/)"
+              >
+                📁 Migrar Videos REAL
+              </button>
+              <button
+                onClick={() => openCleanupModal('delete-all')}
+                disabled={syncStatus === 'syncing'}
+                className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🗑️ Eliminar Todo
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       {/* Modals */}
