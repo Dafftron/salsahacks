@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react'
 import { 
   Search, 
   Upload, 
@@ -143,86 +143,6 @@ const EscuelaPage = () => {
       console.warn('No se pudieron guardar las preferencias de filtros:', error)
     }
   }
-
-  // Función para renderizar una tarjeta individual (para virtualización)
-  const renderVideoCard = useCallback((video, index) => {
-    return (
-      <div className="bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border-gray-100 h-full">
-        <div className="relative group">
-          <div className={`w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
-            {video.thumbnailUrl ? (
-              <img
-                src={video.thumbnailUrl}
-                alt={video.title}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center text-gray-400">
-                <Upload className="h-8 w-8 mb-2" />
-                <span className="text-sm font-medium">Cargando...</span>
-              </div>
-            )}
-            
-            {/* Overlay de reproducción */}
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-              <button 
-                onClick={() => handlePlayVideo(video)}
-                className="bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 rounded-full p-3 transform scale-90 group-hover:scale-100 transition-all duration-200 shadow-lg"
-              >
-                <Play className="h-6 w-6 ml-1" />
-              </button>
-            </div>
-            
-            {/* Badge de resolución */}
-            {video.resolution && (
-              <div className="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                {video.resolution}
-              </div>
-            )}
-          </div>
-          
-          {/* Contenido de la card */}
-          <div className="p-4">
-            <h3 className="font-semibold text-gray-800 text-lg mb-2 line-clamp-1">{video.title}</h3>
-            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{video.description || 'Sin descripción'}</p>
-            
-            {/* Acciones básicas */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">
-                {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
-              </span>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handleVideoLike(video)}
-                  className={`p-1 rounded transition-colors ${
-                    video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-                  }`}
-                  title={video.userLiked ? 'Quitar like' : 'Dar like'}
-                >
-                  <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
-                </button>
-                <button
-                  onClick={() => downloadVideo(video)}
-                  className="text-gray-400 hover:text-green-500 p-1 rounded transition-colors"
-                  title="Descargar video"
-                >
-                  <Download className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => openEditModal(video)}
-                  className="text-gray-400 hover:text-blue-500 p-1 rounded transition-colors"
-                  title="Editar video"
-                >
-                  <Edit className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }, [handlePlayVideo, handleVideoLike, downloadVideo, openEditModal])
 
   // Función para manejar click en título de categoría
   const handleCategoryTitleClick = (categoryKey) => {
@@ -699,6 +619,86 @@ const EscuelaPage = () => {
 
   // Aplicar ordenamiento final
   const filteredVideos = sortVideos(baseFilteredVideos)
+
+  // Función para renderizar una tarjeta individual (para virtualización)
+  const renderVideoCard = useCallback((video, index) => {
+    return (
+      <div className="bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border-gray-100 h-full">
+        <div className="relative group">
+          <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
+            {video.thumbnailUrl ? (
+              <img
+                src={video.thumbnailUrl}
+                alt={video.title}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center text-gray-400">
+                <Upload className="h-8 w-8 mb-2" />
+                <span className="text-sm font-medium">Cargando...</span>
+              </div>
+            )}
+            
+            {/* Overlay de reproducción */}
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <button 
+                onClick={() => handlePlayVideo(video)}
+                className="bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 rounded-full p-3 transform scale-90 group-hover:scale-100 transition-all duration-200 shadow-lg"
+              >
+                <Play className="h-6 w-6 ml-1" />
+              </button>
+            </div>
+            
+            {/* Badge de resolución */}
+            {video.resolution && (
+              <div className="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+                {video.resolution}
+              </div>
+            )}
+          </div>
+          
+          {/* Contenido de la card */}
+          <div className="p-4">
+            <h3 className="font-semibold text-gray-800 text-lg mb-2 line-clamp-1">{video.title}</h3>
+            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{video.description || 'Sin descripción'}</p>
+            
+            {/* Acciones básicas */}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">
+                {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
+              </span>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleVideoLike(video)}
+                  className={`p-1 rounded transition-colors ${
+                    video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                  }`}
+                  title={video.userLiked ? 'Quitar like' : 'Dar like'}
+                >
+                  <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
+                </button>
+                <button
+                  onClick={() => downloadVideo(video)}
+                  className="text-gray-400 hover:text-green-500 p-1 rounded transition-colors"
+                  title="Descargar video"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => openEditModal(video)}
+                  className="text-gray-400 hover:text-blue-500 p-1 rounded transition-colors"
+                  title="Editar video"
+                >
+                  <Edit className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }, [handlePlayVideo, handleVideoLike, downloadVideo, openEditModal])
 
   return (
     <div className="min-h-screen bg-white">
