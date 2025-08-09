@@ -239,9 +239,60 @@ const EscuelaPage = () => {
     }
   }
 
+  // Función para eliminar video
+  const handleDeleteVideo = async (video) => {
+    try {
+      // Eliminar de Firebase Storage
+      const storageResult = await deleteVideo(video.videoPath, video.thumbnailPath)
+      
+      // Si hay error al eliminar archivos, intentar solo eliminar el video
+      if (!storageResult.success) {
+        
+        // Intentar eliminar solo el video si el thumbnail falló
+        if (storageResult.error && storageResult.error.includes('thumbnails')) {
+          const videoOnlyResult = await deleteVideo(video.videoPath, null)
+          if (!videoOnlyResult.success) {
+            addToast(`Error al eliminar archivos: ${storageResult.error}`, 'error')
+            return
+          }
+        } else {
+          addToast(`Error al eliminar archivos: ${storageResult.error}`, 'error')
+          return
+        }
+      }
+
+      // Eliminar de Firestore
+      const firestoreResult = await deleteVideoDocument(video.id, 'escuela')
+      
+      if (!firestoreResult.success) {
+        addToast(`Error al eliminar metadatos: ${firestoreResult.error}`, 'error')
+        return
+      }
+
+      // Actualizar lista local
+      setVideos(prev => {
+        const newVideos = prev.filter(v => v.id !== video.id)
+        return newVideos
+      })
+      
+      addToast(`${video.title} eliminado correctamente`, 'success')
+      
+      // Cerrar modal de eliminación
+      setDeleteModal({ isOpen: false, video: null })
+    } catch (error) {
+      console.error('❌ Error deleting video:', error)
+      addToast('Error inesperado al eliminar video', 'error')
+    }
+  }
+
   // Función para abrir modal de eliminación
   const openDeleteModal = (video) => {
     setDeleteModal({ isOpen: true, video })
+  }
+
+  // Función para cerrar modal de eliminación
+  const closeDeleteModal = () => {
+    setDeleteModal({ isOpen: false, video: null })
   }
 
   // Función para manejar likes
@@ -728,10 +779,7 @@ const EscuelaPage = () => {
                       
                         {/* Botón de play */}
                           <button
-                          onClick={() => {
-                            setPlayingVideo(video);
-                            setIsPlayerModalOpen(true);
-                          }}
+                          onClick={() => handlePlayVideo(video)}
                           className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 group"
                         >
                           <div className="w-16 h-16 rounded-full bg-white bg-opacity-90 flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-200">
@@ -916,6 +964,39 @@ const EscuelaPage = () => {
             onVideoUpdated={handleVideoUpdated}
           page="escuela"
           style={selectedStyle}
+        />
+      </Suspense>
+
+      {/* Video Player Modal */}
+      <Suspense fallback={<LoadingSpinner />}>
+        <VideoPlayer
+          isOpen={showVideoPlayer}
+          onClose={() => {
+            setShowVideoPlayer(false)
+            setSelectedVideo(null)
+          }}
+          video={selectedVideo}
+        />
+      </Suspense>
+
+      {/* Confirm Delete Modal */}
+      <Suspense fallback={<LoadingSpinner />}>
+        <ConfirmModal
+          isOpen={deleteModal.isOpen}
+          onClose={closeDeleteModal}
+          onConfirm={() => handleDeleteVideo(deleteModal.video)}
+          title="🗑️ Eliminar Video"
+          message={`¿Estás seguro de que quieres eliminar el video "${deleteModal.video?.title}"?
+
+Esta acción eliminará permanentemente:
+• El archivo de video de Firebase Storage
+• El thumbnail del video
+• Los metadatos de Firestore
+
+Esta acción NO se puede deshacer.`}
+          confirmText="Sí, Eliminar"
+          cancelText="Cancelar"
+          type="danger"
         />
       </Suspense>
 

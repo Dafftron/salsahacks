@@ -222,22 +222,22 @@ const CategoriesPage = () => {
             hora: {
               name: 'HORA',
               color: 'purple',
-              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']
+              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00']
             },
             estilo: {
               name: 'ESTILO',
               color: 'pink',
-              tags: ['Salsa', 'Salsa en línea On1', 'Salsa en línea On2', 'Salsa cubana', 'Estilo LA', 'Estilo NY', 'Casino']
+              tags: ['Salsa', 'Mambo', 'Coreografía']
             },
             nivel: {
               name: 'NIVEL',
               color: 'red',
-              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto', 'Todos los niveles']
+              tags: ['Inicio', 'Intermedio I', 'Intermedio II', 'Intermedio III', 'Avanzado']
             },
             profesores: {
               name: 'PROFESORES',
               color: 'yellow',
-              tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López', 'David Martín', 'Laura Sánchez', 'Miguel Torres', 'Carmen Ruiz']
+              tags: ['Talipo', 'Pepe y Marta', 'Dabbico y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
             }
           }
         },
@@ -264,22 +264,22 @@ const CategoriesPage = () => {
             hora: {
               name: 'HORA',
               color: 'purple',
-              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']
+              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00']
             },
             estilo: {
               name: 'ESTILO',
               color: 'yellow',
-              tags: ['Pasitos libres', 'Freestyle', 'Shines', 'Footwork', 'Solo dancing', 'Body movement']
+              tags: ['Salsa', 'Mambo', 'Coreografía']
             },
             nivel: {
               name: 'NIVEL',
               color: 'red',
-              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto', 'Todos los niveles']
+              tags: ['Inicio', 'Intermedio I', 'Intermedio II', 'Intermedio III', 'Avanzado']
             },
             profesores: {
               name: 'PROFESORES',
               color: 'pink',
-              tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López', 'David Martín', 'Laura Sánchez', 'Miguel Torres', 'Carmen Ruiz']
+              tags: ['Talipo', 'Pepe y Marta', 'Dabbico y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
             }
           }
         },
@@ -306,22 +306,22 @@ const CategoriesPage = () => {
             hora: {
               name: 'HORA',
               color: 'purple',
-              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']
+              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00']
             },
             estilo: {
               name: 'ESTILO',
               color: 'red',
-              tags: ['Salsa cubana', 'Casino', 'Rueda de casino', 'Son', 'Mambo', 'Timba']
+              tags: ['Salsa', 'Mambo', 'Coreografía']
             },
             nivel: {
               name: 'NIVEL',
               color: 'yellow',
-              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto', 'Todos los niveles']
+              tags: ['Inicio', 'Intermedio I', 'Intermedio II', 'Intermedio III', 'Avanzado']
             },
             profesores: {
               name: 'PROFESORES',
               color: 'pink',
-              tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López', 'David Martín', 'Laura Sánchez', 'Miguel Torres', 'Carmen Ruiz']
+              tags: ['Talipo', 'Pepe y Marta', 'Dabbico y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
             }
           }
         },
@@ -414,22 +414,22 @@ const CategoriesPage = () => {
             hora: {
               name: 'HORA',
               color: 'purple',
-              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']
+              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00']
             },
             estilo: {
               name: 'ESTILO',
               color: 'yellow',
-              tags: ['Merengue dominicano', 'Merengue venezolano', 'Merengue mambo', 'Merengue típico', 'Perico ripiao']
+              tags: ['Salsa', 'Mambo', 'Coreografía']
             },
             nivel: {
               name: 'NIVEL',
               color: 'red',
-              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto', 'Todos los niveles']
+              tags: ['Inicio', 'Intermedio I', 'Intermedio II', 'Intermedio III', 'Avanzado']
             },
             profesores: {
               name: 'PROFESORES',
               color: 'pink',
-              tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López', 'David Martín', 'Laura Sánchez', 'Miguel Torres', 'Carmen Ruiz']
+              tags: ['Talipo', 'Pepe y Marta', 'Dabbico y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
             }
           }
         }
