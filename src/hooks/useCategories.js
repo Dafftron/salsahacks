@@ -160,7 +160,7 @@ export const useCategories = (page, selectedStyle) => {
         salsa: {
           name: 'SALSA',
           icon: Music,
-          color: 'salsa',
+          color: 'escuela-salsa',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -187,7 +187,7 @@ export const useCategories = (page, selectedStyle) => {
         'pasitos-libres': {
           name: 'PASITOS LIBRES',
           icon: Star,
-          color: 'yellow',
+          color: 'escuela-pasitos-libres',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -209,7 +209,7 @@ export const useCategories = (page, selectedStyle) => {
         'salsa-cubana': {
           name: 'SALSA CUBANA',
           icon: Music,
-          color: 'red',
+          color: 'escuela-salsa-cubana',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -231,7 +231,7 @@ export const useCategories = (page, selectedStyle) => {
         bachata: {
           name: 'BACHATA',
           icon: Heart,
-          color: 'bachata',
+          color: 'escuela-bachata',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -413,14 +413,17 @@ export const useCategories = (page, selectedStyle) => {
       'figuras-zouk': 'from-violet-400 to-indigo-600',
       'figuras-kizomba': 'from-amber-400 to-orange-600',
       
-      // Gradientes específicos para escuela (morado a rosa)
-      'escuela-salsa': 'from-purple-400 to-pink-500',
-      'escuela-pasitos-libres': 'from-purple-400 to-pink-500',
-      'escuela-salsa-cubana': 'from-purple-400 to-pink-500',
-      'escuela-bachata': 'from-purple-400 to-pink-500',
-      'escuela-kizomba': 'from-purple-400 to-pink-500',
-      'escuela-zouk': 'from-purple-400 to-pink-500',
-      'escuela-merengue': 'from-purple-400 to-pink-500',
+      // Gradientes específicos para escuela con sus colores característicos
+      'escuela-salsa': 'from-purple-500 to-pink-500',
+      'escuela-pasitos-libres': 'from-yellow-400 to-orange-500',
+      'escuela-salsa-cubana': 'from-red-500 to-pink-500', 
+      'escuela-bachata': 'from-emerald-400 to-teal-600',
+      'escuela-kizomba': 'from-amber-400 to-orange-600',
+      'escuela-zouk': 'from-violet-400 to-indigo-600',
+      'escuela-merengue': 'from-cyan-400 to-blue-600',
+      
+      // Fallback directo para escuela-salsa
+      'escuela-salsa': 'from-purple-500 to-pink-500',
       
       // Gradientes para eventos
       'eventos-salsa': 'from-green-400 to-blue-500',

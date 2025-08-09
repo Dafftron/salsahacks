@@ -144,7 +144,7 @@ const FigurasPage = () => {
     getGradientClasses,
     categoriesList, 
     getColorClasses
-  } = useCategories('figuras', selectedStyle)
+  } = useCategories('escuela', selectedStyle)
   
   // Función para manejar click en título de categoría
   const handleCategoryTitleClick = (categoryKey) => {
@@ -336,10 +336,10 @@ const FigurasPage = () => {
         {/* Title */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2">
-            <span className="text-pink-500">FIGURAS</span>
+            <span className="text-purple-500">ESCUELA</span>
             <span className={`bg-gradient-to-r ${getGradientClasses(selectedStyle)} bg-clip-text text-transparent`}> - {selectedStyle.toUpperCase()}</span>
           </h1>
-          <p className="text-gray-600 text-lg">Galería de videos de figuras de {selectedStyle.toLowerCase()}</p>
+          <p className="text-gray-600 text-lg">Galería de videos de escuela de {selectedStyle.toLowerCase()}</p>
         </div>
 
         {/* Style Filters */}

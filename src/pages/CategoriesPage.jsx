@@ -235,7 +235,7 @@ const CategoriesPage = () => {
         salsa: {
           name: 'SALSA',
           icon: Music,
-          color: 'salsa',
+          color: 'escuela-salsa',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -262,7 +262,7 @@ const CategoriesPage = () => {
         'pasitos-libres': {
           name: 'PASITOS LIBRES',
           icon: Star,
-          color: 'yellow',
+          color: 'escuela-pasitos-libres',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -284,7 +284,7 @@ const CategoriesPage = () => {
         'salsa-cubana': {
           name: 'SALSA CUBANA',
           icon: Music,
-          color: 'red',
+          color: 'escuela-salsa-cubana',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -306,7 +306,7 @@ const CategoriesPage = () => {
         bachata: {
           name: 'BACHATA',
           icon: Heart,
-          color: 'bachata',
+          color: 'escuela-bachata',
           categories: {
             estilo: {
               name: 'ESTILO',
@@ -424,6 +424,15 @@ const CategoriesPage = () => {
       merengue: 'bg-gradient-to-r from-cyan-400 to-blue-600',
       zouk: 'bg-gradient-to-r from-violet-400 to-indigo-600',
       kizomba: 'bg-gradient-to-r from-amber-400 to-orange-600',
+      
+      // Gradientes específicos para escuela con sus colores característicos
+      'escuela-salsa': 'bg-gradient-to-r from-purple-500 to-pink-500',
+      'escuela-pasitos-libres': 'bg-gradient-to-r from-yellow-400 to-orange-500',
+      'escuela-salsa-cubana': 'bg-gradient-to-r from-red-500 to-pink-500', 
+      'escuela-bachata': 'bg-gradient-to-r from-emerald-400 to-teal-600',
+      'escuela-kizomba': 'bg-gradient-to-r from-amber-400 to-orange-600',
+      'escuela-zouk': 'bg-gradient-to-r from-violet-400 to-indigo-600',
+      'escuela-merengue': 'bg-gradient-to-r from-cyan-400 to-blue-600',
       
       // Gradientes genéricos para categorías
       pink: 'bg-gradient-to-r from-orange-500 to-pink-500',
