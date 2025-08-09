@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from
 import { 
   Search, 
   Upload, 
+  Plus, 
   Heart, 
   Music,
   Trash2,
@@ -12,11 +13,11 @@ import {
   Star,
   Zap,
   Edit,
-  Edit3,
   Download,
   Maximize2,
   Minimize2,
   Play,
+  Shuffle,
   Eye,
   EyeOff,
   Loader
@@ -28,6 +29,7 @@ import Toast from '../components/common/Toast'
 import CardSizeSelector from '../components/common/CardSizeSelector'
 import CompactCardActions from '../components/common/CompactCardActions'
 import CategoryChips from '../components/common/CategoryChips'
+import { useSequenceBuilderContext } from '../contexts/SequenceBuilderContext'
 
 // Lazy loading de componentes pesados
 const VideoUploadModal = lazy(() => import('../components/video/VideoUploadModal'))
@@ -37,7 +39,6 @@ const DownloadModal = lazy(() => import('../components/video/DownloadModal'))
 const SequenceBuilder = lazy(() => import('../components/sequence/SequenceBuilder'))
 const SequenceGallery = lazy(() => import('../components/sequence/SequenceGallery'))
 const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVideoPlayer'))
-const VirtualizedVideoGrid = lazy(() => import('../components/gallery/VirtualizedVideoGrid'))
 
 import { 
   getVideos, 
@@ -63,7 +64,7 @@ import {
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useCardSize } from '../contexts/CardSizeContext'
-import { useContainerSize } from '../hooks/useContainerSize'
+
 
 // Componente de carga para lazy loading
 const LoadingSpinner = () => (
@@ -101,7 +102,7 @@ const EscuelaPage = () => {
   const [downloadSequenceModal, setDownloadSequenceModal] = useState({ isOpen: false, sequence: null })
   const [migrationModal, setMigrationModal] = useState({ isOpen: false })
   const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
-  const [useVirtualization, setUseVirtualization] = useState(false) // Control de virtualización
+
   
   // Estados para reproductor de video individual
   const [selectedVideo, setSelectedVideo] = useState(null)
@@ -120,7 +121,7 @@ const EscuelaPage = () => {
   
   const { user } = useAuth()
   const { getVideoConfig, getSequenceConfig } = useCardSize()
-  const { containerRef, width: containerWidth, isLoading: containerLoading } = useContainerSize()
+
   
 
   
@@ -620,86 +621,6 @@ const EscuelaPage = () => {
   // Aplicar ordenamiento final
   const filteredVideos = sortVideos(baseFilteredVideos)
 
-  // Función para renderizar una tarjeta individual (para virtualización)
-  const renderVideoCard = useCallback((video, index) => {
-    return (
-      <div className="bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border-gray-100 h-full">
-        <div className="relative group">
-          <div className="w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center">
-            {video.thumbnailUrl ? (
-              <img
-                src={video.thumbnailUrl}
-                alt={video.title}
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <div className="flex flex-col items-center justify-center text-gray-400">
-                <Upload className="h-8 w-8 mb-2" />
-                <span className="text-sm font-medium">Cargando...</span>
-              </div>
-            )}
-            
-            {/* Overlay de reproducción */}
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-              <button 
-                onClick={() => handlePlayVideo(video)}
-                className="bg-white bg-opacity-90 hover:bg-opacity-100 text-gray-800 rounded-full p-3 transform scale-90 group-hover:scale-100 transition-all duration-200 shadow-lg"
-              >
-                <Play className="h-6 w-6 ml-1" />
-              </button>
-            </div>
-            
-            {/* Badge de resolución */}
-            {video.resolution && (
-              <div className="absolute top-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
-                {video.resolution}
-              </div>
-            )}
-          </div>
-          
-          {/* Contenido de la card */}
-          <div className="p-4">
-            <h3 className="font-semibold text-gray-800 text-lg mb-2 line-clamp-1">{video.title}</h3>
-            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{video.description || 'Sin descripción'}</p>
-            
-            {/* Acciones básicas */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">
-                {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
-              </span>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handleVideoLike(video)}
-                  className={`p-1 rounded transition-colors ${
-                    video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-                  }`}
-                  title={video.userLiked ? 'Quitar like' : 'Dar like'}
-                >
-                  <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
-                </button>
-                <button
-                  onClick={() => downloadVideo(video)}
-                  className="text-gray-400 hover:text-green-500 p-1 rounded transition-colors"
-                  title="Descargar video"
-                >
-                  <Download className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => openEditModal(video)}
-                  className="text-gray-400 hover:text-blue-500 p-1 rounded transition-colors"
-                  title="Editar video"
-                >
-                  <Edit className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }, [handlePlayVideo, handleVideoLike, downloadVideo, openEditModal])
-
   return (
     <div className="min-h-screen bg-white">
       {/* Main Content */}
@@ -930,22 +851,6 @@ const EscuelaPage = () => {
                     {isFullWidth ? "Compacto" : "Ancho"}
                   </span>
                 </button>
-
-                {/* Botón de virtualización (para testing) */}
-                <button
-                  onClick={() => setUseVirtualization(!useVirtualization)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    useVirtualization
-                      ? `bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg`
-                      : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                  }`}
-                  title={useVirtualization ? "Desactivar virtualización" : "Activar virtualización (optimiza rendimiento)"}
-                >
-                  <Zap className="w-4 h-4" />
-                  <span className="hidden sm:inline">
-                    {useVirtualization ? "Virtual ON" : "Virtual OFF"}
-                  </span>
-                </button>
               </div>
             </div>
 
@@ -958,27 +863,6 @@ const EscuelaPage = () => {
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">No hay videos de {selectedStyle.toLowerCase()} aún</p>
                 <p className="text-gray-400 text-sm mt-2">Sube tu primer video de {selectedStyle.toLowerCase()} usando el botón de arriba</p>
-              </div>
-            ) : useVirtualization ? (
-              // Galería virtualizada
-              <div ref={containerRef} className="w-full">
-                {containerWidth > 0 && !containerLoading ? (
-                  <Suspense fallback={<LoadingSpinner />}>
-                    <VirtualizedVideoGrid
-                      videos={filteredVideos}
-                      containerWidth={containerWidth}
-                      containerHeight={600}
-                      cardWidth={320}
-                      cardHeight={400}
-                      gap={24}
-                      renderCard={renderVideoCard}
-                    />
-                  </Suspense>
-                ) : (
-                  <div className="h-96 bg-gray-100 rounded-lg animate-pulse flex items-center justify-center">
-                    <span className="text-gray-500">Midiendo contenedor...</span>
-                  </div>
-                )}
               </div>
             ) : (
               // Galería normal (grid CSS)
@@ -1139,7 +1023,7 @@ const EscuelaPage = () => {
                                 className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
                                 title="Editar video"
                               >
-                                <Edit3 className="h-4 w-4" />
+                                <Edit className="h-4 w-4" />
               </button>
               <button
                                 onClick={() => openDeleteModal(video)}

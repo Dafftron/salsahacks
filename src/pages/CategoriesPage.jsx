@@ -242,7 +242,7 @@ const CategoriesPage = () => {
             profesores: {
               name: 'PROFESORES',
               color: 'yellow',
-              tags: ['Talipo', 'Pepe y Marta', 'Dabbico y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
+              tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
             }
           }
         },
@@ -289,7 +289,7 @@ const CategoriesPage = () => {
             profesores: {
               name: 'PROFESORES',
               color: 'pink',
-              tags: ['Pocho', 'Dabbico', 'Talia']
+              tags: ['Pocho', 'Dabbicco y Ani', 'Talia']
             }
           }
         },
@@ -336,7 +336,7 @@ const CategoriesPage = () => {
             profesores: {
               name: 'PROFESORES',
               color: 'pink',
-              tags: ['Talipo', 'Ñete y Ani', 'Ñete y Maite']
+              tags: ['Talipo', 'Ñete y Ani', 'Ñete y Maite', 'Dabbicco y Ani']
             }
           }
         },
@@ -449,7 +449,7 @@ const CategoriesPage = () => {
             profesores: {
               name: 'PROFESORES',
               color: 'pink',
-              tags: ['Talipo', 'Pepe y Marta', 'Dabbico y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
+              tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
             }
           }
         }
