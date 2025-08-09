@@ -232,10 +232,59 @@ const EscuelaPage = () => {
   const downloadVideo = async (video) => {
     try {
       addToast(`Iniciando descarga de ${video.title}...`, 'info')
-      // Aquí iría la lógica de descarga
+      
+      // Usar el sistema de descarga optimizado
+      const { ref, getDownloadURL } = await import('firebase/storage')
+      const { storage } = await import('../services/firebase/config')
+      
+      const videoRef = ref(storage, video.videoPath)
+      const downloadURL = await getDownloadURL(videoRef)
+      
+      // Descargar video con timeout y mejor manejo de errores
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 segundos timeout
+      
+      const response = await fetch(downloadURL, {
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+      
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status} ${response.statusText}`)
+      }
+      
+      const videoBlob = await response.blob()
+      
+      if (videoBlob.size === 0) {
+        throw new Error('Archivo de video vacío')
+      }
+      
+      // Crear enlace de descarga optimizado
+      const url = URL.createObjectURL(videoBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${video.title || 'video'}.mp4`
+      link.target = '_blank'
+      link.rel = 'noopener noreferrer'
+      
+      // Agregar al DOM y hacer clic
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      
+      // Limpiar URL
+      URL.revokeObjectURL(url)
+      
+      addToast('✅ Descarga completada exitosamente', 'success')
     } catch (error) {
-      console.error('Error al descargar video:', error)
-      addToast('Error al descargar video', 'error')
+      console.error('❌ Error en descarga:', error)
+      
+      if (error.name === 'AbortError') {
+        addToast('❌ Descarga cancelada por timeout (30s)', 'error')
+      } else {
+        addToast(`❌ Error al descargar: ${error.message}`, 'error')
+      }
     }
   }
 
