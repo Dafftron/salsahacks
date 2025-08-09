@@ -162,39 +162,6 @@ const CategoriesPage = () => {
         }
       }
     },
-    escuela: {
-      name: 'ESCUELA',
-      icon: GraduationCap,
-      styles: {
-              salsa: {
-        name: 'SALSA',
-        icon: Music,
-        color: 'salsa',
-        categories: {
-          nivel: {
-            name: 'NIVEL',
-            color: 'green',
-            tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
-          },
-            tipo: {
-              name: 'TIPO DE CURSO',
-              color: 'blue',
-              tags: ['Básico', 'Técnica', 'Coreografía', 'Ritmo', 'Musicalidad']
-            },
-            duracion: {
-              name: 'DURACIÓN',
-              color: 'orange',
-              tags: ['5-15 min', '10-25 min', '15-45 min', '20-60 min']
-            },
-            instructor: {
-              name: 'INSTRUCTOR',
-              color: 'purple',
-              tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López']
-            }
-          }
-        }
-      }
-    },
     eventos: {
       name: 'EVENTOS',
       icon: Calendar,
@@ -237,25 +204,40 @@ const CategoriesPage = () => {
           icon: Music,
           color: 'escuela-salsa',
           categories: {
+            curso: {
+              name: 'CURSO',
+              color: 'blue',
+              tags: ['Básico', 'Intermedio', 'Avanzado', 'Masterclass', 'Workshop', 'Taller', 'Intensivo', 'Particular']
+            },
+            mes: {
+              name: 'MES',
+              color: 'green',
+              tags: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+            },
+            dia: {
+              name: 'DÍA',
+              color: 'orange',
+              tags: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+            },
+            hora: {
+              name: 'HORA',
+              color: 'purple',
+              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']
+            },
             estilo: {
               name: 'ESTILO',
-              color: 'purple',
-              tags: ['Salsa', 'Salsa en línea On1', 'Salsa cubana', 'Estilo LA', 'Estilo NY', 'Estilo show']
-            },
-            subestilo: {
-              name: 'SUBESTILO/TÉCNICA',
               color: 'pink',
-              tags: ['Pasitos libres', 'Parejas', 'Footwork On1', 'Footwork On2', 'Shines', 'Fusionado con afro', 'Body movement']
+              tags: ['Salsa', 'Salsa en línea On1', 'Salsa en línea On2', 'Salsa cubana', 'Estilo LA', 'Estilo NY', 'Casino']
             },
             nivel: {
               name: 'NIVEL',
-              color: 'green',
+              color: 'red',
               tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto', 'Todos los niveles']
             },
-            modalidad: {
-              name: 'MODALIDAD',
-              color: 'blue',
-              tags: ['Curso completo', 'Tutorial', 'Masterclass', 'Workshop', 'Clase grupal', 'Clase individual']
+            profesores: {
+              name: 'PROFESORES',
+              color: 'yellow',
+              tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López', 'David Martín', 'Laura Sánchez', 'Miguel Torres', 'Carmen Ruiz']
             }
           }
         },
@@ -264,20 +246,40 @@ const CategoriesPage = () => {
           icon: Star,
           color: 'escuela-pasitos-libres',
           categories: {
+            curso: {
+              name: 'CURSO',
+              color: 'blue',
+              tags: ['Básico', 'Intermedio', 'Avanzado', 'Freestyle', 'Shines', 'Footwork', 'Solo dancing']
+            },
+            mes: {
+              name: 'MES',
+              color: 'green',
+              tags: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+            },
+            dia: {
+              name: 'DÍA',
+              color: 'orange',
+              tags: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+            },
+            hora: {
+              name: 'HORA',
+              color: 'purple',
+              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']
+            },
             estilo: {
               name: 'ESTILO',
               color: 'yellow',
-              tags: ['Pasitos libres', 'Freestyle', 'Shines', 'Footwork', 'Solo dancing']
+              tags: ['Pasitos libres', 'Freestyle', 'Shines', 'Footwork', 'Solo dancing', 'Body movement']
             },
             nivel: {
               name: 'NIVEL',
-              color: 'green',
-              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+              color: 'red',
+              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto', 'Todos los niveles']
             },
-            técnica: {
-              name: 'TÉCNICA',
-              color: 'orange',
-              tags: ['Pasos básicos', 'Combinaciones', 'Transiciones', 'Body movement', 'Ritmo', 'Timing']
+            profesores: {
+              name: 'PROFESORES',
+              color: 'pink',
+              tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López', 'David Martín', 'Laura Sánchez', 'Miguel Torres', 'Carmen Ruiz']
             }
           }
         },
@@ -286,20 +288,40 @@ const CategoriesPage = () => {
           icon: Music,
           color: 'escuela-salsa-cubana',
           categories: {
+            curso: {
+              name: 'CURSO',
+              color: 'blue',
+              tags: ['Básico', 'Casino', 'Rueda de casino', 'Avanzado', 'Son', 'Mambo', 'Figuras específicas']
+            },
+            mes: {
+              name: 'MES',
+              color: 'green',
+              tags: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+            },
+            dia: {
+              name: 'DÍA',
+              color: 'orange',
+              tags: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+            },
+            hora: {
+              name: 'HORA',
+              color: 'purple',
+              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']
+            },
             estilo: {
               name: 'ESTILO',
               color: 'red',
-              tags: ['Salsa cubana', 'Casino', 'Rueda de casino', 'Son', 'Mambo']
+              tags: ['Salsa cubana', 'Casino', 'Rueda de casino', 'Son', 'Mambo', 'Timba']
             },
             nivel: {
               name: 'NIVEL',
-              color: 'green',
-              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+              color: 'yellow',
+              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto', 'Todos los niveles']
             },
-            tipo: {
-              name: 'TIPO DE FIGURA',
-              color: 'purple',
-              tags: ['Dile que no', 'Guapea', 'Enchufla', 'Vacunala', 'Setenta', 'Ochenta', 'Prima']
+            profesores: {
+              name: 'PROFESORES',
+              color: 'pink',
+              tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López', 'David Martín', 'Laura Sánchez', 'Miguel Torres', 'Carmen Ruiz']
             }
           }
         },
@@ -374,20 +396,40 @@ const CategoriesPage = () => {
           icon: Sun,
           color: 'merengue',
           categories: {
+            curso: {
+              name: 'CURSO',
+              color: 'blue',
+              tags: ['Básico', 'Intermedio', 'Avanzado', 'Merengue típico', 'Merengue mambo', 'Figuras clásicas']
+            },
+            mes: {
+              name: 'MES',
+              color: 'green',
+              tags: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+            },
+            dia: {
+              name: 'DÍA',
+              color: 'orange',
+              tags: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+            },
+            hora: {
+              name: 'HORA',
+              color: 'purple',
+              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00']
+            },
             estilo: {
               name: 'ESTILO',
-              color: 'orange',
-              tags: ['Merengue dominicano', 'Merengue venezolano', 'Merengue mambo', 'Merengue típico']
+              color: 'yellow',
+              tags: ['Merengue dominicano', 'Merengue venezolano', 'Merengue mambo', 'Merengue típico', 'Perico ripiao']
             },
             nivel: {
               name: 'NIVEL',
-              color: 'green',
-              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+              color: 'red',
+              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto', 'Todos los niveles']
             },
-            técnica: {
-              name: 'TÉCNICA',
-              color: 'yellow',
-              tags: ['Paso básico', 'Marcha', 'Giros', 'Vueltas', 'Figuras clásicas']
+            profesores: {
+              name: 'PROFESORES',
+              color: 'pink',
+              tags: ['Carlos Rodríguez', 'María González', 'Juan Pérez', 'Ana López', 'David Martín', 'Laura Sánchez', 'Miguel Torres', 'Carmen Ruiz']
             }
           }
         }
