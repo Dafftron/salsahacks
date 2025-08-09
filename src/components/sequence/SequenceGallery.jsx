@@ -24,7 +24,8 @@ const SequenceGallery = ({
   onPlaySequence,
   onEditSequence,
   onEditThumbnail,
-  onDownloadSequence 
+  onDownloadSequence,
+  isFullWidth = false
 }) => {
   const [toasts, setToasts] = useState([])
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, sequence: null })
@@ -153,7 +154,7 @@ const SequenceGallery = ({
   return (
     <div className="space-y-6">
       {/* Grid de secuencias */}
-      <div className={`grid gap-6 ${getSequenceConfig().grid}`}>
+      <div className={`grid gap-6 ${getSequenceConfig(isFullWidth).grid}`}>
         {sequences.map((sequence) => (
           <div
             key={sequence.id}
@@ -161,7 +162,7 @@ const SequenceGallery = ({
           >
             {/* Thumbnail */}
             <div className="relative group">
-              <div className={`w-full ${getSequenceConfig().aspect} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
+              <div className={`w-full ${getSequenceConfig(isFullWidth).aspect} ${getSequenceConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
                 {sequence.thumbnailUrl ? (
                   <SmartThumbnail
                     src={sequence.thumbnailUrl}
@@ -203,19 +204,19 @@ const SequenceGallery = ({
             </div>
 
             {/* Contenido del card */}
-            <div className={`${getSequenceConfig().compact ? 'p-2' : 'p-4'}`}>
+            <div className={`${getSequenceConfig(isFullWidth).compact ? 'p-2' : 'p-4'}`}>
               {/* Título y rating */}
-              <div className={`flex items-center justify-between ${getSequenceConfig().compact ? 'mb-1' : 'mb-2'}`}>
-                <h3 className={`font-semibold text-gray-800 ${getSequenceConfig().titleSize} truncate`}>{sequence.name}</h3>
+              <div className={`flex items-center justify-between ${getSequenceConfig(isFullWidth).compact ? 'mb-1' : 'mb-2'}`}>
+                <h3 className={`font-semibold text-gray-800 ${getSequenceConfig(isFullWidth).titleSize} truncate`}>{sequence.name}</h3>
                 <div className="flex items-center space-x-1">
-                  <span className={`bg-blue-100 text-blue-800 px-2 py-1 rounded-full ${getSequenceConfig().compact ? 'text-xs' : 'text-xs'} font-medium`}>
+                  <span className={`bg-blue-100 text-blue-800 px-2 py-1 rounded-full ${getSequenceConfig(isFullWidth).compact ? 'text-xs' : 'text-xs'} font-medium`}>
                     {sequence.videos.length} videos
                   </span>
                 </div>
               </div>
 
               {/* Descripción o Iconos */}
-              {getSequenceConfig().showIcons ? (
+              {getSequenceConfig(isFullWidth).showIcons ? (
                 // Mostrar solo número de videos en tamaños pequeños y medianos
                 <div className="flex items-center justify-center text-gray-500 mb-2">
                   <div className="flex items-center space-x-1">
@@ -225,11 +226,11 @@ const SequenceGallery = ({
                 </div>
               ) : (
                 // Mostrar descripción en tamaños grandes
-                <p className={`text-gray-600 text-sm ${getSequenceConfig().compact ? 'mb-2' : 'mb-3'} ${getSequenceConfig().descriptionLines === 1 ? 'line-clamp-1' : getSequenceConfig().descriptionLines === 2 ? 'line-clamp-2' : getSequenceConfig().descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{sequence.description || 'Sin descripción'}</p>
+                <p className={`text-gray-600 text-sm ${getSequenceConfig(isFullWidth).compact ? 'mb-2' : 'mb-3'} ${getSequenceConfig(isFullWidth).descriptionLines === 1 ? 'line-clamp-1' : getSequenceConfig(isFullWidth).descriptionLines === 2 ? 'line-clamp-2' : getSequenceConfig(isFullWidth).descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{sequence.description || 'Sin descripción'}</p>
               )}
               
               {/* Tags de la secuencia */}
-              {getSequenceConfig().showTags && (
+              {getSequenceConfig(isFullWidth).showTags && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {(() => {
                     const orderedTags = getOrderedSequenceTags(sequence)
@@ -250,10 +251,10 @@ const SequenceGallery = ({
               )}
               
               {/* Stats del video */}
-              {getSequenceConfig().showStats && (
+              {getSequenceConfig(isFullWidth).showStats && (
                 <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t border-gray-100">
                   {/* Información de stats - solo en tamaños grandes */}
-                  {!getSequenceConfig().compact && (
+                  {!getSequenceConfig(isFullWidth).compact && (
                     <div className="flex items-center space-x-2">
                       <Users className="w-4 h-4" />
                       <span className="font-medium">
@@ -270,27 +271,27 @@ const SequenceGallery = ({
                   )}
                   
                   {/* Botones de acción - siempre visibles */}
-                  <div className={`flex items-center space-x-2 ${getSequenceConfig().compact ? 'w-full justify-center' : ''}`}>
+                  <div className={`flex items-center space-x-2 ${getSequenceConfig(isFullWidth).compact ? 'w-full justify-center' : ''}`}>
                     <button
                       onClick={() => handleDownloadSequence(sequence)}
                       className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
                       title="Descargar secuencia"
                     >
-                      <Download className={`${getSequenceConfig().compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                      <Download className={`${getSequenceConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                     </button>
                     <button
                       onClick={() => onEditSequence(sequence)}
                       className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
                       title="Editar secuencia"
                     >
-                      <Edit3 className={`${getSequenceConfig().compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                      <Edit3 className={`${getSequenceConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                     </button>
                     <button
                       onClick={() => handleDeleteClick(sequence)}
                       className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
                       title="Eliminar secuencia"
                     >
-                      <Trash2 className={`${getSequenceConfig().compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                      <Trash2 className={`${getSequenceConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                     </button>
                   </div>
                 </div>

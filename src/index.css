@@ -771,11 +771,11 @@ body {
   object-position: center;
 }
 
-/* Thumbnails extra grandes - Mantener proporción sin sobre-escalar */
+/* Thumbnails extra grandes - Llenar completamente sin marquito */
 .thumbnail-extra-large img {
   min-height: 220px;
   min-width: 391px; /* Mantener ratio 16:9 */
-  transform: scale(0.95); /* Ligeramente reducido para evitar recorte excesivo */
+  transform: scale(1.05); /* Escalar para llenar completamente y eliminar marquito */
   object-position: center;
 }
 
@@ -793,7 +793,7 @@ body {
 }
 
 .thumbnail-extra-large:hover img {
-  transform: scale(1.0); /* Incrementar desde 0.95 */
+  transform: scale(1.1); /* Incrementar desde 1.05 */
 }
 
 /* Responsive adjustments para pantallas pequeñas */

@@ -1917,14 +1917,26 @@ const FigurasPage = () => {
               </h2>
               <div className="flex items-center space-x-4">
                 {/* Selector de tamaño de cards */}
-                <CardSizeSelector type="sequence" />
+                <CardSizeSelector type="sequence" styleColor={selectedStyle} />
                 
+                {/* Botón de modo ancho completo */}
                 <button
-                  onClick={toggleBuilder}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  onClick={() => setIsFullWidth(!isFullWidth)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                    isFullWidth
+                      ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                      : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                  }`}
+                  title={isFullWidth ? "Modo compacto" : "Modo ancho completo"}
                 >
-                  <Shuffle className="h-4 w-4" />
-                  <span>CREAR SECUENCIA</span>
+                  {isFullWidth ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {isFullWidth ? "Compacto" : "Ancho completo"}
+                  </span>
                 </button>
               </div>
             </div>
@@ -1942,6 +1954,7 @@ const FigurasPage = () => {
                   onPlaySequence={handlePlaySequence}
                   onEditSequence={handleEditSequence}
                   onDownloadSequence={handleDownloadSequence}
+                  isFullWidth={isFullWidth}
                 />
               </Suspense>
             )}

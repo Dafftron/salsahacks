@@ -2,6 +2,52 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🎯 **COMMIT #104: SISTEMA THUMBNAILS ADAPTATIVOS - TAMAÑO CONSISTENTE** - 2024-12-19 20:15:00
+- **Objetivo**: Implementar thumbnails adaptativos que mantengan apariencia consistente en todos los tamaños de card
+- **Archivos modificados**: CardSizeContext.jsx, index.css, FigurasPage.jsx, EscuelaPage.jsx
+
+#### ✨ **FUNCIONALIDADES IMPLEMENTADAS:**
+
+1. **Sistema de thumbnails adaptativos**:
+   - Compensación automática de escala según tamaño de contenedor
+   - Cards pequeñas: `scale(1.15)` para mostrar más detalle
+   - Cards medianas: `scale(1.05)` como base estándar
+   - Cards grandes: `scale(1.0)` sin escala adicional
+   - Cards extra grandes: `scale(0.95)` para evitar recorte excesivo
+
+2. **Clases CSS específicas por tamaño**:
+   - `thumbnail-small`: Optimizado para cards pequeñas (min: 120px x 213px)
+   - `thumbnail-medium`: Tamaño base estándar (min: 150px x 267px)
+   - `thumbnail-large`: Tamaño natural (min: 180px x 320px)
+   - `thumbnail-extra-large`: Controlado para evitar recorte (min: 220px x 391px)
+
+3. **Efectos hover adaptativos**:
+   - Cada tamaño tiene su incremento de hover específico
+   - Mantienen la proporción visual entre tamaños
+   - Transiciones suaves con `cubic-bezier(0.4, 0, 0.2, 1)`
+
+#### 🔧 **CAMBIOS TÉCNICOS:**
+- **CardSizeContext.jsx**: Propiedad `thumbnailSize` específica por cada configuración
+- **index.css**: 70+ líneas de CSS adaptativo con escalas inteligentes
+- **FigurasPage.jsx**: Aplicación dinámica de `${getVideoConfig(isFullWidth).thumbnailSize}`
+- **EscuelaPage.jsx**: Integración de clases CSS adaptativas en contenedores
+
+#### 📱 **Responsive Design:**
+- Reset automático a `scale(1.0)` en pantallas móviles (≤768px)
+- Optimización de performance con `will-change: transform`
+- Mínimos fijos desactivados en móviles para mejor adaptabilidad
+
+#### 🎯 **COMPORTAMIENTO VISUAL:**
+- **Problema anterior**: Thumbnails muy pequeños en cards pequeñas, muy grandes en cards grandes
+- **Solución actual**: Apariencia visual consistente independiente del tamaño de card
+- **Beneficio**: Usuario ve thumbnails similares al cambiar entre tamaños
+
+#### 🎨 **RESULTADO:**
+- Fin del problema de "ventanitas diminutas" en cards pequeñas
+- Thumbnails proporcionados y legibles en todos los tamaños
+- Experiencia visual coherente y profesional
+- Transiciones suaves que mantienen la elegancia de la interfaz
+
 ### 🎨 **COMMIT #103: MEJORA UI/UX - BOTONES DINÁMICOS Y MODO ANCHO OPTIMIZADO** - 2024-12-19 19:45:00
 - **Objetivo**: Implementar botones de tamaño con colores dinámicos y optimizar modo ancho completo
 - **Archivos modificados**: CardSizeSelector.jsx, CardSizeContext.jsx, FigurasPage.jsx, EscuelaPage.jsx
