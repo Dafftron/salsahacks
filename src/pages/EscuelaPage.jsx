@@ -78,9 +78,9 @@ const EscuelaPage = () => {
   const [loading, setLoading] = useState(true)
   const [toasts, setToasts] = useState([])
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, video: null })
-  const [selectedTags, setSelectedTags] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [showFilters, setShowFilters] = useState(false)
+  const [selectedTags, setSelectedTags] = useState(() => getInitialState('selectedTags', []))
+  const [searchTerm, setSearchTerm] = useState(() => getInitialState('searchTerm', ''))
+  const [showFilters, setShowFilters] = useState(() => getInitialState('showFilters', false))
   const [activeTab, setActiveTab] = useState('videos')
   const [syncStatus, setSyncStatus] = useState('idle') // idle, syncing, error
   const [cleanupModal, setCleanupModal] = useState({ isOpen: false, type: null })
@@ -98,9 +98,9 @@ const EscuelaPage = () => {
   const [showSequencePlayer, setShowSequencePlayer] = useState(false)
   
   // Estados para el sistema de chips y filtros
-  const [activeCategoryChips, setActiveCategoryChips] = useState([])
-  const [sortBy, setSortBy] = useState('none')
-  const [showFavorites, setShowFavorites] = useState(false)
+  const [activeCategoryChips, setActiveCategoryChips] = useState(() => getInitialState('activeCategoryChips', []))
+  const [sortBy, setSortBy] = useState(() => getInitialState('sortBy', 'none'))
+  const [showFavorites, setShowFavorites] = useState(() => getInitialState('showFavorites', false))
   
 
   
@@ -109,8 +109,33 @@ const EscuelaPage = () => {
   
 
   
+  // Funciones para persistir filtros en localStorage
+  const saveFilterPreferences = (filters) => {
+    try {
+      localStorage.setItem('escuela-filters', JSON.stringify(filters))
+    } catch (error) {
+      console.warn('No se pudieron guardar las preferencias de filtros:', error)
+    }
+  }
+
+  const loadFilterPreferences = () => {
+    try {
+      const saved = localStorage.getItem('escuela-filters')
+      return saved ? JSON.parse(saved) : null
+    } catch (error) {
+      console.warn('No se pudieron cargar las preferencias de filtros:', error)
+      return null
+    }
+  }
+
+  // Cargar preferencias guardadas o usar valores por defecto
+  const getInitialState = (key, defaultValue) => {
+    const saved = loadFilterPreferences()
+    return saved?.[key] ?? defaultValue
+  }
+
   // Estado local para el estilo seleccionado
-  const [selectedStyle, setSelectedStyle] = useState('salsa')
+  const [selectedStyle, setSelectedStyle] = useState(() => getInitialState('selectedStyle', 'salsa'))
   
   // Usar el sistema de categorías con estilo dinámico
   const { 
@@ -165,6 +190,20 @@ const EscuelaPage = () => {
       unsubscribe()
     }
   }, [selectedStyle])
+
+  // Guardar preferencias de filtros automáticamente
+  useEffect(() => {
+    const filters = {
+      selectedStyle,
+      selectedTags,
+      searchTerm,
+      showFilters,
+      activeCategoryChips,
+      sortBy,
+      showFavorites
+    }
+    saveFilterPreferences(filters)
+  }, [selectedStyle, selectedTags, searchTerm, showFilters, activeCategoryChips, sortBy, showFavorites])
 
   // Verificar estado de likes del usuario cuando se cargan videos
   useEffect(() => {
@@ -409,6 +448,24 @@ const EscuelaPage = () => {
   const clearFilters = () => {
     setSelectedTags([])
     setSearchTerm('')
+  }
+
+  // Función para resetear todas las preferencias de filtros
+  const resetAllFilterPreferences = () => {
+    setSelectedTags([])
+    setSearchTerm('')
+    setShowFilters(false)
+    setActiveCategoryChips([])
+    setSortBy('none')
+    setShowFavorites(false)
+    setSelectedStyle('salsa')
+    
+    // Limpiar localStorage
+    try {
+      localStorage.removeItem('escuela-filters')
+    } catch (error) {
+      console.warn('No se pudieron limpiar las preferencias:', error)
+    }
   }
 
   // Funciones de ordenamiento y favoritos
@@ -757,14 +814,11 @@ const EscuelaPage = () => {
           </button>
 
           {/* Botón Limpiar todos los filtros */}
-          {(activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites) && (
+          {(activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites || selectedTags.length > 0 || searchTerm || selectedStyle !== 'salsa') && (
             <button
-              onClick={() => {
-                setActiveCategoryChips([])
-                setSortBy('none')
-                setShowFavorites(false)
-              }}
+              onClick={resetAllFilterPreferences}
               className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 transition-colors duration-200"
+              title="Restablecer todos los filtros y preferencias"
             >
               <X className="h-3 w-3" />
               <span>Limpiar filtros</span>
