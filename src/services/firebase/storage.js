@@ -215,10 +215,10 @@ export const uploadVideoSimulated = async (file, path, onProgress) => {
       throw new Error('El archivo debe ser un video');
     }
     
-    // Validar tamaño (máximo 100MB)
-    const maxSize = 100 * 1024 * 1024; // 100MB
+    // Validar tamaño (máximo 500MB)
+    const maxSize = 500 * 1024 * 1024; // 500MB
     if (file.size > maxSize) {
-      throw new Error('El video es demasiado grande. Máximo 100MB');
+      throw new Error('El video es demasiado grande. Máximo 500MB');
     }
     
     // Simular progreso de upload
@@ -432,10 +432,10 @@ export const uploadVideo = async (file, path, onProgress) => {
       throw new Error('El archivo debe ser un video');
     }
     
-    // Validar tamaño (máximo 100MB)
-    const maxSize = 100 * 1024 * 1024; // 100MB
+    // Validar tamaño (máximo 500MB)
+    const maxSize = 500 * 1024 * 1024; // 500MB
     if (file.size > maxSize) {
-      throw new Error('El video es demasiado grande. Máximo 100MB');
+      throw new Error('El video es demasiado grande. Máximo 500MB');
     }
     
     // Ya tienes el plan Blaze, usar Firebase Storage real directamente

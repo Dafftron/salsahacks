@@ -341,10 +341,10 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
 
   const uploadVideoFile = async (file, index) => {
     try {
-      // Verificar duplicado en base de datos
-      const duplicateCheck = await checkVideoDuplicate(file.name)
+      // Verificar duplicado en base de datos para la página específica
+      const duplicateCheck = await checkVideoDuplicate(file.name, page)
       if (duplicateCheck.isDuplicate) {
-        addToast(`Video "${file.name}" ya existe en la base de datos`, 'warning')
+        addToast(`Video "${file.name}" ya existe en ${page === 'escuela' ? 'Escuela' : 'Figuras'}`, 'warning')
         return null
       }
 
@@ -494,7 +494,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         >
           <Upload className="h-12 w-12" />
           <span className="font-medium text-center">Haz clic para seleccionar videos</span>
-          <span className="text-sm text-center">MP4, AVI, MOV, etc. (máx. 100MB cada uno)</span>
+          <span className="text-sm text-center">MP4, AVI, MOV, etc. (máx. 500MB cada uno)</span>
         </button>
       </div>
 

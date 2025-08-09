@@ -762,16 +762,20 @@ export const getVideosByUser = async (userId) => {
   }
 }
 
-export const checkVideoDuplicate = async (originalTitle) => {
+export const checkVideoDuplicate = async (originalTitle, page = 'figuras') => {
   try {
-    console.log('🔍 Verificando duplicado:', originalTitle)
+    console.log('🔍 Verificando duplicado:', originalTitle, 'en página:', page)
+    
+    // Determinar la colección correcta según la página
+    const videosCollection = page === 'escuela' ? 'escuela-videos' : 'figuras-videos'
+    
     const q = query(
-      collection(db, COLLECTIONS.VIDEOS),
+      collection(db, videosCollection),
       where('originalTitle', '==', originalTitle)
     )
     const querySnapshot = await getDocs(q)
     const isDuplicate = !querySnapshot.empty
-    console.log(`✅ Verificación de duplicado: ${isDuplicate ? 'SÍ' : 'NO'}`)
+    console.log(`✅ Verificación de duplicado: ${isDuplicate ? 'SÍ' : 'NO'} en ${videosCollection}`)
     return { isDuplicate, error: null }
   } catch (error) {
     console.error('❌ Error al verificar duplicado:', error)
