@@ -10,7 +10,7 @@ import { extractBPMFromVideo, validateBPM, getBPMDescription } from '../../servi
 
 const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', style = 'salsa' }) => {
   const { user } = useAuth()
-  const { currentCategories, categoriesList, getColorClasses } = useCategories(page, style)
+  const { currentCategories, categoriesList, getColorClasses, getGradientClasses } = useCategories(page, style)
   const fileInputRef = useRef(null)
   const [selectedFiles, setSelectedFiles] = useState([])
   const [uploading, setUploading] = useState(false)
@@ -491,7 +491,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         <p className="text-gray-600">Selecciona uno o varios videos para subir</p>
       </div>
 
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-pink-400 transition-colors duration-200">
+      <div className={`border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-${style === 'salsa' ? 'pink' : style === 'bachata' ? 'emerald' : style === 'kizomba' ? 'amber' : style === 'zouk' ? 'violet' : 'cyan'}-400 transition-colors duration-200`}>
         <input
           ref={fileInputRef}
           type="file"
@@ -502,7 +502,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="w-full flex flex-col items-center justify-center space-y-2 text-gray-600 hover:text-pink-500 transition-colors duration-200"
+          className={`w-full flex flex-col items-center justify-center space-y-2 text-gray-600 hover:text-${style === 'salsa' ? 'pink' : style === 'bachata' ? 'emerald' : style === 'kizomba' ? 'amber' : style === 'zouk' ? 'violet' : 'cyan'}-500 transition-colors duration-200`}
         >
           <Upload className="h-12 w-12" />
           <span className="font-medium text-center">Haz clic para seleccionar videos</span>
@@ -759,7 +759,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
                   onClick={() => handleTagToggle(category.key, tag)}
                   className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
                     selectedTags[category.key]?.includes(tag)
-                       ? 'bg-gradient-to-r from-pink-500 to-orange-500 text-white shadow-lg'
+                       ? `bg-gradient-to-r ${getGradientClasses(style)} text-white shadow-lg`
                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -798,7 +798,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-gradient-to-r from-pink-500 to-orange-500 h-2 rounded-full transition-all duration-300"
+              className={`bg-gradient-to-r ${getGradientClasses(style)} h-2 rounded-full transition-all duration-300`}
               style={{ width: `${uploadProgress[index] || 0}%` }}
             />
           </div>
@@ -858,7 +858,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-pink-500 to-orange-500 rounded-full">
+              <div className={`p-2 bg-gradient-to-r ${getGradientClasses(style)} rounded-full`}>
                 <Upload className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -902,7 +902,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
                 <button
                   onClick={handleNext}
                   disabled={!canProceed() || uploading}
-                  className="px-6 py-2 bg-gradient-to-r from-pink-500 to-orange-500 text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className={`px-6 py-2 bg-gradient-to-r ${getGradientClasses(style)} text-white rounded-lg font-medium hover:shadow-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
                 >
                   {currentStep === 2 ? 'Subir Videos' : 'Siguiente'}
                 </button>

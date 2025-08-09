@@ -227,6 +227,171 @@ const CategoriesPage = () => {
           }
         }
       }
+    },
+    escuela: {
+      name: 'ESCUELA',
+      icon: GraduationCap,
+      styles: {
+        salsa: {
+          name: 'SALSA',
+          icon: Music,
+          color: 'salsa',
+          categories: {
+            estilo: {
+              name: 'ESTILO',
+              color: 'purple',
+              tags: ['Salsa', 'Salsa en línea On1', 'Salsa cubana', 'Estilo LA', 'Estilo NY', 'Estilo show']
+            },
+            subestilo: {
+              name: 'SUBESTILO/TÉCNICA',
+              color: 'pink',
+              tags: ['Pasitos libres', 'Parejas', 'Footwork On1', 'Footwork On2', 'Shines', 'Fusionado con afro', 'Body movement']
+            },
+            nivel: {
+              name: 'NIVEL',
+              color: 'green',
+              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto', 'Todos los niveles']
+            },
+            modalidad: {
+              name: 'MODALIDAD',
+              color: 'blue',
+              tags: ['Curso completo', 'Tutorial', 'Masterclass', 'Workshop', 'Clase grupal', 'Clase individual']
+            }
+          }
+        },
+        'pasitos-libres': {
+          name: 'PASITOS LIBRES',
+          icon: Star,
+          color: 'yellow',
+          categories: {
+            estilo: {
+              name: 'ESTILO',
+              color: 'yellow',
+              tags: ['Pasitos libres', 'Freestyle', 'Shines', 'Footwork', 'Solo dancing']
+            },
+            nivel: {
+              name: 'NIVEL',
+              color: 'green',
+              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+            },
+            técnica: {
+              name: 'TÉCNICA',
+              color: 'orange',
+              tags: ['Pasos básicos', 'Combinaciones', 'Transiciones', 'Body movement', 'Ritmo', 'Timing']
+            }
+          }
+        },
+        'salsa-cubana': {
+          name: 'SALSA CUBANA',
+          icon: Music,
+          color: 'red',
+          categories: {
+            estilo: {
+              name: 'ESTILO',
+              color: 'red',
+              tags: ['Salsa cubana', 'Casino', 'Rueda de casino', 'Son', 'Mambo']
+            },
+            nivel: {
+              name: 'NIVEL',
+              color: 'green',
+              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+            },
+            tipo: {
+              name: 'TIPO DE FIGURA',
+              color: 'purple',
+              tags: ['Dile que no', 'Guapea', 'Enchufla', 'Vacunala', 'Setenta', 'Ochenta', 'Prima']
+            }
+          }
+        },
+        bachata: {
+          name: 'BACHATA',
+          icon: Heart,
+          color: 'bachata',
+          categories: {
+            estilo: {
+              name: 'ESTILO',
+              color: 'red',
+              tags: ['Bachata tradicional', 'Bachata moderna', 'Bachata sensual', 'Bachata dominicana', 'Bachata urbana']
+            },
+            nivel: {
+              name: 'NIVEL',
+              color: 'green',
+              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+            },
+            técnica: {
+              name: 'TÉCNICA',
+              color: 'pink',
+              tags: ['Paso básico', 'Giros', 'Dips', 'Body waves', 'Isolaciones', 'Footwork']
+            }
+          }
+        },
+        kizomba: {
+          name: 'KIZOMBA',
+          icon: Zap,
+          color: 'kizomba',
+          categories: {
+            estilo: {
+              name: 'ESTILO',
+              color: 'yellow',
+              tags: ['Kizomba tradicional', 'Urban kiz', 'Kizomba fusion', 'Tarraxinha', 'Ghetto zouk']
+            },
+            nivel: {
+              name: 'NIVEL',
+              color: 'green',
+              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+            },
+            técnica: {
+              name: 'TÉCNICA',
+              color: 'orange',
+              tags: ['Abrazo', 'Conexión', 'Ginga', 'Saídas', 'Passadas', 'Caminhada']
+            }
+          }
+        },
+        zouk: {
+          name: 'ZOUK',
+          icon: Star,
+          color: 'zouk',
+          categories: {
+            estilo: {
+              name: 'ESTILO',
+              color: 'purple',
+              tags: ['Zouk brasileño', 'Lambazouk', 'Neo zouk', 'Zouk flow', 'Soulzouk']
+            },
+            nivel: {
+              name: 'NIVEL',
+              color: 'green',
+              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+            },
+            técnica: {
+              name: 'TÉCNICA',
+              color: 'blue',
+              tags: ['Elastico', 'Cambre', 'Head movement', 'Body roll', 'Fluidez', 'Conexión']
+            }
+          }
+        },
+        merengue: {
+          name: 'MERENGUE',
+          icon: Sun,
+          color: 'merengue',
+          categories: {
+            estilo: {
+              name: 'ESTILO',
+              color: 'orange',
+              tags: ['Merengue dominicano', 'Merengue venezolano', 'Merengue mambo', 'Merengue típico']
+            },
+            nivel: {
+              name: 'NIVEL',
+              color: 'green',
+              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+            },
+            técnica: {
+              name: 'TÉCNICA',
+              color: 'yellow',
+              tags: ['Paso básico', 'Marcha', 'Giros', 'Vueltas', 'Figuras clásicas']
+            }
+          }
+        }
+      }
     }
   }
 
