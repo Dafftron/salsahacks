@@ -234,6 +234,11 @@ const CategoriesPage = () => {
               color: 'red',
               tags: ['Inicio', 'Intermedio I', 'Intermedio II', 'Intermedio III', 'Avanzado']
             },
+            tipo: {
+              name: 'TIPO',
+              color: 'indigo',
+              tags: ['Intensivo']
+            },
             profesores: {
               name: 'PROFESORES',
               color: 'yellow',
@@ -276,6 +281,11 @@ const CategoriesPage = () => {
               color: 'red',
               tags: ['Inicio', 'Intermedio I', 'Intermedio II', 'Intermedio III', 'Avanzado']
             },
+            tipo: {
+              name: 'TIPO',
+              color: 'indigo',
+              tags: ['Intensivo']
+            },
             profesores: {
               name: 'PROFESORES',
               color: 'pink',
@@ -311,17 +321,22 @@ const CategoriesPage = () => {
             estilo: {
               name: 'ESTILO',
               color: 'red',
-              tags: ['Salsa', 'Mambo', 'Coreografía']
+              tags: ['Salsa cubana']
             },
             nivel: {
               name: 'NIVEL',
               color: 'yellow',
               tags: ['Inicio', 'Intermedio I', 'Intermedio II', 'Intermedio III', 'Avanzado']
             },
+            tipo: {
+              name: 'TIPO',
+              color: 'indigo',
+              tags: ['Intensivo']
+            },
             profesores: {
               name: 'PROFESORES',
               color: 'pink',
-              tags: ['Talipo', 'Pepe y Marta', 'Dabbico y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
+              tags: ['Talipo', 'Ñete y Ani']
             }
           }
         },
@@ -425,6 +440,11 @@ const CategoriesPage = () => {
               name: 'NIVEL',
               color: 'red',
               tags: ['Inicio', 'Intermedio I', 'Intermedio II', 'Intermedio III', 'Avanzado']
+            },
+            tipo: {
+              name: 'TIPO',
+              color: 'indigo',
+              tags: ['Intensivo']
             },
             profesores: {
               name: 'PROFESORES',
