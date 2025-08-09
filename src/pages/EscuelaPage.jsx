@@ -30,16 +30,14 @@ import Toast from '../components/common/Toast'
 import CardSizeSelector from '../components/common/CardSizeSelector'
 import CompactCardActions from '../components/common/CompactCardActions'
 import CategoryChips from '../components/common/CategoryChips'
-import { useSequenceBuilderContext } from '../contexts/SequenceBuilderContext'
+
 
 // Lazy loading de componentes pesados
 const VideoUploadModal = lazy(() => import('../components/video/VideoUploadModal'))
 const VideoEditModal = lazy(() => import('../components/video/VideoEditModal'))
 const VideoPlayer = lazy(() => import('../components/video/VideoPlayer'))
 const DownloadModal = lazy(() => import('../components/video/DownloadModal'))
-const SequenceBuilder = lazy(() => import('../components/sequence/SequenceBuilder'))
-const SequenceGallery = lazy(() => import('../components/sequence/SequenceGallery'))
-const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVideoPlayer'))
+
 
 import { 
   getVideos, 
@@ -54,13 +52,7 @@ import {
   checkUserLikedVideo,
   checkUserFavorite
 } from '../services/firebase/firestore'
-import {
-  createSequence,
-  getSequencesByStyle,
-  deleteSequence,
-  subscribeToSequencesByStyle,
-  updateSequence
-} from '../services/firebase/sequences'
+
 import { 
   deleteVideo, 
   deleteAllVideoFiles, 
@@ -90,11 +82,10 @@ const EscuelaPage = () => {
   const [selectedTags, setSelectedTags] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [showFilters, setShowFilters] = useState(false)
-  const [activeTab, setActiveTab] = useState('videos')
+
   const [syncStatus, setSyncStatus] = useState('idle') // idle, syncing, error
   const [cleanupModal, setCleanupModal] = useState({ isOpen: false, type: null })
-  const [editSequenceModal, setEditSequenceModal] = useState({ isOpen: false, sequence: null })
-  const [downloadSequenceModal, setDownloadSequenceModal] = useState({ isOpen: false, sequence: null })
+
   const [migrationModal, setMigrationModal] = useState({ isOpen: false })
   const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
   
@@ -111,30 +102,12 @@ const EscuelaPage = () => {
   const [sortBy, setSortBy] = useState('none')
   const [showFavorites, setShowFavorites] = useState(false)
   
-  // Estados para secuencias
-  const [sequences, setSequences] = useState([])
-  const [sequencesLoading, setSequencesLoading] = useState(true)
+
   
   const { user } = useAuth()
-  const { getVideoConfig, getSequenceConfig } = useCardSize()
+  const { getVideoConfig } = useCardSize()
   
-  // Usar el contexto de constructor de secuencias
-  const {
-    addVideoToSequence,
-    removeVideoFromSequence,
-    sequence,
-    sequenceName,
-    clearSequence,
-    isBuilderOpen,
-    toggleBuilder,
-    showAllVideos,
-    toggleShowAllVideos,
-    getFilteredVideos,
-    isVideoInSequence,
-    isVideoCompatible,
-    checkCompatibility,
-    loadSequence
-  } = useSequenceBuilderContext()
+
   
   // Estado local para el estilo seleccionado
   const [selectedStyle, setSelectedStyle] = useState('salsa')
@@ -492,11 +465,8 @@ const EscuelaPage = () => {
   return searchMatch && tagsMatch && categoryMatch && favoritesMatch
   })
 
-  // Aplicar filtro de compatibilidad sobre los videos ya filtrados
-  const baseCompatibilityFiltered = getFilteredVideos(baseFilteredVideos)
-
   // Aplicar ordenamiento final
-  const filteredVideos = sortVideos(baseCompatibilityFiltered)
+  const filteredVideos = sortVideos(baseFilteredVideos)
 
   return (
     <div className="min-h-screen bg-white">
@@ -624,43 +594,15 @@ const EscuelaPage = () => {
             <Upload className="h-5 w-5" />
             <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
           </button>
-          <button 
-            onClick={toggleBuilder}
-            className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-colors duration-200 ${
-              isBuilderOpen 
-                ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
-                : `bg-gradient-to-r ${getGradientClasses(selectedStyle)} hover:opacity-90 text-white`
-            }`}
-          >
-            <Shuffle className="h-5 w-5" />
-            <span>{isBuilderOpen ? 'OCULTAR SECUENCIA' : 'CREAR SECUENCIA'}</span>
-          </button>
         </div>
 
-        {/* Gallery Tabs */}
-        <div className="flex justify-center gap-4 mb-6">
-          <button
-            onClick={() => setActiveTab('videos')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-              activeTab === 'videos'
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            <Music className="h-6 w-6" />
-            <span>GALERÍA DE LA ESCUELA</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('secuencias')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-              activeTab === 'secuencias'
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            <Plus className="h-6 w-6" />
-            <span>GALERÍA DE CURSOS ({sequences.length})</span>
-          </button>
+        {/* Gallery Title */}
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-bold text-gray-800">
+            <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+              GALERÍA DE LA ESCUELA
+            </span>
+          </h2>
         </div>
 
         {/* Botones de ordenamiento y favoritos - Debajo de las pestañas */}
@@ -794,11 +736,7 @@ const EscuelaPage = () => {
                 {filteredVideos.map((video) => (
                   <div
                     key={video.id}
-                    className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${
-                      isBuilderOpen && !isVideoCompatible(video)
-                        ? 'border-red-200 opacity-75'
-                        : 'border-gray-100'
-                    }`}
+                    className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]"
                   >
                     <div className="relative group">
                       <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
@@ -917,12 +855,8 @@ const EscuelaPage = () => {
                             onLike={() => handleVideoLike(video)}
                         onEdit={() => openEditModal(video)}
                         onDelete={() => openDeleteModal(video)}
-                            onAddToSequence={() => handleAddVideoToSequence(video)}
                         onDownload={() => downloadVideo(video)}
                             onPlay={() => handlePlayVideo(video)}
-                            isVideoInSequence={isVideoInSequence(video)}
-                            isBuilderOpen={isBuilderOpen}
-                            isVideoCompatible={isVideoCompatible(video)}
                             type="video"
                           />
                         ) : (
@@ -959,26 +893,7 @@ const EscuelaPage = () => {
                                 <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
                                 <span className="font-medium">{video.likes || 0}</span>
               </button>
-              <button
-                                onClick={() => handleAddVideoToSequence(video)}
-                                disabled={isVideoInSequence(video)}
-                                className={`transition-colors duration-200 p-1 rounded ${
-                                  isVideoInSequence(video)
-                                    ? 'text-gray-300 cursor-not-allowed'
-                                    : isBuilderOpen && !isVideoCompatible(video)
-                                    ? 'text-red-400 hover:text-red-500 hover:bg-red-50'
-                                    : 'text-gray-400 hover:text-purple-500 hover:bg-purple-50'
-                                }`}
-                                title={
-                                  isVideoInSequence(video) 
-                                    ? 'Ya en secuencia' 
-                                    : isBuilderOpen && !isVideoCompatible(video)
-                                    ? 'Añadir forzadamente (incompatible)'
-                                    : 'Añadir a secuencia'
-                                }
-                              >
-                                <Plus className="h-4 w-4" />
-              </button>
+
               <button
                                 onClick={() => {
                                   downloadVideo(video)
