@@ -25,13 +25,14 @@ const SequenceGallery = ({
   onEditSequence,
   onEditThumbnail,
   onDownloadSequence,
-  isFullWidth = false
+  isFullWidth = false,
+  style = 'salsa' // Añadir prop style para usar el estilo correcto
 }) => {
   const [toasts, setToasts] = useState([])
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, sequence: null })
   
-  // Usar el hook de categorías para obtener getColorClasses
-  const { getColorClasses } = useCategories('figuras', 'salsa')
+  // Usar el hook de categorías para obtener categoriesList y getColorClasses
+  const { categoriesList, getColorClasses } = useCategories('figuras', style)
   const { getSequenceConfig } = useCardSize()
 
   const addToast = (message, type = 'success') => {
@@ -104,15 +105,8 @@ const SequenceGallery = ({
     }
     
     const orderedTags = []
-    const categoriesList = [
-      { key: 'dificultad', color: 'red' },
-      { key: 'estilo', color: 'blue' },
-      { key: 'nivel', color: 'green' },
-      { key: 'figura', color: 'purple' },
-      { key: 'posicion', color: 'orange' },
-      { key: 'transicion', color: 'teal' }
-    ]
     
+    // Usar la lista dinámica de categorías del hook
     categoriesList.forEach(category => {
       const categoryTags = sequence.tags[category.key]
       if (Array.isArray(categoryTags)) {

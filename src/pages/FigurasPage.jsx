@@ -1955,6 +1955,7 @@ const FigurasPage = () => {
                   onEditSequence={handleEditSequence}
                   onDownloadSequence={handleDownloadSequence}
                   isFullWidth={isFullWidth}
+                  style={selectedStyle}
                 />
               </Suspense>
             )}
