@@ -269,7 +269,7 @@ const CategoriesPage = () => {
             estilo: {
               name: 'ESTILO',
               color: 'yellow',
-              tags: ['Salsa', 'Mambo', 'Coreografía']
+              tags: ['Salsa', 'Mambo', 'Rumba', 'Coreografía', 'Afro', 'Boogaloo', 'ChaCha', 'Pachanga']
             },
             nivel: {
               name: 'NIVEL',
@@ -279,7 +279,7 @@ const CategoriesPage = () => {
             profesores: {
               name: 'PROFESORES',
               color: 'pink',
-              tags: ['Talipo', 'Pepe y Marta', 'Dabbico y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
+              tags: ['Pocho', 'Dabbico', 'Talia']
             }
           }
         },
