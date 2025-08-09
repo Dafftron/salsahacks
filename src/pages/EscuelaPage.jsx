@@ -79,7 +79,7 @@ const LoadingSpinner = () => (
   </div>
 )
 
-const FigurasPage = () => {
+const EscuelaPage = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [editModal, setEditModal] = useState({ isOpen: false, video: null })
   const [videos, setVideos] = useState([])
@@ -450,7 +450,7 @@ const FigurasPage = () => {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">¡Página FIGURAS copiada exitosamente!</p>
+                <p className="text-gray-500 text-lg">¡Página ESCUELA funcionando perfectamente!</p>
                 <p className="text-gray-400 text-sm mt-2">{videos.length} videos de {selectedStyle}</p>
               </div>
             )}
@@ -481,7 +481,7 @@ const FigurasPage = () => {
           isOpen={isUploadModalOpen}
           onClose={() => setIsUploadModalOpen(false)}
           onVideoUploaded={handleVideoUploaded}
-          page="figuras"
+          page="escuela"
           style={selectedStyle}
         />
       </Suspense>
@@ -493,7 +493,7 @@ const FigurasPage = () => {
           onClose={closeEditModal}
           video={editModal.video}
           onVideoUpdated={handleVideoUpdated}
-          page="figuras"
+          page="escuela"
           style={selectedStyle}
         />
       </Suspense>
@@ -511,4 +511,4 @@ const FigurasPage = () => {
   )
 }
 
-export default FigurasPage
+export default EscuelaPage
