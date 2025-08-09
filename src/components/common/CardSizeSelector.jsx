@@ -25,16 +25,21 @@ const CardSizeSelector = ({ type = 'video', styleColor = 'salsa' }) => {
     'extra-large': <Square className="h-4 w-4" />
   }
 
-  // Función para obtener gradientes por estilo
+  // Función para obtener gradientes por estilo (idénticos a useCategories)
   const getStyleGradient = (style) => {
     const gradientMap = {
+      // Estilos de Figuras
       salsa: 'from-orange-400 to-pink-500',
       bachata: 'from-emerald-400 to-teal-600',
       merengue: 'from-cyan-400 to-blue-600',
       zouk: 'from-violet-400 to-indigo-600',
-      kizomba: 'from-amber-400 to-orange-600'
+      kizomba: 'from-amber-400 to-orange-600',
+      
+      // Estilos de Escuela (exactamente como en useCategories)
+      'pasitos-libres': 'from-yellow-400 to-orange-500',
+      'salsa-cubana': 'from-red-500 to-pink-500'
     }
-    return gradientMap[style] || 'from-orange-400 to-pink-500'
+    return gradientMap[style] || 'from-purple-500 to-pink-500' // Fallback de escuela-salsa
   }
 
   return (
