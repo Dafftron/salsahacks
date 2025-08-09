@@ -139,13 +139,7 @@ const EscuelaPage = () => {
     )
   }
 
-  // Función para añadir video al constructor
-  const handleAddVideoToSequence = (video) => {
-    addVideoToSequence(video)
-    if (!isBuilderOpen) {
-      toggleBuilder()
-    }
-  }
+
 
   // Mapeo de iconos para los estilos
   const iconMap = {
@@ -706,11 +700,7 @@ const EscuelaPage = () => {
                 {filteredVideos.map((video) => (
                   <div
                     key={video.id}
-                    className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${
-                      isBuilderOpen && !isVideoCompatible(video)
-                        ? 'border-red-200 opacity-75'
-                        : 'border-gray-100'
-                    }`}
+                    className="bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border-gray-100"
                   >
                     <div className="relative group">
                       <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
@@ -829,12 +819,8 @@ const EscuelaPage = () => {
                             onLike={() => handleVideoLike(video)}
                         onEdit={() => openEditModal(video)}
                         onDelete={() => openDeleteModal(video)}
-                            onAddToSequence={() => handleAddVideoToSequence(video)}
                         onDownload={() => downloadVideo(video)}
                             onPlay={() => handlePlayVideo(video)}
-                            isVideoInSequence={isVideoInSequence(video)}
-                            isBuilderOpen={isBuilderOpen}
-                            isVideoCompatible={isVideoCompatible(video)}
                             type="video"
                           />
                         ) : (
