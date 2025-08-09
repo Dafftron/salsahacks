@@ -503,6 +503,31 @@ const EscuelaPage = () => {
     return categoryTags && Array.isArray(categoryTags) && categoryTags.length > 0
   }
 
+  // Función para obtener tags ordenados según el orden de categorías
+  const getOrderedTags = (video) => {
+    if (!video.tags || Object.keys(video.tags).length === 0) {
+      return []
+    }
+
+    // Crear array de tags ordenados según el orden de categoriesList
+    const orderedTags = []
+    
+    categoriesList.forEach(category => {
+      const categoryTags = video.tags[category.key]
+      if (Array.isArray(categoryTags)) {
+        categoryTags.forEach(tag => {
+          orderedTags.push({
+            tag,
+            categoryKey: category.key,
+            color: category.color
+          })
+        })
+      }
+    })
+
+    return orderedTags
+  }
+
   // Filtrar videos basado en tags seleccionados y búsqueda avanzada
   const baseFilteredVideos = videos.filter(video => {
     // Dividir términos de búsqueda por espacios y filtrar vacíos
@@ -874,25 +899,6 @@ const EscuelaPage = () => {
                         {getVideoConfig(isFullWidth).showTags && (
                           <div className="flex flex-wrap gap-2 mb-3">
                             {(() => {
-                              const getOrderedTags = (video) => {
-                                const tags = []
-                                if (video.tags) {
-                                  Object.entries(video.tags).forEach(([categoryKey, categoryTags]) => {
-                                    if (Array.isArray(categoryTags)) {
-                                      categoryTags.forEach(tag => {
-                                        const categoryStyle = categoriesList.find(cat => cat.key === categoryKey)
-                                        tags.push({
-                                          tag,
-                                          categoryKey,
-                                          color: categoryStyle?.color || 'gray'
-                                        })
-                                      })
-                                    }
-                                  })
-                                }
-                                return tags
-                              }
-                              
                               const orderedTags = getOrderedTags(video)
                               if (orderedTags.length > 0) {
                                 return orderedTags.map(({ tag, categoryKey, color }) => (
@@ -901,12 +907,13 @@ const EscuelaPage = () => {
                                     className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
                                   >
                                     {tag}
-                          </span>
+                                  </span>
                                 ))
+                              } else {
+                                return <span className="text-gray-400 text-sm">Sin etiquetas</span>
                               }
-                              return null
                             })()}
-                      </div>
+                          </div>
                         )}
                         
                         {/* Información del video y acciones */}
