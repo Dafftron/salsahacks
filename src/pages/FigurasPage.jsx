@@ -1222,6 +1222,21 @@ const FigurasPage = () => {
                'Ocultar Favoritos'}
             </span>
           </button>
+
+          {/* Botón Limpiar todos los filtros */}
+          {(activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites) && (
+            <button
+              onClick={() => {
+                setActiveCategoryChips([])
+                setSortBy('none')
+                setShowFavorites(false)
+              }}
+              className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 transition-colors duration-200"
+            >
+              <X className="h-3 w-3" />
+              <span>Limpiar filtros</span>
+            </button>
+          )}
         </div>
 
 
@@ -1244,7 +1259,7 @@ const FigurasPage = () => {
               </div>
               <div className="flex items-center space-x-4">
                 {/* Selector de tamaño de cards */}
-                <CardSizeSelector type="video" />
+                <CardSizeSelector type="video" styleColor={selectedStyle} />
                 
                 {/* Botón de modo ancho completo */}
                 <button
@@ -1291,19 +1306,7 @@ const FigurasPage = () => {
                   </button>
                 )}
                 
-                {(selectedTags.length > 0 || activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites) && (
-                  <button
-                    onClick={() => {
-                      clearFilters()
-                      setActiveCategoryChips([])
-                      setSortBy('none')
-                      setShowFavorites(false)
-                    }}
-                    className="text-sm text-gray-500 hover:text-gray-700 transition-colors duration-200"
-                  >
-                    Limpiar todos los filtros <X className="h-4 w-4 ml-1" />
-                  </button>
-                )}
+
               </div>
             </div>
           
@@ -1318,7 +1321,7 @@ const FigurasPage = () => {
               <p className="text-gray-400 text-sm mt-2">Sube tu primer video de {selectedStyle.toLowerCase()} usando el botón de arriba</p>
             </div>
                      ) : (
-             <div className={`grid gap-6 ${getVideoConfig().grid}`}>
+             <div className={`grid gap-6 ${getVideoConfig(isFullWidth).grid}`}>
                {filteredVideos.map((video) => (
                 <div 
                   key={video.id} 
@@ -1329,12 +1332,12 @@ const FigurasPage = () => {
                   }`}
                 >
                   <div className="relative group">
-                    <div className={`w-full ${getVideoConfig().aspect} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
+                    <div className={`w-full ${getVideoConfig(isFullWidth).aspect} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
                       {video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? (
                         <img
                           src={video.thumbnailUrl}
                           alt={video.title}
-                          className={`w-full h-full ${getVideoConfig().imageObject || 'object-cover'}`}
+                          className={`w-full h-full ${getVideoConfig(isFullWidth).imageObject || 'object-cover'}`}
                           loading="lazy"
                           onError={(e) => {
                             e.target.style.display = 'none';
@@ -1698,16 +1701,16 @@ const FigurasPage = () => {
                     </button>
                   </div>
                   
-                                     <div className={`${getVideoConfig().compact ? 'p-2' : 'p-4'}`}>
-                                            <div className={`flex items-center justify-between ${getVideoConfig().compact ? 'mb-1' : 'mb-2'}`}>
-                         <h3 className={`font-semibold text-gray-800 ${getVideoConfig().titleSize}`}>{video.title}</h3>
+                                     <div className={`${getVideoConfig(isFullWidth).compact ? 'p-2' : 'p-4'}`}>
+                                            <div className={`flex items-center justify-between ${getVideoConfig(isFullWidth).compact ? 'mb-1' : 'mb-2'}`}>
+                         <h3 className={`font-semibold text-gray-800 ${getVideoConfig(isFullWidth).titleSize}`}>{video.title}</h3>
                        <div className="flex items-center space-x-1">
                          {[1, 2, 3, 4, 5].map(star => {
                            const isFilled = (video.rating || 0) >= star
                            return (
                              <svg 
                                key={star}
-                               className={`${getVideoConfig().compact ? 'h-3 w-3' : 'h-4 w-4'} ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} 
+                               className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'} ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} 
                                fill="currentColor" 
                                viewBox="0 0 24 24"
                                onClick={async () => {
@@ -1727,13 +1730,13 @@ const FigurasPage = () => {
                              </svg>
                            )
                          })}
-                         <span className={`${getVideoConfig().compact ? 'text-xs' : 'text-xs'} font-medium text-gray-500 ml-1`}>({video.rating || 0})</span>
+                         <span className={`${getVideoConfig(isFullWidth).compact ? 'text-xs' : 'text-xs'} font-medium text-gray-500 ml-1`}>({video.rating || 0})</span>
                        </div>
                      </div>
-                                           <p className={`text-gray-600 text-sm ${getVideoConfig().compact ? 'mb-2' : 'mb-3'} ${getVideoConfig().descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig().descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig().descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
+                                           <p className={`text-gray-600 text-sm ${getVideoConfig(isFullWidth).compact ? 'mb-2' : 'mb-3'} ${getVideoConfig(isFullWidth).descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig(isFullWidth).descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig(isFullWidth).descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
                     
                                          {/* Tags Normales */}
-                                           {getVideoConfig().showTags && (
+                                           {getVideoConfig(isFullWidth).showTags && (
                         <div className="flex flex-wrap gap-2 mb-3">
                           {(() => {
                             const orderedTags = getOrderedTags(video)
@@ -1754,7 +1757,7 @@ const FigurasPage = () => {
                       )}
 
                      {/* Tags Iniciales */}
-                                           {getVideoConfig().showTags && (() => {
+                                           {getVideoConfig(isFullWidth).showTags && (() => {
                         const tagsIniciales = getOrderedTagsIniciales(video)
                         if (tagsIniciales.length > 0) {
                           return (
@@ -1779,7 +1782,7 @@ const FigurasPage = () => {
                       })()}
 
                      {/* Tags Finales */}
-                                           {getVideoConfig().showTags && (() => {
+                                           {getVideoConfig(isFullWidth).showTags && (() => {
                         const tagsFinales = getOrderedTagsFinales(video)
                         if (tagsFinales.length > 0) {
                           return (
@@ -1803,7 +1806,7 @@ const FigurasPage = () => {
                         return null
                       })()}
                     
-                                                                                                         {getVideoConfig().compact ? (
+                                                                                                         {getVideoConfig(isFullWidth).compact ? (
                         <CompactCardActions
                           video={video}
                           onLike={() => handleVideoLike(video)}

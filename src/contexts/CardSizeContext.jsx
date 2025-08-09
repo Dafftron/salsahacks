@@ -21,8 +21,9 @@ export const CardSizeProvider = ({ children }) => {
   const videoSizeConfig = {
     small: {
       grid: 'md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
-      aspect: 'aspect-square',
-      imageObject: 'object-contain', // Para que se vea completa en cuadrado
+      gridFullWidth: 'md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10',
+      aspect: 'aspect-video',
+      imageObject: 'object-cover', // Consistente con las demás
       titleSize: 'text-xs',
       descriptionLines: 1,
       showStats: false,
@@ -32,6 +33,7 @@ export const CardSizeProvider = ({ children }) => {
     },
     medium: {
       grid: 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
+      gridFullWidth: 'md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Llenar el área en video
       titleSize: 'text-sm',
@@ -43,6 +45,7 @@ export const CardSizeProvider = ({ children }) => {
     },
     large: {
       grid: 'md:grid-cols-2 lg:grid-cols-3',
+      gridFullWidth: 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Llenar el área en video
       titleSize: 'text-xl',
@@ -54,6 +57,7 @@ export const CardSizeProvider = ({ children }) => {
     },
     'extra-large': {
       grid: 'md:grid-cols-1 lg:grid-cols-2',
+      gridFullWidth: 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Llenar el área en video
       titleSize: 'text-2xl',
@@ -69,8 +73,9 @@ export const CardSizeProvider = ({ children }) => {
   const sequenceSizeConfig = {
     small: {
       grid: 'md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6',
-      aspect: 'aspect-square',
-      imageObject: 'object-contain', // Para que se vea completa en cuadrado
+      gridFullWidth: 'md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10',
+      aspect: 'aspect-video',
+      imageObject: 'object-cover', // Consistente con las demás
       titleSize: 'text-xs',
       descriptionLines: 0, // Sin descripción, solo iconos
       showStats: true,
@@ -80,6 +85,7 @@ export const CardSizeProvider = ({ children }) => {
     },
     medium: {
       grid: 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
+      gridFullWidth: 'md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Llenar el área en video
       titleSize: 'text-sm',
@@ -91,6 +97,7 @@ export const CardSizeProvider = ({ children }) => {
     },
     large: {
       grid: 'md:grid-cols-2 lg:grid-cols-3',
+      gridFullWidth: 'md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Llenar el área en video
       titleSize: 'text-lg',
@@ -102,6 +109,7 @@ export const CardSizeProvider = ({ children }) => {
     },
     'extra-large': {
       grid: 'md:grid-cols-1 lg:grid-cols-2',
+      gridFullWidth: 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
       aspect: 'aspect-video',
       imageObject: 'object-cover', // Llenar el área en video
       titleSize: 'text-xl',
@@ -127,8 +135,20 @@ export const CardSizeProvider = ({ children }) => {
     sequenceSizeConfig,
     
     // Helpers
-    getVideoConfig: () => videoSizeConfig[videoCardSize],
-    getSequenceConfig: () => sequenceSizeConfig[sequenceCardSize],
+    getVideoConfig: (isFullWidth = false) => {
+      const config = videoSizeConfig[videoCardSize]
+      return {
+        ...config,
+        grid: isFullWidth ? config.gridFullWidth : config.grid
+      }
+    },
+    getSequenceConfig: (isFullWidth = false) => {
+      const config = sequenceSizeConfig[sequenceCardSize]
+      return {
+        ...config,
+        grid: isFullWidth ? config.gridFullWidth : config.grid
+      }
+    },
     
     // Tamaños disponibles
     availableSizes: ['small', 'medium', 'large', 'extra-large'],

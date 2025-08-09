@@ -1183,6 +1183,21 @@ const EscuelaPage = () => {
                'Ocultar Favoritos'}
             </span>
           </button>
+
+          {/* Botón Limpiar todos los filtros */}
+          {(activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites) && (
+            <button
+              onClick={() => {
+                setActiveCategoryChips([])
+                setSortBy('none')
+                setShowFavorites(false)
+              }}
+              className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 transition-colors duration-200"
+            >
+              <X className="h-3 w-3" />
+              <span>Limpiar filtros</span>
+            </button>
+          )}
         </div>
 
         {/* Videos Grid */}
@@ -1205,7 +1220,7 @@ const EscuelaPage = () => {
                 {/* Selector de tamaño académico */}
                 <div className="flex items-center space-x-3">
                   <span className="text-gray-700 font-bold text-lg">📏 Tamaño:</span>
-                  <CardSizeSelector type="video" />
+                  <CardSizeSelector type="video" styleColor={selectedStyle} />
                 </div>
                 
                 {/* Botón de modo ancho completo */}
@@ -1250,18 +1265,18 @@ const EscuelaPage = () => {
                 </div>
               </div>
             ) : (
-              <div className={`grid gap-8 ${getVideoConfig().grid}`}>
+              <div className={`grid gap-8 ${getVideoConfig(isFullWidth).grid}`}>
                 {filteredVideos.map((video) => (
                   <div
                     key={video.id}
-                    className={`bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-yellow-100 hover:border-yellow-300 ${getVideoConfig().maxWidth}`}
+                    className={`bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-yellow-100 hover:border-yellow-300 ${getVideoConfig(isFullWidth).maxWidth}`}
                   >
                     {/* Thumbnail de Clase */}
                     <div className="relative group">
                       <img
                         src={video.thumbnailURL || '/placeholder-video.jpg'}
                         alt={video.title}
-                        className={`w-full ${getVideoConfig().imageObject || 'object-cover'} ${getVideoConfig().aspect}`}
+                        className={`w-full ${getVideoConfig(isFullWidth).imageObject || 'object-cover'} ${getVideoConfig(isFullWidth).aspect}`}
                       />
                       
                       {/* Badge de Academia */}
@@ -1290,24 +1305,24 @@ const EscuelaPage = () => {
 
                     {/* Información de Clase */}
                     <div className="p-6">
-                      <h3 className={`font-bold text-gray-900 mb-3 line-clamp-2 ${getVideoConfig().titleSize}`}>
+                      <h3 className={`font-bold text-gray-900 mb-3 line-clamp-2 ${getVideoConfig(isFullWidth).titleSize}`}>
                         📚 {video.title}
                       </h3>
                       
                       {/* Tags Académicos */}
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {getOrderedTags(video).slice(0, getVideoConfig().maxTags).map((tagInfo, index) => (
+                        {getOrderedTags(video).slice(0, getVideoConfig(isFullWidth).maxTags).map((tagInfo, index) => (
                           <CategoryBadge
                             key={index}
                             tag={tagInfo.tag}
                             category={tagInfo.category}
                             colorClasses={tagInfo.color}
-                            size={getVideoConfig().tagSize}
+                            size={getVideoConfig(isFullWidth).tagSize}
                           />
                         ))}
-                        {getOrderedTags(video).length > getVideoConfig().maxTags && (
+                        {getOrderedTags(video).length > getVideoConfig(isFullWidth).maxTags && (
                           <span className="text-xs text-yellow-700 bg-yellow-100 px-3 py-1 rounded-full font-bold border border-yellow-300">
-                            +{getOrderedTags(video).length - getVideoConfig().maxTags} más
+                            +{getOrderedTags(video).length - getVideoConfig(isFullWidth).maxTags} más
                           </span>
                         )}
                       </div>
@@ -1328,7 +1343,7 @@ const EscuelaPage = () => {
                         onDelete={() => openDeleteModal(video)}
                         onDownload={() => downloadVideo(video)}
                         onLike={() => handleVideoLike(video)}
-                        size={getVideoConfig().size}
+                        size={getVideoConfig(isFullWidth).size}
                       />
                     </div>
                   </div>

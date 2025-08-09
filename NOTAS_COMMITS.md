@@ -2,6 +2,50 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🎨 **COMMIT #102: MEJORA UI/UX - ESTABILIZACIÓN COMPLETA** - 2025-08-09 12:39:13
+- **Objetivo**: Estabilizar interfaz eliminando cambios de tamaño indeseados en botones y mejorar thumbnails
+- **Archivos modificados**: CardSizeSelector.jsx, FigurasPage.jsx, EscuelaPage.jsx, CardSizeContext.jsx
+
+#### ✅ **MEJORAS IMPLEMENTADAS:**
+1. **Botones de tamaño simplificados**:
+   - Solo iconos, sin texto descriptivo
+   - Centrado perfecto con `justify-center`
+   - Más compactos (`px-2` en lugar de `px-3`)
+
+2. **Eliminación de efectos scale/transform**:
+   - Quitado `transform scale-105` de botones activos
+   - Quitado `hover:scale-105` y `hover:scale-110` 
+   - Cambio de `transition-all` a `transition-colors`
+   - Eliminado `group-hover:scale-110` en imágenes
+
+3. **Posición y tamaño constante**:
+   - Todos los botones mantienen dimensiones fijas
+   - Sin "saltos" visuales al hacer hover/click
+   - Consistencia en pestañas y controles
+
+4. **Modo ancho completo optimizado**:
+   - Solo cambia contenedor: `max-w-6xl mx-auto px-6` → `w-full px-0`
+   - Cards mantienen tamaño según configuración elegida
+   - Mejor distribución sin alterar proporciones
+
+5. **Sistema inteligente de thumbnails**:
+   - Small (cuadrado): `object-contain` - imagen completa visible
+   - Medium/Large/Extra (video): `object-cover` - llena área sin distorsión
+   - Ajuste automático según aspecto ratio de card
+   - Fallback a `object-cover` si falla configuración
+
+#### 🔧 **DETALLES TÉCNICOS:**
+- **CardSizeContext.jsx**: Añadido `imageObject` dinámico y `maxTags` por tamaño
+- **Transiciones suaves**: Solo colores, no geometría
+- **Responsive mejorado**: Grids independientes del modo ancho
+- **UX más profesional**: Sin animaciones distractoras
+
+#### 🎯 **RESULTADO:**
+- Interfaz más estable y profesional
+- Mejor experiencia de usuario
+- Thumbnails que se adaptan inteligentemente
+- Controles consistentes y predecibles
+
 ### 🔧 **COMMIT #101: CORRECCIÓN DE ERRORES EN MÉTODO ROBUSTO** - 2024-12-19
 - **Problema**: Error en descargas debido a API incorrecta de FFmpeg
 - **Solución**: Corregir llamadas a la API de FFmpeg.wasm
