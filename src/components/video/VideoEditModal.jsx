@@ -259,7 +259,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
       }
 
       // Actualizar en Firestore
-      const result = await updateVideoDocument(video.id, updatedData)
+      const result = await updateVideoDocument(video.id, updatedData, page)
       
       if (result.success) {
         addToast('Video actualizado exitosamente', 'success')
@@ -418,106 +418,112 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                 ))}
               </div>
 
-              {/* Tags Iniciales */}
-              <div className="border-t pt-6">
-                <button
-                  onClick={() => toggleSectionCollapse('tags-iniciales')}
-                  className="flex items-center justify-between w-full p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg hover:from-blue-100 hover:to-purple-100 transition-all duration-200"
-                >
-                  <div className="flex items-center space-x-2">
-                    <Tag className="h-5 w-5 text-blue-600" />
-                    <h4 className="font-medium text-gray-900">Tags Iniciales (cómo empieza la figura)</h4>
-                  </div>
-                  {collapsedSections.has('tags-iniciales') ? (
-                    <ChevronDown className="h-5 w-5 text-gray-500" />
-                  ) : (
-                    <ChevronUp className="h-5 w-5 text-gray-500" />
-                  )}
-                </button>
-                
-                <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
-                  collapsedSections.has('tags-iniciales') ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'
-                }`}>
-                  <div className="space-y-4 bg-blue-50 rounded-lg p-4">
-                    {categoriesList.map((category) => (
-                      <div key={`inicial-${category.key}`} className="space-y-2">
-                        <h6 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category.name}</h6>
-                        <div className="flex flex-wrap gap-2">
-                          {category.tags.map(tag => (
-                            <button
-                              key={`inicial-${tag}`}
-                              onClick={() => handleTagInicialToggle(category.key, tag)}
-                              className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                                tagsIniciales[category.key]?.includes(tag)
-                                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
-                                  : 'bg-white text-gray-700 hover:bg-blue-100'
-                              }`}
-                            >
-                              {tag}
-                            </button>
-                          ))}
+              {/* Tags Iniciales - Solo para FigurasPage */}
+              {page === 'figuras' && (
+                <div className="border-t pt-6">
+                  <button
+                    onClick={() => toggleSectionCollapse('tags-iniciales')}
+                    className="flex items-center justify-between w-full p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg hover:from-blue-100 hover:to-purple-100 transition-all duration-200"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Tag className="h-5 w-5 text-blue-600" />
+                      <h4 className="font-medium text-gray-900">Tags Iniciales (cómo empieza la figura)</h4>
+                    </div>
+                    {collapsedSections.has('tags-iniciales') ? (
+                      <ChevronDown className="h-5 w-5 text-gray-500" />
+                    ) : (
+                      <ChevronUp className="h-5 w-5 text-gray-500" />
+                    )}
+                  </button>
+                  
+                  <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
+                    collapsedSections.has('tags-iniciales') ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'
+                  }`}>
+                    <div className="space-y-4 bg-blue-50 rounded-lg p-4">
+                      {categoriesList.map((category) => (
+                        <div key={`inicial-${category.key}`} className="space-y-2">
+                          <h6 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category.name}</h6>
+                          <div className="flex flex-wrap gap-2">
+                            {category.tags.map(tag => (
+                              <button
+                                key={`inicial-${tag}`}
+                                onClick={() => handleTagInicialToggle(category.key, tag)}
+                                className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                                  tagsIniciales[category.key]?.includes(tag)
+                                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                                    : 'bg-white text-gray-700 hover:bg-blue-100'
+                                }`}
+                              >
+                                {tag}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Tags Finales */}
-              <div className="border-t pt-6">
-                <button
-                  onClick={() => toggleSectionCollapse('tags-finales')}
-                  className="flex items-center justify-between w-full p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg hover:from-green-100 hover:to-teal-100 transition-all duration-200"
-                >
-                  <div className="flex items-center space-x-2">
-                    <Tag className="h-5 w-5 text-green-600" />
-                    <h4 className="font-medium text-gray-900">Tags Finales (cómo termina la figura)</h4>
-                  </div>
-                  {collapsedSections.has('tags-finales') ? (
-                    <ChevronDown className="h-5 w-5 text-gray-500" />
-                  ) : (
-                    <ChevronUp className="h-5 w-5 text-gray-500" />
-                  )}
-                </button>
-                
-                <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
-                  collapsedSections.has('tags-finales') ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'
-                }`}>
-                  <div className="space-y-4 bg-green-50 rounded-lg p-4">
-                    {categoriesList.map((category) => (
-                      <div key={`final-${category.key}`} className="space-y-2">
-                        <h6 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category.name}</h6>
-                        <div className="flex flex-wrap gap-2">
-                          {category.tags.map(tag => (
-                            <button
-                              key={`final-${tag}`}
-                              onClick={() => handleTagFinalToggle(category.key, tag)}
-                              className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                                tagsFinales[category.key]?.includes(tag)
-                                  ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg'
-                                  : 'bg-white text-gray-700 hover:bg-green-100'
-                              }`}
-                            >
-                              {tag}
-                            </button>
-                          ))}
+              {/* Tags Finales - Solo para FigurasPage */}
+              {page === 'figuras' && (
+                <div className="border-t pt-6">
+                  <button
+                    onClick={() => toggleSectionCollapse('tags-finales')}
+                    className="flex items-center justify-between w-full p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg hover:from-green-100 hover:to-teal-100 transition-all duration-200"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Tag className="h-5 w-5 text-green-600" />
+                      <h4 className="font-medium text-gray-900">Tags Finales (cómo termina la figura)</h4>
+                    </div>
+                    {collapsedSections.has('tags-finales') ? (
+                      <ChevronDown className="h-5 w-5 text-gray-500" />
+                    ) : (
+                      <ChevronUp className="h-5 w-5 text-gray-500" />
+                    )}
+                  </button>
+                  
+                  <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
+                    collapsedSections.has('tags-finales') ? 'max-h-0 opacity-0' : 'max-h-96 opacity-100'
+                  }`}>
+                    <div className="space-y-4 bg-green-50 rounded-lg p-4">
+                      {categoriesList.map((category) => (
+                        <div key={`final-${category.key}`} className="space-y-2">
+                          <h6 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category.name}</h6>
+                          <div className="flex flex-wrap gap-2">
+                            {category.tags.map(tag => (
+                              <button
+                                key={`final-${tag}`}
+                                onClick={() => handleTagFinalToggle(category.key, tag)}
+                                className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                                  tagsFinales[category.key]?.includes(tag)
+                                    ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg'
+                                    : 'bg-white text-gray-700 hover:bg-green-100'
+                                }`}
+                              >
+                                {tag}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Información */}
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <div className="flex items-start space-x-2">
-                  <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
-                  <div>
-                    <p className="text-sm text-blue-800 font-medium">Información</p>
-                    <p className="text-sm text-blue-700">Los tags iniciales y finales ayudarán a crear secuencias lógicas conectando figuras.</p>
+              {/* Información - Solo para FigurasPage */}
+              {page === 'figuras' && (
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="flex items-start space-x-2">
+                    <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-blue-800 font-medium">Información</p>
+                      <p className="text-sm text-blue-700">Los tags iniciales y finales ayudarán a crear secuencias lógicas conectando figuras.</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
