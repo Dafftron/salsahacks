@@ -84,7 +84,7 @@ export const CardSizeProvider = ({ children }) => {
       titleSize: 'text-xs',
       descriptionLines: 0, // Sin descripción, solo iconos
       showStats: true,
-      showTags: false,
+      showTags: true, // Mostrar tags también en tamaño pequeño
       showIcons: true, // Mostrar iconos en lugar de descripción
       compact: true
     },
@@ -97,7 +97,7 @@ export const CardSizeProvider = ({ children }) => {
       titleSize: 'text-sm',
       descriptionLines: 0, // Sin descripción, solo iconos
       showStats: true,
-      showTags: false,
+      showTags: true, // Mostrar tags también en tamaño mediano
       showIcons: true, // Mostrar iconos en lugar de descripción
       compact: true
     },
