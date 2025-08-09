@@ -207,7 +207,7 @@ const CategoriesPage = () => {
             curso: {
               name: 'CURSO',
               color: 'blue',
-              tags: ['Básico', 'Intermedio', 'Avanzado', 'Masterclass', 'Workshop', 'Taller', 'Intensivo', 'Particular']
+              tags: ['Año 18-19', 'Año 19-20', 'Año 20-21', 'Año 21-22', 'Año 22-23', 'Año 23-24', 'Año 24-25', 'Año 25-26', 'Año 26-27', 'Año 27-28', 'Año 28-29']
             },
             mes: {
               name: 'MES',
@@ -249,7 +249,7 @@ const CategoriesPage = () => {
             curso: {
               name: 'CURSO',
               color: 'blue',
-              tags: ['Básico', 'Intermedio', 'Avanzado', 'Freestyle', 'Shines', 'Footwork', 'Solo dancing']
+              tags: ['Año 18-19', 'Año 19-20', 'Año 20-21', 'Año 21-22', 'Año 22-23', 'Año 23-24', 'Año 24-25', 'Año 25-26', 'Año 26-27', 'Año 27-28', 'Año 28-29']
             },
             mes: {
               name: 'MES',
@@ -291,7 +291,7 @@ const CategoriesPage = () => {
             curso: {
               name: 'CURSO',
               color: 'blue',
-              tags: ['Básico', 'Casino', 'Rueda de casino', 'Avanzado', 'Son', 'Mambo', 'Figuras específicas']
+              tags: ['Año 18-19', 'Año 19-20', 'Año 20-21', 'Año 21-22', 'Año 22-23', 'Año 23-24', 'Año 24-25', 'Año 25-26', 'Año 26-27', 'Año 27-28', 'Año 28-29']
             },
             mes: {
               name: 'MES',
@@ -399,7 +399,7 @@ const CategoriesPage = () => {
             curso: {
               name: 'CURSO',
               color: 'blue',
-              tags: ['Básico', 'Intermedio', 'Avanzado', 'Merengue típico', 'Merengue mambo', 'Figuras clásicas']
+              tags: ['Año 18-19', 'Año 19-20', 'Año 20-21', 'Año 21-22', 'Año 22-23', 'Año 23-24', 'Año 24-25', 'Año 25-26', 'Año 26-27', 'Año 27-28', 'Año 28-29']
             },
             mes: {
               name: 'MES',
