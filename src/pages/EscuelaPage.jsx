@@ -634,9 +634,9 @@ const EscuelaPage = () => {
             
             {/* Collapsible Content */}
             <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
-              showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+              showFilters ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
             }`}>
-              <div className="space-y-4 bg-gray-50 rounded-lg p-6 border border-gray-200">
+              <div className="space-y-4 bg-gray-50 rounded-lg p-6 border border-gray-200 max-h-96 overflow-y-auto">
                 {categoriesList.map((category) => (
                   <div key={category.key} className="space-y-2">
                     {/* Título clickeable de categoría */}
