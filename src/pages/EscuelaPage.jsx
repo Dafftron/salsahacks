@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { 
   Search, 
   Upload, 
-  Plus, 
   Heart, 
   Music,
   Trash2,
@@ -18,7 +17,6 @@ import {
   Maximize2,
   Minimize2,
   Play,
-  Shuffle,
   Eye,
   EyeOff,
   Loader
@@ -31,13 +29,14 @@ import CardSizeSelector from '../components/common/CardSizeSelector'
 import CompactCardActions from '../components/common/CompactCardActions'
 import CategoryChips from '../components/common/CategoryChips'
 
-
 // Lazy loading de componentes pesados
 const VideoUploadModal = lazy(() => import('../components/video/VideoUploadModal'))
 const VideoEditModal = lazy(() => import('../components/video/VideoEditModal'))
 const VideoPlayer = lazy(() => import('../components/video/VideoPlayer'))
 const DownloadModal = lazy(() => import('../components/video/DownloadModal'))
-
+const SequenceBuilder = lazy(() => import('../components/sequence/SequenceBuilder'))
+const SequenceGallery = lazy(() => import('../components/sequence/SequenceGallery'))
+const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVideoPlayer'))
 
 import { 
   getVideos, 
@@ -82,10 +81,11 @@ const EscuelaPage = () => {
   const [selectedTags, setSelectedTags] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [showFilters, setShowFilters] = useState(false)
-
+  const [activeTab, setActiveTab] = useState('videos')
   const [syncStatus, setSyncStatus] = useState('idle') // idle, syncing, error
   const [cleanupModal, setCleanupModal] = useState({ isOpen: false, type: null })
-
+  const [editSequenceModal, setEditSequenceModal] = useState({ isOpen: false, sequence: null })
+  const [downloadSequenceModal, setDownloadSequenceModal] = useState({ isOpen: false, sequence: null })
   const [migrationModal, setMigrationModal] = useState({ isOpen: false })
   const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
   
@@ -105,7 +105,7 @@ const EscuelaPage = () => {
 
   
   const { user } = useAuth()
-  const { getVideoConfig } = useCardSize()
+  const { getVideoConfig, getSequenceConfig } = useCardSize()
   
 
   
@@ -202,30 +202,7 @@ const EscuelaPage = () => {
     }
   }, [videos.length, user])
 
-  // Sincronización en tiempo real para secuencias
-  useEffect(() => {
-    if (!selectedStyle) {
-      return
-    }
-    
-    setSequencesLoading(true)
-    
-    try {
-      // Suscribirse a cambios en tiempo real para las secuencias del estilo seleccionado
-      const unsubscribe = subscribeToSequencesByStyle(selectedStyle, (sequencesData) => {
-        setSequences(sequencesData)
-        setSequencesLoading(false)
-      }, 'escuela')
-      
-      // Cleanup al desmontar o cambiar estilo
-      return () => {
-        unsubscribe()
-      }
-    } catch (error) {
-      console.error('❌ Error al suscribirse a secuencias:', error)
-      setSequencesLoading(false)
-    }
-  }, [selectedStyle])
+
 
 
 
@@ -465,8 +442,11 @@ const EscuelaPage = () => {
   return searchMatch && tagsMatch && categoryMatch && favoritesMatch
   })
 
+  // Aplicar filtro de compatibilidad sobre los videos ya filtrados
+  const baseCompatibilityFiltered = getFilteredVideos(baseFilteredVideos)
+
   // Aplicar ordenamiento final
-  const filteredVideos = sortVideos(baseFilteredVideos)
+  const filteredVideos = sortVideos(baseCompatibilityFiltered)
 
   return (
     <div className="min-h-screen bg-white">
@@ -594,16 +574,10 @@ const EscuelaPage = () => {
             <Upload className="h-5 w-5" />
             <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
           </button>
+
         </div>
 
-        {/* Gallery Title */}
-        <div className="text-center mb-6">
-          <h2 className="text-3xl font-bold text-gray-800">
-            <span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
-              GALERÍA DE LA ESCUELA
-            </span>
-          </h2>
-        </div>
+
 
         {/* Botones de ordenamiento y favoritos - Debajo de las pestañas */}
         <div className="flex flex-wrap justify-center gap-2 mb-6">
@@ -683,8 +657,7 @@ const EscuelaPage = () => {
         </div>
 
         {/* Videos Grid */}
-        {activeTab === 'videos' && (
-          <div className="mb-8">
+        <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-semibold text-gray-800">
                 Escuela de {selectedStyle.toLowerCase()} ({filteredVideos.length})
@@ -736,7 +709,11 @@ const EscuelaPage = () => {
                 {filteredVideos.map((video) => (
                   <div
                     key={video.id}
-                    className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]"
+                    className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${
+                      isBuilderOpen && !isVideoCompatible(video)
+                        ? 'border-red-200 opacity-75'
+                        : 'border-gray-100'
+                    }`}
                   >
                     <div className="relative group">
                       <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
@@ -855,8 +832,12 @@ const EscuelaPage = () => {
                             onLike={() => handleVideoLike(video)}
                         onEdit={() => openEditModal(video)}
                         onDelete={() => openDeleteModal(video)}
+                            onAddToSequence={() => handleAddVideoToSequence(video)}
                         onDownload={() => downloadVideo(video)}
                             onPlay={() => handlePlayVideo(video)}
+                            isVideoInSequence={isVideoInSequence(video)}
+                            isBuilderOpen={isBuilderOpen}
+                            isVideoCompatible={isVideoCompatible(video)}
                             type="video"
                           />
                         ) : (
@@ -927,23 +908,8 @@ const EscuelaPage = () => {
               </div>
             )}
           </div>
-        )}
 
-        {/* Secuencias Grid */}
-        {activeTab === 'secuencias' && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-gray-800">
-                Cursos de {selectedStyle.toLowerCase()} ({sequences.length})
-              </h2>
-      </div>
 
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">¡Secuencias copiadas exitosamente!</p>
-              <p className="text-gray-400 text-sm mt-2">{sequences.length} secuencias de {selectedStyle}</p>
-            </div>
-          </div>
-        )}
 
       </div>
 
