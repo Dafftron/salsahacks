@@ -2,6 +2,60 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🏷️ **COMMIT #106: SISTEMA TAGS AUTOMÁTICOS - SECUENCIAS HEREDAN TAGS DE VIDEOS** - 2024-12-19 21:30:00
+- **Objetivo**: Implementar generación automática de tags para secuencias combinando todos los tags de videos incluidos
+- **Archivos modificados**: SequenceBuilder.jsx
+
+#### ✨ **FUNCIONALIDADES IMPLEMENTADAS:**
+
+1. **Generación automática de tags**:
+   - Función `generateSequenceTagsFromVideos()` que recorre todos los videos de la secuencia
+   - Combina tags de todas las categorías (dificultad, estilo, nivel, figura, posición, transición, etc.)
+   - Evita duplicados dentro de cada categoría
+   - Logging detallado en consola para debugging
+
+2. **Guardado inteligente de tags**:
+   - **Tags automáticos**: Se generan automáticamente al guardar la secuencia
+   - **Tags manuales**: Se preservan y combinan con los automáticos
+   - **Sin duplicados**: Sistema inteligente que evita repetir tags
+   - **Combinación perfecta**: Lo mejor de ambos mundos
+
+3. **Interfaz de usuario mejorada**:
+   - Botón "Generar Tags Automáticamente" con icono de refresh
+   - Contador dinámico que muestra número de videos fuente
+   - Botón deshabilitado cuando no hay videos en la secuencia
+   - Toast de confirmación al generar tags automáticamente
+
+#### 🔧 **CAMBIOS TÉCNICOS:**
+- **Import añadido**: `useCallback` para evitar errores de React
+- **Función principal**: `generateSequenceTagsFromVideos()` con lógica de combinación
+- **Guardado optimizado**: Combinación automática de tags en `handleSaveSequence`
+- **Estado preservado**: Los tags manuales no se pierden al generar automáticos
+
+#### 🎯 **LÓGICA DE FUNCIONAMIENTO:**
+
+**Ejemplo práctico:**
+Si una secuencia tiene 3 videos con estos tags:
+- Video 1: `{dificultad: ["Intermedio"], estilo: ["Salsa"], figura: ["Vuelta"]}`
+- Video 2: `{dificultad: ["Intermedio"], estilo: ["Salsa"], figura: ["Gancho"]}`
+- Video 3: `{dificultad: ["Avanzado"], estilo: ["Salsa"], figura: ["Vuelta", "Copa"]}`
+
+**Resultado automático:**
+```javascript
+{
+  dificultad: ["Intermedio", "Avanzado"],
+  estilo: ["Salsa"], 
+  figura: ["Vuelta", "Gancho", "Copa"]
+}
+```
+
+#### 🎨 **BENEFICIOS:**
+- **Búsqueda mejorada**: Secuencias encontrables por tags de sus videos
+- **Categorización automática**: No hay que etiquetar manualmente cada secuencia
+- **Consistencia**: Tags siempre reflejan el contenido real
+- **Eficiencia**: Un clic genera todos los tags relevantes
+- **Flexibilidad**: Permite tags manuales adicionales
+
 ### 🎯 **COMMIT #105: SINCRONIZACIÓN COMPLETA GALERÍAS - VIDEOS Y SECUENCIAS UNIFICADAS** - 2024-12-19 20:45:00
 - **Objetivo**: Sincronizar completamente el comportamiento entre galería de videos y secuencias
 - **Archivos modificados**: SequenceGallery.jsx, FigurasPage.jsx, index.css

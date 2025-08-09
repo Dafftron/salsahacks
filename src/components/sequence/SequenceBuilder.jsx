@@ -190,6 +190,44 @@ const SequenceBuilder = ({
     setToasts(prev => [...prev, { id, message, type }])
   }
 
+  // Función para generar tags automáticamente desde los videos de la secuencia
+  const generateSequenceTagsFromVideos = useCallback(() => {
+    if (sequence.length === 0) return {}
+    
+    console.log('🏷️ Generando tags automáticamente desde', sequence.length, 'videos')
+    
+    const combinedTags = {}
+    
+    // Recorrer todos los videos de la secuencia
+    sequence.forEach((video, index) => {
+      if (video.tags && typeof video.tags === 'object') {
+        console.log(`📹 Video ${index + 1} (${video.title}):`, video.tags)
+        
+        // Para cada categoría de tags del video
+        Object.keys(video.tags).forEach(categoryKey => {
+          const videoTags = video.tags[categoryKey]
+          
+          if (Array.isArray(videoTags) && videoTags.length > 0) {
+            // Si la categoría no existe en combinedTags, crearla
+            if (!combinedTags[categoryKey]) {
+              combinedTags[categoryKey] = []
+            }
+            
+            // Añadir tags únicos (evitar duplicados)
+            videoTags.forEach(tag => {
+              if (!combinedTags[categoryKey].includes(tag)) {
+                combinedTags[categoryKey].push(tag)
+              }
+            })
+          }
+        })
+      }
+    })
+    
+    console.log('🎯 Tags combinados generados:', combinedTags)
+    return combinedTags
+  }, [sequence])
+
   // Función para auto-generar tags cuando se añaden videos (opcional)
   const handleAutoGenerateTags = useCallback(() => {
     if (sequence.length > 0) {
@@ -465,44 +503,6 @@ const SequenceBuilder = ({
   }
 
 
-
-  // Función para generar tags automáticamente desde los videos de la secuencia
-  const generateSequenceTagsFromVideos = useCallback(() => {
-    if (sequence.length === 0) return {}
-    
-    console.log('🏷️ Generando tags automáticamente desde', sequence.length, 'videos')
-    
-    const combinedTags = {}
-    
-    // Recorrer todos los videos de la secuencia
-    sequence.forEach((video, index) => {
-      if (video.tags && typeof video.tags === 'object') {
-        console.log(`📹 Video ${index + 1} (${video.title}):`, video.tags)
-        
-        // Para cada categoría de tags del video
-        Object.keys(video.tags).forEach(categoryKey => {
-          const videoTags = video.tags[categoryKey]
-          
-          if (Array.isArray(videoTags) && videoTags.length > 0) {
-            // Si la categoría no existe en combinedTags, crearla
-            if (!combinedTags[categoryKey]) {
-              combinedTags[categoryKey] = []
-            }
-            
-            // Añadir tags únicos (evitar duplicados)
-            videoTags.forEach(tag => {
-              if (!combinedTags[categoryKey].includes(tag)) {
-                combinedTags[categoryKey].push(tag)
-              }
-            })
-          }
-        })
-      }
-    })
-    
-    console.log('🎯 Tags combinados generados:', combinedTags)
-    return combinedTags
-  }, [sequence])
 
   // Funciones para manejar tags de secuencia
   const handleTagToggle = (categoryKey, tag) => {
