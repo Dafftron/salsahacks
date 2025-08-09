@@ -71,6 +71,17 @@ const LoadingSpinner = () => (
   </div>
 )
 
+// Helper function para cargar localStorage de forma segura
+const loadFilterPreference = (key, defaultValue) => {
+  try {
+    const saved = localStorage.getItem('escuela-filters')
+    const parsed = saved ? JSON.parse(saved) : {}
+    return parsed[key] ?? defaultValue
+  } catch (error) {
+    return defaultValue
+  }
+}
+
 const EscuelaPage = () => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
   const [editModal, setEditModal] = useState({ isOpen: false, video: null })
@@ -78,9 +89,9 @@ const EscuelaPage = () => {
   const [loading, setLoading] = useState(true)
   const [toasts, setToasts] = useState([])
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, video: null })
-  const [selectedTags, setSelectedTags] = useState(initialState.selectedTags || [])
-  const [searchTerm, setSearchTerm] = useState(initialState.searchTerm || '')
-  const [showFilters, setShowFilters] = useState(initialState.showFilters || false)
+  const [selectedTags, setSelectedTags] = useState(() => loadFilterPreference('selectedTags', []))
+  const [searchTerm, setSearchTerm] = useState(() => loadFilterPreference('searchTerm', ''))
+  const [showFilters, setShowFilters] = useState(() => loadFilterPreference('showFilters', false))
   const [activeTab, setActiveTab] = useState('videos')
   const [syncStatus, setSyncStatus] = useState('idle') // idle, syncing, error
   const [cleanupModal, setCleanupModal] = useState({ isOpen: false, type: null })
@@ -98,9 +109,9 @@ const EscuelaPage = () => {
   const [showSequencePlayer, setShowSequencePlayer] = useState(false)
   
   // Estados para el sistema de chips y filtros
-  const [activeCategoryChips, setActiveCategoryChips] = useState(initialState.activeCategoryChips || [])
-  const [sortBy, setSortBy] = useState(initialState.sortBy || 'none')
-  const [showFavorites, setShowFavorites] = useState(initialState.showFavorites || false)
+  const [activeCategoryChips, setActiveCategoryChips] = useState(() => loadFilterPreference('activeCategoryChips', []))
+  const [sortBy, setSortBy] = useState(() => loadFilterPreference('sortBy', 'none'))
+  const [showFavorites, setShowFavorites] = useState(() => loadFilterPreference('showFavorites', false))
   
 
   
@@ -109,21 +120,8 @@ const EscuelaPage = () => {
   
 
   
-  // Cargar preferencias guardadas al inicio
-  const getInitialFilterState = () => {
-    try {
-      const saved = localStorage.getItem('escuela-filters')
-      return saved ? JSON.parse(saved) : {}
-    } catch (error) {
-      console.warn('No se pudieron cargar las preferencias de filtros:', error)
-      return {}
-    }
-  }
-
-  const initialState = getInitialFilterState()
-
-  // Estado local para el estilo seleccionado
-  const [selectedStyle, setSelectedStyle] = useState(initialState.selectedStyle || 'salsa')
+  // Estado local para el estilo seleccionado (con carga lazy de localStorage)
+  const [selectedStyle, setSelectedStyle] = useState(() => loadFilterPreference('selectedStyle', 'salsa'))
   
   // Usar el sistema de categorías con estilo dinámico
   const { 
