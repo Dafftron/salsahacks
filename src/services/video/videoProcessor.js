@@ -152,20 +152,19 @@ export const concatenateVideos = async (videoFiles, outputName = 'concatenated.m
   }
 }
 
-// Procesar secuencia completa con ajuste de BPM
-export const processVideoSequence = async (videos, targetBPM) => {
+// Procesar secuencia completa
+export const processVideoSequence = async (videos) => {
   try {
-    console.log(`🎬 Procesando secuencia de ${videos.length} videos a ${targetBPM} BPM...`)
+    console.log(`🎬 Procesando secuencia de ${videos.length} videos...`)
     
     const ffmpegInstance = await initFFmpeg()
     const processedVideos = []
     
-         // Procesar cada video individualmente
-     for (let i = 0; i < videos.length; i++) {
-       const video = videos[i]
-       const speedFactor = targetBPM / video.bpm
-       
-               console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM}, factor: ${speedFactor.toFixed(2)}x)`)
+    // Procesar cada video individualmente
+    for (let i = 0; i < videos.length; i++) {
+      const video = videos[i]
+      
+      console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title}`)
         
         // Descargar video desde Firebase Storage si no tiene file
         let videoBlob
@@ -290,22 +289,15 @@ export const processVideoSequence = async (videos, targetBPM) => {
   }
 }
 
-// Crear preview de secuencia (con o sin ajuste de BPM)
-export const createSequencePreview = async (videos, useBPMControl = false, targetBPM = null) => {
+// Crear preview de secuencia
+export const createSequencePreview = async (videos) => {
   try {
     console.log(`🎬 Creando preview de secuencia con ${videos.length} videos...`)
-    console.log(`🎬 Control BPM: ${useBPMControl ? 'Activado' : 'Desactivado'}`)
-    if (useBPMControl && targetBPM) {
-      console.log(`🎬 BPM objetivo: ${targetBPM}`)
-    }
     
     const ffmpegInstance = await initFFmpeg()
     const processedVideos = []
     
-    // Optimización: Si no hay control BPM, procesar más rápido
-    const needsProcessing = useBPMControl && targetBPM
-    
-    // Procesar cada video según el estado del control BPM
+    // Procesar cada video de forma optimizada
     for (let i = 0; i < videos.length; i++) {
       const video = videos[i]
       
@@ -370,21 +362,9 @@ export const createSequencePreview = async (videos, useBPMControl = false, targe
         throw new Error(`Video ${i + 1} (${video.title}) no tiene archivo ni URL asociada`)
       }
       
-      if (needsProcessing && video.bpm) {
-        // Ajustar velocidad según BPM
-        const speedFactor = targetBPM / video.bpm
-        console.log(`🎬 Procesando video ${i + 1}/${videos.length}: ${video.title} (BPM: ${video.bpm} → ${targetBPM}, factor: ${speedFactor.toFixed(2)}x)`)
-        
-        const result = await adjustVideoSpeed(videoBlob, speedFactor, `preview${i}.mp4`)
-        if (!result.success) {
-          throw new Error(`Error al procesar video ${i + 1} (${video.title}): ${result.error}`)
-        }
-        processedVideos.push(result.data)
-      } else {
-        // Usar video original sin ajuste (más rápido)
-        console.log(`🎬 Usando video ${i + 1}/${videos.length}: ${video.title} (sin procesamiento)`)
-        processedVideos.push(videoBlob)
-      }
+      // Usar video original sin procesamiento
+      console.log(`🎬 Usando video ${i + 1}/${videos.length}: ${video.title} (sin procesamiento)`)
+      processedVideos.push(videoBlob)
     }
     
          // Concatenar videos
@@ -616,17 +596,8 @@ export const generateSequenceVideo = async (sequence, format = 'mp4', resolution
       throw new Error('La secuencia no tiene videos')
     }
     
-    // Usar la configuración de BPM guardada en la secuencia
-    const useBPMControl = sequence.useBPMControl || false
-    const targetBPM = sequence.targetBPM || null
-    
-    console.log(`🎵 Configuración BPM: ${useBPMControl ? 'Activado' : 'Desactivado'}, BPM: ${targetBPM}`)
-    
-    // Si no hay control BPM, usar descarga directa (más rápida)
-    if (!useBPMControl || !targetBPM) {
-      console.log('🚀 Usando descarga directa (sin FFmpeg)')
-      return await downloadSequenceDirect(sequence)
-    }
+    console.log('🚀 Usando descarga directa (sin FFmpeg)')
+    return await downloadSequenceDirect(sequence)
     
     // Intentar inicializar FFmpeg con timeout
     console.log('🎬 Intentando inicializar FFmpeg...')
@@ -643,7 +614,7 @@ export const generateSequenceVideo = async (sequence, format = 'mp4', resolution
     }
     
     // Generar el video combinado con FFmpeg
-    const result = await createSequencePreview(sequence.videos, useBPMControl, targetBPM)
+    const result = await createSequencePreview(sequence.videos)
     
     if (!result.success) {
       throw new Error(`Error generando video: ${result.error}`)

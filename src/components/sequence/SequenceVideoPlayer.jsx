@@ -16,7 +16,6 @@ import {
 
 const SequenceVideoPlayer = ({ 
   videos, 
-  currentBPM = null,
   className = '',
   showControls = true,
   autoplay = false,
@@ -55,7 +54,7 @@ const SequenceVideoPlayer = ({
   // Velocidades disponibles
   const availableSpeeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2]
 
-  // Velocidad fija en 1x (sin ajuste automático de BPM)
+  // Velocidad fija en 1x
   useEffect(() => {
     setPlaybackRate(1)
     if (videoRef.current) {

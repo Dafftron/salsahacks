@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useCategories } from '../../hooks/useCategories'
 import Toast from '../common/Toast'
 import VideoPlayer from './VideoPlayer'
-import { extractBPMFromVideo, validateBPM, getBPMDescription } from '../../services/audio/bpmDetection'
+
 
 const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', style = 'salsa' }) => {
   const { user } = useAuth()
@@ -404,18 +404,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         videoResolution = 'Unknown'
       }
 
-      // Detectar BPM del video
-      let bpm = null
-      let bpmDetected = false
-      try {
-        const bpmResult = await extractBPMFromVideo(file)
-        if (bpmResult.success && validateBPM(bpmResult.bpm)) {
-          bpm = bpmResult.bpm
-          bpmDetected = true
-        }
-      } catch (error) {
-        console.error('❌ Error al detectar BPM:', error)
-      }
+
 
       // Crear documento en Firestore
       const videoDoc = {
@@ -439,8 +428,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         views: 0,
         likes: 0,
         likedBy: [],
-        bpm: bpm, // BPM detectado
-        bpmDetected: bpmDetected // Indicar si se detectó BPM
+
       }
 
       const docResult = await createVideoDocument(videoDoc, page)

@@ -27,7 +27,7 @@ import ConfirmModal from '../common/ConfirmModal'
 import VideoPlayer from '../video/VideoPlayer.jsx'
 import SequenceTimeline from './SequenceTimeline.jsx'
 import SequenceVideoPlayer from './SequenceVideoPlayer.jsx'
-import BPMController from './BPMController'
+
 import VideoDownloadModal from '../video/VideoDownloadModal'
 import { processVideoSequence, createSequencePreview } from '../../services/video/videoProcessor'
 
@@ -66,8 +66,7 @@ const SequenceBuilder = ({
   // Estados para modal de descarga
   const [showDownloadModal, setShowDownloadModal] = useState(false)
 
-  // Estado para BPM actual
-  const [currentBPM, setCurrentBPM] = useState(null)
+
 
   // Funciones auxiliares para tags (actualizadas para usar categoriesList)
   const getOrderedTags = (video) => {
@@ -159,17 +158,7 @@ const SequenceBuilder = ({
     checkCompatibility
   } = useSequenceBuilderContext()
 
-  // Calcular BPM promedio de la secuencia
-  useEffect(() => {
-    const videosWithBPM = sequence.filter(video => video.bpm)
-    if (videosWithBPM.length > 0) {
-      const bpmValues = videosWithBPM.map(video => video.bpm)
-      const averageBPM = bpmValues.reduce((sum, bpm) => sum + bpm, 0) / bpmValues.length
-      setCurrentBPM(Math.round(averageBPM))
-    } else {
-      setCurrentBPM(null)
-    }
-  }, [sequence])
+
 
   const {
     handleDragStart,
@@ -684,7 +673,7 @@ const SequenceBuilder = ({
                   {previewVideoUrl === 'sequence-timeline' ? (
                     <SequenceVideoPlayer
                       videos={sequence}
-                      currentBPM={currentBPM}
+
                       className="w-full h-96"
                       showControls={true}
                       autoplay={false}
@@ -917,7 +906,7 @@ const SequenceBuilder = ({
                           <span className="text-gray-400">•</span>
                           <div className="flex items-center space-x-1">
                             <Music className="h-3 w-3 text-purple-500" />
-                            <span className="font-medium text-purple-600">{video.bpm || 'N/A'} BPM</span>
+                            <span className="font-medium text-purple-600">Video {index + 1}</span>
                           </div>
                         </div>
                         <button 

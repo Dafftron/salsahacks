@@ -1826,15 +1826,7 @@ const FigurasPage = () => {
                             <span className="font-medium">
                               {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
                             </span>
-                            {video.bpm && (
-                              <>
-                                <span className="text-gray-400">•</span>
-                                <span className="text-purple-600 font-medium flex items-center space-x-1">
-                                  <Music className="h-3 w-3" />
-                                  <span>{video.bpm} BPM</span>
-                                </span>
-                              </>
-                            )}
+
                           </div>
                           <div className="flex items-center space-x-2">
                             <button 
