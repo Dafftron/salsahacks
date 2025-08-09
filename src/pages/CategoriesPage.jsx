@@ -336,7 +336,7 @@ const CategoriesPage = () => {
             profesores: {
               name: 'PROFESORES',
               color: 'pink',
-              tags: ['Talipo', 'Ñete y Ani']
+              tags: ['Talipo', 'Ñete y Ani', 'Ñete y Maite']
             }
           }
         },
