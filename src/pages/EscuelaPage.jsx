@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react'
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { 
   Search, 
   Upload, 
@@ -13,6 +13,7 @@ import {
   Star,
   Zap,
   Edit,
+  Edit3,
   Download,
   Maximize2,
   Minimize2,
@@ -134,7 +135,7 @@ const EscuelaPage = () => {
     checkCompatibility,
     loadSequence
   } = useSequenceBuilderContext()
-
+  
   // Estado local para el estilo seleccionado
   const [selectedStyle, setSelectedStyle] = useState('salsa')
   
@@ -145,7 +146,7 @@ const EscuelaPage = () => {
     categoriesList, 
     getColorClasses
   } = useCategories('escuela', selectedStyle)
-  
+
   // Función para manejar click en título de categoría
   const handleCategoryTitleClick = (categoryKey) => {
     setActiveCategoryChips(prev => {
@@ -190,7 +191,7 @@ const EscuelaPage = () => {
       setVideos(videosData)
       setLoading(false)
       setSyncStatus('idle')
-    })
+    }, 'escuela')
     
     // Cleanup al desmontar o cambiar estilo
     return () => {
@@ -241,7 +242,7 @@ const EscuelaPage = () => {
       const unsubscribe = subscribeToSequencesByStyle(selectedStyle, (sequencesData) => {
         setSequences(sequencesData)
         setSequencesLoading(false)
-      })
+      }, 'escuela')
       
       // Cleanup al desmontar o cambiar estilo
       return () => {
@@ -277,6 +278,28 @@ const EscuelaPage = () => {
     addToast(`${updatedVideo.title} actualizado exitosamente`, 'success')
   }
 
+  // Función para reproducir video
+  const handlePlayVideo = (video) => {
+    setSelectedVideo(video)
+    setShowVideoPlayer(true)
+  }
+
+  // Función para descargar video
+  const downloadVideo = async (video) => {
+    try {
+      addToast(`Iniciando descarga de ${video.title}...`, 'info')
+      // Aquí iría la lógica de descarga
+    } catch (error) {
+      console.error('Error al descargar video:', error)
+      addToast('Error al descargar video', 'error')
+    }
+  }
+
+  // Función para abrir modal de eliminación
+  const openDeleteModal = (video) => {
+    setDeleteModal({ isOpen: true, video })
+  }
+
   // Función para manejar likes
   const handleVideoLike = async (video) => {
     if (!user) {
@@ -285,7 +308,7 @@ const EscuelaPage = () => {
     }
 
     try {
-      const result = await toggleVideoLike(video.id, user.uid)
+      const result = await toggleVideoLike(video.id, user.uid, 'escuela')
       
       if (result.success) {
         // Actualizar el video en el estado local
@@ -326,8 +349,154 @@ const EscuelaPage = () => {
     setToasts(prev => prev.filter(toast => toast.id !== id))
   }
 
-  // Resto de funciones... (por brevedad, las pondré como comentarios)
-  // ... [Todas las otras funciones del FigurasPage original] ...
+  // Función para manejar filtros por tags
+  const handleTagFilter = (tag) => {
+    setSelectedTags(prev => {
+      const isSelected = prev.includes(tag)
+      if (isSelected) {
+        return prev.filter(t => t !== tag)
+      } else {
+        return [...prev, tag]
+      }
+    })
+  }
+
+  // Función para limpiar filtros
+  const clearFilters = () => {
+    setSelectedTags([])
+    setSearchTerm('')
+  }
+
+  // Funciones de ordenamiento y favoritos
+  const handleSortChange = (sortKey) => {
+    setSortBy(sortKey)
+  }
+
+  const handleShowFavorites = (show) => {
+    setShowFavorites(show)
+  }
+
+  // Función para ordenar videos
+  const sortVideos = (videosToSort) => {
+    if (sortBy === 'none') return videosToSort
+
+    const sortedVideos = [...videosToSort]
+    
+    switch (sortBy) {
+      case 'name':
+        return sortedVideos.sort((a, b) => a.title.localeCompare(b.title))
+      case 'name-desc':
+        return sortedVideos.sort((a, b) => b.title.localeCompare(a.title))
+      case 'rating':
+        return sortedVideos.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+      case 'rating-desc':
+        return sortedVideos.sort((a, b) => (a.rating || 0) - (b.rating || 0))
+      case 'likes':
+        return sortedVideos.sort((a, b) => (b.likes || 0) - (a.likes || 0))
+      case 'likes-desc':
+        return sortedVideos.sort((a, b) => (a.likes || 0) - (b.likes || 0))
+      default:
+        return sortedVideos
+    }
+  }
+
+  // Función para normalizar texto (eliminar tildes y convertir a minúsculas)
+  const normalizeText = (text) => {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Eliminar diacríticos (tildes)
+      .trim()
+  }
+
+  // Función de búsqueda avanzada
+  const advancedSearch = (video, searchTerms) => {
+    if (!searchTerms || searchTerms.length === 0) return true
+    
+    // Normalizar el texto del video
+    const normalizedTitle = normalizeText(video.title || '')
+    const normalizedDescription = normalizeText(video.description || '')
+    
+    // Normalizar tags del video
+    const normalizedTags = []
+    if (video.tags) {
+      Object.values(video.tags).forEach(categoryTags => {
+      if (Array.isArray(categoryTags)) {
+        categoryTags.forEach(tag => {
+            normalizedTags.push(normalizeText(tag))
+        })
+      }
+    })
+    }
+
+    // Verificar que TODAS las palabras de búsqueda estén presentes
+    return searchTerms.every(searchWord => {
+      const normalizedSearchWord = normalizeText(searchWord)
+      
+      // Buscar en título
+      if (normalizedTitle.includes(normalizedSearchWord)) return true
+      
+      // Buscar en descripción
+      if (normalizedDescription.includes(normalizedSearchWord)) return true
+      
+      // Buscar en tags
+      if (normalizedTags.some(tag => tag.includes(normalizedSearchWord))) return true
+      
+      return false
+    })
+  }
+
+  // Función para verificar si un video tiene tags de categoría específica
+  const hasCategoryTags = (video, categoryKey) => {
+    if (!video.tags) return false
+    
+    // Buscar en las categorías dinámicas del hook useCategories
+    const category = categoriesList.find(cat => cat.key === categoryKey)
+    if (!category) return false
+    
+    // Verificar si el video tiene tags para esta categoría
+    const categoryTags = video.tags[categoryKey]
+    return categoryTags && Array.isArray(categoryTags) && categoryTags.length > 0
+  }
+
+  // Filtrar videos basado en tags seleccionados y búsqueda avanzada
+  const baseFilteredVideos = videos.filter(video => {
+    // Dividir términos de búsqueda por espacios y filtrar vacíos
+    const searchTerms = searchTerm
+      .split(' ')
+      .map(term => term.trim())
+      .filter(term => term.length > 0)
+
+    // Filtro por búsqueda avanzada
+    const searchMatch = advancedSearch(video, searchTerms)
+
+    // Filtro por tags - EXCLUYENTE (todos los tags seleccionados deben estar presentes)
+    const tagsMatch = selectedTags.length === 0 || 
+      selectedTags.every(tag => {
+        // Buscar en todas las categorías de tags del video
+        if (video.tags) {
+          return Object.values(video.tags).some(categoryTags => 
+            Array.isArray(categoryTags) && categoryTags.includes(tag)
+          )
+        }
+        return false
+      })
+
+      // Filtro por chips de categorías
+  const categoryMatch = activeCategoryChips.length === 0 || 
+    activeCategoryChips.some(chip => hasCategoryTags(video, chip))
+
+  // Filtro por favoritos
+  const favoritesMatch = !showFavorites || video.isFavorite
+
+  return searchMatch && tagsMatch && categoryMatch && favoritesMatch
+  })
+
+  // Aplicar filtro de compatibilidad sobre los videos ya filtrados
+  const baseCompatibilityFiltered = getFilteredVideos(baseFilteredVideos)
+
+  // Aplicar ordenamiento final
+  const filteredVideos = sortVideos(baseCompatibilityFiltered)
 
   return (
     <div className="min-h-screen bg-white">
@@ -381,6 +550,71 @@ const EscuelaPage = () => {
           </div>
         </div>
 
+        {/* Tag Filters - Collapsible con títulos clickeables */}
+        {categoriesList.length > 0 && (
+          <div className="mb-8">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center justify-center space-x-2 mx-auto px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
+            >
+              <Filter className="h-5 w-5" />
+              <span>Filtros Avanzados por Tags - {selectedStyle}</span>
+              {showFilters ? (
+                <ChevronUp className="h-5 w-5" />
+              ) : (
+                <ChevronDown className="h-5 w-5" />
+              )}
+            </button>
+            
+            {/* Collapsible Content */}
+            <div className={`mt-4 transition-all duration-300 ease-in-out overflow-hidden ${
+              showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}>
+              <div className="space-y-4 bg-gray-50 rounded-lg p-6 border border-gray-200">
+                {categoriesList.map((category) => (
+                  <div key={category.key} className="space-y-2">
+                    {/* Título clickeable de categoría */}
+                    <button
+                      onClick={() => handleCategoryTitleClick(category.key)}
+                      className={`w-full text-center font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 ${
+                        activeCategoryChips.includes(category.key)
+                          ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                          : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center space-x-2">
+                        <span>{category.name}</span>
+                        {activeCategoryChips.includes(category.key) && (
+                          <span className="text-xs bg-white bg-opacity-20 px-2 py-1 rounded">
+                            ACTIVO
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                    
+                    {/* Tags de la categoría */}
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {category.tags.map(tag => (
+                        <button
+                          key={tag}
+                          onClick={() => handleTagFilter(tag)}
+                          className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
+                            selectedTags.includes(tag)
+                              ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                              : `${getColorClasses(category.color)} hover:bg-opacity-80`
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Action Buttons - Main Level */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
           <button 
@@ -414,7 +648,7 @@ const EscuelaPage = () => {
             }`}
           >
             <Music className="h-6 w-6" />
-            <span>GALERÍA DE VIDEOS</span>
+            <span>GALERÍA DE LA ESCUELA</span>
           </button>
           <button
             onClick={() => setActiveTab('secuencias')}
@@ -425,33 +659,356 @@ const EscuelaPage = () => {
             }`}
           >
             <Plus className="h-6 w-6" />
-            <span>GALERÍA DE SECUENCIAS ({sequences.length})</span>
+            <span>GALERÍA DE CURSOS ({sequences.length})</span>
           </button>
+        </div>
+
+        {/* Botones de ordenamiento y favoritos - Debajo de las pestañas */}
+        <div className="flex flex-wrap justify-center gap-2 mb-6">
+          {/* Botón A-Z/Z-A combinado */}
+          <button
+            onClick={() => handleSortChange(sortBy === 'name' ? 'name-desc' : 'name')}
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              sortBy === 'name' || sortBy === 'name-desc'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <span>{sortBy === 'name' ? 'A-Z' : sortBy === 'name-desc' ? 'Z-A' : 'A-Z'}</span>
+          </button>
+          
+          {/* Botón Puntuación */}
+          <button
+            onClick={() => handleSortChange(sortBy === 'rating' ? 'rating-desc' : 'rating')}
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              sortBy === 'rating' || sortBy === 'rating-desc'
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Star className="h-3 w-3" />
+            <span>{sortBy === 'rating' ? 'Puntuación ↓' : sortBy === 'rating-desc' ? 'Puntuación ↑' : 'Puntuación'}</span>
+          </button>
+          
+          {/* Botón Favoritos */}
+          <button
+            onClick={() => {
+              if (!showFavorites) {
+                // Si no está mostrando favoritos, activar y ordenar por likes descendente
+                setShowFavorites(true)
+                setSortBy('likes')
+              } else if (sortBy === 'likes') {
+                // Si está mostrando favoritos y ordenado por likes, cambiar a ascendente
+                setSortBy('likes-desc')
+              } else if (sortBy === 'likes-desc') {
+                // Si está en ascendente, volver a descendente
+                setSortBy('likes')
+              } else {
+                // Si está en otro ordenamiento, desactivar favoritos
+                setShowFavorites(false)
+                setSortBy('none')
+              }
+            }}
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              showFavorites
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <Heart className="h-3 w-3" />
+            <span>
+              {!showFavorites ? 'Mostrar Favoritos' : 
+               sortBy === 'likes' ? 'Favoritos ↓' : 
+               sortBy === 'likes-desc' ? 'Favoritos ↑' : 
+               'Ocultar Favoritos'}
+            </span>
+          </button>
+
+          {/* Botón Limpiar todos los filtros */}
+          {(activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites) && (
+            <button
+              onClick={() => {
+                setActiveCategoryChips([])
+                setSortBy('none')
+                setShowFavorites(false)
+              }}
+              className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 transition-colors duration-200"
+            >
+              <X className="h-3 w-3" />
+              <span>Limpiar filtros</span>
+            </button>
+          )}
         </div>
 
         {/* Videos Grid */}
         {activeTab === 'videos' && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-gray-800">
-                Videos de {selectedStyle.toLowerCase()} ({videos.length})
-              </h2>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                Escuela de {selectedStyle.toLowerCase()} ({filteredVideos.length})
+                </h2>
+              <div className="flex items-center space-x-4">
+                {/* Selector de tamaño de cards */}
+                  <CardSizeSelector type="video" styleColor={selectedStyle} />
+                
+                {/* Botón de modo ancho completo */}
+                <button
+                  onClick={() => setIsFullWidth(!isFullWidth)}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    isFullWidth
+                      ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg`
+                      : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                  }`}
+                  title={isFullWidth ? "Modo compacto" : "Modo ancho completo"}
+                >
+                  {isFullWidth ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                  <span className="hidden sm:inline">
+                    {isFullWidth ? "Compacto" : "Ancho"}
+                  </span>
+                </button>
+              </div>
             </div>
-          
+
             {loading ? (
               <div className="flex justify-center items-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
                 <span className="ml-3 text-gray-600">Cargando videos...</span>
-              </div>
+                </div>
             ) : videos.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">No hay videos de {selectedStyle.toLowerCase()} aún</p>
                 <p className="text-gray-400 text-sm mt-2">Sube tu primer video de {selectedStyle.toLowerCase()} usando el botón de arriba</p>
               </div>
             ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">¡Página ESCUELA funcionando perfectamente!</p>
-                <p className="text-gray-400 text-sm mt-2">{videos.length} videos de {selectedStyle}</p>
+              <div 
+                className="grid gap-6" 
+                style={{ 
+                  gridTemplateColumns: `repeat(auto-fill, minmax(${
+                    getVideoConfig(isFullWidth).compact ? '160px' : 
+                    getVideoConfig(isFullWidth).titleSize === 'text-xs' ? '160px' :
+                    getVideoConfig(isFullWidth).titleSize === 'text-sm' ? '240px' :
+                    getVideoConfig(isFullWidth).titleSize === 'text-xl' ? '320px' : '450px'
+                  }, 1fr))` 
+                }}
+              >
+                {filteredVideos.map((video) => (
+                  <div
+                    key={video.id}
+                    className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${
+                      isBuilderOpen && !isVideoCompatible(video)
+                        ? 'border-red-200 opacity-75'
+                        : 'border-gray-100'
+                    }`}
+                  >
+                    <div className="relative group">
+                      <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
+                        {video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? (
+                          <img
+                            src={video.thumbnailUrl}
+                        alt={video.title}
+                            className={`w-full h-full ${getVideoConfig(isFullWidth).imageObject || 'object-cover'}`}
+                            loading="lazy"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div className={`flex flex-col items-center justify-center text-gray-500 ${video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? 'hidden' : 'flex'}`}>
+                          <svg className="w-12 h-12 mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 002 2v8a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-sm font-medium">{video.title}</span>
+                        </div>
+                        <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
+                          {video.resolution && video.resolution !== 'Unknown' ? video.resolution : 'HD'}
+                      </div>
+                      
+                        {/* Botón de play */}
+                          <button
+                          onClick={() => {
+                            setPlayingVideo(video);
+                            setIsPlayerModalOpen(true);
+                          }}
+                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 group"
+                        >
+                          <div className="w-16 h-16 rounded-full bg-white bg-opacity-90 flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-200">
+                            <Play className="w-8 h-8 text-gray-800 ml-1" />
+                          </div>
+                          </button>
+                      </div>
+                      
+                      {/* Contenido de la card */}
+                      <div className={`${getVideoConfig(isFullWidth).compact ? 'p-2' : 'p-4'}`}>
+                        <div className={`flex items-center justify-between ${getVideoConfig(isFullWidth).compact ? 'mb-1' : 'mb-2'}`}>
+                          <h3 className={`font-semibold text-gray-800 ${getVideoConfig(isFullWidth).titleSize}`}>{video.title}</h3>
+                          <div className="flex items-center space-x-1">
+                            {[1, 2, 3, 4, 5].map(star => {
+                              const isFilled = (video.rating || 0) >= star
+                              return (
+                                <svg 
+                                  key={star}
+                                  className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'} ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} 
+                                  fill="currentColor" 
+                                  viewBox="0 0 24 24"
+                                  onClick={async () => {
+                                    try {
+                                      const currentRating = video.rating || 0
+                                      const newRating = currentRating >= star ? 0 : star
+                                      await updateVideoDocument(video.id, { rating: newRating }, 'escuela')
+                                      video.rating = newRating
+                                    } catch (error) {
+                                      console.error('Error updating rating:', error)
+                                    }
+                                  }}
+                                >
+                                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                              )
+                            })}
+                            <span className={`${getVideoConfig(isFullWidth).compact ? 'text-xs' : 'text-xs'} font-medium text-gray-500 ml-1`}>({video.rating || 0})</span>
+                        </div>
+                      </div>
+                        <p className={`text-gray-600 text-sm ${getVideoConfig(isFullWidth).compact ? 'mb-2' : 'mb-3'} ${getVideoConfig(isFullWidth).descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig(isFullWidth).descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig(isFullWidth).descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
+                        
+                        {/* Tags Normales */}
+                        {getVideoConfig(isFullWidth).showTags && (
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {(() => {
+                              const getOrderedTags = (video) => {
+                                const tags = []
+                                if (video.tags) {
+                                  Object.entries(video.tags).forEach(([categoryKey, categoryTags]) => {
+                                    if (Array.isArray(categoryTags)) {
+                                      categoryTags.forEach(tag => {
+                                        const categoryStyle = categoriesList.find(cat => cat.key === categoryKey)
+                                        tags.push({
+                                          tag,
+                                          categoryKey,
+                                          color: categoryStyle?.color || 'gray'
+                                        })
+                                      })
+                                    }
+                                  })
+                                }
+                                return tags
+                              }
+                              
+                              const orderedTags = getOrderedTags(video)
+                              if (orderedTags.length > 0) {
+                                return orderedTags.map(({ tag, categoryKey, color }) => (
+                                  <span
+                                    key={`${categoryKey}-${tag}`}
+                                    className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
+                                  >
+                                    {tag}
+                          </span>
+                                ))
+                              }
+                              return null
+                            })()}
+                      </div>
+                        )}
+                        
+                        {/* Información del video y acciones */}
+                        {getVideoConfig(isFullWidth).compact ? (
+                      <CompactCardActions
+                        video={video}
+                            onLike={() => handleVideoLike(video)}
+                        onEdit={() => openEditModal(video)}
+                        onDelete={() => openDeleteModal(video)}
+                            onAddToSequence={() => handleAddVideoToSequence(video)}
+                        onDownload={() => downloadVideo(video)}
+                            onPlay={() => handlePlayVideo(video)}
+                            isVideoInSequence={isVideoInSequence(video)}
+                            isBuilderOpen={isBuilderOpen}
+                            isVideoCompatible={isVideoCompatible(video)}
+                            type="video"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-between text-sm text-gray-500">
+            <div className="flex items-center space-x-2">
+                              <span className="font-medium">
+                                {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
+              </span>
+                              {video.bpm && (
+                                <>
+                                  <span className="text-gray-400">•</span>
+                                  <span className="text-purple-600 font-medium flex items-center space-x-1">
+                                    <Music className="h-3 w-3" />
+                                    <span>{video.bpm} BPM</span>
+                                  </span>
+                                </>
+                              )}
+            </div>
+                            <div className="flex items-center space-x-2">
+              <button
+                                onClick={() => handlePlayVideo(video)}
+                                className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                                title="Reproducir video"
+                              >
+                                <Play className="h-4 w-4" />
+              </button>
+              <button
+                                onClick={() => handleVideoLike(video)}
+                                className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${
+                                  video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                                }`}
+                                title={video.userLiked ? 'Quitar like' : 'Dar like'}
+                              >
+                                <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
+                                <span className="font-medium">{video.likes || 0}</span>
+              </button>
+              <button
+                                onClick={() => handleAddVideoToSequence(video)}
+                                disabled={isVideoInSequence(video)}
+                                className={`transition-colors duration-200 p-1 rounded ${
+                                  isVideoInSequence(video)
+                                    ? 'text-gray-300 cursor-not-allowed'
+                                    : isBuilderOpen && !isVideoCompatible(video)
+                                    ? 'text-red-400 hover:text-red-500 hover:bg-red-50'
+                                    : 'text-gray-400 hover:text-purple-500 hover:bg-purple-50'
+                                }`}
+                                title={
+                                  isVideoInSequence(video) 
+                                    ? 'Ya en secuencia' 
+                                    : isBuilderOpen && !isVideoCompatible(video)
+                                    ? 'Añadir forzadamente (incompatible)'
+                                    : 'Añadir a secuencia'
+                                }
+                              >
+                                <Plus className="h-4 w-4" />
+              </button>
+              <button
+                                onClick={() => {
+                                  downloadVideo(video)
+                                }}
+                                className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
+                                title="Descargar video"
+                              >
+                                <Download className="h-4 w-4" />
+              </button>
+              <button
+                                onClick={() => openEditModal(video)}
+                                className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                                title="Editar video"
+                              >
+                                <Edit3 className="h-4 w-4" />
+              </button>
+              <button
+                                onClick={() => openDeleteModal(video)}
+                                className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
+                                title="Eliminar video"
+                              >
+                                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+                        )}
+        </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -462,10 +1019,10 @@ const EscuelaPage = () => {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-semibold text-gray-800">
-                Secuencias de {selectedStyle.toLowerCase()} ({sequences.length})
+                Cursos de {selectedStyle.toLowerCase()} ({sequences.length})
               </h2>
-            </div>
-            
+      </div>
+
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg">¡Secuencias copiadas exitosamente!</p>
               <p className="text-gray-400 text-sm mt-2">{sequences.length} secuencias de {selectedStyle}</p>
@@ -475,24 +1032,24 @@ const EscuelaPage = () => {
 
       </div>
 
-      {/* Video Upload Modal */}
+        {/* Video Upload Modal */}
       <Suspense fallback={<LoadingSpinner />}>
-        <VideoUploadModal
-          isOpen={isUploadModalOpen}
-          onClose={() => setIsUploadModalOpen(false)}
-          onVideoUploaded={handleVideoUploaded}
-          page="escuela"
+          <VideoUploadModal
+            isOpen={isUploadModalOpen}
+            onClose={() => setIsUploadModalOpen(false)}
+            onVideoUploaded={handleVideoUploaded}
+            page="escuela"
           style={selectedStyle}
-        />
+          />
       </Suspense>
 
-      {/* Video Edit Modal */}
+        {/* Video Edit Modal */}
       <Suspense fallback={<LoadingSpinner />}>
-        <VideoEditModal
-          isOpen={editModal.isOpen}
-          onClose={closeEditModal}
-          video={editModal.video}
-          onVideoUpdated={handleVideoUpdated}
+          <VideoEditModal
+            isOpen={editModal.isOpen}
+            onClose={closeEditModal}
+            video={editModal.video}
+            onVideoUpdated={handleVideoUpdated}
           page="escuela"
           style={selectedStyle}
         />
@@ -500,15 +1057,15 @@ const EscuelaPage = () => {
 
       {/* Toasts */}
       {toasts.map(toast => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          onClose={() => removeToast(toast.id)}
-        />
-      ))}
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
+        ))}
     </div>
   )
 }
 
-export default EscuelaPage
+export default EscuelaPage 

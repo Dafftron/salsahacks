@@ -27,7 +27,22 @@ const COLLECTIONS = {
   FIGURES: 'figures',
   SCHOOL: 'school',
   INVITATIONS: 'invitations',
-  VIDEOS: 'videos'
+  VIDEOS: 'videos',
+  ESCUELA_VIDEOS: 'escuela-videos',
+  EVENTOS_VIDEOS: 'eventos-videos'
+};
+
+// Función para obtener la colección de videos según la página
+const getVideosCollection = (page = 'figuras') => {
+  switch(page) {
+    case 'escuela':
+      return COLLECTIONS.ESCUELA_VIDEOS;
+    case 'eventos':
+      return COLLECTIONS.EVENTOS_VIDEOS;
+    case 'figuras':
+    default:
+      return COLLECTIONS.VIDEOS;
+  }
 };
 
 // ===== USUARIOS =====
@@ -424,10 +439,13 @@ const generateInvitationCode = () => {
 
 // ===== VIDEO MANAGEMENT FUNCTIONS =====
 
-export const createVideoDocument = async (videoData) => {
+export const createVideoDocument = async (videoData, page = 'figuras') => {
   try {
-    console.log('📹 Creando documento de video en Firestore:', videoData.title)
-    const videoRef = doc(collection(db, COLLECTIONS.VIDEOS))
+    console.log(`📹 [DEBUG] Creando documento de video - Título: ${videoData.title}, Página: ${page}`)
+    const videosCollection = getVideosCollection(page);
+    console.log(`📂 [DEBUG] Colección de destino: ${videosCollection}`)
+    console.log(`🎯 [DEBUG] Documento se guardará en: ${videosCollection}`)
+    const videoRef = doc(collection(db, videosCollection))
     await setDoc(videoRef, {
       ...videoData,
       id: videoRef.id,
@@ -462,10 +480,11 @@ export const getVideoDocument = async (videoId) => {
   }
 }
 
-export const updateVideoDocument = async (videoId, updates) => {
+export const updateVideoDocument = async (videoId, updates, page = 'figuras') => {
   try {
     console.log('📝 Actualizando video:', videoId, updates)
-    const docRef = doc(db, COLLECTIONS.VIDEOS, videoId)
+    const videosCollection = getVideosCollection(page);
+    const docRef = doc(db, videosCollection, videoId)
     await updateDoc(docRef, {
       ...updates,
       updatedAt: serverTimestamp()
@@ -518,11 +537,12 @@ export const getVideosWithoutBPM = async () => {
 }
 
 // ===== SISTEMA DE LIKES =====
-export const toggleVideoLike = async (videoId, userId) => {
+export const toggleVideoLike = async (videoId, userId, page = 'figuras') => {
   try {
     console.log('❤️ Toggle like para video:', videoId, 'usuario:', userId)
     
-    const docRef = doc(db, COLLECTIONS.VIDEOS, videoId)
+    const videosCollection = getVideosCollection(page);
+    const docRef = doc(db, videosCollection, videoId)
     const docSnap = await getDoc(docRef)
     
     if (!docSnap.exists()) {
@@ -718,12 +738,13 @@ export const getUserFavorites = async (userId) => {
   }
 }
 
-export const deleteVideoDocument = async (videoId) => {
+export const deleteVideoDocument = async (videoId, page = 'figuras') => {
   try {
     console.log('🗑️ Eliminando video de Firestore:', videoId)
-    console.log('📁 Colección:', COLLECTIONS.VIDEOS)
+    const videosCollection = getVideosCollection(page);
+    console.log('📁 Colección:', videosCollection)
     
-    const docRef = doc(db, COLLECTIONS.VIDEOS, videoId)
+    const docRef = doc(db, videosCollection, videoId)
     console.log('📄 Referencia del documento:', docRef.path)
     
     await deleteDoc(docRef)
@@ -844,13 +865,18 @@ export const subscribeToVideos = (callback) => {
   }
 }
 
-export const subscribeToVideosByStyle = (style, callback) => {
+export const subscribeToVideosByStyle = (style, callback, page = 'figuras') => {
   try {
-    console.log(`🔄 Iniciando suscripción en tiempo real a videos de estilo: ${style}`)
+    console.log(`🔄 [DEBUG] Iniciando suscripción - Estilo: ${style}, Página: ${page}`)
     
     // Primero intentar con la consulta optimizada (requiere índice)
+    const videosCollection = getVideosCollection(page);
+    console.log(`📂 [DEBUG] Colección calculada: ${videosCollection}`)
+    console.log(`📊 [DEBUG] COLLECTIONS.ESCUELA_VIDEOS = ${COLLECTIONS.ESCUELA_VIDEOS}`)
+    console.log(`📊 [DEBUG] COLLECTIONS.VIDEOS = ${COLLECTIONS.VIDEOS}`);
+    
     const q = query(
-      collection(db, COLLECTIONS.VIDEOS),
+      collection(db, videosCollection),
       where('style', '==', style),
       orderBy('uploadedAt', 'desc')
     )
@@ -870,7 +896,7 @@ export const subscribeToVideosByStyle = (style, callback) => {
         console.log(`⚠️ Usando fallback para ${style} (sin índice)`)
         
         const fallbackQuery = query(
-          collection(db, COLLECTIONS.VIDEOS),
+          collection(db, videosCollection),
           orderBy('uploadedAt', 'desc')
         )
         

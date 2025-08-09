@@ -443,7 +443,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         bpmDetected: bpmDetected // Indicar si se detectó BPM
       }
 
-      const docResult = await createVideoDocument(videoDoc)
+      const docResult = await createVideoDocument(videoDoc, page)
       if (!docResult.success) {
         addToast(`Error al guardar metadatos de ${file.name}`, 'error')
         return null

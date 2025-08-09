@@ -12,7 +12,7 @@ const NotasPage = lazy(() => import('./pages/NotasPage'))
 const CategoriesPage = lazy(() => import('./pages/CategoriesPage'))
 const FigurasPage = lazy(() => import('./pages/FigurasPage'))
 const EscuelaPage = lazy(() => import('./pages/EscuelaPage'))
-const EventosPage = lazy(() => import('./pages/EventosPage'))
+// const EventosPage = lazy(() => import('./pages/EventosPage')) // TEMPORAL - Recrearemos después
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 const AuthPage = lazy(() => import('./pages/AuthPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
@@ -30,11 +30,12 @@ const LoadingSpinner = () => (
 function AppContent() {
   const location = useLocation()
   const isFigurasPage = location.pathname === '/figuras'
+  const isEscuelaPage = location.pathname === '/escuela'
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-salsa-light to-white">
       <Navigation />
-      <main className={isFigurasPage ? 'w-full' : 'container mx-auto px-4 py-8'}>
+      <main className={isFigurasPage || isEscuelaPage ? 'w-full' : 'container mx-auto px-4 py-8'}>
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -46,7 +47,7 @@ function AppContent() {
             <Route path="/categorias" element={<CategoriesPage />} />
             <Route path="/figuras" element={<FigurasPage />} />
             <Route path="/escuela" element={<EscuelaPage />} />
-            <Route path="/eventos" element={<EventosPage />} />
+            {/* <Route path="/eventos" element={<EventosPage />} /> */} {/* TEMPORAL - Recrearemos después */}
             <Route path="/admin" element={<AdminPage />} />
           </Routes>
         </Suspense>

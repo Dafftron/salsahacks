@@ -2,6 +2,39 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🗄️ **COMMIT #114: CONFIGURAR BASES DE DATOS SEPARADAS FIREBASE - ESCUELA VS FIGURAS** - 2024-12-19 23:45:00
+- **Objetivo**: Separar completamente las bases de datos de videos y secuencias entre ESCUELA, FIGURAS y EVENTOS
+- **Archivos modificados**: firestore.js, sequences.js, VideoUploadModal.jsx, EscuelaPage.jsx
+
+#### ✨ **FUNCIONALIDADES IMPLEMENTADAS:**
+
+**🔧 SISTEMA DE COLECCIONES SEPARADAS:**
+- **Videos ESCUELA**: `escuela-videos` (separada de `videos`)  
+- **Videos EVENTOS**: `eventos-videos` (separada de `videos`)
+- **Secuencias ESCUELA**: `escuela-sequences` (separada de `sequences`)
+- **Secuencias EVENTOS**: `eventos-sequences` (separada de `sequences`)
+
+**🎯 FUNCIONES FIREBASE ACTUALIZADAS:**
+- `getVideosCollection(page)`: Selecciona colección según página (figuras/escuela/eventos)
+- `getSequencesCollection(page)`: Selecciona colección de secuencias según página
+- `createVideoDocument(videoData, page)`: Crea video en colección específica
+- `updateVideoDocument(videoId, updates, page)`: Actualiza video en colección específica  
+- `deleteVideoDocument(videoId, page)`: Elimina video de colección específica
+- `toggleVideoLike(videoId, userId, page)`: Like/unlike en colección específica
+- `createSequence(sequenceData, page)`: Crea secuencia en colección específica
+
+**🚀 RESULTADOS:**
+- **ESCUELA**: Videos y secuencias 100% independientes de FIGURAS
+- **VideoUploadModal**: Sube automáticamente a colección correcta según `page` prop
+- **EscuelaPage**: Conectado a `escuela-videos` y `escuela-sequences`
+- **Sin interferencias**: ESCUELA y FIGURAS mantienen datos completamente separados
+
+**🎪 ESTADO ACTUAL:**
+- ESCUELA funciona con base de datos propia ✅
+- Videos suben a colección correcta según página ✅  
+- Secuencias en desarrollo para colección separada 🔄
+- EVENTOS preparado para implementación futura 🎯
+
 ### 🎨 **COMMIT #111: CONFIGURAR COLORES ESTILOS ESCUELA - CADA ESTILO CON SU COLOR CARACTERÍSTICO** - 2024-12-19 23:30:00
 - **Objetivo**: Configurar colores específicos para cada estilo en ESCUELA manteniendo identidad visual propia
 - **Archivos modificados**: CategoriesPage.jsx, useCategories.js, EscuelaPage.jsx

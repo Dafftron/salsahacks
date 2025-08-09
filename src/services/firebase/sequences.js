@@ -15,10 +15,28 @@ import {
 } from 'firebase/firestore'
 import { db } from './config'
 
-const SEQUENCES_COLLECTION = 'sequences'
+// Colecciones de secuencias
+const SEQUENCES_COLLECTIONS = {
+  FIGURAS: 'sequences',
+  ESCUELA: 'escuela-sequences',
+  EVENTOS: 'eventos-sequences'
+};
+
+// Función para obtener la colección de secuencias según la página
+const getSequencesCollection = (page = 'figuras') => {
+  switch(page) {
+    case 'escuela':
+      return SEQUENCES_COLLECTIONS.ESCUELA;
+    case 'eventos':
+      return SEQUENCES_COLLECTIONS.EVENTOS;
+    case 'figuras':
+    default:
+      return SEQUENCES_COLLECTIONS.FIGURAS;
+  }
+};
 
 // Crear una nueva secuencia
-export const createSequence = async (sequenceData) => {
+export const createSequence = async (sequenceData, page = 'figuras') => {
   console.log('🔥 Firebase: Creando secuencia...')
   console.log('📦 Datos de secuencia:', sequenceData)
   
@@ -30,7 +48,9 @@ export const createSequence = async (sequenceData) => {
     }
     
     console.log('⏰ Secuencia con timestamps:', sequenceWithTimestamp)
-    const docRef = await addDoc(collection(db, SEQUENCES_COLLECTION), sequenceWithTimestamp)
+    const sequencesCollection = getSequencesCollection(page);
+    console.log(`📂 Usando colección: ${sequencesCollection} para página: ${page}`);
+    const docRef = await addDoc(collection(db, sequencesCollection), sequenceWithTimestamp)
     console.log('📄 Documento creado con ID:', docRef.id)
     
     const result = {
@@ -49,10 +69,11 @@ export const createSequence = async (sequenceData) => {
 }
 
 // Obtener todas las secuencias
-export const getSequences = async () => {
+export const getSequences = async (page = 'figuras') => {
   try {
+    const sequencesCollection = getSequencesCollection(page);
     const q = query(
-      collection(db, SEQUENCES_COLLECTION),
+      collection(db, sequencesCollection),
       orderBy('createdAt', 'desc')
     )
     
@@ -170,12 +191,14 @@ export const subscribeToSequences = (callback) => {
 }
 
 // Suscribirse a cambios en tiempo real de secuencias por estilo
-export const subscribeToSequencesByStyle = (style, callback) => {
+export const subscribeToSequencesByStyle = (style, callback, page = 'figuras') => {
   console.log('🎬 Firebase: Suscribiéndose a secuencias para estilo:', style)
   
   try {
+    const sequencesCollection = getSequencesCollection(page);
+    console.log(`📂 Usando colección secuencias: ${sequencesCollection} para página: ${page}`);
     const q = query(
-      collection(db, SEQUENCES_COLLECTION),
+      collection(db, sequencesCollection),
       where('style', '==', style),
       orderBy('createdAt', 'desc')
     )
