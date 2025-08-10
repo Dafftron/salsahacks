@@ -11,11 +11,13 @@ const Navigation = () => {
 
   const navItems = [
     { path: '/', label: 'Inicio' },
-    { path: '/figuras', label: 'Figuras' },
-    { path: '/escuela', label: 'Escuela' },
-    { path: '/eventos', label: 'Eventos' },
-    { path: '/categorias', label: 'Categorías' },
-    { path: '/notas', label: 'Notas' }
+    ...(user ? [
+      { path: '/figuras', label: 'Figuras' },
+      { path: '/escuela', label: 'Escuela' },
+      { path: '/eventos', label: 'Eventos' },
+      { path: '/categorias', label: 'Categorías' },
+      { path: '/notas', label: 'Notas' }
+    ] : [])
   ]
 
   // Agregar enlace de administración si el usuario tiene permisos

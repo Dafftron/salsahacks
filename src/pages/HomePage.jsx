@@ -4,7 +4,7 @@ import UserProfile from '../components/UserProfile'
 import { useAuth } from '../contexts/AuthContext'
 
 const HomePage = () => {
-  const { isAuthenticated } = useAuth()
+  const { user, userProfile } = useAuth()
   
   const features = [
     {
@@ -59,34 +59,59 @@ const HomePage = () => {
           Descubre figuras, mejora tu técnica y conecta con la comunidad.
         </p>
         <div className="flex justify-center space-x-4">
-          <Link to="/figuras" className="btn-primary">
-            Explorar Figuras
-          </Link>
-          <Link to="/escuela" className="btn-secondary">
-            Empezar a Aprender
-          </Link>
+          {user ? (
+            <>
+              <Link to="/figuras" className="btn-primary">
+                Explorar Figuras
+              </Link>
+              <Link to="/escuela" className="btn-secondary">
+                Empezar a Aprender
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/auth" className="btn-primary">
+                Iniciar Sesión
+              </Link>
+              <p className="text-gray-500 text-sm">
+                Accede para ver todo el contenido
+              </p>
+            </>
+          )}
         </div>
       </div>
 
       {/* Features Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-        {features.map((feature) => (
-          <Link
-            key={feature.path}
-            to={feature.path}
-            className="card p-6 hover:scale-105 transition-transform duration-300"
-          >
-            <div className={`${feature.color} mb-4`}>
-              {feature.icon}
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              {feature.title}
-            </h3>
-            <p className="text-gray-600">
-              {feature.description}
-            </p>
-          </Link>
-        ))}
+        {features.map((feature) => {
+          // Solo mostrar características públicas para usuarios no autenticados
+          if (!user && (feature.path === '/categorias' || feature.path === '/notas')) {
+            return null;
+          }
+          
+          return (
+            <Link
+              key={feature.path}
+              to={user ? feature.path : '/auth'}
+              className="card p-6 hover:scale-105 transition-transform duration-300"
+            >
+              <div className={`${feature.color} mb-4`}>
+                {feature.icon}
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                {feature.title}
+              </h3>
+              <p className="text-gray-600">
+                {feature.description}
+              </p>
+              {!user && (feature.path === '/figuras' || feature.path === '/escuela') && (
+                <div className="mt-2 text-xs text-gray-500">
+                  🔒 Requiere autenticación
+                </div>
+              )}
+            </Link>
+          );
+        })}
       </div>
 
       {/* Stats Section */}

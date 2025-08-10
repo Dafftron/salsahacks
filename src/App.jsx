@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { SequenceBuilderProvider } from './contexts/SequenceBuilderContext'
 import { CardSizeProvider } from './contexts/CardSizeContext'
 import Navigation from './components/layout/Navigation'
+import ProtectedRoute from './components/auth/ProtectedRoute'
 
 // Lazy loading de páginas para Code Splitting
 const HomePage = lazy(() => import('./pages/HomePage'))
@@ -41,14 +42,46 @@ function AppContent() {
             <Route path="/" element={<HomePage />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/invite/:invitationCode" element={<InvitePage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/notas" element={<NotasPage />} />
-            <Route path="/categorias" element={<CategoriesPage />} />
-            <Route path="/figuras" element={<FigurasPage />} />
-            <Route path="/escuela" element={<EscuelaPage />} />
+            
+            {/* Rutas protegidas - requieren autenticación */}
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/notas" element={
+              <ProtectedRoute>
+                <NotasPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/categorias" element={
+              <ProtectedRoute>
+                <CategoriesPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/figuras" element={
+              <ProtectedRoute>
+                <FigurasPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/escuela" element={
+              <ProtectedRoute>
+                <EscuelaPage />
+              </ProtectedRoute>
+            } />
             {/* <Route path="/eventos" element={<EventosPage />} /> */} {/* TEMPORAL - Recrearemos después */}
-            <Route path="/admin" element={<AdminPage />} />
+            
+            {/* Ruta de administración - requiere rol específico */}
+            <Route path="/admin" element={
+              <ProtectedRoute requiredRole="SUPER_ADMIN">
+                <AdminPage />
+              </ProtectedRoute>
+            } />
           </Routes>
         </Suspense>
       </main>
