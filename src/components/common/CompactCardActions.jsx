@@ -61,14 +61,16 @@ const CompactCardActions = ({
           <Plus className="h-3 w-3" />
         </button>
         
-        {/* Botón de descargar */}
-        <button
-          onClick={onDownload}
-          className="p-1 text-gray-400 hover:text-green-500 transition-colors rounded"
-          title="Descargar"
-        >
-          <Download className="h-3 w-3" />
-        </button>
+        {/* Botón de descargar (solo si se proporciona onDownload) */}
+        {onDownload && (
+          <button
+            onClick={onDownload}
+            className="p-1 text-gray-400 hover:text-green-500 transition-colors rounded"
+            title="Descargar"
+          >
+            <Download className="h-3 w-3" />
+          </button>
+        )}
         
         {/* Botón de editar */}
         <button

@@ -114,7 +114,7 @@ const FigurasPage = () => {
   const [sequences, setSequences] = useState([])
   const [sequencesLoading, setSequencesLoading] = useState(true)
   
-  const { user } = useAuth()
+  const { user, userProfile } = useAuth()
   const { getVideoConfig, getSequenceConfig } = useCardSize()
   
   // Usar el contexto de constructor de secuencias
@@ -394,6 +394,18 @@ const FigurasPage = () => {
   }
 
   const handleDownloadSequence = (sequence) => {
+    // Verificar permisos de descarga
+    if (!user || !userProfile) {
+      addToast('❌ Debes iniciar sesión para descargar secuencias', 'error')
+      return
+    }
+
+    // Solo maestros y super admin pueden descargar
+    if (userProfile.role !== 'maese' && userProfile.role !== 'super_admin') {
+      addToast('❌ Solo los maestros pueden descargar secuencias', 'error')
+      return
+    }
+
     setDownloadSequenceModal({ isOpen: true, sequence })
   }
 
@@ -908,6 +920,18 @@ const FigurasPage = () => {
 
   // Función para descargar video usando el sistema optimizado
   const downloadVideo = async (video) => {
+    // Verificar permisos de descarga
+    if (!user || !userProfile) {
+      addToast('❌ Debes iniciar sesión para descargar videos', 'error')
+      return
+    }
+
+    // Solo maestros y super admin pueden descargar
+    if (userProfile.role !== 'maese' && userProfile.role !== 'super_admin') {
+      addToast('❌ Solo los maestros pueden descargar videos', 'error')
+      return
+    }
+
     try {
       // Usar el sistema de descarga optimizado
       const { ref, getDownloadURL } = await import('firebase/storage')
@@ -1097,13 +1121,15 @@ const FigurasPage = () => {
 
         {/* Action Buttons - Main Level */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-          <button 
-            onClick={() => setIsUploadModalOpen(true)}
-            className={`flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-colors duration-200`}
-          >
-            <Upload className="h-5 w-5" />
-            <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
-          </button>
+          {(userProfile?.role === 'maese' || userProfile?.role === 'super_admin') && (
+            <button 
+              onClick={() => setIsUploadModalOpen(true)}
+              className={`flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-colors duration-200`}
+            >
+              <Upload className="h-5 w-5" />
+              <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
+            </button>
+          )}
           <button 
             onClick={toggleBuilder}
             className={`flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-colors duration-200 ${
@@ -1551,9 +1577,15 @@ const FigurasPage = () => {
                              }
                            }
                            
-                           // Añadir funcionalidad al botón de descarga
-                           stats.querySelector('button[title="Descargar video"]').onclick = () => {
-                             downloadVideo(video)
+                           // Añadir funcionalidad al botón de descarga (solo para maestros)
+                           const downloadButton = stats.querySelector('button[title="Descargar video"]')
+                           if (downloadButton && (userProfile?.role === 'maese' || userProfile?.role === 'super_admin')) {
+                             downloadButton.onclick = () => {
+                               downloadVideo(video)
+                             }
+                           } else if (downloadButton) {
+                             // Ocultar botón para usuarios sin permisos
+                             downloadButton.style.display = 'none'
                            }
                            
                            // Añadir funcionalidad al botón de editar
@@ -1813,7 +1845,7 @@ const FigurasPage = () => {
                           onEdit={() => openEditModal(video)}
                           onDelete={() => openDeleteModal(video)}
                           onAddToSequence={() => handleAddVideoToSequence(video)}
-                          onDownload={() => downloadVideo(video)}
+                          onDownload={userProfile?.role === 'maese' || userProfile?.role === 'super_admin' ? () => downloadVideo(video) : undefined}
                           onPlay={() => handlePlayVideo(video)}
                           isVideoInSequence={isVideoInSequence(video)}
                           isBuilderOpen={isBuilderOpen}
@@ -1866,15 +1898,17 @@ const FigurasPage = () => {
                             >
                               <Plus className="h-4 w-4" />
                             </button>
-                            <button 
-                              onClick={() => {
-                                downloadVideo(video)
-                              }}
-                              className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
-                              title="Descargar video"
-                            >
-                              <Download className="h-4 w-4" />
-                            </button>
+                            {(userProfile?.role === 'maese' || userProfile?.role === 'super_admin') && (
+                              <button 
+                                onClick={() => {
+                                  downloadVideo(video)
+                                }}
+                                className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
+                                title="Descargar video"
+                              >
+                                <Download className="h-4 w-4" />
+                              </button>
+                            )}
                             <button 
                               onClick={() => openEditModal(video)}
                               className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"

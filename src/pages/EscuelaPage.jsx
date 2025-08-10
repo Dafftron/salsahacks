@@ -119,7 +119,7 @@ const EscuelaPage = () => {
   
 
   
-  const { user } = useAuth()
+  const { user, userProfile } = useAuth()
   const { getVideoConfig, getSequenceConfig } = useCardSize()
 
   
@@ -269,6 +269,18 @@ const EscuelaPage = () => {
 
   // Función para descargar video
   const downloadVideo = async (video) => {
+    // Verificar permisos de descarga
+    if (!user || !userProfile) {
+      addToast('❌ Debes iniciar sesión para descargar videos', 'error')
+      return
+    }
+
+    // Solo maestros y super admin pueden descargar
+    if (userProfile.role !== 'maese' && userProfile.role !== 'super_admin') {
+      addToast('❌ Solo los maestros pueden descargar videos', 'error')
+      return
+    }
+
     try {
       addToast(`Iniciando descarga de ${video.title}...`, 'info')
       
@@ -744,16 +756,17 @@ const EscuelaPage = () => {
         )}
 
         {/* Action Buttons - Main Level */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-          <button 
-            onClick={() => setIsUploadModalOpen(true)}
-            className={`flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-colors duration-200`}
-          >
-            <Upload className="h-5 w-5" />
-            <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
-          </button>
-
-        </div>
+        {(userProfile?.role === 'maese' || userProfile?.role === 'super_admin') && (
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+            <button 
+              onClick={() => setIsUploadModalOpen(true)}
+              className={`flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white rounded-lg font-medium shadow-lg hover:shadow-xl transition-colors duration-200`}
+            >
+              <Upload className="h-5 w-5" />
+              <span>SUBIR VIDEO(S) A {selectedStyle.toUpperCase()}</span>
+            </button>
+          </div>
+        )}
 
 
 
@@ -983,7 +996,7 @@ const EscuelaPage = () => {
                             onLike={() => handleVideoLike(video)}
                         onEdit={() => openEditModal(video)}
                         onDelete={() => openDeleteModal(video)}
-                        onDownload={() => downloadVideo(video)}
+                        onDownload={userProfile?.role === 'maese' || userProfile?.role === 'super_admin' ? () => downloadVideo(video) : undefined}
                             onPlay={() => handlePlayVideo(video)}
                             type="video"
                           />
@@ -1014,15 +1027,17 @@ const EscuelaPage = () => {
                                 <span className="font-medium">{video.likes || 0}</span>
               </button>
 
-              <button
-                                onClick={() => {
-                                  downloadVideo(video)
-                                }}
-                                className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
-                                title="Descargar video"
-                              >
-                                <Download className="h-4 w-4" />
-              </button>
+              {(userProfile?.role === 'maese' || userProfile?.role === 'super_admin') && (
+                <button
+                  onClick={() => {
+                    downloadVideo(video)
+                  }}
+                  className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
+                  title="Descargar video"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
+              )}
               <button
                                 onClick={() => openEditModal(video)}
                                 className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"

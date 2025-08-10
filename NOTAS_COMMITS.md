@@ -2,6 +2,41 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🚀 **COMMIT #115: CORREGIR PÁGINA DE INICIO Y DEPLOY AUTOMÁTICO** - 2025-01-10 13:23:20
+- **Objetivo**: Corregir errores en HomePage.jsx y realizar deploy automático con todas las mejoras
+- **Archivos modificados**: HomePage.jsx, deploy.bat
+
+#### ✨ **FUNCIONALIDADES IMPLEMENTADAS:**
+
+1. **Corrección de HomePage.jsx**:
+   - **Variable no definida**: Cambiado `isAuthenticated` por `user` en sección de perfil
+   - **Lógica consistente**: Unificada la verificación de autenticación en todo el componente
+   - **Import optimizado**: UserProfile se importa correctamente y se usa solo cuando hay usuario
+
+2. **Deploy automático exitoso**:
+   - **Build exitoso**: 1443 módulos transformados en 5.91s
+   - **Firebase Hosting**: Desplegado en https://salsahacks-a9cac.web.app
+   - **Git workflow**: Commit automático y push exitoso
+   - **Chunks optimizados**: Vendor bundles separados correctamente
+
+#### 🔧 **CAMBIOS TÉCNICOS:**
+- **HomePage.jsx**: 
+  ```diff
+  - {isAuthenticated && (
+  + {user && (
+  ```
+- **Deploy**: Script automático ejecutado correctamente
+- **Build**: Sin errores, optimización de chunks funcionando
+
+#### 🎯 **RESULTADO:**
+- ✅ Página de inicio funciona correctamente
+- ✅ Sección de perfil visible solo para usuarios autenticados
+- ✅ Aplicación desplegada y accesible públicamente
+- ✅ Todas las funcionalidades de seguridad implementadas
+- ✅ Base sólida para pruebas de usuarios externos
+
+---
+
 ### 🗄️ **COMMIT #114: CONFIGURAR BASES DE DATOS SEPARADAS FIREBASE - ESCUELA VS FIGURAS** - 2024-12-19 23:45:00
 - **Objetivo**: Separar completamente las bases de datos de videos y secuencias entre ESCUELA, FIGURAS y EVENTOS
 - **Archivos modificados**: firestore.js, sequences.js, VideoUploadModal.jsx, EscuelaPage.jsx
