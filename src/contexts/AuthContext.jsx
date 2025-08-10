@@ -14,6 +14,7 @@ import {
   markInvitationAsUsed as firebaseMarkInvitationAsUsed
 } from '../services/firebase'
 import { ROLES, hasPermission, getRolePermissions, hasPageAccess } from '../constants/roles'
+import config from '../config/app'
 
 const AuthContext = createContext()
 
@@ -187,8 +188,8 @@ export const AuthProvider = ({ children }) => {
       })
 
       if (result.success) {
-        // Generar URL de invitación
-        const invitationUrl = `${window.location.origin}/invite/${result.invitationCode}`
+        // Generar URL de invitación usando la configuración
+        const invitationUrl = config.getInvitationUrl(result.invitationCode)
         return { 
           success: true, 
           invitationCode: result.invitationCode,

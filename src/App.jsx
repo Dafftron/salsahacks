@@ -6,6 +6,7 @@ import { SequenceBuilderProvider } from './contexts/SequenceBuilderContext'
 import { CardSizeProvider } from './contexts/CardSizeContext'
 import Navigation from './components/layout/Navigation'
 import ProtectedRoute from './components/auth/ProtectedRoute'
+import { ROLES } from './constants/roles'
 
 // Lazy loading de páginas para Code Splitting
 const HomePage = lazy(() => import('./pages/HomePage'))
@@ -78,7 +79,7 @@ function AppContent() {
             
             {/* Ruta de administración - requiere rol específico */}
             <Route path="/admin" element={
-              <ProtectedRoute requiredRole="SUPER_ADMIN">
+              <ProtectedRoute requiredRole={ROLES.SUPER_ADMIN}>
                 <AdminPage />
               </ProtectedRoute>
             } />
