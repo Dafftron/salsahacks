@@ -34,12 +34,7 @@ export default defineConfig({
           'vendor-jszip': ['jszip'],
           'vendor-ffmpeg': ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
           'vendor-icons': ['lucide-react'],
-          'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
-          // Firebase por módulos específicos (más granular)
-          'firebase-core': ['firebase/app'],
-          'firebase-auth': ['firebase/auth'],
-          'firebase-firestore': ['firebase/firestore'],
-          'firebase-storage': ['firebase/storage']
+          'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage']
         },
         // Optimización de nombres de chunks
         chunkFileNames: (chunkInfo) => {

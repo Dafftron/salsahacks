@@ -98,7 +98,7 @@ export const optimizeServiceImports = () => {
     
     getFirebaseService: async (serviceName) => {
       if (!serviceCache.has(serviceName)) {
-        const service = await import(`../services/firebase/${serviceName}`)
+        const service = await import(`../services/firebase/${serviceName}.js`)
         serviceCache.set(serviceName, service)
       }
       return serviceCache.get(serviceName)

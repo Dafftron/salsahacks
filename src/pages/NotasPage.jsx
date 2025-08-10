@@ -19,6 +19,7 @@ import {
   ChevronDown,
   ChevronRight
 } from 'lucide-react'
+import StorageMonitor from '../components/storage/StorageMonitor'
 
 const NotasPage = () => {
   const [activeTab, setActiveTab] = useState('commits')
@@ -1811,6 +1812,11 @@ const NotasPage = () => {
             <span className="text-pink-500">NOTAS DE DESARROLLO</span>
           </h1>
           <p className="text-gray-600 text-lg">Seguimiento de commits y control de hitos del proyecto</p>
+        </div>
+
+        {/* Firebase Storage Monitor */}
+        <div className="mb-8">
+          <StorageMonitor />
         </div>
 
         {/* Category Filters */}
