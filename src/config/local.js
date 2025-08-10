@@ -1,7 +1,7 @@
 // Configuración local - EDITA ESTE ARCHIVO CON TU URL DE HOSTING
 export const LOCAL_CONFIG = {
   // Cambia esta URL por la URL real de tu hosting
-  PRODUCTION_URL: 'https://salsahacks.vercel.app',
+  PRODUCTION_URL: 'https://salsahacks-a9cac.web.app', // URL real de Firebase Hosting
   
   // Otras configuraciones locales que puedas necesitar
   APP_NAME: 'SalsaHacks',
