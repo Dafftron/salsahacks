@@ -444,10 +444,14 @@ const EscuelaPage = () => {
     })
   }
 
-  // Función para limpiar filtros
+  // Función para limpiar filtros de búsqueda y tags (mantiene el estilo actual)
   const clearFilters = () => {
     setSelectedTags([])
     setSearchTerm('')
+    setActiveCategoryChips([])
+    setSortBy('none')
+    setShowFavorites(false)
+    // NO cambiar el estilo seleccionado - mantener el estilo actual
   }
 
   // Función para resetear todas las preferencias de filtros
@@ -458,7 +462,8 @@ const EscuelaPage = () => {
     setActiveCategoryChips([])
     setSortBy('none')
     setShowFavorites(false)
-    setSelectedStyle('salsa')
+    // NO cambiar el estilo seleccionado - mantener el estilo actual
+    // setSelectedStyle('salsa') // Comentado para mantener el estilo actual
     
     // Limpiar localStorage
     try {
@@ -813,12 +818,12 @@ const EscuelaPage = () => {
             </span>
           </button>
 
-          {/* Botón Limpiar todos los filtros */}
-          {(activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites || selectedTags.length > 0 || searchTerm || selectedStyle !== 'salsa') && (
+          {/* Botón Limpiar filtros */}
+          {(activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites || selectedTags.length > 0 || searchTerm) && (
             <button
-              onClick={resetAllFilterPreferences}
+              onClick={clearFilters}
               className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 transition-colors duration-200"
-              title="Restablecer todos los filtros y preferencias"
+              title="Limpiar filtros de búsqueda, tags y ordenamiento"
             >
               <X className="h-3 w-3" />
               <span>Limpiar filtros</span>
