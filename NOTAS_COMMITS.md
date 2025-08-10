@@ -2,6 +2,54 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🚀 **COMMIT #116: CORREGIR REDIRECCIÓN ADMIN Y URLs DE INVITACIÓN PARA PRODUCCIÓN** - 2025-01-10 14:15:00
+- **Objetivo**: Corregir redirección incorrecta en página admin y configurar URLs de invitación para producción
+- **Archivos modificados**: App.jsx, ProtectedRoute.jsx, AuthContext.jsx, roles.js, config/app.js (nuevo), config/local.js (nuevo)
+
+#### ✨ **FUNCIONALIDADES IMPLEMENTADAS:**
+
+1. **Corrección de redirección admin**:
+   - **Problema identificado**: Comparación incorrecta de roles entre `"SUPER_ADMIN"` (string) y `ROLES.SUPER_ADMIN` (`'super_admin'`)
+   - **Solución**: Importar `ROLES` constant y usar `ROLES.SUPER_ADMIN` en lugar de string hardcodeado
+   - **Archivos corregidos**: App.jsx y ProtectedRoute.jsx ahora usan constantes consistentes
+
+2. **Sistema de URLs de invitación para producción**:
+   - **Problema**: Links de invitación usaban `localhost:3000` en desarrollo y producción
+   - **Solución**: Sistema de configuración robusto que detecta ambiente y usa URL correcta
+   - **Configuración centralizada**: `src/config/app.js` con lógica automática de detección
+   - **Configuración local**: `src/config/local.js` para personalizar URL de producción
+
+3. **Arquitectura de configuración**:
+   - **Detección automática**: `import.meta.env.PROD` para distinguir desarrollo vs producción
+   - **Variables de entorno**: Soporte para `VITE_APP_PRODUCTION_URL` como fuente primaria
+   - **Fallback local**: `LOCAL_CONFIG.PRODUCTION_URL` como respaldo configurable
+   - **URLs dinámicas**: Invitaciones generan URLs correctas según ambiente
+
+#### 🔧 **CAMBIOS TÉCNICOS:**
+- **App.jsx**: 
+  ```diff
+  - requiredRole="SUPER_ADMIN"
+  + requiredRole={ROLES.SUPER_ADMIN}
+  ```
+- **ProtectedRoute.jsx**: Agregado logging para debug de acceso denegado
+- **AuthContext.jsx**: `createInvitation` ahora usa `config.getInvitationUrl()`
+- **config/app.js**: Sistema inteligente de detección de ambiente y URLs
+- **config/local.js**: Configuración local editable para URL de producción
+
+#### 🎯 **RESULTADO:**
+- ✅ Página admin accesible para usuarios con rol `super_admin`
+- ✅ URLs de invitación generan links correctos según ambiente
+- ✅ Desarrollo: `localhost:3000` (correcto)
+- ✅ Producción: URL configurable (ej: `https://salsahacks.vercel.app`)
+- ✅ Sistema de configuración robusto y mantenible
+
+#### 📋 **INSTRUCCIONES PARA USUARIO:**
+1. **Editar URL de producción**: Modificar `src/config/local.js` con tu URL real de hosting
+2. **Verificar cambios**: Las invitaciones ahora generarán URLs correctas
+3. **Admin page**: Funciona correctamente para super admins
+
+---
+
 ### 🚀 **COMMIT #115: CORREGIR PÁGINA DE INICIO Y DEPLOY AUTOMÁTICO** - 2025-01-10 13:23:20
 - **Objetivo**: Corregir errores en HomePage.jsx y realizar deploy automático con todas las mejoras
 - **Archivos modificados**: HomePage.jsx, deploy.bat
