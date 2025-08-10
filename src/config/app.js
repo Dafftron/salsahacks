@@ -2,8 +2,8 @@ import { LOCAL_CONFIG } from './local'
 
 // Configuración de la aplicación
 const config = {
-  // URL base para producción - puede ser configurada por variable de entorno o archivo local
-  PRODUCTION_URL: import.meta.env.VITE_APP_PRODUCTION_URL || LOCAL_CONFIG.PRODUCTION_URL,
+  // URL base para producción - prioriza configuración local sobre variable de entorno
+  PRODUCTION_URL: LOCAL_CONFIG.PRODUCTION_URL || import.meta.env.VITE_APP_PRODUCTION_URL,
   
   // Determinar si estamos en producción
   isProduction: import.meta.env.PROD,
