@@ -631,134 +631,53 @@ class VideoCombiner {
   async combineVideosWithWebWorker(videoBlobs, onProgress) {
     return new Promise((resolve, reject) => {
       try {
-        console.log('🎬 Iniciando Web Worker para combinación...')
-        
-        // Crear Web Worker
-        const workerCode = `
-          importScripts('https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/umd/ffmpeg.js');
-          
-          let ffmpeg = null;
-          
-          self.onmessage = async function(e) {
-            try {
-              const { videoBlobs, command } = e.data;
-              
-              if (command === 'init') {
-                // Inicializar FFmpeg
-                ffmpeg = new FFmpeg();
-                await ffmpeg.load();
-                self.postMessage({ type: 'progress', message: 'FFmpeg cargado correctamente' });
-                return;
-              }
-              
-              if (command === 'combine') {
-                // Escribir archivos de video
-                for (let i = 0; i < videoBlobs.length; i++) {
-                  const videoData = videoBlobs[i];
-                  const fileName = \`video_\${i}.mp4\`;
-                  await ffmpeg.writeFile(fileName, new Uint8Array(videoData));
-                  self.postMessage({ 
-                    type: 'progress', 
-                    message: \`Video \${i + 1}/\${videoBlobs.length} preparado\`,
-                    current: 30 + (i / videoBlobs.length) * 30
-                  });
-                }
-                
-                // Crear lista de archivos
-                const fileList = videoBlobs.map((_, i) => \`file 'video_\${i}.mp4'\`).join('\\n');
-                await ffmpeg.writeFile('filelist.txt', fileList);
-                
-                // Ejecutar FFmpeg
-                self.postMessage({ type: 'progress', message: 'Combinando videos...', current: 70 });
-                
-                await ffmpeg.run(
-                  '-f', 'concat',
-                  '-safe', '0',
-                  '-i', 'filelist.txt',
-                  '-c', 'copy',
-                  '-movflags', '+faststart',
-                  'output.mp4'
-                );
-                
-                // Leer resultado
-                const outputData = await ffmpeg.readFile('output.mp4');
-                
-                // Limpiar archivos
-                for (let i = 0; i < videoBlobs.length; i++) {
-                  await ffmpeg.deleteFile(\`video_\${i}.mp4\`);
-                }
-                await ffmpeg.deleteFile('filelist.txt');
-                await ffmpeg.deleteFile('output.mp4');
-                
-                self.postMessage({ 
-                  type: 'complete', 
-                  data: outputData.buffer,
-                  message: 'Combinación completada'
-                });
-              }
-              
-            } catch (error) {
-              self.postMessage({ type: 'error', error: error.message });
-            }
-          };
-        `;
-        
-        const blob = new Blob([workerCode], { type: 'application/javascript' });
-        const worker = new Worker(URL.createObjectURL(blob));
-        
-        let isCompleted = false;
-        
-        worker.onmessage = function(e) {
-          const { type, message, current, data, error } = e.data;
-          
+        console.log('🎬 Iniciando Web Worker local para combinación...')
+
+        const worker = new Worker(new URL('../../workers/ffmpegConcatWorker.js', import.meta.url), { type: 'module' })
+
+        let isCompleted = false
+
+        worker.onmessage = (e) => {
+          const { type, message, current, data, error } = e.data || {}
+
           if (type === 'progress' && onProgress) {
-            onProgress({
-              stage: 'ffmpeg',
-              current: current || 50,
-              total: 100,
-              message: message
-            });
+            onProgress({ stage: 'ffmpeg', current: current || 50, total: 100, message })
           }
-          
+          if (type === 'ready' && onProgress) {
+            onProgress({ stage: 'ffmpeg', current: 60, total: 100, message: 'FFmpeg listo en worker' })
+          }
           if (type === 'complete') {
-            isCompleted = true;
-            const outputBlob = new Blob([data], { type: 'video/mp4' });
-            worker.terminate();
-            resolve(outputBlob);
+            isCompleted = true
+            const outputBlob = new Blob([data], { type: 'video/mp4' })
+            worker.terminate()
+            resolve(outputBlob)
           }
-          
           if (type === 'error') {
-            isCompleted = true;
-            worker.terminate();
-            reject(new Error(error));
+            isCompleted = true
+            worker.terminate()
+            reject(new Error(error))
           }
-        };
-        
-        worker.onerror = function(error) {
+        }
+
+        worker.onerror = (error) => {
           if (!isCompleted) {
-            isCompleted = true;
-            worker.terminate();
-            reject(new Error('Error en Web Worker: ' + error.message));
+            isCompleted = true
+            worker.terminate()
+            reject(new Error('Error en Web Worker: ' + error.message))
           }
-        };
-        
-        // Inicializar y ejecutar
-        worker.postMessage({ command: 'init' });
-        
-        setTimeout(() => {
-          const videoDataArray = videoBlobs.map(blob => blob.arrayBuffer());
-          Promise.all(videoDataArray).then(buffers => {
-            worker.postMessage({ 
-              command: 'combine', 
-              videoBlobs: buffers 
-            });
-          });
-        }, 1000);
-        
+        }
+
+        // Inicializar
+        worker.postMessage({ command: 'init' })
+
+        // Enviar buffers
+        Promise.all(videoBlobs.map(b => b.arrayBuffer())).then(buffers => {
+          worker.postMessage({ command: 'combine', videoBuffers: buffers })
+        })
       } catch (error) {
-        reject(new Error('Error creando Web Worker: ' + error.message));
+        reject(new Error('Error creando Web Worker local: ' + (error?.message || String(error))))
       }
-    });
+    })
   }
 
   // Método para descargar videos con límite de concurrencia

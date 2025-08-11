@@ -22,6 +22,15 @@
 - Impacto:  
   - Mayor robustez cuando el CDN de ffmpeg UMD no está disponible o bloqueado; preferimos recursos locales primero.  
 
+### 🧵 COMMIT: Web Worker local para concat con assets en /public/ffmpeg - 2025-08-11  
+- Archivos: `src/services/video/videoCombiner.js`, `src/workers/ffmpegConcatWorker.js`  
+- Cambios:  
+  - Nuevo worker local `ffmpegConcatWorker.js` que carga FFmpeg desde `/ffmpeg/` (assets locales) y concatena sin recodificar.  
+  - `combineVideosWithWebWorker` ahora usa el worker local en vez de depender del CDN (UMD).  
+- Impacto:  
+  - Evitamos errores de import en workers por CORS/CDN.  
+  - Pipeline de combinación en background más estable.  
+
 # 📝 NOTAS Y COMMITS - SALSAHACKS V2.0
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
