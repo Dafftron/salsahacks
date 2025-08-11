@@ -1,3 +1,11 @@
+### 🧭 COMMIT: Controles tri-estado y favoritos desacoplados en FigurasPage - 2025-08-11  
+- Archivos: `src/pages/FigurasPage.jsx`  
+- Cambios:  
+  - Orden A‑Z y Puntuación ahora son tri‑estado: ninguno → asc/desc → ninguno.  
+  - Favoritos es filtro independiente con botón extra para ordenar por likes (desc/asc/ninguno).  
+  - Eliminada dependencia de “Limpiar filtros” para apagar cada control.  
+- Impacto:  
+  - UX más clara; cada control se activa y se desactiva sin resetear el resto.  
 ### 📦 COMMIT: Secuencias se descargan solo como ZIP con originales nombrados - 2025-08-11  
 - Archivos: `src/components/video/DownloadModal.jsx`  
 - Cambios:  
