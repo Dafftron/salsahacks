@@ -984,6 +984,110 @@ export const getVideos = async () => {
   }
 }
 
+// ===== CONSULTAS PARA DASHBOARD =====
+
+export const getVideosCount = async () => {
+  try {
+    const q = query(collection(db, COLLECTIONS.VIDEOS))
+    const snap = await getDocs(q)
+    return { count: snap.size, error: null }
+  } catch (error) {
+    return { count: 0, error: error.message }
+  }
+}
+
+export const getSchoolContentCount = async () => {
+  try {
+    const q = query(collection(db, COLLECTIONS.SCHOOL))
+    const snap = await getDocs(q)
+    return { count: snap.size, error: null }
+  } catch (error) {
+    return { count: 0, error: error.message }
+  }
+}
+
+export const getEventsCount = async () => {
+  try {
+    const q = query(collection(db, COLLECTIONS.EVENTS))
+    const snap = await getDocs(q)
+    return { count: snap.size, error: null }
+  } catch (error) {
+    return { count: 0, error: error.message }
+  }
+}
+
+export const getUsersCount = async () => {
+  try {
+    const q = query(collection(db, COLLECTIONS.USERS))
+    const snap = await getDocs(q)
+    return { count: snap.size, error: null }
+  } catch (error) {
+    return { count: 0, error: error.message }
+  }
+}
+
+export const getLatestVideos = async (limitCount = 8, page = 'figuras') => {
+  try {
+    const videosCollection = getVideosCollection(page)
+    const q = query(
+      collection(db, videosCollection),
+      orderBy('createdAt', 'desc'),
+      limit(limitCount)
+    )
+    const snap = await getDocs(q)
+    return { videos: snap.docs.map(d => ({ id: d.id, ...d.data() })), error: null }
+  } catch (error) {
+    return { videos: [], error: error.message }
+  }
+}
+
+export const getTopLikedVideos = async (limitCount = 8, page = 'figuras') => {
+  try {
+    const videosCollection = getVideosCollection(page)
+    const q = query(
+      collection(db, videosCollection),
+      orderBy('likes', 'desc'),
+      limit(limitCount)
+    )
+    const snap = await getDocs(q)
+    return { videos: snap.docs.map(d => ({ id: d.id, ...d.data() })), error: null }
+  } catch (error) {
+    // Fallback: tomar últimos y ordenar en cliente
+    try {
+      const fallback = await getLatestVideos(50, page)
+      const sorted = [...fallback.videos].sort((a, b) => (b.likes || 0) - (a.likes || 0)).slice(0, limitCount)
+      return { videos: sorted, error: null }
+    } catch (e) {
+      return { videos: [], error: error.message || String(e) }
+    }
+  }
+}
+
+export const getUserContinueStudy = async (userId) => {
+  try {
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    if (!userDocSnap.exists()) return { videos: [], error: 'Usuario no encontrado' }
+    const userData = userDocSnap.data()
+    const studyItems = (userData.study || []).map(item => typeof item === 'string' ? { id: item, page: 'figuras' } : item)
+    const completed = new Set(userData.studyCompleted || [])
+    const pending = studyItems.filter(it => !completed.has(it.id))
+    if (pending.length === 0) return { videos: [], error: null }
+    const videos = []
+    for (const it of pending.slice(0, 12)) {
+      try {
+        const collectionName = it.page === 'escuela' ? COLLECTIONS.ESCUELA_VIDEOS : (it.page === 'eventos' ? COLLECTIONS.EVENTOS_VIDEOS : COLLECTIONS.VIDEOS)
+        const vref = doc(db, collectionName, it.id)
+        const vsnap = await getDoc(vref)
+        if (vsnap.exists()) videos.push({ id: vsnap.id, ...vsnap.data(), _page: it.page })
+      } catch (_) {}
+    }
+    return { videos, error: null }
+  } catch (error) {
+    return { videos: [], error: error.message }
+  }
+}
+
 // ===== SINCRONIZACIÓN EN TIEMPO REAL =====
 
 export const subscribeToVideos = (callback) => {

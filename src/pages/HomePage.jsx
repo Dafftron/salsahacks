@@ -1,10 +1,66 @@
 import { Link } from 'react-router-dom'
-import { Music, Video, BookOpen, Calendar, Tag, FileText } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Music, Video, BookOpen, Calendar, Tag, FileText, TrendingUp, Clock, Heart } from 'lucide-react'
 import UserProfile from '../components/UserProfile'
 import { useAuth } from '../contexts/AuthContext'
+import {
+  getVideosCount,
+  getSchoolContentCount,
+  getEventsCount,
+  getUsersCount,
+  getLatestVideos,
+  getTopLikedVideos,
+  getUserContinueStudy
+} from '../services/firebase/firestore'
 
 const HomePage = () => {
   const { user, userProfile } = useAuth()
+
+  const [loading, setLoading] = useState(true)
+  const [kpis, setKpis] = useState({ videos: 0, school: 0, events: 0, users: 0 })
+  const [latest, setLatest] = useState([])
+  const [featured, setFeatured] = useState([])
+  const [continueStudy, setContinueStudy] = useState([])
+
+  useEffect(() => {
+    let mounted = true
+    const load = async () => {
+      try {
+        const [v, s, e, u, latestFig, topLiked] = await Promise.all([
+          getVideosCount(),
+          getSchoolContentCount(),
+          getEventsCount(),
+          getUsersCount(),
+          getLatestVideos(8, 'figuras'),
+          getTopLikedVideos(8, 'figuras')
+        ])
+        if (!mounted) return
+        setKpis({
+          videos: v.count || 0,
+          school: s.count || 0,
+          events: e.count || 0,
+          users: u.count || 0
+        })
+        setLatest(latestFig.videos || [])
+        setFeatured(topLiked.videos || [])
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+    load()
+    return () => { mounted = false }
+  }, [])
+
+  useEffect(() => {
+    let mounted = true
+    const loadContinue = async () => {
+      if (!user) { setContinueStudy([]); return }
+      const res = await getUserContinueStudy(user.uid)
+      if (mounted) setContinueStudy(res.videos || [])
+    }
+    loadContinue()
+    return () => { mounted = false }
+  }, [user])
   
   const features = [
     {
@@ -119,25 +175,109 @@ const HomePage = () => {
         <h2 className="text-3xl font-bold text-salsa-primary mb-8 text-center">
           Estadísticas de la Plataforma
         </h2>
-        <div className="grid md:grid-cols-4 gap-8 text-center">
-          <div>
-            <div className="text-3xl font-bold text-salsa-primary mb-2">150+</div>
+        <div className="grid md:grid-cols-4 gap-6 text-center">
+          <div className="card p-4">
+            <div className="text-3xl font-bold text-salsa-primary mb-1">{kpis.videos}</div>
             <div className="text-gray-600">Videos de Figuras</div>
           </div>
-          <div>
-            <div className="text-3xl font-bold text-salsa-primary mb-2">25+</div>
-            <div className="text-gray-600">Cursos Disponibles</div>
+          <div className="card p-4">
+            <div className="text-3xl font-bold text-salsa-primary mb-1">{kpis.school}</div>
+            <div className="text-gray-600">Cursos/Escuela</div>
           </div>
-          <div>
-            <div className="text-3xl font-bold text-salsa-primary mb-2">50+</div>
-            <div className="text-gray-600">Eventos Próximos</div>
+          <div className="card p-4">
+            <div className="text-3xl font-bold text-salsa-primary mb-1">{kpis.events}</div>
+            <div className="text-gray-600">Eventos</div>
           </div>
-          <div>
-            <div className="text-3xl font-bold text-salsa-primary mb-2">1000+</div>
-            <div className="text-gray-600">Usuarios Activos</div>
+          <div className="card p-4">
+            <div className="text-3xl font-bold text-salsa-primary mb-1">{kpis.users}</div>
+            <div className="text-gray-600">Usuarios</div>
           </div>
         </div>
       </div>
+
+      {/* Sección Últimos Videos */}
+      <div className="mb-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <Clock className="h-6 w-6 text-salsa-primary" /> Últimos videos
+          </h2>
+          <Link to="/figuras" className="text-salsa-primary hover:underline">Ver todo</Link>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {latest.map(v => (
+            <Link key={v.id} to="/figuras" className="card p-3">
+              <div className="aspect-video bg-gray-100 rounded-lg mb-2 overflow-hidden">
+                {v.thumbnailUrl ? (
+                  <img src={v.thumbnailUrl} alt={v.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">Sin miniatura</div>
+                )}
+              </div>
+              <div className="text-sm font-medium line-clamp-2">{v.title || v.originalTitle || 'Video'}</div>
+            </Link>
+          ))}
+          {latest.length === 0 && (
+            <div className="text-gray-500">No hay videos recientes.</div>
+          )}
+        </div>
+      </div>
+
+      {/* Sección Destacados */}
+      <div className="mb-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <TrendingUp className="h-6 w-6 text-salsa-primary" /> Destacados
+          </h2>
+          <Link to="/figuras" className="text-salsa-primary hover:underline">Ver todo</Link>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {featured.map(v => (
+            <Link key={v.id} to="/figuras" className="card p-3">
+              <div className="aspect-video bg-gray-100 rounded-lg mb-2 overflow-hidden">
+                {v.thumbnailUrl ? (
+                  <img src={v.thumbnailUrl} alt={v.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">Sin miniatura</div>
+                )}
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-medium line-clamp-2">{v.title || v.originalTitle || 'Video'}</div>
+                <div className="flex items-center text-xs text-gray-500 gap-1"><Heart className="h-3 w-3" />{v.likes || 0}</div>
+              </div>
+            </Link>
+          ))}
+          {featured.length === 0 && (
+            <div className="text-gray-500">No hay destacados aún.</div>
+          )}
+        </div>
+      </div>
+
+      {/* Sección Continuar estudiando */}
+      {user && (
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-2xl font-bold text-gray-800">Continuar estudiando</h2>
+            <Link to="/estudios" className="text-salsa-primary hover:underline">Ver mis estudios</Link>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {continueStudy.map(v => (
+              <Link key={v.id} to="/figuras" className="card p-3">
+                <div className="aspect-video bg-gray-100 rounded-lg mb-2 overflow-hidden">
+                  {v.thumbnailUrl ? (
+                    <img src={v.thumbnailUrl} alt={v.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400">Sin miniatura</div>
+                  )}
+                </div>
+                <div className="text-sm font-medium line-clamp-2">{v.title || v.originalTitle || 'Video'}</div>
+              </Link>
+            ))}
+            {continueStudy.length === 0 && (
+              <div className="text-gray-500">No tienes elementos pendientes.</div>
+            )}
+          </div>
+        </div>
+      )}
       
       {/* User Profile Section */}
       {user && (
