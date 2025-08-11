@@ -1,3 +1,13 @@
+### ✅ COMMIT: HomePage Dashboard + Analytics rápidos (MVP) - 2025-01-03  
+- Archivos: `src/pages/HomePage.jsx`, `src/services/firebase/firestore.js`, `src/services/firebase/sequences.js`, `src/pages/NotasPage.jsx`  
+- Cambios:
+  - HomePage: KPIs dinámicos (Figuras/Escuela/Eventos/Usuarios) y secciones: Últimos, Destacados, Continuar estudiando.
+  - Analytics rápidos: Subidas 24h, Estilo top, Secuencias totales y promedio, Top por likes.
+  - Firestore: contadores por colección (`escuela-videos`, `eventos-videos`) y helpers de listados.
+  - Notas: “HomePage - Dashboard principal” y “Sistema de recomendaciones (MVP)” marcados como Completados.
+- Impacto:
+  - Vista de inicio útil y accionable; estado del proyecto reflejado en Notas.
+
 ### 🧭 COMMIT: Mismo UX de orden y favoritos en EscuelaPage - 2025-08-11  
 - Archivos: `src/pages/EscuelaPage.jsx`  
 - Cambios:  
@@ -2960,12 +2970,12 @@ Si una secuencia tiene 3 videos con estos tags:
   - `src/pages/CategoriesPage.jsx`
 - **Estado**: ✅ Completado
 
-### **Commit #045 - Tags "Miguel" y "Sunshiresire" en categoría Profesores (Escuela + Categorías)**
+### **Commit #045 - Tag conjunto "Miguel y Sunsire" en categoría Profesores (Escuela + Categorías)**
 - **Fecha**: 2025-08-11
-- **Descripción**: Se agregan los tags "Miguel" y "Sunshiresire" a la categoría `PROFESORES` en todas las variantes de `escuela`, visibles en `EscuelaPage` y gestionables en `CategoriesPage`.
+- **Descripción**: Se unifica en un único tag conjunto "Miguel y Sunsire" dentro de `PROFESORES` en todas las variantes de `escuela`, visible en `EscuelaPage` y gestionable en `CategoriesPage`.
 - **Cambios**:
-  - Añadidos en `src/constants/categoryStructure.js` para SALSA, PASITOS LIBRES, SALSA CUBANA, MERENGUE, BACHATA, KIZOMBA, ZOUK.
-  - Sincronizados en la estructura de `src/pages/CategoriesPage.jsx`.
+  - Reemplazo de "Miguel" y "Sunshiresire" por el tag único "Miguel y Sunsire" en `src/constants/categoryStructure.js` (SALSA, PASITOS LIBRES, SALSA CUBANA, MERENGUE, BACHATA, KIZOMBA, ZOUK).
+  - Sincronización del mismo tag único en `src/pages/CategoriesPage.jsx`.
 - **Archivos**:
   - `src/constants/categoryStructure.js`
   - `src/pages/CategoriesPage.jsx`
