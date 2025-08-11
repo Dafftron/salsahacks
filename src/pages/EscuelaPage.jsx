@@ -941,7 +941,7 @@ const EscuelaPage = () => {
                   getVideoConfig(isFullWidth).titleSize === 'text-sm' ? 240 :
                   getVideoConfig(isFullWidth).titleSize === 'text-xl' ? 320 : 450
                 }
-                cardHeight={getVideoConfig(isFullWidth).compact ? 240 : 380}
+                cardHeight={getVideoConfig(isFullWidth).compact ? 260 : 420}
                 gap={24}
                 renderCard={(video) => (
                   <div

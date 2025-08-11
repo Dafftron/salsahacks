@@ -9,57 +9,62 @@ export const useContainerSize = () => {
   const resizeObserverRef = useRef(null)
   
   const updateSize = useCallback(() => {
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect()
-      const newSize = {
-        width: rect.width,
-        height: rect.height
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const nextWidth = rect.width
+    const nextHeight = rect.height
+
+    setSize(prev => {
+      const widthChanged = Math.abs(nextWidth - prev.width) > 1
+      const heightChanged = Math.abs(nextHeight - prev.height) > 1
+      if (!widthChanged && !heightChanged) {
+        return prev
       }
-      
-      // Solo actualizar si el tamaño cambió significativamente
-      if (Math.abs(newSize.width - size.width) > 1 || 
-          Math.abs(newSize.height - size.height) > 1) {
-        setSize(newSize)
-      }
-      
-      if (isLoading && newSize.width > 0) {
-        setIsLoading(false)
-      }
+      return { width: nextWidth, height: nextHeight }
+    })
+
+    if (isLoading && nextWidth > 0) {
+      setIsLoading(false)
     }
-  }, [size.width, size.height, isLoading])
+  }, [isLoading])
   
   useEffect(() => {
-    // Crear ResizeObserver para detectar cambios de tamaño
-    if (typeof window !== 'undefined' && window.ResizeObserver) {
-      resizeObserverRef.current = new ResizeObserver((entries) => {
+    // Crear ResizeObserver para detectar cambios de tamaño (montaje una vez)
+    const hasRO = typeof window !== 'undefined' && window.ResizeObserver
+    if (hasRO) {
+      const ro = new ResizeObserver((entries) => {
         for (const entry of entries) {
           const { width, height } = entry.contentRect
-          setSize({ width, height })
-          
+          setSize(prev => {
+            const widthChanged = Math.abs(width - prev.width) > 1
+            const heightChanged = Math.abs(height - prev.height) > 1
+            if (!widthChanged && !heightChanged) return prev
+            return { width, height }
+          })
           if (isLoading && width > 0) {
             setIsLoading(false)
           }
         }
       })
-      
+      resizeObserverRef.current = ro
       if (containerRef.current) {
-        resizeObserverRef.current.observe(containerRef.current)
+        ro.observe(containerRef.current)
       }
     } else {
       // Fallback para navegadores sin ResizeObserver
       updateSize()
-      window.addEventListener('resize', updateSize)
+      const handler = () => updateSize()
+      window.addEventListener('resize', handler)
+      resizeObserverRef.current = { disconnect: () => window.removeEventListener('resize', handler) }
     }
     
     return () => {
       if (resizeObserverRef.current) {
         resizeObserverRef.current.disconnect()
-      }
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', updateSize)
+        resizeObserverRef.current = null
       }
     }
-  }, [updateSize, isLoading])
+  }, [isLoading, updateSize])
   
   // Actualizar tamaño inicial cuando se asigna la ref
   useEffect(() => {

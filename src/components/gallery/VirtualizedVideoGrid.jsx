@@ -47,7 +47,9 @@ const VirtualizedVideoGrid = ({
     
     return (
       <div style={cellStyle}>
-        {renderCard(video, videoIndex)}
+        <div style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          {renderCard(video, videoIndex)}
+        </div>
       </div>
     )
   }, [videos, columnCount, gap, renderCard])
