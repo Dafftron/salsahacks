@@ -17,6 +17,8 @@ import {
   Maximize2,
   Minimize2,
   Play,
+  CheckCircle,
+  BookOpen,
   Shuffle,
   Eye,
   EyeOff,
@@ -182,7 +184,10 @@ const EscuelaPage = () => {
     
     // Suscribirse a cambios en tiempo real para el estilo seleccionado
     const unsubscribe = subscribeToVideosByStyle(selectedStyle, (videosData) => {
-      setVideos(videosData)
+      setVideos(prev => videosData.map(v => {
+        const prevItem = prev.find(p => p.id === v.id)
+        return prevItem ? { ...v, userLiked: prevItem.userLiked, isFavorite: prevItem.isFavorite, isInStudy: prevItem.isInStudy, isCompleted: prevItem.isCompleted } : v
+      }))
       setLoading(false)
       setSyncStatus('idle')
     }, 'escuela')
@@ -208,25 +213,30 @@ const EscuelaPage = () => {
     saveFilterPreferences(filters)
   }, [selectedStyle, selectedTags, searchTerm, showFilters, activeCategoryChips, sortKey, sortDir, showFavorites])
 
-  // Verificar estado de likes del usuario cuando se cargan videos
+  // Verificar estado de likes/favoritos/estudios cuando se cargan videos
   useEffect(() => {
     if (videos.length > 0 && user) {
       const checkUserLikesAndFavorites = async () => {
         const updatedVideos = await Promise.all(
           videos.map(async (video) => {
             try {
-              const [likeResult, favoriteResult] = await Promise.all([
+              const { checkUserStudy, checkUserStudyCompleted } = await import('../services/firebase/firestore')
+              const [likeResult, favoriteResult, studyResult, completedResult] = await Promise.all([
                 checkUserLikedVideo(video.id, user.uid),
-                checkUserFavorite(video.id, user.uid)
+                checkUserFavorite(video.id, user.uid),
+                checkUserStudy(video.id, user.uid),
+                checkUserStudyCompleted(video.id, user.uid)
               ])
               return { 
                 ...video, 
                 userLiked: likeResult.userLiked,
-                isFavorite: favoriteResult.isFavorite
+                isFavorite: favoriteResult.isFavorite,
+                isInStudy: studyResult.isInStudy,
+                isCompleted: completedResult.isCompleted
               }
             } catch (error) {
-              console.error('Error al verificar like/favorito para video:', video.id, error)
-              return { ...video, userLiked: false, isFavorite: false }
+              console.error('Error al verificar estados de video:', video.id, error)
+              return { ...video, userLiked: false, isFavorite: false, isInStudy: false, isCompleted: false }
             }
           })
         )
@@ -242,7 +252,7 @@ const EscuelaPage = () => {
   const handleToggleStudy = async (video) => {
     try {
       const { toggleUserStudy } = await import('../services/firebase/firestore')
-      const result = await toggleUserStudy(video.id, user.uid)
+      const result = await toggleUserStudy(video.id, user.uid, 'escuela')
       if (result.success) {
         setVideos(prev => prev.map(v => v.id === video.id ? { ...v, isInStudy: result.isInStudy } : v))
         addToast(result.isInStudy ? 'Añadido a estudios' : 'Quitado de estudios', 'success')
@@ -1004,6 +1014,7 @@ const EscuelaPage = () => {
                             <span className={`${getVideoConfig(isFullWidth).compact ? 'text-xs' : 'text-xs'} font-medium text-gray-500 ml-1`}>({video.rating || 0})</span>
                         </div>
                       </div>
+                        {/* Estado visual inline: sin badges */}
                         <p className={`text-gray-600 text-sm ${getVideoConfig(isFullWidth).compact ? 'mb-2' : 'mb-3'} ${getVideoConfig(isFullWidth).descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig(isFullWidth).descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig(isFullWidth).descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
                         
                         {/* Tags Normales */}
@@ -1067,6 +1078,24 @@ const EscuelaPage = () => {
                               >
                                 <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
                                 <span className="font-medium">{video.likes || 0}</span>
+              </button>
+
+              {/* Estudio */}
+              <button
+                onClick={() => handleToggleStudy(video)}
+                className={`transition-colors duration-200 p-1 rounded ${video.isInStudy ? 'text-blue-600 bg-blue-50 ring-2 ring-blue-300' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}
+                title={video.isInStudy ? 'Quitar de estudios' : 'Añadir a estudios'}
+              >
+                <BookOpen className="h-4 w-4" />
+              </button>
+
+              {/* Completado */}
+              <button
+                onClick={() => handleToggleCompleted(video)}
+                className={`transition-colors duration-200 p-1 rounded ${video.isCompleted ? 'text-green-600 bg-green-50 ring-2 ring-green-300' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'}`}
+                title={video.isCompleted ? 'Marcar como pendiente' : 'Marcar como completado'}
+              >
+                <CheckCircle className="h-4 w-4" />
               </button>
 
               {(userProfile?.role === 'maese' || userProfile?.role === 'super_admin') && (

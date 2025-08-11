@@ -17,6 +17,8 @@ import {
   Maximize2,
   Minimize2,
   Play,
+  CheckCircle,
+  BookOpen,
   Shuffle,
   Eye,
   EyeOff,
@@ -189,7 +191,10 @@ const FigurasPage = () => {
     
     // Suscribirse a cambios en tiempo real para el estilo seleccionado
     const unsubscribe = subscribeToVideosByStyle(selectedStyle, (videosData) => {
-      setVideos(videosData)
+      setVideos(prev => videosData.map(v => {
+        const prevItem = prev.find(p => p.id === v.id)
+        return prevItem ? { ...v, userLiked: prevItem.userLiked, isFavorite: prevItem.isFavorite, isInStudy: prevItem.isInStudy, isCompleted: prevItem.isCompleted } : v
+      }))
       setLoading(false)
       setSyncStatus('idle')
     })
@@ -200,25 +205,30 @@ const FigurasPage = () => {
     }
   }, [selectedStyle])
 
-  // Verificar estado de likes del usuario cuando se cargan videos
+  // Verificar estado de likes/favoritos/estudios cuando se cargan videos
   useEffect(() => {
     if (videos.length > 0 && user) {
       const checkUserLikesAndFavorites = async () => {
         const updatedVideos = await Promise.all(
           videos.map(async (video) => {
             try {
-              const [likeResult, favoriteResult] = await Promise.all([
+              const { checkUserStudy, checkUserStudyCompleted } = await import('../services/firebase/firestore')
+              const [likeResult, favoriteResult, studyResult, completedResult] = await Promise.all([
                 checkUserLikedVideo(video.id, user.uid),
-                checkUserFavorite(video.id, user.uid)
+                checkUserFavorite(video.id, user.uid),
+                checkUserStudy(video.id, user.uid),
+                checkUserStudyCompleted(video.id, user.uid)
               ])
               return { 
                 ...video, 
                 userLiked: likeResult.userLiked,
-                isFavorite: favoriteResult.isFavorite
+                isFavorite: favoriteResult.isFavorite,
+                isInStudy: studyResult.isInStudy,
+                isCompleted: completedResult.isCompleted
               }
             } catch (error) {
-              console.error('Error al verificar like/favorito para video:', video.id, error)
-              return { ...video, userLiked: false, isFavorite: false }
+              console.error('Error al verificar estados de video:', video.id, error)
+              return { ...video, userLiked: false, isFavorite: false, isInStudy: false, isCompleted: false }
             }
           })
         )
@@ -229,6 +239,33 @@ const FigurasPage = () => {
       checkUserLikesAndFavorites()
     }
   }, [videos.length, user])
+
+  // Acciones de estudio
+  const handleToggleStudy = async (video) => {
+    try {
+      const { toggleUserStudy } = await import('../services/firebase/firestore')
+      const result = await toggleUserStudy(video.id, user.uid, 'figuras')
+      if (result.success) {
+        setVideos(prev => prev.map(v => v.id === video.id ? { ...v, isInStudy: result.isInStudy } : v))
+        addToast(result.isInStudy ? 'Añadido a estudios' : 'Quitado de estudios', 'success')
+      }
+    } catch (e) {
+      addToast('Error al actualizar estudios', 'error')
+    }
+  }
+
+  const handleToggleCompleted = async (video) => {
+    try {
+      const { setUserStudyCompleted } = await import('../services/firebase/firestore')
+      const result = await setUserStudyCompleted(video.id, user.uid, !video.isCompleted)
+      if (result.success) {
+        setVideos(prev => prev.map(v => v.id === video.id ? { ...v, isCompleted: result.isCompleted } : v))
+        addToast(result.isCompleted ? 'Marcado como completado' : 'Marcado como pendiente', 'success')
+      }
+    } catch (e) {
+      addToast('Error al actualizar completado', 'error')
+    }
+  }
 
   // Sincronización en tiempo real para secuencias
   useEffect(() => {
@@ -1864,7 +1901,7 @@ const FigurasPage = () => {
                         />
                       ) : (
                         <div className="flex items-center justify-between text-sm text-gray-500">
-                          <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2">
                             <span className="font-medium">
                               {(video.fileSize / (1024 * 1024)).toFixed(2)} MB
                             </span>
@@ -1887,6 +1924,22 @@ const FigurasPage = () => {
                             >
                               <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
                               <span className="font-medium">{video.likes || 0}</span>
+                            </button>
+                            {/* Estudio */}
+                            <button
+                              onClick={() => handleToggleStudy(video)}
+                              className={`transition-colors duration-200 p-1 rounded ${video.isInStudy ? 'text-blue-600 bg-blue-50 ring-2 ring-blue-300' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}
+                              title={video.isInStudy ? 'Quitar de estudios' : 'Añadir a estudios'}
+                            >
+                              <BookOpen className="h-4 w-4" />
+                            </button>
+                            {/* Completado */}
+                            <button
+                              onClick={() => handleToggleCompleted(video)}
+                              className={`transition-colors duration-200 p-1 rounded ${video.isCompleted ? 'text-green-600 bg-green-50 ring-2 ring-green-300' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'}`}
+                              title={video.isCompleted ? 'Marcar como pendiente' : 'Marcar como completado'}
+                            >
+                              <CheckCircle className="h-4 w-4" />
                             </button>
                             <button 
                               onClick={() => handleAddVideoToSequence(video)}
@@ -1933,7 +1986,8 @@ const FigurasPage = () => {
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
-                          </div>
+                </div>
+                {/* Estado visual inline: sin badges */}
                         </div>
                       )}
                   </div>
@@ -2202,7 +2256,11 @@ Esta acción NO se puede deshacer.`}
                  </div>
                </div>
                 {/* Comments Section */}
-                {/* Comentarios eliminados */}
+                <div className="mt-6 border-t pt-4">
+                  <Suspense fallback={null}>
+                    <CommentsSection videoId={selectedVideo.id} page="figuras" />
+                  </Suspense>
+                </div>
              </div>
            </div>
          </div>

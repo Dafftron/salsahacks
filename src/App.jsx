@@ -20,6 +20,7 @@ const AuthPage = lazy(() => import('./pages/AuthPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const InvitePage = lazy(() => import('./pages/InvitePage'))
+const EstudiosPage = lazy(() => import('./pages/EstudiosPage'))
 
 // Componente de carga
 const LoadingSpinner = () => (
@@ -33,6 +34,7 @@ function AppContent() {
   const location = useLocation()
   const isFigurasPage = location.pathname === '/figuras'
   const isEscuelaPage = location.pathname === '/escuela'
+  const isEstudiosPage = location.pathname === '/estudios'
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-salsa-light to-white">
@@ -75,6 +77,12 @@ function AppContent() {
                 <EscuelaPage />
               </ProtectedRoute>
             } />
+            <Route path="/estudios" element={
+              <ProtectedRoute>
+                <EstudiosPage />
+              </ProtectedRoute>
+            } />
+            {/* Ruta de búsqueda avanzada eliminada */}
             {/* <Route path="/eventos" element={<EventosPage />} /> */} {/* TEMPORAL - Recrearemos después */}
             
             {/* Ruta de administración - requiere rol específico */}

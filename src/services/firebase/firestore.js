@@ -463,6 +463,72 @@ export const createVideoDocument = async (videoData, page = 'figuras') => {
   }
 }
 
+// ===== BÚSQUEDA AVANZADA =====
+export const searchVideos = async ({ text = '', style = 'todos', pages = ['figuras', 'escuela', 'eventos'], limitPerCollection = 50 } = {}) => {
+  try {
+    const normalizedText = (text || '').trim().toLowerCase()
+    const targetPages = pages && pages.length > 0 ? pages : ['figuras', 'escuela']
+
+    const queries = targetPages.map(async (pageKey) => {
+      const collectionName = getVideosCollection(pageKey)
+      try {
+        const baseConstraints = []
+        if (style && style !== 'todos') {
+          baseConstraints.push(where('style', '==', style))
+        }
+        baseConstraints.push(orderBy('createdAt', 'desc'))
+        baseConstraints.push(limit(limitPerCollection))
+
+        const q = query(collection(db, collectionName), ...baseConstraints)
+        const snap = await getDocs(q)
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data(), _page: pageKey }))
+        return list
+      } catch (error) {
+        // Fallback si falta índice: quitar where y filtrar cliente
+        if (String(error?.message || '').includes('index') || error.code === 'failed-precondition') {
+          const q = query(collection(db, collectionName), orderBy('createdAt', 'desc'), limit(limitPerCollection))
+          const snap = await getDocs(q)
+          const list = snap.docs.map((d) => ({ id: d.id, ...d.data(), _page: pageKey }))
+          return style && style !== 'todos' ? list.filter(v => v.style === style) : list
+        }
+        console.error('❌ Error en búsqueda por colección:', collectionName, error)
+        return []
+      }
+    })
+
+    const resultsByPage = await Promise.all(queries)
+    let results = resultsByPage.flat()
+
+    if (normalizedText) {
+      results = results.filter((v) => {
+        const title = (v.title || v.originalTitle || '').toLowerCase()
+        const description = (v.description || '').toLowerCase()
+        // Búsqueda superficial en tags (si existen como objeto de arrays)
+        const tagStrings = []
+        if (v.tags && typeof v.tags === 'object') {
+          Object.values(v.tags).forEach((arr) => {
+            if (Array.isArray(arr)) tagStrings.push(...arr.map(String))
+          })
+        }
+        const tagsJoined = tagStrings.join(' ').toLowerCase()
+        return title.includes(normalizedText) || description.includes(normalizedText) || tagsJoined.includes(normalizedText)
+      })
+    }
+
+    // Ordenar por fecha si está disponible
+    results.sort((a, b) => {
+      const aTime = a?.createdAt?.toMillis ? a.createdAt.toMillis() : 0
+      const bTime = b?.createdAt?.toMillis ? b.createdAt.toMillis() : 0
+      return bTime - aTime
+    })
+
+    return { success: true, results }
+  } catch (error) {
+    console.error('❌ Error en searchVideos:', error)
+    return { success: false, results: [], error: error.message }
+  }
+}
+
 export const getVideoDocument = async (videoId) => {
   try {
     console.log('🔍 Buscando video:', videoId)
@@ -703,7 +769,7 @@ export const getUserFavorites = async (userId) => {
 }
 
 // ===== SISTEMA DE ESTUDIOS (to-study y completado) =====
-export const toggleUserStudy = async (videoId, userId) => {
+export const toggleUserStudy = async (videoId, userId, page = 'figuras') => {
   try {
     console.log('📘 Toggle estudio para video:', videoId, 'usuario:', userId)
     const userDocRef = doc(db, COLLECTIONS.USERS, userId)
@@ -713,13 +779,15 @@ export const toggleUserStudy = async (videoId, userId) => {
     }
     const userData = userDocSnap.data()
     const study = userData.study || []
-    const index = study.indexOf(videoId)
+    // Normalizar a objetos { id, page }
+    const asObjects = study.map(item => typeof item === 'string' ? { id: item, page: 'figuras' } : item)
+    const index = asObjects.findIndex(i => i?.id === videoId)
     let newStudy
     if (index === -1) {
-      newStudy = [...study, videoId]
+      newStudy = [...asObjects, { id: videoId, page }]
       console.log('✅ Video agregado a estudio')
     } else {
-      newStudy = study.filter(id => id !== videoId)
+      newStudy = asObjects.filter(i => i.id !== videoId)
       console.log('✅ Video removido de estudio')
     }
     await updateDoc(userDocRef, { study: newStudy, updatedAt: serverTimestamp() })
@@ -762,7 +830,8 @@ export const checkUserStudy = async (videoId, userId) => {
     }
     const userData = userDocSnap.data()
     const study = userData.study || []
-    return { isInStudy: study.includes(videoId), error: null }
+    const isInStudy = study.some(item => (typeof item === 'string' ? item === videoId : item?.id === videoId))
+    return { isInStudy, error: null }
   } catch (error) {
     console.error('❌ Error al verificar estudio:', error)
     return { isInStudy: false, error: error.message }
@@ -782,6 +851,33 @@ export const checkUserStudyCompleted = async (videoId, userId) => {
   } catch (error) {
     console.error('❌ Error al verificar estudio completado:', error)
     return { isCompleted: false, error: error.message }
+  }
+}
+
+export const getUserStudy = async (userId) => {
+  try {
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    if (!userDocSnap.exists()) {
+      return { videos: [], error: 'Usuario no encontrado' }
+    }
+    const userData = userDocSnap.data()
+    const studyItems = (userData.study || []).map(item => typeof item === 'string' ? { id: item, page: 'figuras' } : item)
+    if (studyItems.length === 0) return { videos: [], error: null }
+    const videos = []
+    for (const it of studyItems) {
+      try {
+        const collectionName = it.page === 'escuela' ? COLLECTIONS.ESCUELA_VIDEOS : (it.page === 'eventos' ? COLLECTIONS.EVENTOS_VIDEOS : COLLECTIONS.VIDEOS)
+        const videoDocRef = doc(db, collectionName, it.id)
+        const videoDocSnap = await getDoc(videoDocRef)
+        if (videoDocSnap.exists()) {
+          videos.push({ id: videoDocSnap.id, ...videoDocSnap.data(), _page: it.page })
+        }
+      } catch (e) {}
+    }
+    return { videos, error: null }
+  } catch (error) {
+    return { videos: [], error: error.message }
   }
 }
 

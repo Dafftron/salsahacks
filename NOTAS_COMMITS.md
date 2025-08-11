@@ -47,6 +47,15 @@
   - Mayor robustez cuando el CDN de ffmpeg UMD no está disponible o bloqueado; preferimos recursos locales primero.  
 
 ### 🧵 COMMIT: Web Worker local para concat con assets en /public/ffmpeg - 2025-08-11  
+# ✅ COMMIT: Página Estudios + envío desde cards + agrupación por página/estilo - 2025-08-11
+- Archivos: `src/pages/EstudiosPage.jsx`, `src/pages/FigurasPage.jsx`, `src/pages/EscuelaPage.jsx`, `src/components/layout/Navigation.jsx`, `src/App.jsx`, `src/services/firebase/firestore.js`
+- Cambios:
+  - Nueva página `Estudios` con buscador, filtro de pendientes, modal player y contador total; agrupación por página y estilo.
+  - Botones en cards: añadir/quitar de estudios (libro) y marcar completado (check) con estados visuales.
+  - Persistencia por usuario: `study` como lista de `{ id, page }` y `studyCompleted`.
+  - Navegación actualizada con pestaña `Estudios` y ruta protegida `/estudios`.
+- Impacto:
+  - Flujo claro para preparar videos a estudiar y marcar progreso; totalmente integrado con Figuras y Escuela.
 # 🔒 COMMIT: Notas solo para Super Admin + Navegación móvil visible - 2025-08-11
 - Archivos: `src/constants/roles.js`, `src/App.jsx`, `src/components/layout/Navigation.jsx`
 - Cambios:

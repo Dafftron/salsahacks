@@ -16,6 +16,7 @@ const Navigation = () => {
     ...(user ? [
       { path: '/figuras', label: 'Figuras' },
       { path: '/escuela', label: 'Escuela' },
+      { path: '/estudios', label: 'Estudios' },
       { path: '/eventos', label: 'Eventos' },
       { path: '/categorias', label: 'Categorías' },
       ...(userProfile?.role === ROLES.SUPER_ADMIN ? [{ path: '/notas', label: 'Notas' }] : [])
@@ -72,10 +73,7 @@ const Navigation = () => {
 
           {/* Right Side Icons */}
           <div className="flex items-center space-x-4">
-            {/* Search */}
-            <button className="p-2 text-gray-600 hover:text-salsa-primary transition-colors">
-              <Search className="h-5 w-5" />
-            </button>
+            {/* Search eliminado */}
 
             {/* Theme Toggle */}
             <button

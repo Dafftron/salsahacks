@@ -1529,6 +1529,15 @@ const NotasPage = () => {
       priority: 'Baja',
       progress: 75,
       status: 'En Progreso'
+    },
+    {
+      id: 4,
+      title: 'HomePage - Dashboard principal',
+      description: 'Página de inicio con estadísticas y videos destacados',
+      category: 'PÁGINAS',
+      priority: 'Alta',
+      progress: 0,
+      status: 'En Progreso'
     }
   ]
 
@@ -1543,7 +1552,14 @@ const NotasPage = () => {
       category: 'PÁGINAS',
       priority: 'Media',
       estimatedTime: '3 días',
-      status: 'Futuro'
+      status: 'Futuro',
+      details: [
+        'Colecciones separadas en Firestore: eventos-videos y eventos-sequences',
+        'Filtros por estilo, evento/fecha y etiquetas como en Escuela/Figuras',
+        'Subida, edición y eliminación con las mismas reglas de permisos',
+        'Tabs de Videos y Secuencias, con contadores y vistas virtualizadas',
+        'Integración de VideoPlayer y VideoEditModal; soporte para favoritos y búsqueda'
+      ]
     },
     {
       id: 5,
@@ -1552,7 +1568,14 @@ const NotasPage = () => {
       category: 'SISTEMAS',
       priority: 'Baja',
       estimatedTime: '5 días',
-      status: 'Futuro'
+      status: 'Futuro',
+      details: [
+        'Recomendaciones por similitud de estilo y tags (normales/iniciales/finales)',
+        'Modelo simple basado en historial de vistas y likes por usuario',
+        'Bloques de “Te puede interesar” en VideoPlayer y HomePage',
+        'Registro de eventos (view/like/skip) para retroalimentar el motor',
+        'Modo “Continuar viendo” según última reproducción por usuario'
+      ]
     },
     {
       id: 6,
@@ -1561,67 +1584,19 @@ const NotasPage = () => {
       category: 'SISTEMAS',
       priority: 'Baja',
       estimatedTime: '3 días',
-      status: 'Futuro'
+      status: 'Futuro',
+      details: [
+        'Eventos de reproducción: play, pause, % de video visto y retención por segundo',
+        'Métricas de interacción: favoritos, descargas, ediciones, creación de secuencias',
+        'Dashboard para Admin/Super Admin con gráficos y filtros por periodo',
+        'Reportes por estilo, categoría y top videos/creadores',
+        'Integración con Firestore/BigQuery o GA4 para almacenamiento de eventos'
+      ]
     },
     
     // PÁGINAS
-    {
-      id: 7,
-      title: 'HomePage - Dashboard principal',
-      description: 'Página de inicio con estadísticas y videos destacados',
-      category: 'PÁGINAS',
-      priority: 'Media',
-      estimatedTime: '3 días',
-      status: 'Futuro'
-    },
-    {
-      id: 8,
-      title: 'Página de búsqueda avanzada',
-      description: 'Búsqueda con filtros por categorías y estilos',
-      category: 'PÁGINAS',
-      priority: 'Media',
-      estimatedTime: '2 días',
-      status: 'Futuro'
-    },
-    
-    // CONTENIDO
-    {
-      id: 9,
-      title: 'Exportación de secuencias',
-      description: 'Videos combinados descargables desde secuencias',
-      category: 'CONTENIDO',
-      priority: 'Media',
-      estimatedTime: '3 días',
-      status: 'Futuro'
-    },
-    {
-      id: 10,
-      title: 'Sistema de comentarios',
-      description: 'Comentarios en videos y sistema de ratings',
-      category: 'CONTENIDO',
-      priority: 'Baja',
-      estimatedTime: '3 días',
-      status: 'Futuro'
-    },
-    {
-      id: 11,
-      title: 'Sistema de favoritos',
-      description: 'Guardar videos favoritos y crear playlists',
-      category: 'CONTENIDO',
-      priority: 'Baja',
-      estimatedTime: '2 días',
-      status: 'Futuro'
-    },
-    {
-      id: 12,
-      title: 'Notificaciones',
-      description: 'Sistema de notificaciones para nuevos videos y eventos',
-      category: 'CONTENIDO',
-      priority: 'Baja',
-      estimatedTime: '2 días',
-      status: 'Futuro'
-    },
-    
+    // Nota: La "Página de búsqueda avanzada" fue descartada y eliminada del menú/rutas
+
     // FUNCIONALIDADES AVANZADAS
     // Ítems tachados por el usuario eliminados de la hoja de ruta
   ]
@@ -1936,6 +1911,15 @@ const NotasPage = () => {
 
                   {/* Description - Always visible */}
                   <p className="text-gray-600 text-sm mb-3">{item.description}</p>
+
+                  {/* Details for future tasks */}
+                  {activeTab === 'futuras' && Array.isArray(item.details) && item.details.length > 0 && (
+                    <ul className="list-disc pl-5 text-gray-600 text-sm mb-3 space-y-1">
+                      {item.details.map((d, i) => (
+                        <li key={i}>{d}</li>
+                      ))}
+                    </ul>
+                  )}
 
                   {/* Expanded content for commits */}
                   {activeTab === 'commits' && isCommitExpanded(item.id) && (
