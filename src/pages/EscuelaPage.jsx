@@ -1126,6 +1126,13 @@ const EscuelaPage = () => {
                   </Suspense>
                 </div>
               </div>
+              {/* Comments Section */}
+              <div className="mt-2">
+                {(() => {
+                  const CommentsSection = require('../components/video/CommentsSection.jsx').default
+                  return <CommentsSection videoId={selectedVideo.id} page="escuela" />
+                })()}
+              </div>
             </div>
           </div>
         </div>

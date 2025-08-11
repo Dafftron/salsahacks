@@ -44,6 +44,15 @@
 # 🗃️ COMMIT: Índices Firestore para style + createdAt - 2025-08-11
 
 # 📚 COMMIT: Hito ESCUELA - +100 videos subidos - 2025-08-11
+
+# 💬 COMMIT: Sistema de comentarios de videos (fase 1) - 2025-08-11
+- Archivos: `src/services/firebase/firestore.js`, `src/components/video/CommentsSection.jsx`, `src/pages/FigurasPage.jsx`, `src/pages/EscuelaPage.jsx`
+- Cambios:
+  - Servicios Firestore: creación, suscripción y borrado suave de comentarios en subcolección `/comments` por video.
+  - UI: `CommentsSection` bajo el reproductor en los modales de Figuras y Escuela.
+  - Sin comentarios en cards; visibles solo al reproducir.
+- Impacto:
+  - Interacción social inicial lista (leer/escribir). Moderación y likes de comentarios en fase 2.
 - Archivos: `src/pages/NotasPage.jsx`, `NOTAS_COMMITS.md`
 - Cambios:
   - Marcada como completada la tarea de subida masiva de ESCUELA y removida de En Proceso/Futuro.

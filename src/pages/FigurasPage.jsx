@@ -107,7 +107,9 @@ const FigurasPage = () => {
   
   // Estados para el sistema de chips y filtros
   const [activeCategoryChips, setActiveCategoryChips] = useState([])
-  const [sortBy, setSortBy] = useState('none')
+  // Nuevo modelo de ordenamiento: clave + dirección (tri-estado por botón)
+  const [sortKey, setSortKey] = useState('none') // 'none' | 'name' | 'rating' | 'likes'
+  const [sortDir, setSortDir] = useState('asc')  // 'asc' | 'desc'
   const [showFavorites, setShowFavorites] = useState(false)
   
   // Estados para secuencias
@@ -708,9 +710,8 @@ const FigurasPage = () => {
     setActiveCategoryChips(chips)
   }
 
-  const handleSortChange = (sortKey) => {
-    setSortBy(sortKey)
-  }
+  // Dejado por compat: no usar; el nuevo modelo usa sortKey/sortDir
+  const handleSortChange = () => {}
 
   const handleShowFavorites = (show) => {
     setShowFavorites(show)
@@ -731,25 +732,19 @@ const FigurasPage = () => {
 
   // Función para ordenar videos
   const sortVideos = (videosToSort) => {
-    if (sortBy === 'none') return videosToSort
+    if (sortKey === 'none') return videosToSort
 
-    const sortedVideos = [...videosToSort]
-    
-    switch (sortBy) {
+    const sorted = [...videosToSort]
+    const dir = sortDir === 'asc' ? 1 : -1
+    switch (sortKey) {
       case 'name':
-        return sortedVideos.sort((a, b) => a.title.localeCompare(b.title))
-      case 'name-desc':
-        return sortedVideos.sort((a, b) => b.title.localeCompare(a.title))
+        return sorted.sort((a, b) => dir * a.title.localeCompare(b.title))
       case 'rating':
-        return sortedVideos.sort((a, b) => (b.rating || 0) - (a.rating || 0))
-      case 'rating-desc':
-        return sortedVideos.sort((a, b) => (a.rating || 0) - (b.rating || 0))
+        return sorted.sort((a, b) => dir * ((a.rating || 0) - (b.rating || 0)))
       case 'likes':
-        return sortedVideos.sort((a, b) => (b.likes || 0) - (a.likes || 0))
-      case 'likes-desc':
-        return sortedVideos.sort((a, b) => (a.likes || 0) - (b.likes || 0))
+        return sorted.sort((a, b) => dir * ((a.likes || 0) - (b.likes || 0)))
       default:
-        return sortedVideos
+        return videosToSort
     }
   }
 
@@ -2175,7 +2170,7 @@ Esta acción NO se puede deshacer.`}
                </button>
              </div>
              
-             {/* Video Player */}
+              {/* Video Player */}
              <div className="flex-1 min-h-0 p-4">
                <div className="w-full h-full max-h-[65vh] flex items-center justify-center">
                  <div className="w-full max-w-md">
@@ -2191,6 +2186,14 @@ Esta acción NO se puede deshacer.`}
                    </Suspense>
                  </div>
                </div>
+                {/* Comments Section */}
+                <div className="mt-2">
+                  {/* lazy import avoided for simplicity */}
+                  {(() => {
+                    const CommentsSection = require('../components/video/CommentsSection.jsx').default
+                    return <CommentsSection videoId={selectedVideo.id} page="figuras" />
+                  })()}
+                </div>
              </div>
            </div>
          </div>
