@@ -13,7 +13,7 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
   const [container, setContainer] = useState({ width: width, height: forcedHeight || Math.round(width / aspectRatio) })
   const [natural, setNatural] = useState({ width: 0, height: 0 })
   const [baseScale, setBaseScale] = useState(1)
-  const [zoom, setZoom] = useState(1) // 1..10
+  const [zoom, setZoom] = useState(1) // 1..5
   const [offset, setOffset] = useState({ x: 0, y: 0 })
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, startOffsetX: 0, startOffsetY: 0 })
 
@@ -25,14 +25,9 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
       const nat = { width: img.naturalWidth, height: img.naturalHeight }
       setNatural(nat)
       const cont = { width: container.width, height: container.height }
-      // Si la imagen NO es 16:9, permitir partir sin zoom (fit), de forma que no se sienta pre-zoom
-      const aspectImg = nat.width / nat.height
-      const aspectCont = cont.width / cont.height
-      const preferFit = Math.abs(aspectImg - aspectCont) > 0.01
-      const scaleCover = Math.max(cont.width / nat.width, cont.height / nat.height)
+      // Partir SIEMPRE mostrando el frame completo (fit/contain)
       const scaleFit = Math.min(cont.width / nat.width, cont.height / nat.height)
-      const scaleToCover = preferFit ? scaleFit : scaleCover
-      setBaseScale(scaleToCover)
+      setBaseScale(scaleFit)
       setZoom(1)
       setOffset({ x: 0, y: 0 })
     }
@@ -85,7 +80,7 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
   const handleWheel = (e) => {
     e.preventDefault()
     const delta = e.deltaY > 0 ? -0.05 : 0.05
-    const nextZoom = clamp(parseFloat((zoom + delta).toFixed(2)), 1, 10)
+    const nextZoom = clamp(parseFloat((zoom + delta).toFixed(2)), 1, 5)
     setZoom(nextZoom)
     // Re-clamp offset al cambiar zoom
     setOffset((prev) => clampOffset(prev.x, prev.y))
@@ -165,11 +160,11 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
         <input
           type="range"
           min={1}
-          max={10}
+          max={5}
           step={0.01}
           value={zoom}
           onChange={(e) => {
-            const next = clamp(parseFloat(e.target.value), 1, 10)
+            const next = clamp(parseFloat(e.target.value), 1, 5)
             setZoom(next)
             setOffset((prev) => clampOffset(prev.x, prev.y))
           }}
