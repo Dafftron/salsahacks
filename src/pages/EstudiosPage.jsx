@@ -145,7 +145,10 @@ const EstudiosPage = () => {
                     cardHeight={isFullWidth ? 380 : 320}
                     gap={24}
                     renderCard={(video) => (
-                      <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border-gray-100">
+                      <div
+                        key={video.id}
+                        className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${video.isCompleted ? 'border-2 border-green-500 ring-2 ring-green-300' : 'border-gray-100'}`}
+                      >
                         <div className="relative">
                           <div className={`w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
                             {video.thumbnailUrl && (
@@ -203,6 +206,20 @@ const EstudiosPage = () => {
                     <SequenceVideoPlayer videos={[player.video]} className="w-full h-full" showControls autoplay loop={false} muted={false} />
                   </Suspense>
                 </div>
+              </div>
+              <div className="mt-4 flex justify-center gap-2">
+                <button
+                  onClick={async () => {
+                    const { setUserStudyCompleted } = await import('../services/firebase/firestore')
+                    const res = await setUserStudyCompleted(player.video.id, user.uid, true)
+                    if (res.success) {
+                      setVideos(prev => prev.map(v => v.id === player.video.id ? { ...v, isCompleted: true } : v))
+                    }
+                  }}
+                  className="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors"
+                >
+                  Marcar como completado
+                </button>
               </div>
             </div>
           </div>
