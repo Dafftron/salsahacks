@@ -12,12 +12,12 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
   const imgRef = useRef(null)
   const [container, setContainer] = useState({ width: width, height: forcedHeight || Math.round(width / aspectRatio) })
   const [natural, setNatural] = useState({ width: 0, height: 0 })
-  const [baseScale, setBaseScale] = useState(1)
+  const [fitScale, setFitScale] = useState(1)
   const [zoom, setZoom] = useState(initialZoom || 1) // 1..5
   const [offset, setOffset] = useState(initialOffset || { x: 0, y: 0 })
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, startOffsetX: 0, startOffsetY: 0 })
 
-  // Calcular dimensiones naturales y baseScale (cover)
+  // Calcular dimensiones naturales y escala para encajar imagen completa (fit)
   useEffect(() => {
     if (!imageSrc) return
     const img = new Image()
@@ -27,8 +27,8 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
       const cont = { width: container.width, height: container.height }
       // Partir SIEMPRE mostrando el frame completo (fit/contain)
       const scaleFit = Math.min(cont.width / nat.width, cont.height / nat.height)
-      setBaseScale(scaleFit)
-      setZoom(initialZoom || 1)
+      setFitScale(scaleFit)
+      setZoom(Math.max(initialZoom || scaleFit, scaleFit))
       setOffset(initialOffset || { x: 0, y: 0 })
     }
     img.src = imageSrc
@@ -36,8 +36,8 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
 
   // Restricción de paneo para no dejar espacios vacíos
   const getDisplaySize = () => {
-    const displayWidth = natural.width * baseScale * zoom
-    const displayHeight = natural.height * baseScale * zoom
+    const displayWidth = natural.width * zoom
+    const displayHeight = natural.height * zoom
     return { displayWidth, displayHeight }
   }
 
@@ -80,7 +80,7 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
   const handleWheel = (e) => {
     e.preventDefault()
     const delta = e.deltaY > 0 ? -0.05 : 0.05
-    const nextZoom = clamp(parseFloat((zoom + delta).toFixed(2)), 1, 5)
+    const nextZoom = clamp(parseFloat((zoom + delta).toFixed(2)), fitScale, 5)
     setZoom(nextZoom)
     // Re-clamp offset al cambiar zoom
     setOffset((prev) => clampOffset(prev.x, prev.y))
@@ -116,7 +116,7 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
       })
     },
     reset: () => {
-      setZoom(1)
+      setZoom(fitScale)
       setOffset({ x: 0, y: 0 })
     },
     getState: () => ({ zoom, offset })
@@ -165,12 +165,12 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
       <div className="flex items-center gap-3">
         <input
           type="range"
-          min={1}
+          min={fitScale}
           max={5}
           step={0.01}
           value={zoom}
           onChange={(e) => {
-            const next = clamp(parseFloat(e.target.value), 1, 5)
+            const next = clamp(parseFloat(e.target.value), fitScale, 5)
             setZoom(next)
             setOffset((prev) => clampOffset(prev.x, prev.y))
           }}
