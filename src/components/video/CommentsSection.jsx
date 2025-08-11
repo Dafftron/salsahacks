@@ -52,8 +52,10 @@ const CommentItem = ({ comment, onToggleLike, onDelete, canDelete }) => {
   )
 }
 
-const CommentsSection = ({ videoId, page = 'figuras' }) => {
-  const { user, userProfile } = useAuth()
+const CommentsSection = ({ videoId, page = 'figuras', currentUser = null, currentUserProfile = null }) => {
+  const auth = useAuth()
+  const user = currentUser || auth?.user
+  const userProfile = currentUserProfile || auth?.userProfile
   const [comments, setComments] = useState([])
   const [text, setText] = useState('')
   const [posting, setPosting] = useState(false)

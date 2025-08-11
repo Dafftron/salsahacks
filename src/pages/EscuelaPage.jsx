@@ -599,6 +599,7 @@ const EscuelaPage = () => {
 
   // Filtrar videos basado en tags seleccionados y búsqueda avanzada
   const baseFilteredVideos = videos.filter(video => {
+    const isSuperAdmin = userProfile?.role === 'super_admin'
     // Dividir términos de búsqueda por espacios y filtrar vacíos
     const searchTerms = searchTerm
       .split(' ')
@@ -607,6 +608,10 @@ const EscuelaPage = () => {
 
     // Filtro por búsqueda avanzada
     const searchMatch = advancedSearch(video, searchTerms)
+
+    // Visibilidad: solo super_admin ve videos con tag "oculto" en categoría tipo
+    const isHidden = Array.isArray(video?.tags?.tipo) && video.tags.tipo.includes('oculto')
+    const visibilityMatch = isSuperAdmin || !isHidden
 
     // Filtro por tags - EXCLUYENTE (todos los tags seleccionados deben estar presentes)
     const tagsMatch = selectedTags.length === 0 || 
@@ -627,7 +632,7 @@ const EscuelaPage = () => {
   // Filtro por favoritos
   const favoritesMatch = !showFavorites || video.isFavorite
 
-  return searchMatch && tagsMatch && categoryMatch && favoritesMatch
+  return searchMatch && tagsMatch && categoryMatch && favoritesMatch && visibilityMatch
   })
 
   // Aplicar ordenamiento final
@@ -729,7 +734,13 @@ const EscuelaPage = () => {
                     
                     {/* Tags de la categoría */}
                     <div className="flex flex-wrap justify-center gap-2">
-                      {category.tags.map(tag => (
+                      {category.tags
+                        .filter(tag => {
+                          // Ocultar el tag "oculto" a no-superadmin
+                          const isSuperAdmin = userProfile?.role === 'super_admin'
+                          return isSuperAdmin || tag !== 'oculto'
+                        })
+                        .map(tag => (
                         <button
                           key={tag}
                           onClick={() => handleTagFilter(tag)}
@@ -1128,7 +1139,7 @@ const EscuelaPage = () => {
                 </div>
               </div>
               {/* Comments Section */}
-              <div className="mt-4 border-t pt-3">
+              <div className="mt-6 border-t pt-4">
                 <Suspense fallback={null}>
                   <CommentsSection videoId={selectedVideo.id} page="escuela" />
                 </Suspense>

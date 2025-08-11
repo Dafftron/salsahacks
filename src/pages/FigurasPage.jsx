@@ -1991,7 +1991,7 @@ const FigurasPage = () => {
             ) : (
               <Suspense fallback={<LoadingSpinner />}>
                 <SequenceGallery
-                  sequences={sequences}
+                  sequences={(userProfile?.role === 'super_admin') ? sequences : sequences.filter(seq => !(Array.isArray(seq?.tags?.tipo) && seq.tags.tipo.includes('oculto')))}
                   onDeleteSequence={handleDeleteSequence}
                   onPlaySequence={handlePlaySequence}
                   onEditSequence={handleEditSequence}
@@ -2208,7 +2208,7 @@ Esta acción NO se puede deshacer.`}
                  </div>
                </div>
                 {/* Comments Section */}
-                <div className="mt-4 border-t pt-3">
+                <div className="mt-6 border-t pt-4">
                   <Suspense fallback={null}>
                     <CommentsSection videoId={selectedVideo.id} page="figuras" />
                   </Suspense>

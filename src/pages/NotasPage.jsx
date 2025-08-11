@@ -1546,15 +1546,6 @@ const NotasPage = () => {
       status: 'Futuro'
     },
     {
-      id: 4,
-      title: 'Sistema de notificaciones',
-      description: 'Notificaciones push para nuevos videos y eventos',
-      category: 'SISTEMAS',
-      priority: 'Media',
-      estimatedTime: '2 días',
-      status: 'Futuro'
-    },
-    {
       id: 5,
       title: 'Sistema de recomendaciones',
       description: 'Algoritmo para recomendar videos y contenido basado en historial',
@@ -1632,78 +1623,7 @@ const NotasPage = () => {
     },
     
     // FUNCIONALIDADES AVANZADAS
-    {
-      id: 12,
-      title: 'Inteligencia artificial',
-      description: 'Sugerencias automáticas de secuencias',
-      category: 'SISTEMAS',
-      priority: 'Baja',
-      estimatedTime: '7 días',
-      status: 'Futuro'
-    },
-    {
-      id: 13,
-      title: 'Sistema de colaboración',
-      description: 'Secuencias compartidas entre usuarios',
-      category: 'SISTEMAS',
-      priority: 'Baja',
-      estimatedTime: '5 días',
-      status: 'Futuro'
-    },
-    {
-      id: 14,
-      title: 'Aplicación móvil',
-      description: 'Versión nativa para iOS/Android',
-      category: 'SISTEMAS',
-      priority: 'Baja',
-      estimatedTime: '15 días',
-      status: 'Futuro'
-    },
-    {
-      id: 15,
-      title: 'Integración con redes sociales',
-      description: 'Compartir secuencias en redes sociales',
-      category: 'CONTENIDO',
-      priority: 'Baja',
-      estimatedTime: '3 días',
-      status: 'Futuro'
-    },
-    {
-      id: 16,
-      title: 'Funcionalidades premium',
-      description: 'Contenido exclusivo para usuarios avanzados',
-      category: 'CONTENIDO',
-      priority: 'Baja',
-      estimatedTime: '4 días',
-      status: 'Futuro'
-    },
-    {
-      id: 17,
-      title: 'Sistema de certificaciones',
-      description: 'Certificados de cursos completados',
-      category: 'CONTENIDO',
-      priority: 'Baja',
-      estimatedTime: '3 días',
-      status: 'Futuro'
-    },
-    {
-      id: 18,
-      title: 'Calendario de eventos',
-      description: 'Calendario interactivo para eventos de salsa',
-      category: 'PÁGINAS',
-      priority: 'Media',
-      estimatedTime: '3 días',
-      status: 'Futuro'
-    },
-    {
-      id: 19,
-      title: 'Sistema de mensajería',
-      description: 'Chat entre usuarios e instructores',
-      category: 'SISTEMAS',
-      priority: 'Baja',
-      estimatedTime: '5 días',
-      status: 'Futuro'
-    }
+    // Ítems tachados por el usuario eliminados de la hoja de ruta
   ]
 
   const getStatusColor = (status) => {
