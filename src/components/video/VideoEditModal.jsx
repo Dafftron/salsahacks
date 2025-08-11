@@ -25,6 +25,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
   const [framePercent, setFramePercent] = useState(0.5)
   const [filmstrip, setFilmstrip] = useState([]) // [{percent, url}]
   const [generatingStrip, setGeneratingStrip] = useState(false)
+  const [localVideoUrl, setLocalVideoUrl] = useState(null)
   
   // Estados para tags organizados por categorías
   const [selectedTags, setSelectedTags] = useState({})
@@ -171,10 +172,31 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
     }
   }
 
+  // Asegurar que trabajamos con un blob local (evita CORS/tainted canvas)
+  const ensureLocalVideo = async () => {
+    if (localVideoUrl) return localVideoUrl
+    try {
+      const response = await fetch(video.videoUrl)
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      setLocalVideoUrl(url)
+      if (captureVideoRef.current) {
+        captureVideoRef.current.src = url
+      }
+      return url
+    } catch (e) {
+      console.warn('No se pudo crear copia local del video, usando URL remota:', e)
+      return video.videoUrl
+    }
+  }
+
   // Capturar un frame del video según el slider
   const handleCaptureFrame = async (percentOverride = null) => {
     try {
       const videoEl = captureVideoRef.current
+      if (!videoEl) return
+      // Forzar fuente local primero
+      await ensureLocalVideo()
       if (!videoEl) return
       // Asegurar metadata
       if (!videoEl.duration || isNaN(videoEl.duration)) {
@@ -230,6 +252,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
     try {
       const videoEl = captureVideoRef.current
       if (!videoEl) return
+      await ensureLocalVideo()
       if (!videoEl.duration || isNaN(videoEl.duration)) {
         await new Promise((res, rej) => {
           videoEl.onloadedmetadata = () => res()
@@ -273,6 +296,22 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
       console.warn('No se pudo generar filmstrip:', e)
     }
   }
+
+  // Al abrir el modal preparar video local y filmstrip
+  useEffect(() => {
+    if (!isOpen || !video) return
+    let mounted = true
+    ;(async () => {
+      try {
+        await ensureLocalVideo()
+        if (mounted) {
+          generateFilmstrip(9)
+        }
+      } catch (_) {}
+    })()
+    return () => { mounted = false }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, video?.videoUrl])
 
   // Función para detectar resolución del video
   const detectVideoResolution = async (videoUrl) => {
@@ -536,6 +575,29 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                           disabled={!video.videoUrl}
                         >Capturar</button>
                         <span className="text-xs text-gray-500 w-10 text-right">{Math.round(framePercent * 100)}%</span>
+                      </div>
+                      {/* Filmstrip (miniaturas clicables) */}
+                      <div className="flex gap-2 items-center overflow-x-auto py-1">
+                        {filmstrip.length === 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => generateFilmstrip(9)}
+                            className="px-2 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200"
+                            disabled={generatingStrip}
+                          >{generatingStrip ? 'Generando…' : 'Generar previsualizaciones'}</button>
+                        ) : (
+                          filmstrip.map((f, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => { setFramePercent(f.percent); handleCaptureFrame(f.percent) }}
+                              className="relative border rounded overflow-hidden hover:ring-2 hover:ring-blue-500"
+                              title={`${Math.round(f.percent * 100)}%`}
+                            >
+                              <img src={f.url} alt={`frame-${idx}`} className="w-20 h-12 object-cover" />
+                            </button>
+                          ))
+                        )}
                       </div>
                     </div>
                     <p className="text-xs text-gray-500 mt-2">Arrastra para mover y usa el zoom. También puedes seleccionar un frame del video con el deslizador y capturarlo como base.</p>
