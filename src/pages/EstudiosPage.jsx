@@ -22,6 +22,7 @@ const EstudiosPage = () => {
   const [search, setSearch] = useState('')
   const [onlyPending, setOnlyPending] = useState(false)
   const [isFullWidth, setIsFullWidth] = useState(false)
+  const [groupSortAsc, setGroupSortAsc] = useState(true) // orden de grupos por nombre
   const [player, setPlayer] = useState({ open: false, video: null })
 
   useEffect(() => {
@@ -56,9 +57,19 @@ const EstudiosPage = () => {
       if (!map.has(key)) map.set(key, { page, style, items: [] })
       map.get(key).items.push(v)
     }
-    // Ordenar por página y estilo para estabilidad
-    return Array.from(map.values()).sort((a, b) => `${a.page}-${a.style}`.localeCompare(`${b.page}-${b.style}`))
-  }, [filtered])
+    // Ordenar videos dentro de cada grupo por título A-Z
+    for (const g of map.values()) {
+      g.items.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
+    }
+    // Ordenar por nombre de grupo (página-estilo)
+    const arr = Array.from(map.values())
+    arr.sort((a, b) => {
+      const an = `${a.page}-${a.style}`.toLowerCase()
+      const bn = `${b.page}-${b.style}`.toLowerCase()
+      return groupSortAsc ? an.localeCompare(bn) : bn.localeCompare(an)
+    })
+    return arr
+  }, [filtered, groupSortAsc])
 
   const handleToggleStudy = async (video) => {
     const res = await toggleUserStudy(video.id, user.uid)
@@ -99,6 +110,9 @@ const EstudiosPage = () => {
           <div className="flex items-center gap-2">
             <button onClick={() => setOnlyPending(v => !v)} className={`px-3 py-2 rounded-md text-sm border ${onlyPending ? 'bg-yellow-500 text-white border-yellow-500' : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'}`}>
               {onlyPending ? <CheckCircle className="h-4 w-4 inline mr-1" /> : <Clock className="h-4 w-4 inline mr-1" />} {onlyPending ? 'Solo pendientes' : 'Incluir completados'}
+            </button>
+            <button onClick={() => setGroupSortAsc(v => !v)} className={`px-3 py-2 rounded-md text-sm border ${groupSortAsc ? 'bg-blue-500 text-white border-blue-500' : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100'}`} title="Ordenar grupos por nombre">
+              {groupSortAsc ? 'Grupos A-Z' : 'Grupos Z-A'}
             </button>
             <button onClick={() => setIsFullWidth(s => !s)} className="px-3 py-2 rounded-md text-sm border bg-gray-50 text-gray-700 hover:bg-gray-100">{isFullWidth ? 'Compacto' : 'Ancho'}</button>
             {(search || onlyPending) && (

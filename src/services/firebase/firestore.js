@@ -996,9 +996,9 @@ export const getVideosCount = async () => {
   }
 }
 
-export const getSchoolContentCount = async () => {
+export const getEscuelaVideosCount = async () => {
   try {
-    const q = query(collection(db, COLLECTIONS.SCHOOL))
+    const q = query(collection(db, COLLECTIONS.ESCUELA_VIDEOS))
     const snap = await getDocs(q)
     return { count: snap.size, error: null }
   } catch (error) {
@@ -1006,15 +1006,19 @@ export const getSchoolContentCount = async () => {
   }
 }
 
-export const getEventsCount = async () => {
+export const getEventosVideosCount = async () => {
   try {
-    const q = query(collection(db, COLLECTIONS.EVENTS))
+    const q = query(collection(db, COLLECTIONS.EVENTOS_VIDEOS))
     const snap = await getDocs(q)
     return { count: snap.size, error: null }
   } catch (error) {
     return { count: 0, error: error.message }
   }
 }
+
+// Aliases para compatibilidad con código existente
+export const getEventsCount = getEventosVideosCount
+export const getSchoolContentCount = getEscuelaVideosCount
 
 export const getUsersCount = async () => {
   try {

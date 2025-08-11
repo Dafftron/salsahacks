@@ -1,17 +1,18 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
-import { Music, Video, BookOpen, Calendar, Tag, FileText, TrendingUp, Clock, Heart } from 'lucide-react'
+import { Music, Video, BookOpen, Calendar, Tag, FileText, TrendingUp, Clock, Heart, BarChart3 } from 'lucide-react'
 import UserProfile from '../components/UserProfile'
 import { useAuth } from '../contexts/AuthContext'
 import {
   getVideosCount,
-  getSchoolContentCount,
-  getEventsCount,
+  getEscuelaVideosCount,
+  getEventosVideosCount,
   getUsersCount,
   getLatestVideos,
   getTopLikedVideos,
   getUserContinueStudy
 } from '../services/firebase/firestore'
+import { getSequenceStats } from '../services/firebase/sequences'
 
 const HomePage = () => {
   const { user, userProfile } = useAuth()
@@ -21,18 +22,21 @@ const HomePage = () => {
   const [latest, setLatest] = useState([])
   const [featured, setFeatured] = useState([])
   const [continueStudy, setContinueStudy] = useState([])
+  const [quick, setQuick] = useState({ uploads24h: 0, topStyle: '-', sequencesTotal: 0, avgSeq: 0, topVideo: '-' })
 
   useEffect(() => {
     let mounted = true
     const load = async () => {
       try {
-        const [v, s, e, u, latestFig, topLiked] = await Promise.all([
+        const [v, s, e, u, latestFig, topLiked, latest100, seqStats] = await Promise.all([
           getVideosCount(),
-          getSchoolContentCount(),
-          getEventsCount(),
+          getEscuelaVideosCount(),
+          getEventosVideosCount(),
           getUsersCount(),
           getLatestVideos(8, 'figuras'),
-          getTopLikedVideos(8, 'figuras')
+          getTopLikedVideos(8, 'figuras'),
+          getLatestVideos(100, 'figuras'),
+          getSequenceStats()
         ])
         if (!mounted) return
         setKpis({
@@ -43,6 +47,33 @@ const HomePage = () => {
         })
         setLatest(latestFig.videos || [])
         setFeatured(topLiked.videos || [])
+        // Quick analytics
+        const nowMs = Date.now()
+        const uploads24h = (latest100.videos || []).filter(v => {
+          const t = v?.createdAt?.toMillis ? v.createdAt.toMillis() : (v?.createdAt ? new Date(v.createdAt).getTime() : 0)
+          return t > nowMs - 24 * 60 * 60 * 1000
+        }).length
+        const byStyle = {}
+        ;(latest100.videos || []).forEach(v => {
+          const style = (v.style || 'sin-estilo').toLowerCase()
+          byStyle[style] = (byStyle[style] || 0) + 1
+        })
+        const topStyle = Object.entries(byStyle).sort((a,b)=>b[1]-a[1])[0]?.[0] || '-'
+        const topVideo = (topLiked.videos || [])[0]?.title || (topLiked.videos || [])[0]?.originalTitle || '-'
+        setQuick({
+          uploads24h,
+          topStyle,
+          sequencesTotal: seqStats?.total || 0,
+          avgSeq: seqStats?.averageVideosPerSequence || 0,
+          topVideo
+        })
+      } catch (error) {
+        console.error('Error cargando KPIs/feeds del dashboard:', error)
+        if (mounted) {
+          setKpis({ videos: 0, school: 0, events: 0, users: 0 })
+          setLatest([])
+          setFeatured([])
+        }
       } finally {
         if (mounted) setLoading(false)
       }
@@ -54,9 +85,14 @@ const HomePage = () => {
   useEffect(() => {
     let mounted = true
     const loadContinue = async () => {
-      if (!user) { setContinueStudy([]); return }
-      const res = await getUserContinueStudy(user.uid)
-      if (mounted) setContinueStudy(res.videos || [])
+      try {
+        if (!user) { setContinueStudy([]); return }
+        const res = await getUserContinueStudy(user.uid)
+        if (mounted) setContinueStudy(res.videos || [])
+      } catch (error) {
+        console.error('Error cargando Continuar estudiando:', error)
+        if (mounted) setContinueStudy([])
+      }
     }
     loadContinue()
     return () => { mounted = false }
@@ -192,6 +228,14 @@ const HomePage = () => {
             <div className="text-3xl font-bold text-salsa-primary mb-1">{kpis.users}</div>
             <div className="text-gray-600">Usuarios</div>
           </div>
+        </div>
+        {/* Quick analytics */}
+        <div className="grid md:grid-cols-5 gap-4 mt-8 text-center">
+          <div className="card p-4"><div className="text-xs text-gray-500">Subidas 24h</div><div className="text-2xl font-bold text-gray-800">{quick.uploads24h}</div></div>
+          <div className="card p-4"><div className="text-xs text-gray-500">Estilo top</div><div className="text-lg font-semibold text-gray-800 capitalize">{quick.topStyle}</div></div>
+          <div className="card p-4"><div className="text-xs text-gray-500">Secuencias</div><div className="text-2xl font-bold text-gray-800">{quick.sequencesTotal}</div></div>
+          <div className="card p-4"><div className="text-xs text-gray-500">Prom. videos por secuencia</div><div className="text-2xl font-bold text-gray-800">{quick.avgSeq}</div></div>
+          <div className="card p-4"><div className="text-xs text-gray-500">Top por likes</div><div className="text-sm font-medium text-gray-800 line-clamp-1">{quick.topVideo}</div></div>
         </div>
       </div>
 
