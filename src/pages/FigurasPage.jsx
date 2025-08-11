@@ -2176,8 +2176,8 @@ Esta acción NO se puede deshacer.`}
 
        {/* Video Player Modal */}
        {showVideoPlayer && selectedVideo && (
-         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-           <div className="relative w-full max-w-3xl h-auto max-h-[85vh] bg-white rounded-lg overflow-hidden flex flex-col">
+          <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="relative w-full max-w-3xl h-auto max-h-[90vh] bg-white rounded-lg overflow-hidden flex flex-col">
              {/* Header */}
              <div className="flex items-center justify-between p-4 bg-gray-50 border-b flex-shrink-0">
                <h3 className="text-lg font-semibold text-gray-800">
@@ -2192,8 +2192,8 @@ Esta acción NO se puede deshacer.`}
              </div>
              
               {/* Video Player */}
-             <div className="flex-1 min-h-0 p-4">
-               <div className="w-full h-full max-h-[65vh] flex items-center justify-center">
+              <div className="flex-1 min-h-0 p-4 overflow-y-auto">
+                <div className="w-full h-full max-h-[65vh] flex items-center justify-center">
                  <div className="w-full max-w-md">
                    <Suspense fallback={<LoadingSpinner />}>
                      <SequenceVideoPlayer
