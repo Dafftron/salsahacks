@@ -148,16 +148,37 @@ export const updateSequence = async (sequenceId, updateData) => {
   }
 }
 
-// Eliminar una secuencia
-export const deleteSequence = async (sequenceId) => {
+// Eliminar una secuencia (por ID) en la colección correspondiente a la página
+export const deleteSequence = async (sequenceId, page = 'figuras') => {
   try {
-    const sequenceRef = doc(db, SEQUENCES_COLLECTION, sequenceId)
+    const sequencesCollection = getSequencesCollection(page)
+    const sequenceRef = doc(db, sequencesCollection, sequenceId)
     await deleteDoc(sequenceRef)
-    
     return { success: true }
   } catch (error) {
     console.error('Error al eliminar secuencia:', error)
     throw new Error('No se pudo eliminar la secuencia')
+  }
+}
+
+// Eliminar una secuencia por nombre (toma la primera coincidencia exacta)
+export const deleteSequenceByName = async (name, page = 'figuras') => {
+  try {
+    const sequencesCollection = getSequencesCollection(page)
+    const q = query(
+      collection(db, sequencesCollection),
+      where('name', '==', name)
+    )
+    const snapshot = await getDocs(q)
+    if (snapshot.empty) {
+      throw new Error(`No se encontró secuencia con nombre "${name}"`)
+    }
+    const docRef = snapshot.docs[0].ref
+    await deleteDoc(docRef)
+    return { success: true, deletedId: snapshot.docs[0].id }
+  } catch (error) {
+    console.error('Error al eliminar por nombre:', error)
+    throw new Error('No se pudo eliminar la secuencia por nombre')
   }
 }
 

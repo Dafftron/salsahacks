@@ -1,3 +1,12 @@
+### 🗑️ COMMIT: Fix eliminación de secuencias por colección y helper por nombre - 2025-08-11  
+- Archivos: `src/services/firebase/sequences.js`  
+- Cambios:  
+  - `deleteSequence(sequenceId, page = 'figuras')`: ahora elimina en la colección correcta según página.  
+  - `deleteSequenceByName(name, page = 'figuras')`: nuevo helper para borrar por nombre exacto.  
+- Impacto:  
+  - La papelera en la tarjeta de secuencia funciona de forma consistente en `FigurasPage`.  
+  - Permite borrar rápidamente una secuencia específica por nombre en dev (útil para mantenimiento).  
+
 ### 🎬 COMMIT: Descarga de secuencias en MP4 único con resolución seleccionable y seeking compatible - 2025-08-11  
 - Archivos: `src/services/video/videoCombiner.js`  
 - Cambios:  
@@ -5,6 +14,13 @@
   - Mantiene fallback a Web Workers si fuera necesario.  
 - Impacto:  
   - Desde `FigurasPage` y `DownloadModal`, al descargar una secuencia se genera un único MP4 combinado, respetando la resolución elegida y con compatibilidad mejorada.  
+
+### 🛡️ COMMIT: Fallback automático si FFmpeg falla al combinar - 2025-08-11  
+- Archivos: `src/services/video/videoCombiner.js`  
+- Cambios:  
+  - Si falla la carga o la ejecución de FFmpeg (p.ej. error import ffmpeg-core.js), el flujo cae automáticamente al método de combinación con Web Workers para no bloquear la descarga.  
+- Impacto:  
+  - Experiencia robusta en navegadores/entornos con restricciones de WASM o rutas.  
 
 # 📝 NOTAS Y COMMITS - SALSAHACKS V2.0
 

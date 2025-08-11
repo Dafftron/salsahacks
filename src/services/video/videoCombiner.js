@@ -533,32 +533,46 @@ class VideoCombiner {
 
       const videoBlobs = await this.downloadVideosWithConcurrency(videos, onProgress)
 
-      // Si el usuario selecciona una resolución, usar el pipeline con FFmpeg (MP4 con seeking correcto y escalado)
+      // Si el usuario selecciona una resolución, intentar FFmpeg (MP4 compatible);
+      // si falla la carga/ejecución de FFmpeg, hacer fallback automático a Web Workers
       if (selectedResolution) {
-        console.log(`🔧 Usando FFmpeg con soporte de seeking y resolución ${selectedResolution}`)
-        if (onProgress) {
-          onProgress({
-            stage: 'ffmpeg',
-            current: 60,
-            total: 100,
-            message: `Preparando combinación en ${selectedResolution.toUpperCase()}...`
-          })
+        try {
+          console.log(`🔧 Usando FFmpeg con soporte de seeking y resolución ${selectedResolution}`)
+          if (onProgress) {
+            onProgress({
+              stage: 'ffmpeg',
+              current: 60,
+              total: 100,
+              message: `Preparando combinación en ${selectedResolution.toUpperCase()}...`
+            })
+          }
+          const mp4Blob = await this.combineVideosWithWindowsSeeking(
+            videoBlobs,
+            onProgress,
+            selectedResolution
+          )
+          if (onProgress) {
+            onProgress({
+              stage: 'complete',
+              current: 100,
+              total: 100,
+              message: '¡Combinación completada (MP4 compatible)!'
+            })
+          }
+          console.log('✅ Combinación con FFmpeg (seeking) completada')
+          return mp4Blob
+        } catch (ffmpegError) {
+          console.warn('⚠️ FFmpeg no disponible, haciendo fallback a Web Workers:', ffmpegError?.message || ffmpegError)
+          if (onProgress) {
+            onProgress({
+              stage: 'ffmpeg',
+              current: 55,
+              total: 100,
+              message: 'FFmpeg no disponible. Usando método alternativo…'
+            })
+          }
+          // Continuar hacia el fallback más abajo
         }
-        const mp4Blob = await this.combineVideosWithWindowsSeeking(
-          videoBlobs,
-          onProgress,
-          selectedResolution
-        )
-        if (onProgress) {
-          onProgress({
-            stage: 'complete',
-            current: 100,
-            total: 100,
-            message: '¡Combinación completada (MP4 compatible)!'
-          })
-        }
-        console.log('✅ Combinación con FFmpeg (seeking) completada')
-        return mp4Blob
       }
 
       // Fallback: método con Web Workers (concat sin recodificar)
