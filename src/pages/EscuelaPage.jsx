@@ -64,6 +64,7 @@ import {
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useCardSize } from '../contexts/CardSizeContext'
+import VideoGridRenderer from '../components/gallery/VideoGridRenderer'
 
 
 // Componente de carga para lazy loading
@@ -883,19 +884,18 @@ const EscuelaPage = () => {
                 <p className="text-gray-400 text-sm mt-2">Sube tu primer video de {selectedStyle.toLowerCase()} usando el botón de arriba</p>
               </div>
             ) : (
-              // Galería normal (grid CSS)
-              <div 
-                className="grid gap-6" 
-                style={{ 
-                  gridTemplateColumns: `repeat(auto-fill, minmax(${
-                    getVideoConfig(isFullWidth).compact ? '160px' : 
-                    getVideoConfig(isFullWidth).titleSize === 'text-xs' ? '160px' :
-                    getVideoConfig(isFullWidth).titleSize === 'text-sm' ? '240px' :
-                    getVideoConfig(isFullWidth).titleSize === 'text-xl' ? '320px' : '450px'
-                  }, 1fr))` 
-                }}
-              >
-                {filteredVideos.map((video) => (
+              <VideoGridRenderer
+                videos={filteredVideos}
+                threshold={150}
+                cardWidth={
+                  getVideoConfig(isFullWidth).compact ? 160 :
+                  getVideoConfig(isFullWidth).titleSize === 'text-xs' ? 160 :
+                  getVideoConfig(isFullWidth).titleSize === 'text-sm' ? 240 :
+                  getVideoConfig(isFullWidth).titleSize === 'text-xl' ? 320 : 450
+                }
+                cardHeight={getVideoConfig(isFullWidth).compact ? 240 : 380}
+                gap={24}
+                renderCard={(video) => (
                   <div
                     key={video.id}
                     className="bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border-gray-100"
@@ -1058,8 +1058,8 @@ const EscuelaPage = () => {
         </div>
                     </div>
                   </div>
-                ))}
-              </div>
+                )}
+              />
             )}
           </div>
 
