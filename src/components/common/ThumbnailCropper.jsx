@@ -113,6 +113,10 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
           reject(err)
         }
       })
+    },
+    reset: () => {
+      setZoom(1)
+      setOffset({ x: 0, y: 0 })
     }
   }))
 
