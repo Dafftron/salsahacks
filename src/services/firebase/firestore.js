@@ -702,6 +702,89 @@ export const getUserFavorites = async (userId) => {
   }
 }
 
+// ===== SISTEMA DE ESTUDIOS (to-study y completado) =====
+export const toggleUserStudy = async (videoId, userId) => {
+  try {
+    console.log('📘 Toggle estudio para video:', videoId, 'usuario:', userId)
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    if (!userDocSnap.exists()) {
+      throw new Error('Usuario no encontrado')
+    }
+    const userData = userDocSnap.data()
+    const study = userData.study || []
+    const index = study.indexOf(videoId)
+    let newStudy
+    if (index === -1) {
+      newStudy = [...study, videoId]
+      console.log('✅ Video agregado a estudio')
+    } else {
+      newStudy = study.filter(id => id !== videoId)
+      console.log('✅ Video removido de estudio')
+    }
+    await updateDoc(userDocRef, { study: newStudy, updatedAt: serverTimestamp() })
+    return { success: true, isInStudy: index === -1, study: newStudy, error: null }
+  } catch (error) {
+    console.error('❌ Error al toggle estudio:', error)
+    return { success: false, isInStudy: false, error: error.message }
+  }
+}
+
+export const setUserStudyCompleted = async (videoId, userId, completed = true) => {
+  try {
+    console.log('✅ Marcar estudio completado:', completed, 'video:', videoId)
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    if (!userDocSnap.exists()) {
+      throw new Error('Usuario no encontrado')
+    }
+    const userData = userDocSnap.data()
+    const studyCompleted = userData.studyCompleted || []
+    const has = studyCompleted.includes(videoId)
+    let newCompleted
+    if (completed && !has) newCompleted = [...studyCompleted, videoId]
+    else if (!completed && has) newCompleted = studyCompleted.filter(id => id !== videoId)
+    else newCompleted = studyCompleted
+    await updateDoc(userDocRef, { studyCompleted: newCompleted, updatedAt: serverTimestamp() })
+    return { success: true, isCompleted: completed, studyCompleted: newCompleted, error: null }
+  } catch (error) {
+    console.error('❌ Error al actualizar estado de estudio completado:', error)
+    return { success: false, isCompleted: false, error: error.message }
+  }
+}
+
+export const checkUserStudy = async (videoId, userId) => {
+  try {
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    if (!userDocSnap.exists()) {
+      return { isInStudy: false, error: 'Usuario no encontrado' }
+    }
+    const userData = userDocSnap.data()
+    const study = userData.study || []
+    return { isInStudy: study.includes(videoId), error: null }
+  } catch (error) {
+    console.error('❌ Error al verificar estudio:', error)
+    return { isInStudy: false, error: error.message }
+  }
+}
+
+export const checkUserStudyCompleted = async (videoId, userId) => {
+  try {
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    if (!userDocSnap.exists()) {
+      return { isCompleted: false, error: 'Usuario no encontrado' }
+    }
+    const userData = userDocSnap.data()
+    const studyCompleted = userData.studyCompleted || []
+    return { isCompleted: studyCompleted.includes(videoId), error: null }
+  } catch (error) {
+    console.error('❌ Error al verificar estudio completado:', error)
+    return { isCompleted: false, error: error.message }
+  }
+}
+
 export const deleteVideoDocument = async (videoId, page = 'figuras') => {
   try {
     console.log('🗑️ Eliminando video de Firestore:', videoId)

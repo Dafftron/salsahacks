@@ -238,6 +238,33 @@ const EscuelaPage = () => {
     }
   }, [videos.length, user])
 
+  // Acciones de estudio
+  const handleToggleStudy = async (video) => {
+    try {
+      const { toggleUserStudy } = await import('../services/firebase/firestore')
+      const result = await toggleUserStudy(video.id, user.uid)
+      if (result.success) {
+        setVideos(prev => prev.map(v => v.id === video.id ? { ...v, isInStudy: result.isInStudy } : v))
+        addToast(result.isInStudy ? 'Añadido a estudios' : 'Quitado de estudios', 'success')
+      }
+    } catch (e) {
+      addToast('Error al actualizar estudios', 'error')
+    }
+  }
+
+  const handleToggleCompleted = async (video) => {
+    try {
+      const { setUserStudyCompleted } = await import('../services/firebase/firestore')
+      const result = await setUserStudyCompleted(video.id, user.uid, !video.isCompleted)
+      if (result.success) {
+        setVideos(prev => prev.map(v => v.id === video.id ? { ...v, isCompleted: result.isCompleted } : v))
+        addToast(result.isCompleted ? 'Marcado como completado' : 'Marcado como pendiente', 'success')
+      }
+    } catch (e) {
+      addToast('Error al actualizar completado', 'error')
+    }
+  }
+
 
 
 
@@ -1002,13 +1029,17 @@ const EscuelaPage = () => {
                         
                         {/* Información del video y acciones */}
                         {getVideoConfig(isFullWidth).compact ? (
-                      <CompactCardActions
+                          <CompactCardActions
                         video={video}
                             onLike={() => handleVideoLike(video)}
                         onEdit={() => openEditModal(video)}
                         onDelete={() => openDeleteModal(video)}
                         onDownload={userProfile?.role === 'maese' || userProfile?.role === 'super_admin' ? () => downloadVideo(video) : undefined}
                             onPlay={() => handlePlayVideo(video)}
+                            onToggleStudy={user ? () => handleToggleStudy(video) : undefined}
+                            onToggleCompleted={user ? () => handleToggleCompleted(video) : undefined}
+                            isInStudy={video.isInStudy}
+                            isCompleted={video.isCompleted}
                             type="video"
                           />
                         ) : (

@@ -1853,6 +1853,10 @@ const FigurasPage = () => {
                           onAddToSequence={() => handleAddVideoToSequence(video)}
                           onDownload={userProfile?.role === 'maese' || userProfile?.role === 'super_admin' ? () => downloadVideo(video) : undefined}
                           onPlay={() => handlePlayVideo(video)}
+                          onToggleStudy={user ? () => handleToggleStudy(video) : undefined}
+                          onToggleCompleted={user ? () => handleToggleCompleted(video) : undefined}
+                          isInStudy={video.isInStudy}
+                          isCompleted={video.isCompleted}
                           isVideoInSequence={isVideoInSequence(video)}
                           isBuilderOpen={isBuilderOpen}
                           isVideoCompatible={isVideoCompatible(video)}

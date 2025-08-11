@@ -11,6 +11,10 @@ const CompactCardActions = ({
   onAddToSequence, 
   onDownload, 
   onPlay,
+  onToggleStudy,
+  onToggleCompleted,
+  isInStudy,
+  isCompleted,
   isVideoInSequence,
   isBuilderOpen,
   isVideoCompatible,
@@ -38,6 +42,37 @@ const CompactCardActions = ({
         >
           <Heart className={`h-3 w-3 ${video.userLiked ? 'fill-current' : ''}`} />
         </button>
+
+        {/* Botón de estudio */}
+        {onToggleStudy && (
+          <button
+            onClick={onToggleStudy}
+            className={`p-1 transition-colors rounded ${
+              isInStudy ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'
+            }`}
+            title={isInStudy ? 'Quitar de estudios' : 'Añadir a estudios'}
+          >
+            {/* Usamos un icono simple con SVG para evitar dependencias */}
+            <svg viewBox="0 0 24 24" className={`h-3 w-3 ${isInStudy ? 'fill-current' : ''}`}>
+              <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/>
+            </svg>
+          </button>
+        )}
+
+        {/* Botón marcar completado */}
+        {onToggleCompleted && (
+          <button
+            onClick={onToggleCompleted}
+            className={`p-1 transition-colors rounded ${
+              isCompleted ? 'text-green-600' : 'text-gray-400 hover:text-green-600'
+            }`}
+            title={isCompleted ? 'Marcar como pendiente' : 'Marcar como completado'}
+          >
+            <svg viewBox="0 0 24 24" className={`h-3 w-3 ${isCompleted ? 'fill-current' : ''}`}>
+              <path d="M9 16.17l-3.88-3.88L4 13.41 9 18.41 20.59 6.83 19.17 5.41z"/>
+            </svg>
+          </button>
+        )}
         
         {/* Botón de añadir a secuencia */}
         <button
