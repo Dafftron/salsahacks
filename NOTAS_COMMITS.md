@@ -1,3 +1,11 @@
+### 📦 COMMIT: Secuencias se descargan solo como ZIP con originales nombrados - 2025-08-11  
+- Archivos: `src/components/video/DownloadModal.jsx`  
+- Cambios:  
+  - Eliminados intentos de combinación para secuencias.  
+  - Botón principal ahora descarga un ZIP con los videos fuente.  
+  - Nombres: `<secuencia>_1.mp4`, `<secuencia>_2.mp4`, …  
+- Impacto:  
+  - Flujo simple y confiable para edición externa (CapCut, DaVinci, etc.).  
 ### 🗑️ COMMIT: Fix eliminación de secuencias por colección y helper por nombre - 2025-08-11  
 - Archivos: `src/services/firebase/sequences.js`  
 - Cambios:  

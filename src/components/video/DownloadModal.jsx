@@ -20,8 +20,13 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
       setError(null)
       setDownloadUrl(null)
       setIsProcessing(false)
-      setIsAnalyzing(true)
-      analyzeVideoResolution()
+      // Si es una secuencia, no analizar resolución ni preparar combinación
+      if (video?.videos && Array.isArray(video.videos)) {
+        setIsAnalyzing(false)
+      } else {
+        setIsAnalyzing(true)
+        analyzeVideoResolution()
+      }
     }
   }, [isOpen, video])
 
@@ -155,40 +160,28 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
       return
     }
 
+    // Si es una secuencia, forzar siempre ZIP de originales (sin intentos de combinar)
+    if (video.videos && Array.isArray(video.videos)) {
+      await handleDownloadZip()
+      return
+    }
+
+    // Video individual: descarga directa
     setIsProcessing(true)
     setError(null)
     setProgress({
-      stage: 'init',
-      current: 0,
+      stage: 'download',
+      current: 50,
       total: 100,
-      message: 'Iniciando descarga con máxima calidad...'
+      message: 'Descargando video con máxima calidad...'
     })
 
     try {
-      let result
-
-      // Verificar si es una secuencia o un video individual
-      if (video.videos && Array.isArray(video.videos)) {
-        // Es una secuencia - usar VideoCombiner con máxima calidad
-        result = await videoCombiner.combineVideos(video.videos, setProgress, resolution)
-      } else {
-        // Es un video individual - descarga directa
-        result = await downloadSingleVideo(video, setProgress)
-      }
-
-      // Crear URL para descarga
+      const result = await downloadSingleVideo(video, setProgress)
       const url = URL.createObjectURL(result)
       setDownloadUrl(url)
-
-      setProgress({
-        stage: 'complete',
-        current: 100,
-        total: 100,
-        message: '¡Descarga completada con máxima calidad!'
-      })
-
+      setProgress({ stage: 'complete', current: 100, total: 100, message: '¡Descarga completada!' })
     } catch (error) {
-      console.error('Error en descarga:', error)
       setError(`Error en descarga: ${error.message}`)
       setProgress(null)
     } finally {
@@ -428,8 +421,8 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
             </div>
           </div>
 
-          {/* Resolution Selector */}
-          {!isAnalyzing && (
+          {/* Resolution Selector (solo videos individuales) */}
+          {!isAnalyzing && !video?.videos && (
             <div className="space-y-3">
               <label className="block text-sm font-medium text-gray-700">
                 Resolución de Descarga
@@ -462,7 +455,7 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
           )}
 
           {/* Analyzing */}
-          {isAnalyzing && (
+          {isAnalyzing && !video?.videos && (
             <div className="flex items-center space-x-2 text-blue-600">
               <Loader className="h-4 w-4 animate-spin" />
               <span className="text-sm">Analizando resolución máxima disponible...</span>
@@ -526,17 +519,7 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
               className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2 font-semibold"
             >
               <Zap className="h-4 w-4" />
-              <span>{video?.videos ? 'Combinar y Descargar' : 'Descargar Video'}</span>
-            </button>
-          )}
-
-          {!isProcessing && !isAnalyzing && video?.videos && (
-            <button
-              onClick={handleDownloadZip}
-              className="flex-1 bg-white border border-gray-300 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center justify-center space-x-2 font-semibold"
-            >
-              <Archive className="h-4 w-4" />
-              <span>Descargar ZIP (videos separados)</span>
+              <span>{video?.videos ? 'Descargar ZIP (videos separados)' : 'Descargar Video'}</span>
             </button>
           )}
 
