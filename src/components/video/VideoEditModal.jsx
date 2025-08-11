@@ -20,6 +20,9 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
   const [customThumbnail, setCustomThumbnail] = useState(null)
   const [customThumbnailFile, setCustomThumbnailFile] = useState(null)
   const cropperRef = useRef(null)
+  const captureVideoRef = useRef(null)
+  const [videoDuration, setVideoDuration] = useState(0)
+  const [framePercent, setFramePercent] = useState(0.0)
   
   // Estados para tags organizados por categorías
   const [selectedTags, setSelectedTags] = useState({})
@@ -163,6 +166,60 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
         setCustomThumbnailFile(file)
       }
       reader.readAsDataURL(file)
+    }
+  }
+
+  // Capturar un frame del video según el slider
+  const handleCaptureFrame = async () => {
+    try {
+      const videoEl = captureVideoRef.current
+      if (!videoEl) return
+      // Asegurar metadata
+      if (!videoEl.duration || isNaN(videoEl.duration)) {
+        await new Promise((res, rej) => {
+          videoEl.onloadedmetadata = () => res()
+          videoEl.onerror = rej
+        })
+      }
+      const targetTime = (framePercent || 0) * (videoEl.duration || 0)
+      await new Promise((res, rej) => {
+        const onSeeked = () => {
+          res()
+          videoEl.removeEventListener('seeked', onSeeked)
+        }
+        videoEl.addEventListener('seeked', onSeeked)
+        videoEl.currentTime = targetTime
+      })
+      // Dibujar en canvas con 1280x720 manteniendo proporción
+      const canvas = document.createElement('canvas')
+      const width = 1280
+      const height = 720
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext('2d')
+      // Calcular cover
+      const videoW = videoEl.videoWidth
+      const videoH = videoEl.videoHeight
+      const scale = Math.max(width / videoW, height / videoH)
+      const drawW = videoW * scale
+      const drawH = videoH * scale
+      const dx = width / 2 - drawW / 2
+      const dy = height / 2 - drawH / 2
+      ctx.drawImage(videoEl, dx, dy, drawW, drawH)
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95))
+      if (blob) {
+        const dataUrl = await new Promise((resolve) => {
+          const fr = new FileReader()
+          fr.onload = () => resolve(fr.result)
+          fr.readAsDataURL(blob)
+        })
+        setCustomThumbnail(dataUrl)
+        // Guardamos un File para fallback (nombre amigable)
+        const file = new File([blob], `${video.originalTitle || 'frame'}.jpg`, { type: 'image/jpeg' })
+        setCustomThumbnailFile(file)
+      }
+    } catch (err) {
+      console.warn('Error capturando frame:', err)
     }
   }
 
@@ -340,7 +397,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                    />
                  </div>
                  <div className="flex items-center justify-between text-sm text-gray-600">
-                   <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2">
                      <span>{video.originalTitle}</span>
                      <span className="text-gray-400">•</span>
                      <span>{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
@@ -352,6 +409,14 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                      )}
                    </div>
                  </div>
+                {/* Video oculto para captura de frame */}
+                <video
+                  ref={captureVideoRef}
+                  src={video.videoUrl}
+                  style={{ display: 'none' }}
+                  onLoadedMetadata={(e) => setVideoDuration(e.currentTarget.duration || 0)}
+                  crossOrigin="anonymous"
+                />
                </div>
 
               {/* Título */}
@@ -401,7 +466,28 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                       onChange={handleThumbnailChange}
                       className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
-                    <p className="text-xs text-gray-500 mt-2">Sube una imagen o usa arrastrar/zoom para ajustar el encuadre del thumbnail.</p>
+                    <div className="mt-3 space-y-2">
+                      <label className="text-xs text-gray-600">Usar frame del video</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          step={1}
+                          value={Math.round(framePercent * 100)}
+                          onChange={(e) => setFramePercent(parseInt(e.target.value, 10) / 100)}
+                          className="w-full"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleCaptureFrame}
+                          className="px-2 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700"
+                          disabled={!video.videoUrl}
+                        >Capturar</button>
+                        <span className="text-xs text-gray-500 w-10 text-right">{Math.round(framePercent * 100)}%</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Arrastra para mover y usa el zoom. También puedes seleccionar un frame del video con el deslizador y capturarlo como base.</p>
                   </div>
                 </div>
               </div>

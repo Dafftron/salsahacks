@@ -82,8 +82,7 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
     const nextZoom = clamp(parseFloat((zoom + delta).toFixed(2)), 1, 3)
     setZoom(nextZoom)
     // Re-clamp offset al cambiar zoom
-    const next = clampOffset(offset.x, offset.y)
-    setOffset(next)
+    setOffset((prev) => clampOffset(prev.x, prev.y))
   }
 
   // Exponer método para obtener blob recortado
@@ -159,7 +158,11 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
           max={3}
           step={0.01}
           value={zoom}
-          onChange={(e) => setZoom(clamp(parseFloat(e.target.value), 1, 3))}
+          onChange={(e) => {
+            const next = clamp(parseFloat(e.target.value), 1, 3)
+            setZoom(next)
+            setOffset((prev) => clampOffset(prev.x, prev.y))
+          }}
           className="w-full"
         />
         <span className="text-xs text-gray-600 w-10 text-right">{Math.round(zoom * 100)}%</span>
