@@ -932,18 +932,8 @@ const EscuelaPage = () => {
                 <p className="text-gray-400 text-sm mt-2">Sube tu primer video de {selectedStyle.toLowerCase()} usando el botón de arriba</p>
               </div>
             ) : (
-              <VideoGridRenderer
-                videos={filteredVideos}
-                threshold={150}
-                cardWidth={
-                  getVideoConfig(isFullWidth).compact ? 160 :
-                  getVideoConfig(isFullWidth).titleSize === 'text-xs' ? 160 :
-                  getVideoConfig(isFullWidth).titleSize === 'text-sm' ? 240 :
-                  getVideoConfig(isFullWidth).titleSize === 'text-xl' ? 320 : 450
-                }
-                cardHeight={getVideoConfig(isFullWidth).compact ? 260 : 420}
-                gap={24}
-                renderCard={(video) => (
+              <div className={`grid gap-6 ${getVideoConfig(isFullWidth).grid}`}>
+                {filteredVideos.map((video) => (
                   <div
                     key={video.id}
                     className="bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border-gray-100"
@@ -1129,8 +1119,8 @@ const EscuelaPage = () => {
         </div>
                     </div>
                   </div>
-                )}
-              />
+                ))}
+              </div>
             )}
           </div>
 
