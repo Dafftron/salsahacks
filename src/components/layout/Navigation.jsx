@@ -1,13 +1,15 @@
 import { Link, useLocation } from 'react-router-dom'
+import { useState } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useAuth } from '../../contexts/AuthContext'
-import { Music, Sun, Moon, User, Bell, Heart, Search, Shield } from 'lucide-react'
-import { ROLE_LABELS, ROLE_COLORS } from '../../constants/roles'
+import { Music, Sun, Moon, User, Bell, Heart, Search, Shield, Menu } from 'lucide-react'
+import { ROLE_LABELS, ROLE_COLORS, ROLES } from '../../constants/roles'
 
 const Navigation = () => {
   const location = useLocation()
   const { theme, changeTheme } = useTheme()
   const { user, userProfile, isAuthenticated, logout, hasPermission, getUserUsername, getUserPhoto } = useAuth()
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
 
   const navItems = [
     { path: '/', label: 'Inicio' },
@@ -16,7 +18,7 @@ const Navigation = () => {
       { path: '/escuela', label: 'Escuela' },
       { path: '/eventos', label: 'Eventos' },
       { path: '/categorias', label: 'Categorías' },
-      { path: '/notas', label: 'Notas' }
+      ...(userProfile?.role === ROLES.SUPER_ADMIN ? [{ path: '/notas', label: 'Notas' }] : [])
     ] : [])
   ]
 
@@ -42,7 +44,7 @@ const Navigation = () => {
             <span className="text-2xl font-bold text-salsa-primary">SalsaHacks</span>
           </Link>
 
-          {/* Navigation Links */}
+          {/* Navigation Links - Desktop */}
           <div className="hidden md:flex space-x-8">
             {navItems.map((item) => (
               <Link
@@ -58,6 +60,15 @@ const Navigation = () => {
               </Link>
             ))}
           </div>
+
+          {/* Mobile menu toggle */}
+          <button
+            className="md:hidden p-2 text-gray-600 hover:text-salsa-primary transition-colors"
+            onClick={() => setIsMobileNavOpen((prev) => !prev)}
+            aria-label={isMobileNavOpen ? 'Cerrar navegación' : 'Abrir navegación'}
+          >
+            <Menu className="h-6 w-6" />
+          </button>
 
           {/* Right Side Icons */}
           <div className="flex items-center space-x-4">
@@ -188,6 +199,30 @@ const Navigation = () => {
           </div>
         </div>
       </div>
+
+      {/* Navigation Links - Mobile */}
+      {isMobileNavOpen && (
+        <div className="md:hidden border-t border-gray-100">
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex space-x-4 overflow-x-auto">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileNavOpen(false)}
+                  className={`whitespace-nowrap px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    location.pathname === item.path
+                      ? 'text-salsa-primary bg-salsa-light'
+                      : 'text-gray-700 hover:text-salsa-primary hover:bg-salsa-light'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   )
 }

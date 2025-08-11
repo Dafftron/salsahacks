@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, Download, Video, Settings, Check, AlertCircle, Loader, Zap } from 'lucide-react'
+import { X, Download, Video, Settings, Check, AlertCircle, Loader, Zap, Archive } from 'lucide-react'
 import VideoCombiner from '../../services/video/videoCombiner'
 
 const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
@@ -190,6 +190,57 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
     } catch (error) {
       console.error('Error en descarga:', error)
       setError(`Error en descarga: ${error.message}`)
+      setProgress(null)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  // Descargar ZIP con los videos fuente (alternativa offline)
+  const handleDownloadZip = async () => {
+    try {
+      if (!video?.videos || !Array.isArray(video.videos) || video.videos.length === 0) {
+        setError('No hay videos para empaquetar')
+        return
+      }
+
+      setIsProcessing(true)
+      setError(null)
+      setProgress({
+        stage: 'download',
+        current: 30,
+        total: 100,
+        message: 'Preparando ZIP de videos fuente...'
+      })
+
+      const { downloadSequenceDirect } = await import('../../services/video/videoProcessor')
+      const result = await downloadSequenceDirect({ name: video.title || 'secuencia', videos: video.videos })
+      if (!result.success) {
+        throw new Error(result.error || 'No se pudo generar el ZIP')
+      }
+
+      const url = URL.createObjectURL(result.data)
+      const safeName = (video.title || 'secuencia')
+        .replace(/[^a-zA-Z0-9\s]/g, '')
+        .replace(/\s+/g, '_')
+        .toLowerCase()
+
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${safeName}.zip`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      setProgress({
+        stage: 'complete',
+        current: 100,
+        total: 100,
+        message: 'ZIP generado con videos fuente'
+      })
+    } catch (err) {
+      setError(`Error generando ZIP: ${err.message}`)
       setProgress(null)
     } finally {
       setIsProcessing(false)
@@ -476,6 +527,16 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
             >
               <Zap className="h-4 w-4" />
               <span>{video?.videos ? 'Combinar y Descargar' : 'Descargar Video'}</span>
+            </button>
+          )}
+
+          {!isProcessing && !isAnalyzing && video?.videos && (
+            <button
+              onClick={handleDownloadZip}
+              className="flex-1 bg-white border border-gray-300 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200 flex items-center justify-center space-x-2 font-semibold"
+            >
+              <Archive className="h-4 w-4" />
+              <span>Descargar ZIP (videos separados)</span>
             </button>
           )}
 

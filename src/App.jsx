@@ -56,7 +56,7 @@ function AppContent() {
               </ProtectedRoute>
             } />
             <Route path="/notas" element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole={ROLES.SUPER_ADMIN}>
                 <NotasPage />
               </ProtectedRoute>
             } />
