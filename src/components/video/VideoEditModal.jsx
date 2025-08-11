@@ -44,6 +44,8 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
      setDescription(video.description || '')
      setCustomThumbnail(video.thumbnailUrl || null)
      setCustomThumbnailFile(null) // Resetear archivo de thumbnail
+     // Al abrir, partir siempre del frame completo (el cropper lo ajusta a fitScale)
+     setCropState({ zoom: 1, offset: { x: 0, y: 0 } })
      
      // Inicializar tags
      if (currentCategories) {
