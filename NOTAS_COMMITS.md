@@ -42,6 +42,14 @@
   - UX móvil: enlaces de navegación visibles y usables en dispositivos móviles.
 
 # 🗃️ COMMIT: Índices Firestore para style + createdAt - 2025-08-11
+
+# 📚 COMMIT: Hito ESCUELA - +100 videos subidos - 2025-08-11
+- Archivos: `src/pages/NotasPage.jsx`, `NOTAS_COMMITS.md`
+- Cambios:
+  - Marcada como completada la tarea de subida masiva de ESCUELA y removida de En Proceso/Futuro.
+  - Añadido commit de hito en NotasPage para reflejar el estado real del contenido.
+- Impacto:
+  - Estado actualizado: ESCUELA ya cuenta con >100 videos, listo para siguientes fases (organización fina, curación y EventosPage).
 - Archivos: `firestore.indexes.json`
 - Cambios:
   - Índices compuestos definidos para `videos` y `escuela-videos`: `style ASC`, `createdAt DESC`.

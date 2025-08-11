@@ -35,6 +35,18 @@ const NotasPage = () => {
 
         const commits = [
         {
+          id: 119,
+          hash: 'aa11bb2',
+          date: '2025-08-11',
+          time: '10:20:00',
+          title: 'Commit #119 - Hito: +100 videos subidos en ESCUELA',
+          description: 'Marcamos como completada la subida masiva inicial de contenido educativo (>100 videos)',
+          files: ['src/pages/NotasPage.jsx', 'NOTAS_COMMITS.md'],
+          notes: 'Contenido: se superó el objetivo inicial (10-15) con más de 100 videos subidos a ESCUELA. La tarea pasa a Hecho y se retira de En Proceso/Futuro.',
+          status: 'Completado',
+          category: 'CONTENIDO'
+        },
+        {
           id: 117,
           hash: 'c1d2e3f',
           date: '2025-08-11',
@@ -1111,6 +1123,15 @@ const NotasPage = () => {
 
   const cosasHechas = [
     {
+      id: 43,
+      title: 'Subida masiva de videos de ESCUELA (>100)',
+      description: 'Se superó el objetivo inicial y se cargó volumen significativo de contenido en ESCUELA',
+      category: 'CONTENIDO',
+      date: '2025-08-11',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
       id: 40,
       title: 'Acceso a Notas solo Super Admin',
       description: 'Restricción de ruta y menú: solo ROLES.SUPER_ADMIN puede ver /notas',
@@ -1492,15 +1513,6 @@ const NotasPage = () => {
 
   const cosasEnProceso = [
     {
-      id: 1,
-      title: 'Subida masiva de videos de ESCUELA',
-      description: 'Comenzar a subir contenido educativo real a la plataforma - Sistema 100% operativo',
-      category: 'CONTENIDO',
-      priority: 'Alta',
-      progress: 0,
-      status: 'En Progreso'
-    },
-    {
       id: 2,
       title: 'Replicación del sistema a EventosPage',
       description: 'Implementar EventosPage con base de datos separada eventos-videos y eventos-sequences',
@@ -1522,15 +1534,6 @@ const NotasPage = () => {
 
   const cosasFuturas = [
     // PRIORIDAD ALTA - PRÓXIMOS PASOS INMEDIATOS
-    {
-      id: 2,
-      title: 'Subir primeros 10-15 videos de ESCUELA',
-      description: 'Probar el sistema completo con contenido real de diferentes estilos',
-      category: 'CONTENIDO',
-      priority: 'Alta',
-      estimatedTime: '2 horas',
-      status: 'Futuro'
-    },
     
     // DESARROLLO ADICIONAL
     {
