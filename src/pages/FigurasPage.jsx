@@ -39,6 +39,7 @@ const DownloadModal = lazy(() => import('../components/video/DownloadModal'))
 const SequenceBuilder = lazy(() => import('../components/sequence/SequenceBuilder'))
 const SequenceGallery = lazy(() => import('../components/sequence/SequenceGallery'))
 const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVideoPlayer'))
+const CommentsSection = lazy(() => import('../components/video/CommentsSection'))
 
 import { 
   getVideos, 
@@ -2207,12 +2208,10 @@ Esta acción NO se puede deshacer.`}
                  </div>
                </div>
                 {/* Comments Section */}
-                <div className="mt-2">
-                  {/* lazy import avoided for simplicity */}
-                  {(() => {
-                    const CommentsSection = require('../components/video/CommentsSection.jsx').default
-                    return <CommentsSection videoId={selectedVideo.id} page="figuras" />
-                  })()}
+                <div className="mt-4 border-t pt-3">
+                  <Suspense fallback={null}>
+                    <CommentsSection videoId={selectedVideo.id} page="figuras" />
+                  </Suspense>
                 </div>
              </div>
            </div>

@@ -741,7 +741,20 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
           <div key={category.key} className="space-y-3 mb-4">
             <h5 className="font-medium text-gray-700 capitalize">{category.name}</h5>
             <div className="flex flex-wrap gap-2">
-              {category.tags.map(tag => (
+              {category.tags
+                .filter(tag => {
+                  // Ocultar el tag "oculto" a no-superadmin
+                  try {
+                    const { useAuth } = require('../../contexts/AuthContext')
+                    const { ROLES } = require('../../constants/roles')
+                    const { userProfile } = useAuth()
+                    const isSuper = userProfile?.role === ROLES.SUPER_ADMIN
+                    return isSuper || tag !== 'oculto'
+                  } catch (_) {
+                    return tag !== 'oculto'
+                  }
+                })
+                .map(tag => (
                 <button
                   key={tag}
                   onClick={() => handleTagToggle(category.key, tag)}

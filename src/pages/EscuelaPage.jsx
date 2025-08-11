@@ -39,6 +39,7 @@ const DownloadModal = lazy(() => import('../components/video/DownloadModal'))
 const SequenceBuilder = lazy(() => import('../components/sequence/SequenceBuilder'))
 const SequenceGallery = lazy(() => import('../components/sequence/SequenceGallery'))
 const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVideoPlayer'))
+const CommentsSection = lazy(() => import('../components/video/CommentsSection'))
 
 import { 
   getVideos, 
@@ -1127,11 +1128,10 @@ const EscuelaPage = () => {
                 </div>
               </div>
               {/* Comments Section */}
-              <div className="mt-2">
-                {(() => {
-                  const CommentsSection = require('../components/video/CommentsSection.jsx').default
-                  return <CommentsSection videoId={selectedVideo.id} page="escuela" />
-                })()}
+              <div className="mt-4 border-t pt-3">
+                <Suspense fallback={null}>
+                  <CommentsSection videoId={selectedVideo.id} page="escuela" />
+                </Suspense>
               </div>
             </div>
           </div>

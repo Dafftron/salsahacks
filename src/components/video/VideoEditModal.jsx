@@ -616,7 +616,20 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                   <div key={category.key} className="space-y-3">
                     <h5 className="font-medium text-gray-700 capitalize">{category.name}</h5>
                     <div className="flex flex-wrap gap-2">
-                      {category.tags.map(tag => (
+                      {category.tags
+                        .filter(tag => {
+                          // Ocultar el tag "oculto" a no-superadmin
+                          try {
+                            const { useAuth } = require('../../contexts/AuthContext')
+                            const { ROLES } = require('../../constants/roles')
+                            const { userProfile } = useAuth()
+                            const isSuper = userProfile?.role === ROLES.SUPER_ADMIN
+                            return isSuper || tag !== 'oculto'
+                          } catch (_) {
+                            return tag !== 'oculto'
+                          }
+                        })
+                        .map(tag => (
                         <button
                           key={tag}
                           onClick={() => handleTagToggle(category.key, tag)}
@@ -660,7 +673,19 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                         <div key={`inicial-${category.key}`} className="space-y-2">
                           <h6 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category.name}</h6>
                           <div className="flex flex-wrap gap-2">
-                            {category.tags.map(tag => (
+                            {category.tags
+                              .filter(tag => {
+                                try {
+                                  const { useAuth } = require('../../contexts/AuthContext')
+                                  const { ROLES } = require('../../constants/roles')
+                                  const { userProfile } = useAuth()
+                                  const isSuper = userProfile?.role === ROLES.SUPER_ADMIN
+                                  return isSuper || tag !== 'oculto'
+                                } catch (_) {
+                                  return tag !== 'oculto'
+                                }
+                              })
+                              .map(tag => (
                               <button
                                 key={`inicial-${tag}`}
                                 onClick={() => handleTagInicialToggle(category.key, tag)}
@@ -707,7 +732,19 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                         <div key={`final-${category.key}`} className="space-y-2">
                           <h6 className="text-xs font-medium text-gray-600 uppercase tracking-wide">{category.name}</h6>
                           <div className="flex flex-wrap gap-2">
-                            {category.tags.map(tag => (
+                            {category.tags
+                              .filter(tag => {
+                                try {
+                                  const { useAuth } = require('../../contexts/AuthContext')
+                                  const { ROLES } = require('../../constants/roles')
+                                  const { userProfile } = useAuth()
+                                  const isSuper = userProfile?.role === ROLES.SUPER_ADMIN
+                                  return isSuper || tag !== 'oculto'
+                                } catch (_) {
+                                  return tag !== 'oculto'
+                                }
+                              })
+                              .map(tag => (
                               <button
                                 key={`final-${tag}`}
                                 onClick={() => handleTagFinalToggle(category.key, tag)}
