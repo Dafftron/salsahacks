@@ -1185,50 +1185,42 @@ const FigurasPage = () => {
 
         {/* Botones de ordenamiento y favoritos - Debajo de las pestañas */}
         <div className="flex flex-wrap justify-center gap-2 mb-6">
-          {/* Botón A-Z/Z-A combinado */}
+          {/* A-Z tri-estado */}
           <button
-            onClick={() => handleSortChange(sortBy === 'name' ? 'name-desc' : 'name')}
+            onClick={() => {
+              if (sortKey !== 'name') { setSortKey('name'); setSortDir('asc') }
+              else if (sortDir === 'asc') { setSortDir('desc') }
+              else { setSortKey('none') }
+            }}
             className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
-              sortBy === 'name' || sortBy === 'name-desc'
+              sortKey === 'name'
                 ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
-            <span>{sortBy === 'name' ? 'A-Z' : sortBy === 'name-desc' ? 'Z-A' : 'A-Z'}</span>
+            <span>{sortKey === 'name' ? (sortDir === 'asc' ? 'A-Z' : 'Z-A') : 'A-Z'}</span>
           </button>
-          
-          {/* Botón Puntuación */}
+
+          {/* Puntuación tri-estado */}
           <button
-            onClick={() => handleSortChange(sortBy === 'rating' ? 'rating-desc' : 'rating')}
+            onClick={() => {
+              if (sortKey !== 'rating') { setSortKey('rating'); setSortDir('desc') }
+              else if (sortDir === 'desc') { setSortDir('asc') }
+              else { setSortKey('none') }
+            }}
             className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
-              sortBy === 'rating' || sortBy === 'rating-desc'
+              sortKey === 'rating'
                 ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
             <Star className="h-3 w-3" />
-            <span>{sortBy === 'rating' ? 'Puntuación ↓' : sortBy === 'rating-desc' ? 'Puntuación ↑' : 'Puntuación'}</span>
+            <span>{sortKey === 'rating' ? (sortDir === 'desc' ? 'Puntuación ↓' : 'Puntuación ↑') : 'Puntuación'}</span>
           </button>
-          
-          {/* Botón Favoritos */}
+
+          {/* Favoritos filtro */}
           <button
-            onClick={() => {
-              if (!showFavorites) {
-                // Si no está mostrando favoritos, activar y ordenar por likes descendente
-                setShowFavorites(true)
-                setSortBy('likes')
-              } else if (sortBy === 'likes') {
-                // Si está mostrando favoritos y ordenado por likes, cambiar a ascendente
-                setSortBy('likes-desc')
-              } else if (sortBy === 'likes-desc') {
-                // Si está en ascendente, volver a descendente
-                setSortBy('likes')
-              } else {
-                // Si está en otro ordenamiento, desactivar favoritos
-                setShowFavorites(false)
-                setSortBy('none')
-              }
-            }}
+            onClick={() => setShowFavorites(prev => !prev)}
             className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
               showFavorites
                 ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
@@ -1236,20 +1228,34 @@ const FigurasPage = () => {
             }`}
           >
             <Heart className="h-3 w-3" />
-            <span>
-              {!showFavorites ? 'Mostrar Favoritos' : 
-               sortBy === 'likes' ? 'Favoritos ↓' : 
-               sortBy === 'likes-desc' ? 'Favoritos ↑' : 
-               'Ocultar Favoritos'}
-            </span>
+            <span>{showFavorites ? 'Ocultar Favoritos' : 'Mostrar Favoritos'}</span>
           </button>
 
-          {/* Botón Limpiar todos los filtros */}
-          {(activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites) && (
+          {/* Orden para favoritos */}
+          {showFavorites && (
+            <button
+              onClick={() => {
+                if (sortKey !== 'likes') { setSortKey('likes'); setSortDir('desc') }
+                else if (sortDir === 'desc') { setSortDir('asc') }
+                else { setSortKey('none') }
+              }}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                sortKey === 'likes'
+                  ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
+                  : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+              }`}
+              title="Ordenar favoritos"
+            >
+              <Heart className="h-3 w-3" />
+              <span>{sortKey === 'likes' ? (sortDir === 'desc' ? 'Fav ↓' : 'Fav ↑') : 'Orden fav'}</span>
+            </button>
+          )}
+
+          {(activeCategoryChips.length > 0 || sortKey !== 'none' || showFavorites) && (
             <button
               onClick={() => {
                 setActiveCategoryChips([])
-                setSortBy('none')
+                setSortKey('none'); setSortDir('asc')
                 setShowFavorites(false)
               }}
               className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 transition-colors duration-200"
@@ -1270,10 +1276,10 @@ const FigurasPage = () => {
                 <h2 className="text-2xl font-semibold text-gray-800">
                   Videos de {selectedStyle.toLowerCase()} ({filteredVideos.length})
                 </h2>
-                {(activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites) && (
+                {(activeCategoryChips.length > 0 || sortKey !== 'none' || showFavorites) && (
                   <p className="text-sm text-gray-600 mt-1">
                     {activeCategoryChips.length > 0 && `Filtrado por: ${activeCategoryChips.join(', ')} `}
-                    {sortBy !== 'none' && `• Ordenado por: ${sortBy} `}
+                    {sortKey !== 'none' && `• Ordenado por: ${sortKey} ${sortDir === 'asc' ? '↑' : '↓'} `}
                     {showFavorites && '• Solo favoritos'}
                   </p>
                 )}
@@ -1517,6 +1523,10 @@ const FigurasPage = () => {
                              `
                            }
                            
+                           // Contenedor de comentarios (modo Instagram sencillo)
+                           const commentsContainer = document.createElement('div')
+                           commentsContainer.className = 'mt-4'
+                           
                            // Ensamblar todo
                            videoInfoContainer.appendChild(description)
                            videoInfoContainer.appendChild(stats)
@@ -1531,6 +1541,7 @@ const FigurasPage = () => {
                            videoContainer.appendChild(header)
                            videoContainer.appendChild(videoPlayerContainer)
                            videoContainer.appendChild(videoInfoContainer)
+                           videoContainer.appendChild(commentsContainer)
                            modal.appendChild(videoContainer)
                            document.body.appendChild(modal)
                            
@@ -1553,12 +1564,21 @@ const FigurasPage = () => {
                              }
                            }))
                            
+                           // Montar CommentsSection usando React
+                           const { default: CommentsSection } = await import('../components/video/CommentsSection.jsx')
+                           const commentsRoot = createRoot(commentsContainer)
+                           commentsRoot.render(React.createElement(CommentsSection, { videoId: video.id, page: 'figuras' }))
+                           
                            // Guardar referencia del root para limpieza
                            modal._root = root
+                           modal._commentsRoot = commentsRoot
                            
                            const closeModal = () => {
                              if (modal._root) {
                                modal._root.unmount()
+                             }
+                             if (modal._commentsRoot) {
+                               modal._commentsRoot.unmount()
                              }
                              if (document.body.contains(modal)) {
                                document.body.removeChild(modal)
