@@ -122,6 +122,12 @@
   - Evitamos confusiones entre dos `DownloadModal`. Se mantiene el de `src/components/video/` y `VideoDownloadModal` usado por secuencias.
 
 ### 🗑️ COMMIT: Eliminar archivos con nombres corruptos en raíz - 2025-08-11 17:36:00
+### 🧹 COMMIT: Unificar imports de Firebase Storage (estáticos) - 2025-08-11 17:40:00
+- Archivos: `src/pages/FigurasPage.jsx`, `src/pages/EscuelaPage.jsx`, `src/components/video/DownloadModal.jsx`
+- Cambios:
+  - Reemplazados imports dinámicos de `firebase/storage` y `services/firebase/config` por imports estáticos (`ref`, `getDownloadURL`, `storage`).
+- Impacto:
+  - Build más limpio; menos warnings por mezcla de imports dinámicos/estáticos.
 - Archivos: `rotos en modal de subir videos`, `t` (borrados con nombres 8.3)
 - Impacto: raíz 100% limpia; sin archivos residuales de prueba/errores de shell.
 

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import { ref, getDownloadURL } from 'firebase/storage'
+import { storage } from '../../services/firebase/config'
 import { X, Download, Video, Settings, Check, AlertCircle, Loader, Zap, Archive } from 'lucide-react'
 import VideoCombiner from '../../services/video/videoCombiner'
 
@@ -67,8 +69,7 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
   // Obtener la resolución de un video individual
   const getVideoResolution = async (video) => {
     try {
-      const { ref, getDownloadURL } = await import('firebase/storage')
-      const { storage } = await import('../../services/firebase/config')
+      // imports estáticos
       
       const videoRef = ref(storage, video.videoPath)
       const downloadURL = await getDownloadURL(videoRef)
@@ -253,8 +254,7 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
       }
 
       // Usar Firebase SDK para obtener URL de descarga
-      const { ref, getDownloadURL } = await import('firebase/storage')
-      const { storage } = await import('../../services/firebase/config')
+      // imports estáticos
       
       const videoRef = ref(storage, video.videoPath)
       const downloadURL = await getDownloadURL(videoRef)

@@ -32,6 +32,8 @@ import CardSizeSelector from '../components/common/CardSizeSelector'
 import CompactCardActions from '../components/common/CompactCardActions'
 import CategoryChips from '../components/common/CategoryChips'
 import { useSequenceBuilderContext } from '../contexts/SequenceBuilderContext'
+import { ref, getDownloadURL } from 'firebase/storage'
+import { storage } from '../services/firebase/config'
 
 // Lazy loading de componentes pesados
 const VideoUploadModal = lazy(() => import('../components/video/VideoUploadModal'))
@@ -965,9 +967,7 @@ const FigurasPage = () => {
     }
 
     try {
-      // Usar el sistema de descarga optimizado
-      const { ref, getDownloadURL } = await import('firebase/storage')
-      const { storage } = await import('../services/firebase/config')
+      // Usar el sistema de descarga optimizado (imports estáticos)
       
       const videoRef = ref(storage, video.videoPath)
       const downloadURL = await getDownloadURL(videoRef)
