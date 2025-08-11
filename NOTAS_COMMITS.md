@@ -1,3 +1,11 @@
+### 🎬 COMMIT: Descarga de secuencias en MP4 único con resolución seleccionable y seeking compatible - 2025-08-11  
+- Archivos: `src/services/video/videoCombiner.js`  
+- Cambios:  
+  - El flujo principal de combinación ahora prioriza FFmpeg con soporte de seeking en Windows y escalado a la resolución seleccionada (4K/1080p/720p/480p).  
+  - Mantiene fallback a Web Workers si fuera necesario.  
+- Impacto:  
+  - Desde `FigurasPage` y `DownloadModal`, al descargar una secuencia se genera un único MP4 combinado, respetando la resolución elegida y con compatibilidad mejorada.  
+
 # 📝 NOTAS Y COMMITS - SALSAHACKS V2.0
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES

@@ -533,8 +533,36 @@ class VideoCombiner {
 
       const videoBlobs = await this.downloadVideosWithConcurrency(videos, onProgress)
 
-      // Método con Web Workers para máxima compatibilidad
-      console.log('🔄 Combinando videos con Web Workers...')
+      // Si el usuario selecciona una resolución, usar el pipeline con FFmpeg (MP4 con seeking correcto y escalado)
+      if (selectedResolution) {
+        console.log(`🔧 Usando FFmpeg con soporte de seeking y resolución ${selectedResolution}`)
+        if (onProgress) {
+          onProgress({
+            stage: 'ffmpeg',
+            current: 60,
+            total: 100,
+            message: `Preparando combinación en ${selectedResolution.toUpperCase()}...`
+          })
+        }
+        const mp4Blob = await this.combineVideosWithWindowsSeeking(
+          videoBlobs,
+          onProgress,
+          selectedResolution
+        )
+        if (onProgress) {
+          onProgress({
+            stage: 'complete',
+            current: 100,
+            total: 100,
+            message: '¡Combinación completada (MP4 compatible)!'
+          })
+        }
+        console.log('✅ Combinación con FFmpeg (seeking) completada')
+        return mp4Blob
+      }
+
+      // Fallback: método con Web Workers (concat sin recodificar)
+      console.log('🔄 Combinando videos con Web Workers (fallback)...')
       if (onProgress) {
         onProgress({
           stage: 'ffmpeg',
@@ -543,9 +571,7 @@ class VideoCombiner {
           message: 'Procesando videos con Web Workers...'
         })
       }
-      
       const combinedBlob = await this.combineVideosWithWebWorker(videoBlobs, onProgress)
-
       if (onProgress) {
         onProgress({
           stage: 'complete',
@@ -554,7 +580,6 @@ class VideoCombiner {
           message: '¡Combinación con Web Workers completada!'
         })
       }
-
       console.log('✅ Combinación con Web Workers completada')
       return combinedBlob
     } catch (error) {
