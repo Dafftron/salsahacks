@@ -18,9 +18,9 @@
 ### 🛡️ COMMIT: Fallback automático si FFmpeg falla al combinar - 2025-08-11  
 - Archivos: `src/services/video/videoCombiner.js`  
 - Cambios:  
-  - Si falla la carga o la ejecución de FFmpeg (p.ej. error import ffmpeg-core.js), el flujo cae automáticamente al método de combinación con Web Workers para no bloquear la descarga.  
+  - Si falla la carga/ejecución de FFmpeg, el orden de fallbacks ahora es: 1) MediaRecorder local con conversión a MP4, 2) Web Worker (último recurso).  
 - Impacto:  
-  - Experiencia robusta en navegadores/entornos con restricciones de WASM o rutas.  
+  - Mayor robustez cuando el CDN de ffmpeg UMD no está disponible o bloqueado; preferimos recursos locales primero.  
 
 # 📝 NOTAS Y COMMITS - SALSAHACKS V2.0
 

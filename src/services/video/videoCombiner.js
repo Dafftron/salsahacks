@@ -575,27 +575,52 @@ class VideoCombiner {
         }
       }
 
-      // Fallback: método con Web Workers (concat sin recodificar)
-      console.log('🔄 Combinando videos con Web Workers (fallback)...')
-      if (onProgress) {
-        onProgress({
-          stage: 'ffmpeg',
-          current: 50,
-          total: 100,
-          message: 'Procesando videos con Web Workers...'
-        })
+      // Fallback preferente: MediaRecorder en main thread + conversión local a MP4
+      try {
+        console.log('🔄 FFmpeg no disponible: usando MediaRecorder con conversión local a MP4...')
+        if (onProgress) {
+          onProgress({
+            stage: 'combine',
+            current: 60,
+            total: 100,
+            message: 'Combinando con MediaRecorder...'
+          })
+        }
+        const mediaRecorderBlob = await this.combineVideosWithMediaRecorder(videoBlobs, onProgress)
+        if (onProgress) {
+          onProgress({
+            stage: 'complete',
+            current: 100,
+            total: 100,
+            message: '¡Combinación completada!'
+          })
+        }
+        console.log('✅ Combinación con MediaRecorder completada')
+        return mediaRecorderBlob
+      } catch (mrError) {
+        console.warn('⚠️ MediaRecorder falló; intentando Web Worker como último recurso:', mrError?.message || mrError)
+        // Último recurso: Web Worker (requiere cargar UMD desde CDN)
+        console.log('🔄 Intentando Web Worker (concat sin recodificar)...')
+        if (onProgress) {
+          onProgress({
+            stage: 'ffmpeg',
+            current: 50,
+            total: 100,
+            message: 'Procesando videos con Web Workers...'
+          })
+        }
+        const workerBlob = await this.combineVideosWithWebWorker(videoBlobs, onProgress)
+        if (onProgress) {
+          onProgress({
+            stage: 'complete',
+            current: 100,
+            total: 100,
+            message: '¡Combinación con Web Workers completada!'
+          })
+        }
+        console.log('✅ Combinación con Web Workers completada')
+        return workerBlob
       }
-      const combinedBlob = await this.combineVideosWithWebWorker(videoBlobs, onProgress)
-      if (onProgress) {
-        onProgress({
-          stage: 'complete',
-          current: 100,
-          total: 100,
-          message: '¡Combinación con Web Workers completada!'
-        })
-      }
-      console.log('✅ Combinación con Web Workers completada')
-      return combinedBlob
     } catch (error) {
       console.error('❌ Error en combinación con Web Workers:', error)
       throw new Error(`Error combinando videos: ${error.message || 'Error desconocido'}`)
