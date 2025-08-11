@@ -169,7 +169,7 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
           step={0.01}
           value={zoom}
           onChange={(e) => {
-            const next = clamp(parseFloat(e.target.value), 0.8, 3)
+            const next = clamp(parseFloat(e.target.value), 1, 10)
             setZoom(next)
             setOffset((prev) => clampOffset(prev.x, prev.y))
           }}
