@@ -424,7 +424,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         style: style, // Agregar el estilo del video
         tags: tagsWithStyle,
         uploadedBy: user?.uid || 'anonymous',
-        uploadedAt: new Date().toISOString(),
+        // createdAt lo asigna Firestore con serverTimestamp() en createVideoDocument
         views: 0,
         likes: 0,
         likedBy: [],

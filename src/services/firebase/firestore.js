@@ -788,7 +788,7 @@ export const getVideos = async () => {
     console.log('🔍 Obteniendo todos los videos...')
     const q = query(
       collection(db, COLLECTIONS.VIDEOS),
-      orderBy('uploadedAt', 'desc')
+      orderBy('createdAt', 'desc')
     )
     const querySnapshot = await getDocs(q)
     const videos = []
@@ -810,7 +810,7 @@ export const subscribeToVideos = (callback) => {
     console.log('🔄 Iniciando suscripción en tiempo real a videos...')
     const q = query(
       collection(db, COLLECTIONS.VIDEOS),
-      orderBy('uploadedAt', 'desc')
+      orderBy('createdAt', 'desc')
     )
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -844,7 +844,7 @@ export const subscribeToVideosByStyle = (style, callback, page = 'figuras') => {
     const q = query(
       collection(db, videosCollection),
       where('style', '==', style),
-      orderBy('uploadedAt', 'desc')
+      orderBy('createdAt', 'desc')
     )
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -863,7 +863,7 @@ export const subscribeToVideosByStyle = (style, callback, page = 'figuras') => {
         
         const fallbackQuery = query(
           collection(db, videosCollection),
-          orderBy('uploadedAt', 'desc')
+          orderBy('createdAt', 'desc')
         )
         
         const fallbackUnsubscribe = onSnapshot(fallbackQuery, (snapshot) => {
