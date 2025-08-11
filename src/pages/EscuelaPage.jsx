@@ -124,7 +124,11 @@ const EscuelaPage = () => {
   const [sortKey, setSortKey] = useState(() => loadFilterPreference('sortKey', 'none'))
   const [sortDir, setSortDir] = useState(() => loadFilterPreference('sortDir', 'asc'))
   const [showFavorites, setShowFavorites] = useState(() => loadFilterPreference('showFavorites', false))
-  const [showHiddenVideos, setShowHiddenVideos] = useState(() => loadFilterPreference('showHiddenVideos', false))
+  const [showHiddenVideos, setShowHiddenVideos] = useState(() => {
+    const value = loadFilterPreference('showHiddenVideos', false)
+    console.log('🔍 Estado inicial de showHiddenVideos:', value)
+    return value
+  })
   
 
   
@@ -703,7 +707,14 @@ const EscuelaPage = () => {
   const favoritesMatch = !showFavorites || video.isFavorite
 
   // Filtro por videos ocultos por usuario
-  const hiddenVideosMatch = !showHiddenVideos || !video.userHidden
+  // Si showHiddenVideos es false (por defecto), ocultar videos con userHidden: true
+  // Si showHiddenVideos es true, mostrar solo videos con userHidden: true
+  const hiddenVideosMatch = showHiddenVideos ? video.userHidden : !video.userHidden
+  
+  // Debug: Log para videos que están siendo filtrados
+  if (video.userHidden) {
+    console.log(`🔍 Video "${video.title}" - userHidden: ${video.userHidden}, showHiddenVideos: ${showHiddenVideos}, hiddenVideosMatch: ${hiddenVideosMatch}`)
+  }
 
   return searchMatch && tagsMatch && categoryMatch && favoritesMatch && visibilityMatch && hiddenVideosMatch
   })
