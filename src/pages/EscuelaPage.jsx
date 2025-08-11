@@ -475,7 +475,7 @@ const EscuelaPage = () => {
 
   // Función para añadir notificaciones
   const addToast = (message, type = 'success') => {
-    const id = Date.now()
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
     setToasts(prev => [...prev, { id, message, type }])
   }
 
@@ -697,7 +697,7 @@ const EscuelaPage = () => {
             
             return (
               <button
-                key={style.name}
+                key={style.key}
                 onClick={() => setSelectedStyle(style.key)}
                 className={`relative flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                   isSelected
@@ -778,7 +778,7 @@ const EscuelaPage = () => {
                         })
                         .map(tag => (
                         <button
-                          key={tag}
+                          key={`${category.key}:${tag}`}
                           onClick={() => handleTagFilter(tag)}
                           className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
                             selectedTags.includes(tag)

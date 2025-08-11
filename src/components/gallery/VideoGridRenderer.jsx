@@ -33,7 +33,7 @@ const VideoGridRenderer = ({
           }}
         >
           {videos.map((video, idx) => (
-            <div key={video.id || idx} style={{ height: cardHeight }}>
+            <div key={video.id ?? video.videoPath ?? `video-${idx}`} style={{ height: cardHeight }}>
               <div style={{ height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 {renderCard(video, idx)}
               </div>

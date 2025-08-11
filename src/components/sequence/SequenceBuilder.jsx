@@ -175,7 +175,7 @@ const SequenceBuilder = ({
   const [randomCount, setRandomCount] = useState(5) // Estado para el número de videos aleatorios
 
   const addToast = (message, type = 'success') => {
-    const id = Date.now()
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
     setToasts(prev => [...prev, { id, message, type }])
   }
 

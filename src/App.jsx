@@ -14,7 +14,7 @@ const NotasPage = lazy(() => import('./pages/NotasPage'))
 const CategoriesPage = lazy(() => import('./pages/CategoriesPage'))
 const FigurasPage = lazy(() => import('./pages/FigurasPage'))
 const EscuelaPage = lazy(() => import('./pages/EscuelaPage'))
-// const EventosPage = lazy(() => import('./pages/EventosPage')) // TEMPORAL - Recrearemos después
+const EventosPage = lazy(() => import('./pages/EventosPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 const AuthPage = lazy(() => import('./pages/AuthPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
@@ -83,7 +83,7 @@ function AppContent() {
               </ProtectedRoute>
             } />
             {/* Ruta de búsqueda avanzada eliminada */}
-            {/* <Route path="/eventos" element={<EventosPage />} /> */} {/* TEMPORAL - Recrearemos después */}
+            <Route path="/eventos" element={<ProtectedRoute><EventosPage /></ProtectedRoute>} />
             
             {/* Ruta de administración - requiere rol específico */}
             <Route path="/admin" element={

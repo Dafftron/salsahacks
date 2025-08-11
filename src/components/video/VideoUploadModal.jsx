@@ -73,7 +73,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
   }
 
   const addToast = (message, type = 'success') => {
-    const id = Date.now()
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
     setToasts(prev => [...prev, { id, message, type }])
   }
 

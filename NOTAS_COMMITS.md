@@ -111,6 +111,15 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🚀 COMMIT: Página Eventos (MVP gemela de Escuela) - 2025-08-11 17:50:00
+- Archivos: `src/pages/EventosPage.jsx`, `src/App.jsx`, `src/components/layout/Navigation.jsx`
+- Cambios:
+  - Nueva ruta `/eventos` protegida y enlace en navegación.
+  - Página gemela basándose en Escuela: estilos por pestañas, grilla con alto estable, subida con `VideoUploadModal` usando `page="eventos"`.
+  - Suscripción en tiempo real a `eventos-videos` por `style`.
+- Impacto:
+  - Base para volcar contenido de congresos/talleres con la misma UX de Escuela.
+
 ### 🗑️ COMMIT: Limpieza inicial de repo y componentes - 2025-08-11 17:25:22
 - Archivos: raíz del repo, `.gitignore`, `src/components/common/DownloadModal.jsx`
 - Cambios:

@@ -79,7 +79,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
    }, [isOpen])
 
   const addToast = (message, type = 'success') => {
-    const id = Date.now()
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
     setToasts(prev => [...prev, { id, message, type }])
   }
 
