@@ -115,7 +115,8 @@ const EscuelaPage = () => {
   
   // Estados para el sistema de chips y filtros
   const [activeCategoryChips, setActiveCategoryChips] = useState(() => loadFilterPreference('activeCategoryChips', []))
-  const [sortBy, setSortBy] = useState(() => loadFilterPreference('sortBy', 'none'))
+  const [sortKey, setSortKey] = useState(() => loadFilterPreference('sortKey', 'none'))
+  const [sortDir, setSortDir] = useState(() => loadFilterPreference('sortDir', 'asc'))
   const [showFavorites, setShowFavorites] = useState(() => loadFilterPreference('showFavorites', false))
   
 
@@ -200,11 +201,12 @@ const EscuelaPage = () => {
       searchTerm,
       showFilters,
       activeCategoryChips,
-      sortBy,
+      sortKey,
+      sortDir,
       showFavorites
     }
     saveFilterPreferences(filters)
-  }, [selectedStyle, selectedTags, searchTerm, showFilters, activeCategoryChips, sortBy, showFavorites])
+  }, [selectedStyle, selectedTags, searchTerm, showFilters, activeCategoryChips, sortKey, sortDir, showFavorites])
 
   // Verificar estado de likes del usuario cuando se cargan videos
   useEffect(() => {
@@ -462,7 +464,7 @@ const EscuelaPage = () => {
     setSelectedTags([])
     setSearchTerm('')
     setActiveCategoryChips([])
-    setSortBy('none')
+    setSortKey('none'); setSortDir('asc')
     setShowFavorites(false)
     // NO cambiar el estilo seleccionado - mantener el estilo actual
   }
@@ -473,7 +475,7 @@ const EscuelaPage = () => {
     setSearchTerm('')
     setShowFilters(false)
     setActiveCategoryChips([])
-    setSortBy('none')
+    setSortKey('none'); setSortDir('asc')
     setShowFavorites(false)
     // NO cambiar el estilo seleccionado - mantener el estilo actual
     // setSelectedStyle('salsa') // Comentado para mantener el estilo actual
@@ -487,9 +489,7 @@ const EscuelaPage = () => {
   }
 
   // Funciones de ordenamiento y favoritos
-  const handleSortChange = (sortKey) => {
-    setSortBy(sortKey)
-  }
+  const handleSortChange = () => {}
 
   const handleShowFavorites = (show) => {
     setShowFavorites(show)
@@ -497,25 +497,18 @@ const EscuelaPage = () => {
 
   // Función para ordenar videos
   const sortVideos = (videosToSort) => {
-    if (sortBy === 'none') return videosToSort
-
-    const sortedVideos = [...videosToSort]
-    
-    switch (sortBy) {
+    if (sortKey === 'none') return videosToSort
+    const dir = sortDir === 'asc' ? 1 : -1
+    const sorted = [...videosToSort]
+    switch (sortKey) {
       case 'name':
-        return sortedVideos.sort((a, b) => a.title.localeCompare(b.title))
-      case 'name-desc':
-        return sortedVideos.sort((a, b) => b.title.localeCompare(a.title))
+        return sorted.sort((a, b) => dir * a.title.localeCompare(b.title))
       case 'rating':
-        return sortedVideos.sort((a, b) => (b.rating || 0) - (a.rating || 0))
-      case 'rating-desc':
-        return sortedVideos.sort((a, b) => (a.rating || 0) - (b.rating || 0))
+        return sorted.sort((a, b) => dir * ((a.rating || 0) - (b.rating || 0)))
       case 'likes':
-        return sortedVideos.sort((a, b) => (b.likes || 0) - (a.likes || 0))
-      case 'likes-desc':
-        return sortedVideos.sort((a, b) => (a.likes || 0) - (b.likes || 0))
+        return sorted.sort((a, b) => dir * ((a.likes || 0) - (b.likes || 0)))
       default:
-        return sortedVideos
+        return videosToSort
     }
   }
 
@@ -773,50 +766,42 @@ const EscuelaPage = () => {
 
         {/* Botones de ordenamiento y favoritos - Debajo de las pestañas */}
         <div className="flex flex-wrap justify-center gap-2 mb-6">
-          {/* Botón A-Z/Z-A combinado */}
+          {/* A-Z tri-estado */}
           <button
-            onClick={() => handleSortChange(sortBy === 'name' ? 'name-desc' : 'name')}
+            onClick={() => {
+              if (sortKey !== 'name') { setSortKey('name'); setSortDir('asc') }
+              else if (sortDir === 'asc') { setSortDir('desc') }
+              else { setSortKey('none') }
+            }}
             className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
-              sortBy === 'name' || sortBy === 'name-desc'
+              sortKey === 'name'
                 ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
-            <span>{sortBy === 'name' ? 'A-Z' : sortBy === 'name-desc' ? 'Z-A' : 'A-Z'}</span>
+            <span>{sortKey === 'name' ? (sortDir === 'asc' ? 'A-Z' : 'Z-A') : 'A-Z'}</span>
           </button>
           
-          {/* Botón Puntuación */}
+          {/* Puntuación tri-estado */}
           <button
-            onClick={() => handleSortChange(sortBy === 'rating' ? 'rating-desc' : 'rating')}
+            onClick={() => {
+              if (sortKey !== 'rating') { setSortKey('rating'); setSortDir('desc') }
+              else if (sortDir === 'desc') { setSortDir('asc') }
+              else { setSortKey('none') }
+            }}
             className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
-              sortBy === 'rating' || sortBy === 'rating-desc'
+              sortKey === 'rating'
                 ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
                 : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
             }`}
           >
             <Star className="h-3 w-3" />
-            <span>{sortBy === 'rating' ? 'Puntuación ↓' : sortBy === 'rating-desc' ? 'Puntuación ↑' : 'Puntuación'}</span>
+            <span>{sortKey === 'rating' ? (sortDir === 'desc' ? 'Puntuación ↓' : 'Puntuación ↑') : 'Puntuación'}</span>
           </button>
           
-          {/* Botón Favoritos */}
+          {/* Favoritos (filtro) */}
           <button
-            onClick={() => {
-              if (!showFavorites) {
-                // Si no está mostrando favoritos, activar y ordenar por likes descendente
-                setShowFavorites(true)
-                setSortBy('likes')
-              } else if (sortBy === 'likes') {
-                // Si está mostrando favoritos y ordenado por likes, cambiar a ascendente
-                setSortBy('likes-desc')
-              } else if (sortBy === 'likes-desc') {
-                // Si está en ascendente, volver a descendente
-                setSortBy('likes')
-              } else {
-                // Si está en otro ordenamiento, desactivar favoritos
-                setShowFavorites(false)
-                setSortBy('none')
-              }
-            }}
+            onClick={() => setShowFavorites(prev => !prev)}
             className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
               showFavorites
                 ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
@@ -824,16 +809,31 @@ const EscuelaPage = () => {
             }`}
           >
             <Heart className="h-3 w-3" />
-            <span>
-              {!showFavorites ? 'Mostrar Favoritos' : 
-               sortBy === 'likes' ? 'Favoritos ↓' : 
-               sortBy === 'likes-desc' ? 'Favoritos ↑' : 
-               'Ocultar Favoritos'}
-            </span>
+            <span>{showFavorites ? 'Ocultar Favoritos' : 'Mostrar Favoritos'}</span>
           </button>
 
+          {/* Orden para favoritos */}
+          {showFavorites && (
+            <button
+              onClick={() => {
+                if (sortKey !== 'likes') { setSortKey('likes'); setSortDir('desc') }
+                else if (sortDir === 'desc') { setSortDir('asc') }
+                else { setSortKey('none') }
+              }}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                sortKey === 'likes'
+                  ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
+                  : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+              }`}
+              title="Ordenar favoritos"
+            >
+              <Heart className="h-3 w-3" />
+              <span>{sortKey === 'likes' ? (sortDir === 'desc' ? 'Fav ↓' : 'Fav ↑') : 'Orden fav'}</span>
+            </button>
+          )}
+
           {/* Botón Limpiar filtros */}
-          {(activeCategoryChips.length > 0 || sortBy !== 'none' || showFavorites || selectedTags.length > 0 || searchTerm) && (
+          {(activeCategoryChips.length > 0 || sortKey !== 'none' || showFavorites || selectedTags.length > 0 || searchTerm) && (
             <button
               onClick={clearFilters}
               className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 transition-colors duration-200"

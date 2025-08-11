@@ -1,3 +1,11 @@
+### 🧭 COMMIT: Mismo UX de orden y favoritos en EscuelaPage - 2025-08-11  
+- Archivos: `src/pages/EscuelaPage.jsx`  
+- Cambios:  
+  - Migrado a `sortKey/sortDir` con tri‑estado para A‑Z y Puntuación.  
+  - Favoritos como filtro independiente + botón “Orden fav” (desc/asc/ninguno).  
+  - Persistencia en localStorage: `sortKey`, `sortDir`, `showFavorites`.  
+- Impacto:  
+  - Comportamiento idéntico a `FigurasPage`.  
 ### 🧭 COMMIT: Controles tri-estado y favoritos desacoplados en FigurasPage - 2025-08-11  
 - Archivos: `src/pages/FigurasPage.jsx`  
 - Cambios:  
