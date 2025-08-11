@@ -577,7 +577,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                         <span className="text-xs text-gray-500 w-10 text-right">{Math.round(framePercent * 100)}%</span>
                       </div>
                       {/* Filmstrip (miniaturas clicables) */}
-                      <div className="flex gap-2 items-center overflow-x-auto py-1">
+                      <div className="flex gap-2 items-center overflow-x-auto py-1 pl-1">
                         {filmstrip.length === 0 ? (
                           <button
                             type="button"
@@ -591,10 +591,10 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                               key={idx}
                               type="button"
                               onClick={() => { setFramePercent(f.percent); handleCaptureFrame(f.percent) }}
-                              className="relative border rounded overflow-hidden hover:ring-2 hover:ring-blue-500"
+                              className="relative border rounded overflow-hidden hover:ring-2 hover:ring-blue-500 flex-shrink-0"
                               title={`${Math.round(f.percent * 100)}%`}
                             >
-                              <img src={f.url} alt={`frame-${idx}`} className="w-20 h-12 object-cover" />
+                              <img src={f.url} alt={`frame-${idx}`} className="w-16 h-10 object-cover" />
                             </button>
                           ))
                         )}

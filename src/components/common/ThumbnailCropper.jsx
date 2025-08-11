@@ -13,7 +13,7 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
   const [container, setContainer] = useState({ width: width, height: forcedHeight || Math.round(width / aspectRatio) })
   const [natural, setNatural] = useState({ width: 0, height: 0 })
   const [baseScale, setBaseScale] = useState(1)
-  const [zoom, setZoom] = useState(1) // 1..3
+  const [zoom, setZoom] = useState(1) // 0.8..3
   const [offset, setOffset] = useState({ x: 0, y: 0 })
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, startOffsetX: 0, startOffsetY: 0 })
 
@@ -79,7 +79,7 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
   const handleWheel = (e) => {
     e.preventDefault()
     const delta = e.deltaY > 0 ? -0.05 : 0.05
-    const nextZoom = clamp(parseFloat((zoom + delta).toFixed(2)), 1, 3)
+    const nextZoom = clamp(parseFloat((zoom + delta).toFixed(2)), 0.8, 3)
     setZoom(nextZoom)
     // Re-clamp offset al cambiar zoom
     setOffset((prev) => clampOffset(prev.x, prev.y))
@@ -124,7 +124,7 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
     <div className="space-y-2">
       <div
         ref={containerRef}
-        className="relative bg-gray-200 rounded overflow-hidden select-none"
+        className="relative bg-black rounded overflow-hidden select-none"
         style={{ width: container.width, height: container.height, touchAction: 'none' }}
         onPointerDown={handlePointerDown}
         onWheel={handleWheel}
@@ -154,18 +154,18 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
       <div className="flex items-center gap-3">
         <input
           type="range"
-          min={1}
+          min={0.8}
           max={3}
           step={0.01}
           value={zoom}
           onChange={(e) => {
-            const next = clamp(parseFloat(e.target.value), 1, 3)
+            const next = clamp(parseFloat(e.target.value), 0.8, 3)
             setZoom(next)
             setOffset((prev) => clampOffset(prev.x, prev.y))
           }}
           className="w-full"
         />
-        <span className="text-xs text-gray-600 w-10 text-right">{Math.round(zoom * 100)}%</span>
+        <span className="text-xs text-gray-600 w-12 text-right">{Math.round(zoom * 100)}%</span>
       </div>
       <p className="text-xs text-gray-500">Arrastra para mover. Rueda o usa el slider para zoom. El recorte mantiene 16:9.</p>
     </div>
