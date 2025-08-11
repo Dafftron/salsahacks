@@ -771,7 +771,7 @@ export const getUserFavorites = async (userId) => {
 // ===== SISTEMA DE VIDEOS OCULTOS POR USUARIO =====
 export const toggleUserHiddenVideo = async (videoId, userId) => {
   try {
-    console.log('🙈 Toggle video oculto para video:', videoId, 'usuario:', userId)
+    console.log('👁️ Toggle video oculto para video:', videoId, 'usuario:', userId)
     
     // Obtener el perfil del usuario
     const userDocRef = doc(db, COLLECTIONS.USERS, userId)
@@ -855,35 +855,28 @@ export const getUserHiddenVideos = async (userId) => {
       return { hiddenVideos: [], error: null }
     }
     
-    // Obtener los videos ocultos de todas las colecciones
+    // Obtener los videos ocultos
     const videos = []
     for (const videoId of hiddenVideoIds) {
       try {
-        // Intentar obtener de cada colección
+        // Buscar en todas las colecciones de videos
         const collections = [COLLECTIONS.VIDEOS, COLLECTIONS.ESCUELA_VIDEOS, COLLECTIONS.EVENTOS_VIDEOS]
-        let videoFound = false
         
         for (const collectionName of collections) {
-          try {
-            const videoDocRef = doc(db, collectionName, videoId)
-            const videoDocSnap = await getDoc(videoDocRef)
-            
-            if (videoDocSnap.exists()) {
-              videos.push({ id: videoDocSnap.id, ...videoDocSnap.data() })
-              videoFound = true
-              break
-            }
-          } catch (error) {
-            // Continuar con la siguiente colección
-            continue
+          const videoDocRef = doc(db, collectionName, videoId)
+          const videoDocSnap = await getDoc(videoDocRef)
+          
+          if (videoDocSnap.exists()) {
+            videos.push({ 
+              id: videoDocSnap.id, 
+              ...videoDocSnap.data(),
+              collection: collectionName 
+            })
+            break // Video encontrado, salir del bucle de colecciones
           }
         }
-        
-        if (!videoFound) {
-          console.warn(`Video ${videoId} no encontrado en ninguna colección`)
-        }
       } catch (error) {
-        console.error(`Error al obtener video ${videoId}:`, error)
+        console.error(`Error al obtener video oculto ${videoId}:`, error)
       }
     }
     

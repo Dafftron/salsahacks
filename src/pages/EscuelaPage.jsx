@@ -55,7 +55,9 @@ import {
   cleanupDuplicateTags,
   toggleVideoLike,
   checkUserLikedVideo,
-  checkUserFavorite
+  checkUserFavorite,
+  toggleUserHiddenVideo,
+  checkUserHiddenVideo
 } from '../services/firebase/firestore'
 
 import { 
@@ -122,7 +124,7 @@ const EscuelaPage = () => {
   const [sortKey, setSortKey] = useState(() => loadFilterPreference('sortKey', 'none'))
   const [sortDir, setSortDir] = useState(() => loadFilterPreference('sortDir', 'asc'))
   const [showFavorites, setShowFavorites] = useState(() => loadFilterPreference('showFavorites', false))
-  const [showHidden, setShowHidden] = useState(() => loadFilterPreference('showHidden', false))
+  const [showHiddenVideos, setShowHiddenVideos] = useState(() => loadFilterPreference('showHiddenVideos', false))
   
 
   
@@ -189,7 +191,7 @@ const EscuelaPage = () => {
     const unsubscribe = subscribeToVideosByStyle(selectedStyle, (videosData) => {
       setVideos(prev => videosData.map(v => {
         const prevItem = prev.find(p => p.id === v.id)
-        return prevItem ? { ...v, userLiked: prevItem.userLiked, isFavorite: prevItem.isFavorite, isInStudy: prevItem.isInStudy, isCompleted: prevItem.isCompleted, isHidden: prevItem.isHidden } : v
+        return prevItem ? { ...v, userLiked: prevItem.userLiked, isFavorite: prevItem.isFavorite, isInStudy: prevItem.isInStudy, isCompleted: prevItem.isCompleted } : v
       }))
       setLoading(false)
       setSyncStatus('idle')
@@ -212,12 +214,12 @@ const EscuelaPage = () => {
       sortKey,
       sortDir,
       showFavorites,
-      showHidden
+      showHiddenVideos
     }
     saveFilterPreferences(filters)
-  }, [selectedStyle, selectedTags, searchTerm, showFilters, activeCategoryChips, sortKey, sortDir, showFavorites, showHidden])
+  }, [selectedStyle, selectedTags, searchTerm, showFilters, activeCategoryChips, sortKey, sortDir, showFavorites, showHiddenVideos])
 
-  // Verificar estado de likes/favoritos/estudios/videos ocultos cuando se cargan videos
+  // Verificar estado de likes/favoritos/estudios cuando se cargan videos
   useEffect(() => {
     if (videos.length > 0 && user) {
       const checkUserLikesAndFavorites = async () => {
@@ -238,11 +240,11 @@ const EscuelaPage = () => {
                 isFavorite: favoriteResult.isFavorite,
                 isInStudy: studyResult.isInStudy,
                 isCompleted: completedResult.isCompleted,
-                isHidden: hiddenResult.isHidden
+                userHidden: hiddenResult.isHidden
               }
             } catch (error) {
               console.error('Error al verificar estados de video:', video.id, error)
-              return { ...video, userLiked: false, isFavorite: false, isInStudy: false, isCompleted: false, isHidden: false }
+              return { ...video, userLiked: false, isFavorite: false, isInStudy: false, isCompleted: false, userHidden: false }
             }
           })
         )
@@ -278,20 +280,6 @@ const EscuelaPage = () => {
       }
     } catch (e) {
       addToast('Error al actualizar completado', 'error')
-    }
-  }
-
-  // Acción para ocultar/mostrar videos
-  const handleToggleHidden = async (video) => {
-    try {
-      const { toggleUserHiddenVideo } = await import('../services/firebase/firestore')
-      const result = await toggleUserHiddenVideo(video.id, user.uid)
-      if (result.success) {
-        setVideos(prev => prev.map(v => v.id === video.id ? { ...v, isHidden: result.isHidden } : v))
-        addToast(result.isHidden ? 'Video ocultado' : 'Video mostrado', 'success')
-      }
-    } catch (e) {
-      addToast('Error al ocultar/mostrar video', 'error')
     }
   }
 
@@ -491,6 +479,32 @@ const EscuelaPage = () => {
     }
   }
 
+  // Función para manejar videos ocultos
+  const handleToggleHiddenVideo = async (video) => {
+    if (!user) {
+      addToast('Debes iniciar sesión para ocultar videos', 'error')
+      return
+    }
+
+    try {
+      const result = await toggleUserHiddenVideo(video.id, user.uid)
+      if (result.success) {
+        // Actualizar el estado local del video
+        setVideos(prev => prev.map(v => 
+          v.id === video.id 
+            ? { ...v, userHidden: result.isHidden }
+            : v
+        ))
+        addToast(result.isHidden ? 'Video ocultado' : 'Video mostrado', 'success')
+      } else {
+        addToast('Error al ocultar/mostrar video', 'error')
+      }
+    } catch (error) {
+      console.error('Error al toggle video oculto:', error)
+      addToast('Error al ocultar/mostrar video', 'error')
+    }
+  }
+
   // Función para añadir notificaciones
   const addToast = (message, type = 'success') => {
     const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
@@ -521,7 +535,7 @@ const EscuelaPage = () => {
     setActiveCategoryChips([])
     setSortKey('none'); setSortDir('asc')
     setShowFavorites(false)
-    setShowHidden(false)
+    setShowHiddenVideos(false)
     // NO cambiar el estilo seleccionado - mantener el estilo actual
   }
 
@@ -533,7 +547,7 @@ const EscuelaPage = () => {
     setActiveCategoryChips([])
     setSortKey('none'); setSortDir('asc')
     setShowFavorites(false)
-    setShowHidden(false)
+    setShowHiddenVideos(false)
     // NO cambiar el estilo seleccionado - mantener el estilo actual
     // setSelectedStyle('salsa') // Comentado para mantener el estilo actual
     
@@ -688,10 +702,10 @@ const EscuelaPage = () => {
   // Filtro por favoritos
   const favoritesMatch = !showFavorites || video.isFavorite
 
-  // Filtro por videos ocultos
-  const hiddenMatch = !showHidden || video.isHidden
+  // Filtro por videos ocultos por usuario
+  const hiddenVideosMatch = !showHiddenVideos || !video.userHidden
 
-  return searchMatch && tagsMatch && categoryMatch && favoritesMatch && hiddenMatch && visibilityMatch
+  return searchMatch && tagsMatch && categoryMatch && favoritesMatch && visibilityMatch && hiddenVideosMatch
   })
 
   // Aplicar ordenamiento final
@@ -884,17 +898,19 @@ const EscuelaPage = () => {
           </button>
 
           {/* Videos Ocultos (filtro) */}
-          <button
-            onClick={() => setShowHidden(prev => !prev)}
-            className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
-              showHidden
-                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
-                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-            }`}
-          >
-            <EyeOff className="h-3 w-3" />
-            <span>{showHidden ? 'Ocultar Videos Ocultos' : 'Mostrar Videos Ocultos'}</span>
-          </button>
+          {user && (
+            <button
+              onClick={() => setShowHiddenVideos(prev => !prev)}
+              className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                showHiddenVideos
+                  ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
+                  : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              <EyeOff className="h-3 w-3" />
+              <span>{showHiddenVideos ? 'Ocultar Videos Ocultos' : 'Mostrar Videos Ocultos'}</span>
+            </button>
+          )}
 
           {/* Orden para favoritos */}
           {showFavorites && (
@@ -917,7 +933,7 @@ const EscuelaPage = () => {
           )}
 
           {/* Botón Limpiar filtros */}
-          {(activeCategoryChips.length > 0 || sortKey !== 'none' || showFavorites || showHidden || selectedTags.length > 0 || searchTerm) && (
+          {(activeCategoryChips.length > 0 || sortKey !== 'none' || showFavorites || showHiddenVideos || selectedTags.length > 0 || searchTerm) && (
             <button
               onClick={clearFilters}
               className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 transition-colors duration-200"
@@ -1075,10 +1091,8 @@ const EscuelaPage = () => {
                             onPlay={() => handlePlayVideo(video)}
                             onToggleStudy={user ? () => handleToggleStudy(video) : undefined}
                             onToggleCompleted={user ? () => handleToggleCompleted(video) : undefined}
-                            onToggleHidden={user ? () => handleToggleHidden(video) : undefined}
                             isInStudy={video.isInStudy}
                             isCompleted={video.isCompleted}
-                            isHidden={video.isHidden}
                             type="video"
                           />
                         ) : (
@@ -1125,6 +1139,17 @@ const EscuelaPage = () => {
               >
                 <CheckCircle className="h-4 w-4" />
               </button>
+
+              {/* Ocultar Video */}
+              {user && (
+                <button
+                  onClick={() => handleToggleHiddenVideo(video)}
+                  className={`transition-colors duration-200 p-1 rounded ${video.userHidden ? 'text-orange-600 bg-orange-50 ring-2 ring-orange-300' : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50'}`}
+                  title={video.userHidden ? 'Mostrar video' : 'Ocultar video'}
+                >
+                  <EyeOff className="h-4 w-4" />
+                </button>
+              )}
 
               {(userProfile?.role === 'maese' || userProfile?.role === 'super_admin') && (
                 <button

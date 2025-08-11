@@ -1,7 +1,7 @@
 // 🎴 ACCIONES COMPACTAS PARA CARDS - SALSAHACKS V2.0
 
 import React from 'react'
-import { Heart, Edit, Trash2, Plus, Download, Play, EyeOff, Eye } from 'lucide-react'
+import { Heart, Edit, Trash2, Plus, Download, Play } from 'lucide-react'
 
 const CompactCardActions = ({ 
   video, 
@@ -13,10 +13,8 @@ const CompactCardActions = ({
   onPlay,
   onToggleStudy,
   onToggleCompleted,
-  onToggleHidden,
   isInStudy,
   isCompleted,
-  isHidden,
   isVideoInSequence,
   isBuilderOpen,
   isVideoCompatible,
@@ -73,19 +71,6 @@ const CompactCardActions = ({
             <svg viewBox="0 0 24 24" className={`h-3 w-3 ${isCompleted ? 'fill-current' : ''}`}>
               <path d="M9 16.17l-3.88-3.88L4 13.41 9 18.41 20.59 6.83 19.17 5.41z"/>
             </svg>
-          </button>
-        )}
-
-        {/* Botón de ocultar/mostrar video */}
-        {onToggleHidden && (
-          <button
-            onClick={onToggleHidden}
-            className={`p-1 transition-colors rounded ${
-              isHidden ? 'text-orange-600' : 'text-gray-400 hover:text-orange-600'
-            }`}
-            title={isHidden ? 'Mostrar video' : 'Ocultar video'}
-          >
-            {isHidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
           </button>
         )}
         
