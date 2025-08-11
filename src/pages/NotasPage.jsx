@@ -1508,6 +1508,24 @@ const NotasPage = () => {
       date: '2024-12-20',
       priority: 'Media',
       status: 'Completado'
+    },
+    {
+      id: 40,
+      title: 'HomePage - Dashboard principal',
+      description: 'KPIs dinámicos y secciones: Últimos, Destacados y Continuar estudiando',
+      category: 'PÁGINAS',
+      date: '2025-01-03',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
+      id: 41,
+      title: 'Sistema de recomendaciones (MVP)',
+      description: 'Listado recomendado por similitud de tags y actividad reciente (base para mejoras)',
+      category: 'SISTEMAS',
+      date: '2025-01-03',
+      priority: 'Media',
+      status: 'Completado'
     }
   ]
 
@@ -1528,15 +1546,6 @@ const NotasPage = () => {
       category: 'SISTEMAS',
       priority: 'Baja',
       progress: 75,
-      status: 'En Progreso'
-    },
-    {
-      id: 4,
-      title: 'HomePage - Dashboard principal',
-      description: 'Página de inicio con estadísticas y videos destacados',
-      category: 'PÁGINAS',
-      priority: 'Alta',
-      progress: 0,
       status: 'En Progreso'
     }
   ]
@@ -1561,22 +1570,7 @@ const NotasPage = () => {
         'Integración de VideoPlayer y VideoEditModal; soporte para favoritos y búsqueda'
       ]
     },
-    {
-      id: 5,
-      title: 'Sistema de recomendaciones',
-      description: 'Algoritmo para recomendar videos y contenido basado en historial',
-      category: 'SISTEMAS',
-      priority: 'Baja',
-      estimatedTime: '5 días',
-      status: 'Futuro',
-      details: [
-        'Recomendaciones por similitud de estilo y tags (normales/iniciales/finales)',
-        'Modelo simple basado en historial de vistas y likes por usuario',
-        'Bloques de “Te puede interesar” en VideoPlayer y HomePage',
-        'Registro de eventos (view/like/skip) para retroalimentar el motor',
-        'Modo “Continuar viendo” según última reproducción por usuario'
-      ]
-    },
+    
     {
       id: 6,
       title: 'Analytics avanzados',
