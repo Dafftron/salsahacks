@@ -339,7 +339,7 @@ export const categoryStructure = {
           profesores: {
             name: 'PROFESORES',
             color: 'pink',
-            tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria', 'Pepe y Ani']
+            tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria', 'Pepe y Ani', 'Miguel y Sunsire']
           }
         }
       },

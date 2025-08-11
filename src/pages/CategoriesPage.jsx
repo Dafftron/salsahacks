@@ -359,6 +359,11 @@ const CategoriesPage = () => {
               name: 'TÉCNICA',
               color: 'pink',
               tags: ['Paso básico', 'Giros', 'Dips', 'Body waves', 'Isolaciones', 'Footwork']
+            },
+            profesores: {
+              name: 'PROFESORES',
+              color: 'pink',
+              tags: ['Miguel y Sunsire']
             }
           }
         },

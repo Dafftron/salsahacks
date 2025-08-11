@@ -2970,12 +2970,12 @@ Si una secuencia tiene 3 videos con estos tags:
   - `src/pages/CategoriesPage.jsx`
 - **Estado**: ✅ Completado
 
-### **Commit #045 - Tag conjunto "Miguel y Sunsire" en categoría Profesores (Escuela + Categorías)**
+### **Commit #045 - Tag conjunto "Miguel y Sunsire" solo en Escuela > Bachata**
 - **Fecha**: 2025-08-11
-- **Descripción**: Se unifica en un único tag conjunto "Miguel y Sunsire" dentro de `PROFESORES` en todas las variantes de `escuela`, visible en `EscuelaPage` y gestionable en `CategoriesPage`.
+- **Descripción**: Se unifica en un único tag conjunto "Miguel y Sunsire" dentro de `PROFESORES` exclusivamente en `Escuela > Bachata`, visible en `EscuelaPage` y gestionable en `CategoriesPage`.
 - **Cambios**:
-  - Reemplazo de "Miguel" y "Sunshiresire" por el tag único "Miguel y Sunsire" en `src/constants/categoryStructure.js` (SALSA, PASITOS LIBRES, SALSA CUBANA, MERENGUE, BACHATA, KIZOMBA, ZOUK).
-  - Sincronización del mismo tag único en `src/pages/CategoriesPage.jsx`.
+  - Añadido "Miguel y Sunsire" solo en `src/constants/categoryStructure.js` bajo `escuela > bachata > profesores`.
+  - Añadida la categoría `profesores` en la estructura interna de `src/pages/CategoriesPage.jsx` para `bachata` con el tag "Miguel y Sunsire".
 - **Archivos**:
   - `src/constants/categoryStructure.js`
   - `src/pages/CategoriesPage.jsx`
