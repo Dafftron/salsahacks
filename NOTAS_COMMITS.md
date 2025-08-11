@@ -111,6 +111,16 @@
 
 ## 🎯 HISTORIAL DE CAMBIOS Y FUNCIONALIDADES
 
+### 🗑️ COMMIT: Limpieza inicial de repo y componentes - 2025-08-11 17:25:22
+- Archivos: raíz del repo, `.gitignore`, `src/components/common/DownloadModal.jsx`
+- Cambios:
+  - Eliminados archivos basura en raíz generados por comandos truncados.
+  - Eliminada carpeta `dist/` del repo e ignorada en `.gitignore` (se genera en build/deploy).
+  - Borrado `src/components/common/DownloadModal.jsx` (duplicado/no usado).
+- Impacto:
+  - Repo más limpio y sin artefactos de build.
+  - Evitamos confusiones entre dos `DownloadModal`. Se mantiene el de `src/components/video/` y `VideoDownloadModal` usado por secuencias.
+
 ### 🚀 **COMMIT #116: CORREGIR REDIRECCIÓN ADMIN Y URLs DE INVITACIÓN PARA PRODUCCIÓN** - 2025-01-10 14:15:00
 - **Objetivo**: Corregir redirección incorrecta en página admin y configurar URLs de invitación para producción
 - **Archivos modificados**: App.jsx, ProtectedRoute.jsx, AuthContext.jsx, roles.js, config/app.js (nuevo), config/local.js (nuevo)
