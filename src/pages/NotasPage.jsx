@@ -35,6 +35,30 @@ const NotasPage = () => {
 
         const commits = [
         {
+          id: 117,
+          hash: 'c1d2e3f',
+          date: '2025-08-11',
+          time: '10:00:00',
+          title: 'Commit #117 - Notas solo para Super Admin + Navegación móvil',
+          description: 'Restringe acceso a Notas exclusivamente a super_admin y corrige visibilidad de navegación en móviles',
+          files: ['src/constants/roles.js', 'src/App.jsx', 'src/components/layout/Navigation.jsx'],
+          notes: 'Seguridad: PAGE_ACCESS y ruta protegida actualizados para que solo super_admin acceda a /notas. UX móvil: agregado menú móvil con icono de hamburguesa y lista horizontal deslizable; el enlace Notas solo se muestra a super_admin.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
+          id: 118,
+          hash: 'f4e5d6c',
+          date: '2025-08-11',
+          time: '10:05:00',
+          title: 'Commit #118 - Índices Firestore para consultas por estilo/fecha',
+          description: 'Define índices compuestos style + createdAt para videos y escuela-videos',
+          files: ['firestore.indexes.json'],
+          notes: 'Índices creados para consultas optimizadas en suscripciones por estilo con orden por fecha. Evita fallbacks en cliente cuando el índice existe.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
           id: 116,
           hash: '0737ab4',
           date: '2024-12-20',
@@ -1087,6 +1111,33 @@ const NotasPage = () => {
 
   const cosasHechas = [
     {
+      id: 40,
+      title: 'Acceso a Notas solo Super Admin',
+      description: 'Restricción de ruta y menú: solo ROLES.SUPER_ADMIN puede ver /notas',
+      category: 'SISTEMAS',
+      date: '2025-08-11',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
+      id: 41,
+      title: 'Navegación móvil visible y usable',
+      description: 'Menú móvil con icono hamburguesa y enlaces horizontales; Notas oculto para no-superadmin',
+      category: 'PÁGINAS',
+      date: '2025-08-11',
+      priority: 'Media',
+      status: 'Completado'
+    },
+    {
+      id: 42,
+      title: 'Índices Firestore creados',
+      description: 'style ASC + createdAt DESC en videos y escuela-videos',
+      category: 'SISTEMAS',
+      date: '2025-08-11',
+      priority: 'Alta',
+      status: 'Completado'
+    },
+    {
       id: 1,
       title: 'Optimización masiva del bundle',
       description: 'Bundle principal reducido de 708KB a 38KB (95% reducción)',
@@ -1471,15 +1522,6 @@ const NotasPage = () => {
 
   const cosasFuturas = [
     // PRIORIDAD ALTA - PRÓXIMOS PASOS INMEDIATOS
-    {
-      id: 1,
-      title: 'Crear índice Firebase para consultas ESCUELA',
-      description: 'Configurar índices compuestos necesarios para queries de estilo + uploadedAt',
-      category: 'SISTEMAS',
-      priority: 'Alta',
-      estimatedTime: '10 minutos',
-      status: 'Futuro'
-    },
     {
       id: 2,
       title: 'Subir primeros 10-15 videos de ESCUELA',

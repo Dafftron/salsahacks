@@ -31,6 +31,23 @@
   - Mayor robustez cuando el CDN de ffmpeg UMD no está disponible o bloqueado; preferimos recursos locales primero.  
 
 ### 🧵 COMMIT: Web Worker local para concat con assets en /public/ffmpeg - 2025-08-11  
+# 🔒 COMMIT: Notas solo para Super Admin + Navegación móvil visible - 2025-08-11
+- Archivos: `src/constants/roles.js`, `src/App.jsx`, `src/components/layout/Navigation.jsx`
+- Cambios:
+  - Acceso a `'/notas'` restringido a `ROLES.SUPER_ADMIN` en `PAGE_ACCESS` y `ProtectedRoute` con `requiredRole`.
+  - Enlace `Notas` solo se muestra si el usuario es `super_admin`.
+  - Menú móvil: botón hamburguesa y carrusel horizontal de enlaces; navegación visible en móvil.
+- Impacto:
+  - Seguridad: solo superadmin puede ver y acceder a Notas.
+  - UX móvil: enlaces de navegación visibles y usables en dispositivos móviles.
+
+# 🗃️ COMMIT: Índices Firestore para style + createdAt - 2025-08-11
+- Archivos: `firestore.indexes.json`
+- Cambios:
+  - Índices compuestos definidos para `videos` y `escuela-videos`: `style ASC`, `createdAt DESC`.
+- Impacto:
+  - Consultas por estilo ordenadas por fecha más eficientes; menos fallbacks en cliente.
+
 - Archivos: `src/services/video/videoCombiner.js`, `src/workers/ffmpegConcatWorker.js`  
 - Cambios:  
   - Nuevo worker local `ffmpegConcatWorker.js` que carga FFmpeg desde `/ffmpeg/` (assets locales) y concatena sin recodificar.  
