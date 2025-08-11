@@ -7,14 +7,14 @@ import React, { useEffect, useRef, useState, forwardRef, useImperativeHandle } f
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
 
-const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 360, height: forcedHeight = null }, ref) => {
+const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 360, height: forcedHeight = null, initialZoom = 1, initialOffset = { x: 0, y: 0 }, onChange }, ref) => {
   const containerRef = useRef(null)
   const imgRef = useRef(null)
   const [container, setContainer] = useState({ width: width, height: forcedHeight || Math.round(width / aspectRatio) })
   const [natural, setNatural] = useState({ width: 0, height: 0 })
   const [baseScale, setBaseScale] = useState(1)
-  const [zoom, setZoom] = useState(1) // 1..5
-  const [offset, setOffset] = useState({ x: 0, y: 0 })
+  const [zoom, setZoom] = useState(initialZoom || 1) // 1..5
+  const [offset, setOffset] = useState(initialOffset || { x: 0, y: 0 })
   const dragRef = useRef({ dragging: false, startX: 0, startY: 0, startOffsetX: 0, startOffsetY: 0 })
 
   // Calcular dimensiones naturales y baseScale (cover)
@@ -28,11 +28,11 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
       // Partir SIEMPRE mostrando el frame completo (fit/contain)
       const scaleFit = Math.min(cont.width / nat.width, cont.height / nat.height)
       setBaseScale(scaleFit)
-      setZoom(1)
-      setOffset({ x: 0, y: 0 })
+      setZoom(initialZoom || 1)
+      setOffset(initialOffset || { x: 0, y: 0 })
     }
     img.src = imageSrc
-  }, [imageSrc, container.width, container.height])
+  }, [imageSrc, container.width, container.height, initialZoom, initialOffset])
 
   // Restricción de paneo para no dejar espacios vacíos
   const getDisplaySize = () => {
@@ -118,8 +118,14 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
     reset: () => {
       setZoom(1)
       setOffset({ x: 0, y: 0 })
-    }
+    },
+    getState: () => ({ zoom, offset })
   }))
+
+  // Notificar cambios a quien use el componente
+  useEffect(() => {
+    onChange && onChange({ zoom, offset })
+  }, [zoom, offset])
 
   const { displayWidth, displayHeight } = getDisplaySize()
   const drawX = container.width / 2 - displayWidth / 2 + offset.x

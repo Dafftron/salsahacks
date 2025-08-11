@@ -20,6 +20,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
   const [customThumbnail, setCustomThumbnail] = useState(null)
   const [customThumbnailFile, setCustomThumbnailFile] = useState(null)
   const cropperRef = useRef(null)
+  const [cropState, setCropState] = useState({ zoom: 1, offset: { x: 0, y: 0 } })
   const captureVideoRef = useRef(null)
   const [videoDuration, setVideoDuration] = useState(0)
   const [framePercent, setFramePercent] = useState(0.5)
@@ -234,8 +235,8 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
           fr.readAsDataURL(blob)
         })
         setCustomThumbnail(dataUrl)
-        // Resetear cropper a estado base (zoom = 1, offset 0)
-        try { cropperRef.current?.reset?.() } catch (_) {}
+        // Resetear el estado guardado a valores base (empezar desde frame completo)
+        setCropState({ zoom: 1, offset: { x: 0, y: 0 } })
         // Guardamos un File para fallback (nombre amigable)
         const file = new File([blob], `${video.originalTitle || 'frame'}.jpg`, { type: 'image/jpeg' })
         setCustomThumbnailFile(file)
@@ -545,6 +546,9 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                       imageSrc={customThumbnail || video.thumbnailUrl}
                       aspectRatio={16/9}
                       width={360}
+                      initialZoom={cropState.zoom}
+                      initialOffset={cropState.offset}
+                      onChange={(s) => setCropState(s)}
                     />
                   </div>
                   <div className="flex-1">
