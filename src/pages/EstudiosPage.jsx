@@ -23,6 +23,7 @@ const EstudiosPage = () => {
   const [onlyPending, setOnlyPending] = useState(false)
   const [isFullWidth, setIsFullWidth] = useState(false)
   const [groupSortAsc, setGroupSortAsc] = useState(true) // orden de grupos por nombre
+  const [collapsed, setCollapsed] = useState({})
   const [player, setPlayer] = useState({ open: false, video: null })
 
   useEffect(() => {
@@ -81,16 +82,11 @@ const EstudiosPage = () => {
     if (res.success) setVideos(prev => prev.map(v => v.id === video.id ? { ...v, isCompleted: res.isCompleted } : v))
   }
 
-  const total = filtered.length
-
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className={`${isFullWidth ? 'w-full px-0' : 'max-w-6xl mx-auto px-6'} py-8`}>
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">
-            <span className="text-pink-500">ESTUDIOS</span>
-            <span className="ml-2 text-gray-500 text-2xl align-top">({total})</span>
-          </h1>
+          <h1 className="text-4xl font-bold mb-2"><span className="text-pink-500">ESTUDIOS</span></h1>
           <p className="text-gray-600 text-lg">Tu bandeja de videos para estudiar y marcar como completados</p>
         </div>
 
@@ -129,55 +125,61 @@ const EstudiosPage = () => {
         ) : (
           <div className="space-y-10">
             {grouped.map(group => (
-              <section key={`${group.page}-${group.style}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-xl font-semibold text-gray-800">
+              <section key={`${group.page}-${group.style}`} className="bg-white border border-gray-200 rounded-lg">
+                <button
+                  onClick={() => setCollapsed(prev => ({ ...prev, [`${group.page}-${group.style}`]: !prev[`${group.page}-${group.style}`] }))}
+                  className="w-full flex items-center justify-between px-4 py-3 border-b hover:bg-gray-50 transition-colors"
+                >
+                  <h2 className="text-lg font-semibold text-gray-800">
                     <span className="uppercase text-gray-500 mr-2">{group.page}</span>
                     <span>{group.style.toUpperCase()}</span>
                     <span className="ml-2 text-sm text-gray-500">({group.items.length})</span>
                   </h2>
+                  <span className="text-sm text-gray-500">{collapsed[`${group.page}-${group.style}`] ? 'Mostrar' : 'Ocultar'}</span>
+                </button>
+                <div className={`${collapsed[`${group.page}-${group.style}`] ? 'hidden' : 'block'} p-4`}>
+                  <VideoGridRenderer
+                    videos={group.items}
+                    threshold={150}
+                    cardWidth={isFullWidth ? 450 : 320}
+                    cardHeight={isFullWidth ? 380 : 320}
+                    gap={24}
+                    renderCard={(video) => (
+                      <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border-gray-100">
+                        <div className="relative">
+                          <div className={`w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
+                            {video.thumbnailUrl && (
+                              <img src={video.thumbnailUrl} alt={video.title} className="w-full h-full object-cover" loading="lazy" />
+                            )}
+                            <button onClick={() => setPlayer({ open: true, video })} className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 group">
+                              <div className="w-16 h-16 rounded-full bg-white bg-opacity-90 flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-200">
+                                <svg viewBox="0 0 24 24" className="w-8 h-8 text-gray-800 ml-1"><path d="M8 5v14l11-7z"/></svg>
+                              </div>
+                            </button>
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-semibold text-gray-800 text-sm truncate">{video.title}</h3>
+                          </div>
+                          <p className="text-gray-600 text-sm mb-2 line-clamp-2">{video.description || 'Sin descripción'}</p>
+                          <CompactCardActions
+                            video={video}
+                            onPlay={() => setPlayer({ open: true, video })}
+                            onLike={() => {}}
+                            onEdit={() => {}}
+                            onDelete={() => {}}
+                            onToggleStudy={() => handleToggleStudy(video)}
+                            onToggleCompleted={() => handleToggleCompleted(video)}
+                            isInStudy={true}
+                            isCompleted={video.isCompleted}
+                            type="video"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  />
                 </div>
-                <VideoGridRenderer
-                  videos={group.items}
-                  threshold={150}
-                  cardWidth={isFullWidth ? 450 : 320}
-                  cardHeight={isFullWidth ? 380 : 320}
-                  gap={24}
-                  renderCard={(video) => (
-                    <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border-gray-100">
-                      <div className="relative">
-                        <div className={`w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
-                          {video.thumbnailUrl && (
-                            <img src={video.thumbnailUrl} alt={video.title} className="w-full h-full object-cover" loading="lazy" />
-                          )}
-                          <button onClick={() => setPlayer({ open: true, video })} className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 group">
-                            <div className="w-16 h-16 rounded-full bg-white bg-opacity-90 flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-200">
-                              <svg viewBox="0 0 24 24" className="w-8 h-8 text-gray-800 ml-1"><path d="M8 5v14l11-7z"/></svg>
-                            </div>
-                          </button>
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="font-semibold text-gray-800 text-sm truncate">{video.title}</h3>
-                        </div>
-                        <p className="text-gray-600 text-sm mb-2 line-clamp-2">{video.description || 'Sin descripción'}</p>
-                        <CompactCardActions
-                          video={video}
-                          onPlay={() => setPlayer({ open: true, video })}
-                          onLike={() => {}}
-                          onEdit={() => {}}
-                          onDelete={() => {}}
-                          onToggleStudy={() => handleToggleStudy(video)}
-                          onToggleCompleted={() => handleToggleCompleted(video)}
-                          isInStudy={true}
-                          isCompleted={video.isCompleted}
-                          type="video"
-                        />
-                      </div>
-                    </div>
-                  )}
-                />
               </section>
             ))}
           </div>

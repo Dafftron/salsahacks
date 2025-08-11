@@ -2949,6 +2949,28 @@ Si una secuencia tiene 3 videos con estos tags:
 - **Archivos**: `src/pages/FigurasPage.jsx`
 - **Estado**: ✅ Completado
 
+### **Commit #044 - Tag "Pepe y Ani" en categoría Profesores (Escuela + Categorías)**
+- **Fecha**: 2025-08-11
+- **Descripción**: Se añade el tag "Pepe y Ani" dentro de la categoría `PROFESORES` para que esté disponible y filtrable en la `EscuelaPage` y visible/gestionable en `CategoriesPage`.
+- **Cambios**:
+  - Inclusión del tag en todas las variantes de `escuela` que usan `profesores` dentro de `src/constants/categoryStructure.js` (SALSA, PASITOS LIBRES, SALSA CUBANA, MERENGUE, BACHATA, KIZOMBA, ZOUK).
+  - Inclusión del tag en la estructura interna de `src/pages/CategoriesPage.jsx` para mantener la UI de gestión sincronizada.
+- **Archivos**:
+  - `src/constants/categoryStructure.js`
+  - `src/pages/CategoriesPage.jsx`
+- **Estado**: ✅ Completado
+
+### **Commit #045 - Tags "Miguel" y "Sunshiresire" en categoría Profesores (Escuela + Categorías)**
+- **Fecha**: 2025-08-11
+- **Descripción**: Se agregan los tags "Miguel" y "Sunshiresire" a la categoría `PROFESORES` en todas las variantes de `escuela`, visibles en `EscuelaPage` y gestionables en `CategoriesPage`.
+- **Cambios**:
+  - Añadidos en `src/constants/categoryStructure.js` para SALSA, PASITOS LIBRES, SALSA CUBANA, MERENGUE, BACHATA, KIZOMBA, ZOUK.
+  - Sincronizados en la estructura de `src/pages/CategoriesPage.jsx`.
+- **Archivos**:
+  - `src/constants/categoryStructure.js`
+  - `src/pages/CategoriesPage.jsx`
+- **Estado**: ✅ Completado
+
 ### **#031 - Búsqueda Avanzada en FigurasPage**
 - **Fecha**: 2024-12-19
 - **Descripción**: Implementación de búsqueda avanzada moderna

@@ -198,7 +198,7 @@ export const categoryStructure = {
           profesores: {
             name: 'PROFESORES',
             color: 'yellow',
-            tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
+            tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria', 'Pepe y Ani', 'Miguel', 'Sunshiresire']
           }
         }
       },
@@ -245,7 +245,7 @@ export const categoryStructure = {
           profesores: {
             name: 'PROFESORES',
             color: 'pink',
-            tags: ['Pocho', 'Dabbicco', 'Talia']
+            tags: ['Pocho', 'Dabbicco', 'Talia', 'Pepe y Ani', 'Miguel', 'Sunshiresire']
           }
         }
       },
@@ -292,7 +292,7 @@ export const categoryStructure = {
           profesores: {
             name: 'PROFESORES',
             color: 'pink',
-            tags: ['Talipo', 'Ñete y Ani', 'Ñete y Maite', 'Dabbicco y Ani']
+            tags: ['Talipo', 'Ñete y Ani', 'Ñete y Maite', 'Dabbicco y Ani', 'Pepe y Ani', 'Miguel', 'Sunshiresire']
           }
         }
       },
@@ -339,7 +339,7 @@ export const categoryStructure = {
           profesores: {
             name: 'PROFESORES',
             color: 'pink',
-            tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
+            tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria', 'Pepe y Ani', 'Miguel', 'Sunshiresire']
           }
         }
       },
@@ -386,7 +386,7 @@ export const categoryStructure = {
           profesores: {
             name: 'PROFESORES',
             color: 'pink',
-            tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
+            tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria', 'Pepe y Ani', 'Miguel', 'Sunshiresire']
           }
         }
       },
@@ -433,7 +433,7 @@ export const categoryStructure = {
           profesores: {
             name: 'PROFESORES',
             color: 'pink',
-            tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
+            tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria', 'Pepe y Ani']
           }
         }
       },
@@ -480,7 +480,7 @@ export const categoryStructure = {
           profesores: {
             name: 'PROFESORES',
             color: 'pink',
-            tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria']
+            tags: ['Talipo', 'Pepe y Marta', 'Dabbicco y Ani', 'Alberto y Ani', 'Fran y Meel', 'Aitor y Nuria', 'Pepe y Ani', 'Miguel', 'Sunshiresire']
           }
         }
       }
