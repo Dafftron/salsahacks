@@ -1,3 +1,12 @@
+### 🔧 COMMIT: Fix superposición de cards en EscuelaPage - 2025-08-11  
+- Archivos: `src/pages/EscuelaPage.jsx`  
+- Cambios:  
+  - Cambiado de `VideoGridRenderer` a grid CSS nativo para que los cards se adapten automáticamente al contenido.  
+  - Eliminada altura fija que causaba superposición cuando había muchos tags.  
+  - Layout ahora consistente con `FigurasPage.jsx`.  
+- Impacto:  
+  - Los cards ya no se superponen cuando crecen por tags; cada uno mantiene su espacio propio.
+
 ### ✅ COMMIT: HomePage Dashboard + Analytics rápidos (MVP) - 2025-01-03  
 - Archivos: `src/pages/HomePage.jsx`, `src/services/firebase/firestore.js`, `src/services/firebase/sequences.js`, `src/pages/NotasPage.jsx`  
 - Cambios:
