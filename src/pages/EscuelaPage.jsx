@@ -122,6 +122,7 @@ const EscuelaPage = () => {
   const [sortKey, setSortKey] = useState(() => loadFilterPreference('sortKey', 'none'))
   const [sortDir, setSortDir] = useState(() => loadFilterPreference('sortDir', 'asc'))
   const [showFavorites, setShowFavorites] = useState(() => loadFilterPreference('showFavorites', false))
+  const [showHidden, setShowHidden] = useState(() => loadFilterPreference('showHidden', false))
   
 
   
@@ -188,7 +189,7 @@ const EscuelaPage = () => {
     const unsubscribe = subscribeToVideosByStyle(selectedStyle, (videosData) => {
       setVideos(prev => videosData.map(v => {
         const prevItem = prev.find(p => p.id === v.id)
-        return prevItem ? { ...v, userLiked: prevItem.userLiked, isFavorite: prevItem.isFavorite, isInStudy: prevItem.isInStudy, isCompleted: prevItem.isCompleted } : v
+        return prevItem ? { ...v, userLiked: prevItem.userLiked, isFavorite: prevItem.isFavorite, isInStudy: prevItem.isInStudy, isCompleted: prevItem.isCompleted, isHidden: prevItem.isHidden } : v
       }))
       setLoading(false)
       setSyncStatus('idle')
@@ -210,12 +211,13 @@ const EscuelaPage = () => {
       activeCategoryChips,
       sortKey,
       sortDir,
-      showFavorites
+      showFavorites,
+      showHidden
     }
     saveFilterPreferences(filters)
-  }, [selectedStyle, selectedTags, searchTerm, showFilters, activeCategoryChips, sortKey, sortDir, showFavorites])
+  }, [selectedStyle, selectedTags, searchTerm, showFilters, activeCategoryChips, sortKey, sortDir, showFavorites, showHidden])
 
-  // Verificar estado de likes/favoritos/estudios cuando se cargan videos
+  // Verificar estado de likes/favoritos/estudios/videos ocultos cuando se cargan videos
   useEffect(() => {
     if (videos.length > 0 && user) {
       const checkUserLikesAndFavorites = async () => {
@@ -223,22 +225,24 @@ const EscuelaPage = () => {
           videos.map(async (video) => {
             try {
               const { checkUserStudy, checkUserStudyCompleted } = await import('../services/firebase/firestore')
-              const [likeResult, favoriteResult, studyResult, completedResult] = await Promise.all([
+              const [likeResult, favoriteResult, studyResult, completedResult, hiddenResult] = await Promise.all([
                 checkUserLikedVideo(video.id, user.uid),
                 checkUserFavorite(video.id, user.uid),
                 checkUserStudy(video.id, user.uid),
-                checkUserStudyCompleted(video.id, user.uid)
+                checkUserStudyCompleted(video.id, user.uid),
+                checkUserHiddenVideo(video.id, user.uid)
               ])
               return { 
                 ...video, 
                 userLiked: likeResult.userLiked,
                 isFavorite: favoriteResult.isFavorite,
                 isInStudy: studyResult.isInStudy,
-                isCompleted: completedResult.isCompleted
+                isCompleted: completedResult.isCompleted,
+                isHidden: hiddenResult.isHidden
               }
             } catch (error) {
               console.error('Error al verificar estados de video:', video.id, error)
-              return { ...video, userLiked: false, isFavorite: false, isInStudy: false, isCompleted: false }
+              return { ...video, userLiked: false, isFavorite: false, isInStudy: false, isCompleted: false, isHidden: false }
             }
           })
         )
@@ -274,6 +278,20 @@ const EscuelaPage = () => {
       }
     } catch (e) {
       addToast('Error al actualizar completado', 'error')
+    }
+  }
+
+  // Acción para ocultar/mostrar videos
+  const handleToggleHidden = async (video) => {
+    try {
+      const { toggleUserHiddenVideo } = await import('../services/firebase/firestore')
+      const result = await toggleUserHiddenVideo(video.id, user.uid)
+      if (result.success) {
+        setVideos(prev => prev.map(v => v.id === video.id ? { ...v, isHidden: result.isHidden } : v))
+        addToast(result.isHidden ? 'Video ocultado' : 'Video mostrado', 'success')
+      }
+    } catch (e) {
+      addToast('Error al ocultar/mostrar video', 'error')
     }
   }
 
@@ -503,6 +521,7 @@ const EscuelaPage = () => {
     setActiveCategoryChips([])
     setSortKey('none'); setSortDir('asc')
     setShowFavorites(false)
+    setShowHidden(false)
     // NO cambiar el estilo seleccionado - mantener el estilo actual
   }
 
@@ -514,6 +533,7 @@ const EscuelaPage = () => {
     setActiveCategoryChips([])
     setSortKey('none'); setSortDir('asc')
     setShowFavorites(false)
+    setShowHidden(false)
     // NO cambiar el estilo seleccionado - mantener el estilo actual
     // setSelectedStyle('salsa') // Comentado para mantener el estilo actual
     
@@ -668,7 +688,10 @@ const EscuelaPage = () => {
   // Filtro por favoritos
   const favoritesMatch = !showFavorites || video.isFavorite
 
-  return searchMatch && tagsMatch && categoryMatch && favoritesMatch && visibilityMatch
+  // Filtro por videos ocultos
+  const hiddenMatch = !showHidden || video.isHidden
+
+  return searchMatch && tagsMatch && categoryMatch && favoritesMatch && hiddenMatch && visibilityMatch
   })
 
   // Aplicar ordenamiento final
@@ -860,6 +883,19 @@ const EscuelaPage = () => {
             <span>{showFavorites ? 'Ocultar Favoritos' : 'Mostrar Favoritos'}</span>
           </button>
 
+          {/* Videos Ocultos (filtro) */}
+          <button
+            onClick={() => setShowHidden(prev => !prev)}
+            className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+              showHidden
+                ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-md`
+                : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+            }`}
+          >
+            <EyeOff className="h-3 w-3" />
+            <span>{showHidden ? 'Ocultar Videos Ocultos' : 'Mostrar Videos Ocultos'}</span>
+          </button>
+
           {/* Orden para favoritos */}
           {showFavorites && (
             <button
@@ -881,7 +917,7 @@ const EscuelaPage = () => {
           )}
 
           {/* Botón Limpiar filtros */}
-          {(activeCategoryChips.length > 0 || sortKey !== 'none' || showFavorites || selectedTags.length > 0 || searchTerm) && (
+          {(activeCategoryChips.length > 0 || sortKey !== 'none' || showFavorites || showHidden || selectedTags.length > 0 || searchTerm) && (
             <button
               onClick={clearFilters}
               className="flex items-center space-x-1 px-3 py-1.5 rounded-md text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800 transition-colors duration-200"
@@ -1039,8 +1075,10 @@ const EscuelaPage = () => {
                             onPlay={() => handlePlayVideo(video)}
                             onToggleStudy={user ? () => handleToggleStudy(video) : undefined}
                             onToggleCompleted={user ? () => handleToggleCompleted(video) : undefined}
+                            onToggleHidden={user ? () => handleToggleHidden(video) : undefined}
                             isInStudy={video.isInStudy}
                             isCompleted={video.isCompleted}
+                            isHidden={video.isHidden}
                             type="video"
                           />
                         ) : (

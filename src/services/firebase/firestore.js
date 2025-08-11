@@ -768,6 +768,133 @@ export const getUserFavorites = async (userId) => {
   }
 }
 
+// ===== SISTEMA DE VIDEOS OCULTOS POR USUARIO =====
+export const toggleUserHiddenVideo = async (videoId, userId) => {
+  try {
+    console.log('🙈 Toggle video oculto para video:', videoId, 'usuario:', userId)
+    
+    // Obtener el perfil del usuario
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    
+    if (!userDocSnap.exists()) {
+      throw new Error('Usuario no encontrado')
+    }
+    
+    const userData = userDocSnap.data()
+    const hiddenVideos = userData.hiddenVideos || []
+    
+    // Verificar si el video ya está oculto
+    const videoIndex = hiddenVideos.indexOf(videoId)
+    let newHiddenVideos
+    
+    if (videoIndex === -1) {
+      // Video no está oculto, ocultarlo
+      newHiddenVideos = [...hiddenVideos, videoId]
+      console.log('✅ Video ocultado para el usuario:', userId)
+    } else {
+      // Video ya está oculto, mostrarlo
+      newHiddenVideos = hiddenVideos.filter(id => id !== videoId)
+      console.log('✅ Video mostrado para el usuario:', userId)
+    }
+    
+    // Actualizar el perfil del usuario
+    await updateDoc(userDocRef, {
+      hiddenVideos: newHiddenVideos,
+      updatedAt: serverTimestamp()
+    })
+    
+    console.log(`✅ Perfil de usuario actualizado: ${newHiddenVideos.length} videos ocultos`)
+    return { 
+      success: true, 
+      hiddenVideos: newHiddenVideos, 
+      isHidden: videoIndex === -1,
+      error: null 
+    }
+  } catch (error) {
+    console.error('❌ Error al toggle video oculto:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export const checkUserHiddenVideo = async (videoId, userId) => {
+  try {
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    
+    if (!userDocSnap.exists()) {
+      return { isHidden: false, error: 'Usuario no encontrado' }
+    }
+    
+    const userData = userDocSnap.data()
+    const hiddenVideos = userData.hiddenVideos || []
+    const isHidden = hiddenVideos.includes(videoId)
+    
+    return { isHidden, error: null }
+  } catch (error) {
+    console.error('❌ Error al verificar video oculto del usuario:', error)
+    return { isHidden: false, error: error.message }
+  }
+}
+
+export const getUserHiddenVideos = async (userId) => {
+  try {
+    console.log('🔍 Obteniendo videos ocultos del usuario:', userId)
+    
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    
+    if (!userDocSnap.exists()) {
+      return { hiddenVideos: [], error: 'Usuario no encontrado' }
+    }
+    
+    const userData = userDocSnap.data()
+    const hiddenVideoIds = userData.hiddenVideos || []
+    
+    if (hiddenVideoIds.length === 0) {
+      return { hiddenVideos: [], error: null }
+    }
+    
+    // Obtener los videos ocultos de todas las colecciones
+    const videos = []
+    for (const videoId of hiddenVideoIds) {
+      try {
+        // Intentar obtener de cada colección
+        const collections = [COLLECTIONS.VIDEOS, COLLECTIONS.ESCUELA_VIDEOS, COLLECTIONS.EVENTOS_VIDEOS]
+        let videoFound = false
+        
+        for (const collectionName of collections) {
+          try {
+            const videoDocRef = doc(db, collectionName, videoId)
+            const videoDocSnap = await getDoc(videoDocRef)
+            
+            if (videoDocSnap.exists()) {
+              videos.push({ id: videoDocSnap.id, ...videoDocSnap.data() })
+              videoFound = true
+              break
+            }
+          } catch (error) {
+            // Continuar con la siguiente colección
+            continue
+          }
+        }
+        
+        if (!videoFound) {
+          console.warn(`Video ${videoId} no encontrado en ninguna colección`)
+        }
+      } catch (error) {
+        console.error(`Error al obtener video ${videoId}:`, error)
+      }
+    }
+    
+    console.log(`✅ ${videos.length} videos ocultos encontrados para usuario: ${userId}`)
+    return { hiddenVideos: videos, error: null }
+  } catch (error) {
+    console.error('❌ Error al obtener videos ocultos del usuario:', error)
+    return { hiddenVideos: [], error: error.message }
+  }
+}
+
 // ===== SISTEMA DE ESTUDIOS (to-study y completado) =====
 export const toggleUserStudy = async (videoId, userId, page = 'figuras') => {
   try {
