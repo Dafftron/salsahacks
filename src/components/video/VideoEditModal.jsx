@@ -5,6 +5,7 @@ import { uploadFile } from '../../services/firebase/storage'
 import { useAuth } from '../../contexts/AuthContext'
 import { useCategories } from '../../hooks/useCategories'
 import Toast from '../common/Toast'
+import ThumbnailCropper from '../common/ThumbnailCropper'
 import VideoPlayer from './VideoPlayer'
 
 const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figuras', style = 'salsa' }) => {
@@ -18,6 +19,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
   const [description, setDescription] = useState('')
   const [customThumbnail, setCustomThumbnail] = useState(null)
   const [customThumbnailFile, setCustomThumbnailFile] = useState(null)
+  const cropperRef = useRef(null)
   
   // Estados para tags organizados por categorías
   const [selectedTags, setSelectedTags] = useState({})
@@ -204,9 +206,22 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
        let thumbnailUrl = video.thumbnailUrl
        let thumbnailPath = video.thumbnailPath
        
-       if (customThumbnailFile) {
-         const newThumbnailPath = `thumbnails/${Date.now()}_${video.originalTitle.replace(/\.[^/.]+$/, '.jpg')}`
-         const uploadResult = await uploadFile(customThumbnailFile, newThumbnailPath)
+       if (customThumbnailFile || customThumbnail) {
+         // Si hay imagen cargada o se ha usado el cropper, exportar Blob del recorte si es posible
+         let blobToUpload = null
+         if (cropperRef.current && customThumbnail) {
+           try {
+             blobToUpload = await cropperRef.current.getCroppedBlob('image/jpeg', 0.95)
+           } catch (_) {
+             // fallback a archivo original si algo falla
+             blobToUpload = customThumbnailFile || null
+           }
+         } else {
+           blobToUpload = customThumbnailFile
+         }
+
+         const newThumbnailPath = `thumbnails/${page}/${style}/${Date.now()}_${video.originalTitle.replace(/\.[^/.]+$/, '.jpg')}`
+         const uploadResult = await uploadFile(blobToUpload, newThumbnailPath)
          
          if (uploadResult.success) {
            thumbnailUrl = uploadResult.url
@@ -367,29 +382,27 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
                  />
               </div>
 
-              {/* Thumbnail personalizado */}
+              {/* Thumbnail personalizado con paneo/zoom 16:9 */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Thumbnail personalizado
-                </label>
-                <div className="flex items-center space-x-3">
-                  <div className="w-40 h-24 bg-gray-100 rounded border-2 border-dashed border-gray-300 flex items-center justify-center">
-                    {customThumbnail ? (
-                      <img 
-                        src={customThumbnail} 
-                        alt="Thumbnail" 
-                        className="w-full h-full object-cover rounded"
-                      />
-                    ) : (
-                      <span className="text-xs text-gray-500">IMG</span>
-                    )}
+                <label className="block text-sm font-medium text-gray-700">Thumbnail personalizado</label>
+                <div className="flex items-start gap-4">
+                  <div>
+                    <ThumbnailCropper
+                      ref={cropperRef}
+                      imageSrc={customThumbnail || video.thumbnailUrl}
+                      aspectRatio={16/9}
+                      width={360}
+                    />
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleThumbnailChange}
-                    className="flex-1 text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                  />
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleThumbnailChange}
+                      className="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                    <p className="text-xs text-gray-500 mt-2">Sube una imagen o usa arrastrar/zoom para ajustar el encuadre del thumbnail.</p>
+                  </div>
                 </div>
               </div>
 
