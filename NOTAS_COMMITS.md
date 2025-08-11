@@ -120,6 +120,14 @@
 - Impacto:
   - Base para volcar contenido de congresos/talleres con la misma UX de Escuela.
 
+### 🔧 COMMIT: Solapamiento resuelto y hook de tamaño estable - 2025-08-11 17:40:00
+- Archivos: `src/components/gallery/VideoGridRenderer.jsx`, `src/components/gallery/VirtualizedVideoGrid.jsx`, `src/hooks/useContainerSize.js`
+- Cambios:
+  - Altura fija por ítem y contenedores internos 100% para evitar montajes.
+  - `useContainerSize` evita loops de render y solo actualiza cuando el tamaño cambia.
+- Impacto:
+  - Layout de tarjetas consistente; desaparece el error “Maximum update depth exceeded”.
+
 ### 🗑️ COMMIT: Limpieza inicial de repo y componentes - 2025-08-11 17:25:22
 - Archivos: raíz del repo, `.gitignore`, `src/components/common/DownloadModal.jsx`
 - Cambios:

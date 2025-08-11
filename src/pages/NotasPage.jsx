@@ -27,13 +27,37 @@ const NotasPage = () => {
   const [expandedCommits, setExpandedCommits] = useState(new Set())
 
   const categories = [
-            { name: 'TODAS', icon: FileText, count: 116 },
-        { name: 'PÁGINAS', icon: Home, count: 17 },
-        { name: 'SISTEMAS', icon: Settings, count: 73 },
-        { name: 'CONTENIDO', icon: Video, count: 26 }
+    { name: 'TODAS', icon: FileText, count: 119 },
+    { name: 'PÁGINAS', icon: Home, count: 18 },
+    { name: 'SISTEMAS', icon: Settings, count: 74 },
+    { name: 'CONTENIDO', icon: Video, count: 27 }
   ]
 
         const commits = [
+        {
+          id: 121,
+          hash: 'a71d64a',
+          date: '2025-08-11',
+          time: '17:50:00',
+          title: 'Commit #121 - Página Eventos gemela a Escuela (MVP)',
+          description: 'Nueva página /eventos con suscripción por estilo y subida propia (page=eventos)',
+          files: ['src/pages/EventosPage.jsx', 'src/App.jsx', 'src/components/layout/Navigation.jsx', 'NOTAS_COMMITS.md'],
+          notes: 'Eventos funciona con la misma UX de Escuela: tabs por estilo, grilla estable y `VideoUploadModal` apuntando a colecciones de eventos. Base separada en Firestore/Storage.',
+          status: 'Completado',
+          category: 'PÁGINAS'
+        },
+        {
+          id: 120,
+          hash: '65db22d',
+          date: '2025-08-11',
+          time: '17:40:00',
+          title: 'Commit #120 - Fix solapamiento y loops de tamaño',
+          description: 'Cards con alto fijo en grillas y hook useContainerSize estabilizado',
+          files: ['src/components/gallery/VideoGridRenderer.jsx', 'src/components/gallery/VirtualizedVideoGrid.jsx', 'src/hooks/useContainerSize.js'],
+          notes: 'Se elimina el solapamiento de tarjetas y el warning “Maximum update depth exceeded” al abrir el modal.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
         {
           id: 119,
           hash: 'aa11bb2',
@@ -1530,6 +1554,16 @@ const NotasPage = () => {
   ]
 
   const cosasEnProceso = [
+    {
+      id: 'roadmap-eventos-ajustes',
+      title: 'Eventos: pulir categorías/tags y textos',
+      description: 'Ajustar taxonomía de eventos (año, mes, ciudad, organizador, sala, tipo, día, hora, nivel, instructor) y labels finales.',
+      owner: 'super_admin',
+      priority: 'alta',
+      area: 'PÁGINAS',
+      progress: 35,
+      notes: 'Página base operativa; queda afinar categorías visibles y textos.'
+    },
     {
       id: 2,
       title: 'Replicación del sistema a EventosPage',
