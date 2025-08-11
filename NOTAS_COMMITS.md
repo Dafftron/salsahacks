@@ -121,6 +121,10 @@
   - Repo más limpio y sin artefactos de build.
   - Evitamos confusiones entre dos `DownloadModal`. Se mantiene el de `src/components/video/` y `VideoDownloadModal` usado por secuencias.
 
+### 🗑️ COMMIT: Eliminar archivos con nombres corruptos en raíz - 2025-08-11 17:36:00
+- Archivos: `rotos en modal de subir videos`, `t` (borrados con nombres 8.3)
+- Impacto: raíz 100% limpia; sin archivos residuales de prueba/errores de shell.
+
 ### 🚀 **COMMIT #116: CORREGIR REDIRECCIÓN ADMIN Y URLs DE INVITACIÓN PARA PRODUCCIÓN** - 2025-01-10 14:15:00
 - **Objetivo**: Corregir redirección incorrecta en página admin y configurar URLs de invitación para producción
 - **Archivos modificados**: App.jsx, ProtectedRoute.jsx, AuthContext.jsx, roles.js, config/app.js (nuevo), config/local.js (nuevo)
