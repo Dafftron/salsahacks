@@ -22,7 +22,9 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
   const cropperRef = useRef(null)
   const captureVideoRef = useRef(null)
   const [videoDuration, setVideoDuration] = useState(0)
-  const [framePercent, setFramePercent] = useState(0.0)
+  const [framePercent, setFramePercent] = useState(0.5)
+  const [filmstrip, setFilmstrip] = useState([]) // [{percent, url}]
+  const [generatingStrip, setGeneratingStrip] = useState(false)
   
   // Estados para tags organizados por categorías
   const [selectedTags, setSelectedTags] = useState({})
@@ -170,7 +172,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
   }
 
   // Capturar un frame del video según el slider
-  const handleCaptureFrame = async () => {
+  const handleCaptureFrame = async (percentOverride = null) => {
     try {
       const videoEl = captureVideoRef.current
       if (!videoEl) return
@@ -181,7 +183,7 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
           videoEl.onerror = rej
         })
       }
-      const targetTime = (framePercent || 0) * (videoEl.duration || 0)
+      const targetTime = (percentOverride ?? framePercent ?? 0) * (videoEl.duration || 0)
       await new Promise((res, rej) => {
         const onSeeked = () => {
           res()
@@ -220,6 +222,55 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
       }
     } catch (err) {
       console.warn('Error capturando frame:', err)
+    }
+  }
+
+  // Generar filmstrip de N frames
+  const generateFilmstrip = async (frames = 7) => {
+    try {
+      const videoEl = captureVideoRef.current
+      if (!videoEl) return
+      if (!videoEl.duration || isNaN(videoEl.duration)) {
+        await new Promise((res, rej) => {
+          videoEl.onloadedmetadata = () => res()
+          videoEl.onerror = rej
+        })
+      }
+      setGeneratingStrip(true)
+      const items = []
+      for (let i = 0; i < frames; i++) {
+        const p = frames === 1 ? 0.5 : i / (frames - 1)
+        // Capturar miniatura pequeña para filmstrip (320x180)
+        await new Promise((res, rej) => {
+          const onSeeked = () => {
+            const canvas = document.createElement('canvas')
+            const w = 320
+            const h = 180
+            canvas.width = w
+            canvas.height = h
+            const ctx = canvas.getContext('2d')
+            const videoW = videoEl.videoWidth
+            const videoH = videoEl.videoHeight
+            const scale = Math.max(w / videoW, h / videoH)
+            const drawW = videoW * scale
+            const drawH = videoH * scale
+            const dx = w / 2 - drawW / 2
+            const dy = h / 2 - drawH / 2
+            ctx.drawImage(videoEl, dx, dy, drawW, drawH)
+            const url = canvas.toDataURL('image/jpeg', 0.7)
+            items.push({ percent: p, url })
+            videoEl.removeEventListener('seeked', onSeeked)
+            res()
+          }
+          videoEl.addEventListener('seeked', onSeeked)
+          videoEl.currentTime = p * videoEl.duration
+        })
+      }
+      setFilmstrip(items)
+      setGeneratingStrip(false)
+    } catch (e) {
+      setGeneratingStrip(false)
+      console.warn('No se pudo generar filmstrip:', e)
     }
   }
 
