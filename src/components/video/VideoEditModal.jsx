@@ -214,22 +214,18 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
         videoEl.addEventListener('seeked', onSeeked)
         videoEl.currentTime = targetTime
       })
-      // Dibujar en canvas con 1280x720 manteniendo proporción
+      // Capturar el FRAME COMPLETO (sin recorte) a resolución nativa (limitada a 1920px lado mayor)
+      const natW = Math.max(1, Math.floor(videoEl.videoWidth))
+      const natH = Math.max(1, Math.floor(videoEl.videoHeight))
+      const maxSide = 1920
+      const downScale = Math.min(1, maxSide / Math.max(natW, natH))
       const canvas = document.createElement('canvas')
-      const width = 1280
-      const height = 720
+      const width = Math.round(natW * downScale)
+      const height = Math.round(natH * downScale)
       canvas.width = width
       canvas.height = height
       const ctx = canvas.getContext('2d')
-      // Calcular cover
-      const videoW = videoEl.videoWidth
-      const videoH = videoEl.videoHeight
-      const scale = Math.max(width / videoW, height / videoH)
-      const drawW = videoW * scale
-      const drawH = videoH * scale
-      const dx = width / 2 - drawW / 2
-      const dy = height / 2 - drawH / 2
-      ctx.drawImage(videoEl, dx, dy, drawW, drawH)
+      ctx.drawImage(videoEl, 0, 0, width, height)
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.95))
       if (blob) {
         const dataUrl = await new Promise((resolve) => {

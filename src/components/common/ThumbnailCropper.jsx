@@ -25,7 +25,13 @@ const ThumbnailCropper = forwardRef(({ imageSrc, aspectRatio = 16 / 9, width = 3
       const nat = { width: img.naturalWidth, height: img.naturalHeight }
       setNatural(nat)
       const cont = { width: container.width, height: container.height }
-      const scaleToCover = Math.max(cont.width / nat.width, cont.height / nat.height)
+      // Si la imagen NO es 16:9, permitir partir sin zoom (fit), de forma que no se sienta pre-zoom
+      const aspectImg = nat.width / nat.height
+      const aspectCont = cont.width / cont.height
+      const preferFit = Math.abs(aspectImg - aspectCont) > 0.01
+      const scaleCover = Math.max(cont.width / nat.width, cont.height / nat.height)
+      const scaleFit = Math.min(cont.width / nat.width, cont.height / nat.height)
+      const scaleToCover = preferFit ? scaleFit : scaleCover
       setBaseScale(scaleToCover)
       setZoom(1)
       setOffset({ x: 0, y: 0 })
