@@ -54,6 +54,10 @@
 # 📚 COMMIT: Hito ESCUELA - +100 videos subidos - 2025-08-11
 
 # 💬 COMMIT: Sistema de comentarios de videos (fase 1) - 2025-08-11
+- 💗 Mini-update: estilo Instagram básico
+  - Like/unlike con corazón y contador por comentario
+  - Eliminar propio comentario
+  - Tiempo relativo visual simplificado desde el navegador
 - Archivos: `src/services/firebase/firestore.js`, `src/components/video/CommentsSection.jsx`, `src/pages/FigurasPage.jsx`, `src/pages/EscuelaPage.jsx`
 - Cambios:
   - Servicios Firestore: creación, suscripción y borrado suave de comentarios en subcolección `/comments` por video.

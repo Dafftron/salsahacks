@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
-import { createVideoComment, subscribeToVideoComments } from '../../services/firebase/firestore'
+import { createVideoComment, subscribeToVideoComments, toggleLikeVideoComment, softDeleteVideoComment } from '../../services/firebase/firestore'
+import { Heart, Trash2 } from 'lucide-react'
 
 const MAX_LENGTH = 500
 
-const CommentItem = ({ comment }) => {
+const CommentItem = ({ comment, onToggleLike, onDelete, canDelete }) => {
   const date = useMemo(() => {
     try {
       if (comment?.createdAt?.toDate) return comment.createdAt.toDate()
@@ -28,6 +29,24 @@ const CommentItem = ({ comment }) => {
           {date && <span className="text-xs text-gray-500">{date.toLocaleString()}</span>}
         </div>
         <p className="text-sm text-gray-700 whitespace-pre-wrap break-words mt-1">{comment.text}</p>
+        <div className="flex items-center space-x-3 mt-2 text-xs text-gray-500">
+          <button
+            onClick={() => onToggleLike(comment)}
+            className={`flex items-center space-x-1 ${comment._userLiked ? 'text-pink-600' : 'text-gray-500'} hover:text-pink-600 transition-colors`}
+          >
+            <Heart className={`h-4 w-4 ${comment._userLiked ? 'fill-pink-600' : ''}`} />
+            <span>{comment.likes || 0}</span>
+          </button>
+          {canDelete && (
+            <button
+              onClick={() => onDelete(comment)}
+              className="flex items-center space-x-1 text-gray-500 hover:text-red-600 transition-colors"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Eliminar</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -42,11 +61,17 @@ const CommentsSection = ({ videoId, page = 'figuras' }) => {
   useEffect(() => {
     if (!videoId) return
     const unsubscribe = subscribeToVideoComments(videoId, page, (items) => {
-      // Mostrar solo activos
-      setComments(items.filter(c => c.status !== 'deleted'))
+      // Mostrar solo activos y marcar si el usuario actual le dio like
+      const mapped = items
+        .filter(c => c.status !== 'deleted')
+        .map(c => ({
+          ...c,
+          _userLiked: user ? (Array.isArray(c.likedBy) ? c.likedBy.includes(user.uid) : false) : false
+        }))
+      setComments(mapped)
     })
     return () => unsubscribe && unsubscribe()
-  }, [videoId, page])
+  }, [videoId, page, user])
 
   const remaining = MAX_LENGTH - text.length
   const canPost = !!user && text.trim().length > 0 && text.trim().length <= MAX_LENGTH
@@ -66,6 +91,22 @@ const CommentsSection = ({ videoId, page = 'figuras' }) => {
       if (res.success) setText('')
     } finally {
       setPosting(false)
+    }
+  }
+
+  const handleToggleLike = async (comment) => {
+    if (!user) return
+    const res = await toggleLikeVideoComment(videoId, page, comment.id, user.uid)
+    if (res.success) {
+      setComments(prev => prev.map(c => c.id === comment.id ? { ...c, likes: res.likes, _userLiked: res.userLiked } : c))
+    }
+  }
+
+  const handleDelete = async (comment) => {
+    if (!user) return
+    const res = await softDeleteVideoComment(videoId, page, comment.id, user.uid, false)
+    if (res.success) {
+      setComments(prev => prev.filter(c => c.id !== comment.id))
     }
   }
 
@@ -100,7 +141,15 @@ const CommentsSection = ({ videoId, page = 'figuras' }) => {
         {comments.length === 0 ? (
           <div className="text-xs text-gray-500">Sé el primero en comentar</div>
         ) : (
-          comments.map((c) => <CommentItem key={c.id} comment={c} />)
+          comments.map((c) => (
+            <CommentItem
+              key={c.id}
+              comment={c}
+              onToggleLike={handleToggleLike}
+              onDelete={handleDelete}
+              canDelete={!!user && c.userId === user.uid}
+            />
+          ))
         )}
       </div>
     </div>

@@ -45,6 +45,95 @@ const getVideosCollection = (page = 'figuras') => {
   }
 };
 
+// ===== COMENTARIOS DE VIDEOS =====
+const getVideoCommentsCollectionRef = (videoId, page = 'figuras') => {
+  const videosCollection = getVideosCollection(page)
+  return collection(db, videosCollection, videoId, 'comments')
+}
+
+export const createVideoComment = async (videoId, page, { text, userId, userDisplayName, userPhotoURL }) => {
+  try {
+    if (!videoId || !text || !userId) {
+      throw new Error('Datos de comentario incompletos')
+    }
+    const commentsRef = getVideoCommentsCollectionRef(videoId, page)
+    const docRef = await addDoc(commentsRef, {
+      text: text.slice(0, 500),
+      userId,
+      userDisplayName: userDisplayName || 'Usuario',
+      userPhotoURL: userPhotoURL || null,
+      status: 'active',
+      likes: 0,
+      likedBy: [],
+      createdAt: serverTimestamp(),
+      editedAt: null
+    })
+    return { success: true, id: docRef.id, error: null }
+  } catch (error) {
+    console.error('❌ Error creando comentario:', error)
+    return { success: false, id: null, error: error.message }
+  }
+}
+
+export const subscribeToVideoComments = (videoId, page, callback, pageSize = 50) => {
+  try {
+    const commentsRef = getVideoCommentsCollectionRef(videoId, page)
+    const q = query(
+      commentsRef,
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    )
+    return onSnapshot(q, (snapshot) => {
+      const comments = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+      callback(comments)
+    })
+  } catch (error) {
+    console.error('❌ Error suscribiendo comentarios:', error)
+    return () => {}
+  }
+}
+
+export const softDeleteVideoComment = async (videoId, page, commentId, requesterId, requesterIsAdmin = false) => {
+  try {
+    const commentRef = doc(getVideoCommentsCollectionRef(videoId, page), commentId)
+    const commentSnap = await getDoc(commentRef)
+    if (!commentSnap.exists()) throw new Error('Comentario no encontrado')
+    const data = commentSnap.data()
+    if (!requesterIsAdmin && data.userId !== requesterId) {
+      throw new Error('No autorizado para eliminar este comentario')
+    }
+    await updateDoc(commentRef, { status: 'deleted', editedAt: serverTimestamp() })
+    return { success: true }
+  } catch (error) {
+    console.error('❌ Error eliminando comentario:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export const toggleLikeVideoComment = async (videoId, page, commentId, userId) => {
+  try {
+    const commentRef = doc(getVideoCommentsCollectionRef(videoId, page), commentId)
+    const snap = await getDoc(commentRef)
+    if (!snap.exists()) throw new Error('Comentario no encontrado')
+    const data = snap.data()
+    const likedBy = Array.isArray(data.likedBy) ? data.likedBy : []
+    const index = likedBy.indexOf(userId)
+    let newLikedBy, newLikes
+    if (index === -1) {
+      newLikedBy = [...likedBy, userId]
+      newLikes = (data.likes || 0) + 1
+    } else {
+      newLikedBy = likedBy.filter(id => id !== userId)
+      newLikes = Math.max((data.likes || 0) - 1, 0)
+    }
+    await updateDoc(commentRef, { likedBy: newLikedBy, likes: newLikes, editedAt: serverTimestamp() })
+    return { success: true, likes: newLikes, userLiked: index === -1 }
+  } catch (error) {
+    console.error('❌ Error toggle like comentario:', error)
+    return { success: false, error: error.message }
+  }
+}
+
 // ===== USUARIOS =====
 export const createUserProfile = async (userId, userData) => {
   try {
