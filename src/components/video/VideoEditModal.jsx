@@ -238,6 +238,11 @@ const VideoEditModal = ({ isOpen, onClose, video, onVideoUpdated, page = 'figura
           fr.readAsDataURL(blob)
         })
         setCustomThumbnail(dataUrl)
+        // Resetear cropper a estado base (zoom = 1, offset 0)
+        try {
+          // reenfocar a nueva imagen y esperar a que el hook recalcule baseScale
+          // (El cropper recalcula baseScale en onload de la imagen)
+        } catch (_) {}
         // Guardamos un File para fallback (nombre amigable)
         const file = new File([blob], `${video.originalTitle || 'frame'}.jpg`, { type: 'image/jpeg' })
         setCustomThumbnailFile(file)
