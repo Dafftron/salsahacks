@@ -39,7 +39,6 @@ const DownloadModal = lazy(() => import('../components/video/DownloadModal'))
 const SequenceBuilder = lazy(() => import('../components/sequence/SequenceBuilder'))
 const SequenceGallery = lazy(() => import('../components/sequence/SequenceGallery'))
 const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVideoPlayer'))
-const CommentsSection = lazy(() => import('../components/video/CommentsSection'))
 
 import { 
   getVideos, 
@@ -1565,21 +1564,12 @@ const FigurasPage = () => {
                              }
                            }))
                            
-                           // Montar CommentsSection usando React
-                           const { default: CommentsSection } = await import('../components/video/CommentsSection.jsx')
-                           const commentsRoot = createRoot(commentsContainer)
-                           commentsRoot.render(React.createElement(CommentsSection, { videoId: video.id, page: 'figuras' }))
-                           
                            // Guardar referencia del root para limpieza
                            modal._root = root
-                           modal._commentsRoot = commentsRoot
                            
                            const closeModal = () => {
                              if (modal._root) {
                                modal._root.unmount()
-                             }
-                             if (modal._commentsRoot) {
-                               modal._commentsRoot.unmount()
                              }
                              if (document.body.contains(modal)) {
                                document.body.removeChild(modal)
@@ -2208,11 +2198,7 @@ Esta acción NO se puede deshacer.`}
                  </div>
                </div>
                 {/* Comments Section */}
-                <div className="mt-6 border-t pt-4">
-                  <Suspense fallback={null}>
-                    <CommentsSection videoId={selectedVideo.id} page="figuras" />
-                  </Suspense>
-                </div>
+                {/* Comentarios eliminados */}
              </div>
            </div>
          </div>
