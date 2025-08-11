@@ -24,6 +24,29 @@ const EstudiosPage = () => {
   const [isFullWidth, setIsFullWidth] = useState(false)
   const [groupSortAsc, setGroupSortAsc] = useState(true) // orden de grupos por nombre
   const [collapsed, setCollapsed] = useState({})
+
+  // Cargar/guardar estado de plegado por usuario (sesión)
+  useEffect(() => {
+    try {
+      if (!user?.uid) return
+      const saved = localStorage.getItem(`estudios-collapsed:${user.uid}`)
+      if (saved) {
+        setCollapsed(JSON.parse(saved))
+      }
+    } catch (_) {}
+  }, [user?.uid])
+
+  const toggleGroupCollapse = (key) => {
+    setCollapsed(prev => {
+      const next = { ...prev, [key]: !prev[key] }
+      try {
+        if (user?.uid) {
+          localStorage.setItem(`estudios-collapsed:${user.uid}`, JSON.stringify(next))
+        }
+      } catch (_) {}
+      return next
+    })
+  }
   const [player, setPlayer] = useState({ open: false, video: null })
 
   useEffect(() => {
@@ -127,7 +150,7 @@ const EstudiosPage = () => {
             {grouped.map(group => (
               <section key={`${group.page}-${group.style}`} className="bg-white border border-gray-200 rounded-lg">
                 <button
-                  onClick={() => setCollapsed(prev => ({ ...prev, [`${group.page}-${group.style}`]: !prev[`${group.page}-${group.style}`] }))}
+                  onClick={() => toggleGroupCollapse(`${group.page}-${group.style}`)}
                   className="w-full flex items-center justify-between px-4 py-3 border-b hover:bg-gray-50 transition-colors"
                 >
                   <h2 className="text-lg font-semibold text-gray-800">
