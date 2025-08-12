@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Corrección global: evitar scroll/paneo horizontal en móvil */
+html, body, #root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Suavizar comportamiento de overscroll horizontal en navegadores móviles */
+body {
+  overscroll-behavior-x: none;
+}
+
 /* Estilos para el slider de BPM */
 .slider {
   -webkit-appearance: none;

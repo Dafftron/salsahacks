@@ -1,3 +1,12 @@
+### 🛠️ COMMIT: Fix móvil paneo lateral + cards responsivas - 2025-08-12  [deploy]
+- Archivos: `src/index.css`, `src/components/gallery/VideoGridRenderer.jsx`
+- Cambios:
+  - Bloqueado overflow horizontal global en `html, body, #root` y `overscroll-behavior-x: none` para eliminar paneo a la derecha en móvil.
+  - Grilla de videos con columnas `min(100%, cardWidth)` y altura de card `auto` en <480px para que las cards se minimicen correctamente.
+- Impacto:
+  - La versión web en móvil ya no muestra desplazamiento lateral extraño.
+  - Las cards se adaptan al ancho del móvil y no quedan sobredimensionadas.
+
 ### 🗓️ COMMIT: Eventos - paridad con Escuela + acciones y player - 2025-08-12
 - Archivos: `src/pages/EventosPage.jsx`, `src/services/firebase/firestore.js`
 - Cambios:
