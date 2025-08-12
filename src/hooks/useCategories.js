@@ -77,7 +77,8 @@ export const useCategories = (page, selectedStyle) => {
       'escuela-salsa': 'from-purple-500 to-pink-500',
       
       // Gradientes para eventos
-      'eventos-salsa': 'from-green-400 to-blue-500',
+      'eventos-talleres': 'from-amber-400 to-rose-500',
+      'eventos-congresos': 'from-emerald-400 to-cyan-500',
       
       // Fallback por color genérico
       salsa: 'from-orange-400 to-pink-500',

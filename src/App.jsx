@@ -35,11 +35,12 @@ function AppContent() {
   const isFigurasPage = location.pathname === '/figuras'
   const isEscuelaPage = location.pathname === '/escuela'
   const isEstudiosPage = location.pathname === '/estudios'
+  const isEventosPage = location.pathname === '/eventos'
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-salsa-light to-white">
       <Navigation />
-      <main className={isFigurasPage || isEscuelaPage || isEstudiosPage ? 'w-full' : 'container mx-auto px-4 py-8'}>
+      <main className={isFigurasPage || isEscuelaPage || isEstudiosPage || isEventosPage ? 'w-full' : 'container mx-auto px-4 py-8'}>
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             <Route path="/" element={<HomePage />} />

@@ -1303,6 +1303,30 @@ export const subscribeToVideosByStyle = (style, callback, page = 'figuras') => {
   }
 }
 
+// Suscripción por página (sin filtro por style) para casos como 'eventos'
+export const subscribeToPageVideos = (page = 'figuras', callback) => {
+  try {
+    const videosCollection = getVideosCollection(page)
+    const q = query(
+      collection(db, videosCollection),
+      orderBy('createdAt', 'desc')
+    )
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const videos = []
+      snapshot.forEach((doc) => {
+        videos.push({ id: doc.id, ...doc.data() })
+      })
+      callback(videos)
+    }, (error) => {
+      console.error(`❌ Error en suscripción por página (${page}):`, error)
+    })
+    return unsubscribe
+  } catch (error) {
+    console.error('❌ Error al iniciar suscripción por página:', error)
+    return () => {}
+  }
+}
+
 // ===== FUNCIONES DE LIMPIEZA DE DATOS =====
 
 export const deleteAllVideos = async () => {

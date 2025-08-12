@@ -1,3 +1,12 @@
+### 🗓️ COMMIT: Eventos con pestañas Talleres/Congresos + filtros avanzados - 2025-08-12
+- Archivos: `src/pages/EventosPage.jsx`, `src/constants/categoryStructure.js`, `src/hooks/useCategories.js`, `src/App.jsx`
+- Cambios:
+  - Eventos: dos pestañas principales (Talleres, Congresos) con gradientes propios y estilo por defecto en Talleres.
+  - Filtros por categorías/tags con chips, búsqueda y controles de orden (A‑Z, Puntuación), favoritos/ocultos y persistencia en `localStorage`.
+  - Layout de Eventos sin contenedor/padding (full‑width) como Figuras/Escuela.
+- Impacto:
+  - Navegación clara entre tipos de evento y filtrado consistente con el resto de páginas.
+
 ### 🔧 COMMIT: Fix superposición de cards en EscuelaPage - 2025-08-11  
 - Archivos: `src/pages/EscuelaPage.jsx`  
 - Cambios:  

@@ -490,15 +490,42 @@ export const categoryStructure = {
     name: 'EVENTOS',
     icon: Calendar,
     styles: {
-      salsa: {
-        name: 'SALSA',
-        icon: Music,
-        color: 'salsa',
+      talleres: {
+        name: 'TALLERES',
+        icon: Calendar,
+        color: 'eventos-talleres',
         categories: {
           tipo: {
             name: 'TIPO DE EVENTO',
             color: 'green',
-            tags: ['Competición', 'Encuentro', 'Congreso', 'Workshop', 'Fiesta', 'oculto']
+            tags: ['Workshop', 'Intensivo', 'Masterclass', 'Clase abierta', 'oculto']
+          },
+          ubicacion: {
+            name: 'UBICACIÓN',
+            color: 'blue',
+            tags: ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao']
+          },
+          nivel: {
+            name: 'NIVEL',
+            color: 'orange',
+            tags: ['Todos los niveles', 'Intermedio-Avanzado', 'Solo avanzado']
+          },
+          fecha: {
+            name: 'FECHA',
+            color: 'purple',
+            tags: ['Este mes', 'Próximo mes', 'Este trimestre', 'Este año']
+          }
+        }
+      },
+      congresos: {
+        name: 'CONGRESOS',
+        icon: Calendar,
+        color: 'eventos-congresos',
+        categories: {
+          tipo: {
+            name: 'TIPO DE EVENTO',
+            color: 'green',
+            tags: ['Congreso', 'Festival', 'Encuentro', 'Competición', 'Fiesta', 'oculto']
           },
           ubicacion: {
             name: 'UBICACIÓN',

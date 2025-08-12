@@ -166,16 +166,43 @@ const CategoriesPage = () => {
       name: 'EVENTOS',
       icon: Calendar,
       styles: {
-              salsa: {
-        name: 'SALSA',
-        icon: Music,
-        color: 'salsa',
-        categories: {
-          tipo: {
-            name: 'TIPO DE EVENTO',
-            color: 'green',
-            tags: ['Competición', 'Encuentro', 'Congreso', 'Workshop', 'Fiesta']
-          },
+        talleres: {
+          name: 'TALLERES',
+          icon: Calendar,
+          color: 'eventos-talleres',
+          categories: {
+            tipo: {
+              name: 'TIPO DE EVENTO',
+              color: 'green',
+            tags: ['Workshop', 'Intensivo', 'Masterclass', 'Clase abierta', 'oculto']
+            },
+            ubicacion: {
+              name: 'UBICACIÓN',
+              color: 'blue',
+              tags: ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao']
+            },
+            nivel: {
+              name: 'NIVEL',
+              color: 'orange',
+              tags: ['Todos los niveles', 'Intermedio-Avanzado', 'Solo avanzado']
+            },
+            fecha: {
+              name: 'FECHA',
+              color: 'purple',
+              tags: ['Este mes', 'Próximo mes', 'Este trimestre', 'Este año']
+            }
+          }
+        },
+        congresos: {
+          name: 'CONGRESOS',
+          icon: Calendar,
+          color: 'eventos-congresos',
+          categories: {
+            tipo: {
+              name: 'TIPO DE EVENTO',
+              color: 'green',
+            tags: ['Congreso', 'Festival', 'Encuentro', 'Competición', 'Fiesta', 'oculto']
+            },
             ubicacion: {
               name: 'UBICACIÓN',
               color: 'blue',
@@ -500,6 +527,10 @@ const CategoriesPage = () => {
       'escuela-kizomba': 'bg-gradient-to-r from-amber-400 to-orange-600',
       'escuela-zouk': 'bg-gradient-to-r from-violet-400 to-indigo-600',
       'escuela-merengue': 'bg-gradient-to-r from-cyan-400 to-blue-600',
+
+      // Gradientes para eventos (alineados con EventosPage/useCategories)
+      'eventos-talleres': 'bg-gradient-to-r from-amber-400 to-rose-500',
+      'eventos-congresos': 'bg-gradient-to-r from-emerald-400 to-cyan-500',
       
       // Gradientes genéricos para categorías
       pink: 'bg-gradient-to-r from-orange-500 to-pink-500',
