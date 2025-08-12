@@ -1,3 +1,14 @@
+### 🗓️ COMMIT: Eventos - paridad con Escuela + acciones y player - 2025-08-12
+- Archivos: `src/pages/EventosPage.jsx`, `src/services/firebase/firestore.js`
+- Cambios:
+  - EventosPage: barra de búsqueda, filtros avanzados colapsables, orden (A‑Z, Puntuación), favoritos/ocultos, pestañas Talleres/Congresos con grid y `CardSizeSelector`.
+  - Cards clonadas de Escuela: rating editable, tags ordenados por categoría, resolución, botón de Play y acciones compactas.
+  - Acciones en cards: like, favoritos (implícito), ocultar, estudio, completado, descargar (maese/super_admin), editar y eliminar con modales.
+  - Reproductor modal (`SequenceVideoPlayer`).
+  - Data: se agregó suscripción por página `subscribeToPageVideos('eventos')` y filtrado en cliente por pestaña y tags.
+- Impacto:
+  - UX de Eventos equiparada a Escuela; galerías visibles aunque los videos no tengan `style: talleres/congresos`.
+
 ### 🗓️ COMMIT: Eventos con pestañas Talleres/Congresos + filtros avanzados - 2025-08-12
 - Archivos: `src/pages/EventosPage.jsx`, `src/constants/categoryStructure.js`, `src/hooks/useCategories.js`, `src/App.jsx`
 - Cambios:
@@ -6,6 +17,15 @@
   - Layout de Eventos sin contenedor/padding (full‑width) como Figuras/Escuela.
 - Impacto:
   - Navegación clara entre tipos de evento y filtrado consistente con el resto de páginas.
+
+### 🏷️ COMMIT: Talleres con categorías “Estilo” y “Profesores” específicas - 2025-08-12
+- Archivos: `src/constants/categoryStructure.js`, `src/pages/CategoriesPage.jsx`
+- Cambios:
+  - `eventos > talleres` ahora solo incluye:
+    - Estilo: Salsa, Bachata
+    - Profesores: Talipo, Tamara y Candido, Luis y Alma
+- Impacto:
+  - Categorías de Talleres simplificadas según requerimiento.
 
 ### 🔧 COMMIT: Fix superposición de cards en EscuelaPage - 2025-08-11  
 - Archivos: `src/pages/EscuelaPage.jsx`  

@@ -495,25 +495,15 @@ export const categoryStructure = {
         icon: Calendar,
         color: 'eventos-talleres',
         categories: {
-          tipo: {
-            name: 'TIPO DE EVENTO',
-            color: 'green',
-            tags: ['Workshop', 'Intensivo', 'Masterclass', 'Clase abierta', 'oculto']
+          estilo: {
+            name: 'ESTILO',
+            color: 'pink',
+            tags: ['Salsa', 'Bachata']
           },
-          ubicacion: {
-            name: 'UBICACIÓN',
-            color: 'blue',
-            tags: ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao']
-          },
-          nivel: {
-            name: 'NIVEL',
-            color: 'orange',
-            tags: ['Todos los niveles', 'Intermedio-Avanzado', 'Solo avanzado']
-          },
-          fecha: {
-            name: 'FECHA',
-            color: 'purple',
-            tags: ['Este mes', 'Próximo mes', 'Este trimestre', 'Este año']
+          profesores: {
+            name: 'PROFESORES',
+            color: 'yellow',
+            tags: ['Talipo', 'Tamara y Candido', 'Luis y Alma']
           }
         }
       },
