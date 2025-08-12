@@ -58,13 +58,13 @@ const EventosPage = () => {
 
   useEffect(() => {
     setLoading(true)
-    // Cargar todos los videos de eventos y filtrar en cliente por pestaña/tags
-    const unsubscribe = subscribeToPageVideos('eventos', (list) => {
+    // Suscribirse por estilo como en EscuelaPage para coherencia y eficiencia
+    const unsubscribe = subscribeToVideosByStyle(selectedStyle, (list) => {
       setVideos(list)
       setLoading(false)
-    })
+    }, 'eventos')
     return () => unsubscribe && unsubscribe()
-  }, [])
+  }, [selectedStyle])
 
   // Asegurar que el estilo seleccionado sea válido para eventos
   useEffect(() => {
