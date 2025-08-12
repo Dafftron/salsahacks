@@ -232,7 +232,7 @@ const EventosPage = () => {
 
   const downloadVideo = async (video) => {
     if (!user || !userProfile) { addToast('❌ Debes iniciar sesión para descargar', 'error'); return }
-    if (userProfile.role !== 'maese' && userProfile.role !== 'super_admin') { addToast('❌ Solo maestros pueden descargar', 'error'); return }
+    if (userProfile.role !== 'super_admin') { addToast('❌ Solo Super Admin puede descargar', 'error'); return }
     try {
       addToast(`Iniciando descarga de ${video.title}...`, 'info')
       const videoRef = ref(storage, video.videoPath)
@@ -685,7 +685,7 @@ const EventosPage = () => {
                               onLike={() => handleVideoLike(video)}
                               onEdit={() => openEditModal(video)}
                               onDelete={() => openDeleteModal(video)}
-                              onDownload={userProfile?.role === 'maese' || userProfile?.role === 'super_admin' ? () => downloadVideo(video) : undefined}
+                              onDownload={userProfile?.role === 'super_admin' ? () => downloadVideo(video) : undefined}
                               onPlay={() => handlePlayVideo(video)}
                               onToggleStudy={user ? () => handleToggleStudy(video) : undefined}
                               onToggleCompleted={user ? () => handleToggleCompleted(video) : undefined}
@@ -732,7 +732,7 @@ const EventosPage = () => {
                                     <EyeOff className="h-4 w-4" />
                                   </button>
                                 )}
-                                {(userProfile?.role === 'maese' || userProfile?.role === 'super_admin') && (
+                                {(userProfile?.role === 'super_admin') && (
                                   <button
                                     onClick={() => downloadVideo(video)}
                                     className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"

@@ -344,7 +344,8 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       // Verificar duplicado en base de datos para la página específica
       const duplicateCheck = await checkVideoDuplicate(file.name, page)
       if (duplicateCheck.isDuplicate) {
-        addToast(`Video "${file.name}" ya existe en ${page === 'escuela' ? 'Escuela' : 'Figuras'}`, 'warning')
+        const pageLabel = page === 'escuela' ? 'Escuela' : (page === 'eventos' ? 'Eventos' : 'Figuras')
+        addToast(`Video "${file.name}" ya existe en ${pageLabel}`, 'warning')
         return null
       }
 

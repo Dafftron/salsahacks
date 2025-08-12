@@ -31,7 +31,8 @@ const VideoPlayer = ({
   resolutions = null, // Array de resoluciones disponibles
   currentResolution = null, // Resolución actual seleccionada
   onResolutionChange = null, // Callback para cambio de resolución
-  videoTitle = 'video' // Título del video para la descarga
+  videoTitle = 'video', // Título del video para la descarga
+  allowDownload = false
 }) => {
   const videoRef = useRef(null)
   const containerRef = useRef(null)
@@ -774,15 +775,17 @@ const VideoPlayer = ({
                 )}
               </div>
 
-              {/* Botón de descarga */}
-              <button
-                onClick={downloadVideo}
-                onTouchStart={activateControls}
-                className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
-                title="Descargar video"
-              >
-                <Download className="w-4 h-4" />
-              </button>
+              {/* Botón de descarga (solo si está permitido) */}
+              {allowDownload && (
+                <button
+                  onClick={downloadVideo}
+                  onTouchStart={activateControls}
+                  className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
+                  title="Descargar video"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              )}
 
               {/* Controles de volumen */}
               <div className="relative">

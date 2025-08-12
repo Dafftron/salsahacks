@@ -606,17 +606,17 @@ export const toggleVideoLike = async (videoId, userId, page = 'figuras') => {
       updatedAt: serverTimestamp()
     })
     
-    // También manejar favoritos automáticamente
+    // También manejar favoritos automáticamente (comportamiento determinista)
     let favoriteResult = null
     try {
       if (userLikedIndex === -1) {
-        // Si está dando like, agregar a favoritos
-        favoriteResult = await toggleUserFavorite(videoId, userId)
-        console.log('⭐ Video agregado automáticamente a favoritos')
+        // Si está dando like, asegurar que quede en favoritos
+        favoriteResult = await setUserFavorite(videoId, userId, true)
+        console.log('⭐ Video marcado como favorito automáticamente')
       } else {
-        // Si está quitando like, también quitar de favoritos
-        favoriteResult = await toggleUserFavorite(videoId, userId)
-        console.log('⭐ Video removido automáticamente de favoritos')
+        // Si está quitando like, asegurar que se quite de favoritos
+        favoriteResult = await setUserFavorite(videoId, userId, false)
+        console.log('⭐ Video removido de favoritos automáticamente')
       }
     } catch (favoriteError) {
       console.error('⚠️ Error al manejar favoritos automáticamente:', favoriteError)
@@ -703,6 +703,46 @@ export const toggleUserFavorite = async (videoId, userId) => {
     }
   } catch (error) {
     console.error('❌ Error al toggle favorito:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Establecer favorito de forma determinista (sin toggle)
+export const setUserFavorite = async (videoId, userId, shouldBeFavorite) => {
+  try {
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    if (!userDocSnap.exists()) {
+      throw new Error('Usuario no encontrado')
+    }
+
+    const userData = userDocSnap.data()
+    const favorites = userData.favorites || []
+
+    const alreadyFavorite = favorites.includes(videoId)
+    let newFavorites = favorites
+
+    if (shouldBeFavorite && !alreadyFavorite) {
+      newFavorites = [...favorites, videoId]
+    } else if (!shouldBeFavorite && alreadyFavorite) {
+      newFavorites = favorites.filter(id => id !== videoId)
+    }
+
+    if (newFavorites !== favorites) {
+      await updateDoc(userDocRef, {
+        favorites: newFavorites,
+        updatedAt: serverTimestamp()
+      })
+    }
+
+    return {
+      success: true,
+      favorites: newFavorites,
+      isFavorite: shouldBeFavorite,
+      error: null
+    }
+  } catch (error) {
+    console.error('❌ Error al establecer favorito:', error)
     return { success: false, error: error.message }
   }
 }
@@ -1067,8 +1107,8 @@ export const checkVideoDuplicate = async (originalTitle, page = 'figuras') => {
   try {
     console.log('🔍 Verificando duplicado:', originalTitle, 'en página:', page)
     
-    // Determinar la colección correcta según la página
-    const videosCollection = page === 'escuela' ? 'escuela-videos' : 'figuras-videos'
+    // Determinar la colección correcta según la página (usar el mismo mapeo que el resto del sistema)
+    const videosCollection = getVideosCollection(page)
     
     const q = query(
       collection(db, videosCollection),

@@ -9,7 +9,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyBxqEJAHyV4jyeE1-GW-dOeECyLXRAsjiM",
   authDomain: "salsahacks-a9cac.firebaseapp.com",
   projectId: "salsahacks-a9cac",
-  storageBucket: "salsahacks-a9cac.firebasestorage.app",
+  storageBucket: "salsahacks-a9cac.appspot.com",
   messagingSenderId: "934621871243",
   appId: "1:934621871243:web:9107fa3b61d9b9928fa88e"
 };

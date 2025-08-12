@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
 import { ref, getDownloadURL } from 'firebase/storage'
 import { storage } from '../../services/firebase/config'
 import { X, Download, Video, Settings, Check, AlertCircle, Loader, Zap, Archive } from 'lucide-react'
 import VideoCombiner from '../../services/video/videoCombiner'
 
 const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
+  const { userProfile } = useAuth()
+  const isSuperAdmin = userProfile?.role === 'super_admin'
   const [format, setFormat] = useState('mp4')
   const [resolution, setResolution] = useState('4k')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -156,6 +159,10 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
 
   // Manejar descarga optimizada con máxima calidad
   const handleDownload = async () => {
+    if (!isSuperAdmin) {
+      setError('Solo Super Admin puede descargar')
+      return
+    }
     if (!video) {
       setError('No hay video para descargar')
       return
@@ -192,6 +199,10 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
 
   // Descargar ZIP con los videos fuente (alternativa offline)
   const handleDownloadZip = async () => {
+    if (!isSuperAdmin) {
+      setError('Solo Super Admin puede descargar')
+      return
+    }
     try {
       if (!video?.videos || !Array.isArray(video.videos) || video.videos.length === 0) {
         setError('No hay videos para empaquetar')
@@ -284,6 +295,7 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
   }
 
   const handleDownloadFile = () => {
+    if (!isSuperAdmin) return
     if (downloadUrl) {
       const link = document.createElement('a')
       link.href = downloadUrl
@@ -516,7 +528,8 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
           {!isProcessing && !downloadUrl && !isAnalyzing && (
             <button
               onClick={handleDownload}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2 font-semibold"
+              disabled={!isSuperAdmin}
+              className={`flex-1 py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 font-semibold ${isSuperAdmin ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
             >
               <Zap className="h-4 w-4" />
               <span>{video?.videos ? 'Descargar ZIP (videos separados)' : 'Descargar Video'}</span>
@@ -526,7 +539,8 @@ const DownloadModal = ({ isOpen, onClose, video, onDownloadComplete }) => {
           {downloadUrl && (
             <button
               onClick={handleDownloadFile}
-              className="flex-1 bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 px-4 rounded-lg hover:from-green-700 hover:to-teal-700 transition-all duration-200 flex items-center justify-center space-x-2 font-semibold"
+              disabled={!isSuperAdmin}
+              className={`flex-1 py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2 font-semibold ${isSuperAdmin ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white hover:from-green-700 hover:to-teal-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
             >
               <Download className="h-4 w-4" />
               <span>Descargar MP4 ({resolution.toUpperCase()})</span>

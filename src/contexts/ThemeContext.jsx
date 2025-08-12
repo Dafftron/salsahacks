@@ -11,12 +11,14 @@ export const useTheme = () => {
 }
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState('salsa')
+  const [theme, setTheme] = useState('light')
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'salsa'
-    setTheme(savedTheme)
-    document.documentElement.setAttribute('data-theme', savedTheme)
+    const savedTheme = localStorage.getItem('theme') || 'light'
+    const allowedThemes = ['light', 'dark', 'gray']
+    const initialTheme = allowedThemes.includes(savedTheme) ? savedTheme : 'light'
+    setTheme(initialTheme)
+    document.documentElement.setAttribute('data-theme', initialTheme)
   }, [])
 
   const changeTheme = (newTheme) => {
@@ -30,7 +32,8 @@ export const ThemeProvider = ({ children }) => {
     changeTheme,
     isDark: theme === 'dark',
     isLight: theme === 'light',
-    isSalsa: theme === 'salsa'
+    isSalsa: theme === 'salsa',
+    isGray: theme === 'gray'
   }
 
   return (

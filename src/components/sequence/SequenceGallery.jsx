@@ -1,6 +1,7 @@
 // 🎬 COMPONENTE GALERÍA DE SECUENCIAS - SALSAHACKS V2.0
 
 import React, { useState } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
 import { 
   Play, 
   Edit3, 
@@ -28,6 +29,8 @@ const SequenceGallery = ({
   isFullWidth = false,
   style = 'salsa' // Añadir prop style para usar el estilo correcto
 }) => {
+  const { userProfile } = useAuth()
+  const isSuperAdmin = userProfile?.role === 'super_admin'
   const [toasts, setToasts] = useState([])
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, sequence: null })
   
@@ -69,6 +72,10 @@ const SequenceGallery = ({
 
   const handleDownloadSequence = (sequence) => {
     try {
+      if (!isSuperAdmin) {
+        addToast('Solo Super Admin puede descargar', 'error')
+        return
+      }
       if (onDownloadSequence) {
         onDownloadSequence(sequence)
         addToast('Abriendo opciones de descarga')
@@ -268,7 +275,8 @@ const SequenceGallery = ({
                   <div className={`flex items-center space-x-2 ${getSequenceConfig(isFullWidth).compact ? 'w-full justify-center' : ''}`}>
                     <button
                       onClick={() => handleDownloadSequence(sequence)}
-                      className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
+                      disabled={!isSuperAdmin}
+                      className={`p-1 rounded transition-colors duration-200 ${isSuperAdmin ? 'text-gray-400 hover:text-green-500 hover:bg-green-50' : 'text-gray-300 cursor-not-allowed'}`}
                       title="Descargar secuencia"
                     >
                       <Download className={`${getSequenceConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />

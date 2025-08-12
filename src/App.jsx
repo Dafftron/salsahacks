@@ -38,7 +38,7 @@ function AppContent() {
   const isEventosPage = location.pathname === '/eventos'
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-salsa-light to-white">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       <Navigation />
       <main className={isFigurasPage || isEscuelaPage || isEstudiosPage || isEventosPage ? 'w-full' : 'container mx-auto px-4 py-8'}>
         <Suspense fallback={<LoadingSpinner />}>

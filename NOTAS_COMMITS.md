@@ -1,4 +1,13 @@
 ### 🛠️ COMMIT: Fix móvil paneo lateral + cards responsivas - 2025-08-12  [deploy]
+### 🔒 COMMIT: Descargas restringidas solo a Super Admin - 2025-08-12
+- Archivos: `src/constants/roles.js`, `src/pages/EventosPage.jsx`, `src/pages/EscuelaPage.jsx`, `src/pages/FigurasPage.jsx`, `src/components/video/VideoPlayer.jsx`, `src/components/video/VideoDownloadModal.jsx`, `src/components/video/DownloadModal.jsx`, `src/components/sequence/SequenceGallery.jsx`, `src/components/sequence/SequenceVideoPlayer.jsx`
+- Cambios:
+  - Permiso `DOWNLOAD_VIDEOS` limitado a `super_admin`.
+  - Botones/acciones de descarga visibles y operativos solo para `super_admin` en páginas y modales.
+  - Reproductores (`VideoPlayer`, `SequenceVideoPlayer`) ocultan el control de descarga a no-superadmin.
+- Impacto:
+  - Se elimina la capacidad de descarga para todos los roles excepto Super Admin a nivel de UI y lógica de cliente.
+
 - Archivos: `src/index.css`, `src/components/gallery/VideoGridRenderer.jsx`
 - Cambios:
   - Bloqueado overflow horizontal global en `html, body, #root` y `overscroll-behavior-x: none` para eliminar paneo a la derecha en móvil.

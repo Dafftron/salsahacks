@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useAuth } from '../../contexts/AuthContext'
 import { X, Download, AlertCircle, CheckCircle, Loader } from 'lucide-react'
 import VideoCombiner from '../../services/video/videoCombiner'
 
@@ -8,6 +9,8 @@ const VideoDownloadModal = ({
   videos, 
   sequenceName = 'Secuencia' 
 }) => {
+  const { userProfile } = useAuth()
+  const isSuperAdmin = userProfile?.role === 'super_admin'
   const [progress, setProgress] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState(null)
@@ -26,6 +29,10 @@ const VideoDownloadModal = ({
   }, [isOpen, videos])
 
   const handleDownload = async () => {
+    if (!isSuperAdmin) {
+      setError('Solo Super Admin puede descargar')
+      return
+    }
     if (!videos || videos.length === 0) {
       setError('No hay videos para combinar')
       return
@@ -65,6 +72,7 @@ const VideoDownloadModal = ({
   }
 
   const handleDownloadFile = () => {
+    if (!isSuperAdmin) return
     if (downloadUrl) {
       const link = document.createElement('a')
       link.href = downloadUrl
@@ -195,7 +203,8 @@ const VideoDownloadModal = ({
           {!isProcessing && !downloadUrl && (
             <button
               onClick={handleDownload}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+              disabled={!isSuperAdmin}
+              className={`flex-1 py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 ${isSuperAdmin ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
             >
               <Download className="h-4 w-4" />
               <span>Combinar Videos</span>
@@ -205,7 +214,8 @@ const VideoDownloadModal = ({
           {downloadUrl && (
             <button
               onClick={handleDownloadFile}
-              className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+              disabled={!isSuperAdmin}
+              className={`flex-1 py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 ${isSuperAdmin ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
             >
               <Download className="h-4 w-4" />
               <span>Descargar MP4</span>

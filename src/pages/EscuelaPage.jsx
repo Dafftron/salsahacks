@@ -327,9 +327,9 @@ const EscuelaPage = () => {
       return
     }
 
-    // Solo maestros y super admin pueden descargar
-    if (userProfile.role !== 'maese' && userProfile.role !== 'super_admin') {
-      addToast('❌ Solo los maestros pueden descargar videos', 'error')
+    // Solo Super Admin puede descargar
+    if (userProfile.role !== 'super_admin') {
+      addToast('❌ Solo Super Admin puede descargar videos', 'error')
       return
     }
 
@@ -1098,7 +1098,7 @@ const EscuelaPage = () => {
                             onLike={() => handleVideoLike(video)}
                         onEdit={() => openEditModal(video)}
                         onDelete={() => openDeleteModal(video)}
-                        onDownload={userProfile?.role === 'maese' || userProfile?.role === 'super_admin' ? () => downloadVideo(video) : undefined}
+                         onDownload={userProfile?.role === 'super_admin' ? () => downloadVideo(video) : undefined}
                             onPlay={() => handlePlayVideo(video)}
                             onToggleStudy={user ? () => handleToggleStudy(video) : undefined}
                             onToggleCompleted={user ? () => handleToggleCompleted(video) : undefined}
@@ -1162,7 +1162,7 @@ const EscuelaPage = () => {
                 </button>
               )}
 
-              {(userProfile?.role === 'maese' || userProfile?.role === 'super_admin') && (
+              {(userProfile?.role === 'super_admin') && (
                 <button
                   onClick={() => {
                     downloadVideo(video)

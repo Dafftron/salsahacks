@@ -13,6 +13,7 @@ import {
   Download,
   Settings
 } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
 
 const SequenceVideoPlayer = ({ 
   videos, 
@@ -22,6 +23,8 @@ const SequenceVideoPlayer = ({
   loop = false,
   muted = false
 }) => {
+  const { userProfile } = useAuth()
+  const isSuperAdmin = userProfile?.role === 'super_admin'
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(muted)
@@ -671,14 +674,16 @@ const SequenceVideoPlayer = ({
                  )}
               </div>
 
-              {/* Botón de descarga */}
-              <button
-                onClick={downloadVideo}
-                className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
-                title="Descargar video"
-              >
-                <Download className="w-4 h-4" />
-              </button>
+              {/* Botón de descarga (solo Super Admin) */}
+              {isSuperAdmin && (
+                <button
+                  onClick={downloadVideo}
+                  className="p-2 rounded-full bg-white/20 text-white hover:bg-white/30 transition-colors z-10"
+                  title="Descargar video"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              )}
 
               {/* Controles de volumen */}
               <div className="relative">
