@@ -8,6 +8,13 @@
 - Impacto:
   - Se elimina la capacidad de descarga para todos los roles excepto Super Admin a nivel de UI y lógica de cliente.
 
+### 🧩 PLAN: Descarga segura con Cloud Function (próximo) - 2025-08-12
+- Objetivo: emitir enlaces firmados de Firebase Storage solo para `super_admin`, evitando descargas aun con URL directa.
+- Enfoque:
+  - Cloud Function HTTPS `getDownloadLink`: valida `auth.token.role === 'super_admin'` y devuelve URL firmada temporal.
+  - UI: sustituir `getDownloadURL` directo por llamada a la función cuando se requiera descarga.
+  - Reglas: mantener `allow read: if request.auth != null` para streaming; delegar descarga a la función.
+
 - Archivos: `src/index.css`, `src/components/gallery/VideoGridRenderer.jsx`
 - Cambios:
   - Bloqueado overflow horizontal global en `html, body, #root` y `overscroll-behavior-x: none` para eliminar paneo a la derecha en móvil.
