@@ -27,6 +27,20 @@
 - Impacto:
   - Categorías de Talleres simplificadas según requerimiento.
 
+### 🏷️ COMMIT: Congresos con categorías detalladas (Año/Mes/Día/Nombre/Estilo/Nivel/Profesores) - 2025-08-12
+- Archivos: `src/constants/categoryStructure.js`, `src/pages/CategoriesPage.jsx`
+- Cambios:
+  - `eventos > congresos` ahora incluye:
+    - Año: 2020..2030
+    - Mes: Enero..Diciembre
+    - Día: 1..31
+    - Nombre: SDX, Salsander, Burgos, Atenas, Budapest
+    - Estilo: Salsa, Bachata, Pasitos, Salsa cubana, Mambo
+    - Nivel: Inicio, Intermedio I, Intermedio II, Intermedio III, Avanzado
+    - Profesores: Talipo, Panagiotis y Myrto
+- Impacto:
+  - Filtros de Congresos alineados con los criterios solicitados.
+
 ### 🔧 COMMIT: Fix superposición de cards en EscuelaPage - 2025-08-11  
 - Archivos: `src/pages/EscuelaPage.jsx`  
 - Cambios:  

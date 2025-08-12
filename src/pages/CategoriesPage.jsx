@@ -188,25 +188,40 @@ const CategoriesPage = () => {
           icon: Calendar,
           color: 'eventos-congresos',
           categories: {
-            tipo: {
-              name: 'TIPO DE EVENTO',
-              color: 'green',
-            tags: ['Congreso', 'Festival', 'Encuentro', 'Competición', 'Fiesta', 'oculto']
-            },
-            ubicacion: {
-              name: 'UBICACIÓN',
+            anio: {
+              name: 'AÑO',
               color: 'blue',
-              tags: ['Madrid', 'Barcelona', 'Valencia', 'Sevilla', 'Bilbao']
+              tags: ['2020','2021','2022','2023','2024','2025','2026','2027','2028','2029','2030']
+            },
+            mes: {
+              name: 'MES',
+              color: 'green',
+              tags: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+            },
+            dia: {
+              name: 'DÍA',
+              color: 'orange',
+              tags: ['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21','22','23','24','25','26','27','28','29','30','31']
+            },
+            nombre: {
+              name: 'NOMBRE',
+              color: 'purple',
+              tags: ['SDX','Salsander','Burgos','Atenas','Budapest']
+            },
+            estilo: {
+              name: 'ESTILO',
+              color: 'pink',
+              tags: ['Salsa','Bachata','Pasitos','Salsa cubana','Mambo']
             },
             nivel: {
               name: 'NIVEL',
-              color: 'orange',
-              tags: ['Todos los niveles', 'Intermedio-Avanzado', 'Solo avanzado']
+              color: 'red',
+              tags: ['Inicio','Intermedio I','Intermedio II','Intermedio III','Avanzado']
             },
-            fecha: {
-              name: 'FECHA',
-              color: 'purple',
-              tags: ['Este mes', 'Próximo mes', 'Este trimestre', 'Este año']
+            profesores: {
+              name: 'PROFESORES',
+              color: 'yellow',
+              tags: ['Talipo','Panagiotis y Myrto']
             }
           }
         }
