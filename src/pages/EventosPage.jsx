@@ -332,7 +332,15 @@ const EventosPage = () => {
   }
 
   // Reproducir
-  const handlePlayVideo = (video) => { setSelectedVideo(video); setShowVideoPlayer(true) }
+  const handlePlayVideo = async (video) => {
+    setSelectedVideo(video); setShowVideoPlayer(true)
+    try {
+      if (user?.uid) {
+        const { setUserLastWatched } = await import('../services/firebase/firestore')
+        await setUserLastWatched(user.uid, video, 'eventos')
+      }
+    } catch (_) {}
+  }
 
   return (
     <div className="min-h-screen bg-white">

@@ -314,9 +314,15 @@ const EscuelaPage = () => {
   }
 
   // Función para reproducir video
-  const handlePlayVideo = (video) => {
+  const handlePlayVideo = async (video) => {
     setSelectedVideo(video)
     setShowVideoPlayer(true)
+    try {
+      if (user?.uid) {
+        const { setUserLastWatched } = await import('../services/firebase/firestore')
+        await setUserLastWatched(user.uid, video, 'escuela')
+      }
+    } catch (_) {}
   }
 
   // Función para descargar video

@@ -1041,6 +1041,45 @@ export const getUserStudy = async (userId) => {
   }
 }
 
+// ===== ÚLTIMO VIDEO VISTO =====
+export const setUserLastWatched = async (userId, video, page = 'figuras') => {
+  try {
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    if (!userDocSnap.exists()) {
+      throw new Error('Usuario no encontrado')
+    }
+    const payload = {
+      lastWatched: {
+        id: video?.id,
+        title: video?.title || video?.originalTitle || 'Video',
+        thumbnailUrl: video?.thumbnailUrl || null,
+        page,
+        watchedAt: new Date()
+      },
+      updatedAt: serverTimestamp()
+    }
+    await updateDoc(userDocRef, payload)
+    return { success: true, error: null }
+  } catch (error) {
+    console.error('❌ Error al guardar último visto:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export const getUserLastWatched = async (userId) => {
+  try {
+    const userDocRef = doc(db, COLLECTIONS.USERS, userId)
+    const userDocSnap = await getDoc(userDocRef)
+    if (!userDocSnap.exists()) return { lastWatched: null, error: 'Usuario no encontrado' }
+    const data = userDocSnap.data()
+    return { lastWatched: data?.lastWatched || null, error: null }
+  } catch (error) {
+    console.error('❌ Error al obtener último visto:', error)
+    return { lastWatched: null, error: error.message }
+  }
+}
+
 export const deleteVideoDocument = async (videoId, page = 'figuras') => {
   try {
     console.log('🗑️ Eliminando video de Firestore:', videoId)

@@ -23,6 +23,7 @@ const HomePage = () => {
   const [featured, setFeatured] = useState([])
   const [continueStudy, setContinueStudy] = useState([])
   const [quick, setQuick] = useState({ uploads24h: 0, topStyle: '-', sequencesTotal: 0, avgSeq: 0, topVideo: '-' })
+  const [lastWatched, setLastWatched] = useState(null)
 
   useEffect(() => {
     let mounted = true
@@ -95,6 +96,22 @@ const HomePage = () => {
       }
     }
     loadContinue()
+    return () => { mounted = false }
+  }, [user])
+
+  useEffect(() => {
+    let mounted = true
+    const loadLastWatched = async () => {
+      try {
+        if (!user) { setLastWatched(null); return }
+        const { getUserLastWatched } = await import('../services/firebase/firestore')
+        const res = await getUserLastWatched(user.uid)
+        if (mounted) setLastWatched(res.lastWatched || null)
+      } catch (error) {
+        if (mounted) setLastWatched(null)
+      }
+    }
+    loadLastWatched()
     return () => { mounted = false }
   }, [user])
   
@@ -237,6 +254,25 @@ const HomePage = () => {
           <div className="card p-4"><div className="text-xs text-gray-500">Prom. videos por secuencia</div><div className="text-2xl font-bold text-gray-800">{quick.avgSeq}</div></div>
           <div className="card p-4"><div className="text-xs text-gray-500">Top por likes</div><div className="text-sm font-medium text-gray-800 line-clamp-1">{quick.topVideo}</div></div>
         </div>
+
+        {user && lastWatched && (
+          <div className="mt-8">
+            <h3 className="text-xl font-semibold text-gray-800 mb-3">Último video visto</h3>
+            <div className="card p-4 flex items-center gap-4">
+              <div className="w-32 aspect-video bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                {lastWatched.thumbnailUrl ? (
+                  <img src={lastWatched.thumbnailUrl} alt={lastWatched.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="text-gray-400 text-sm">Sin miniatura</div>
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="text-sm text-gray-500 uppercase">{lastWatched.page}</div>
+                <div className="text-lg font-medium text-gray-800">{lastWatched.title}</div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Sección Últimos Videos */}

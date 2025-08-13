@@ -455,10 +455,16 @@ const FigurasPage = () => {
   }
   
   // Función para reproducir video individual
-  const handlePlayVideo = (video) => {
+  const handlePlayVideo = async (video) => {
     setSelectedVideo(video)
     setShowVideoPlayer(true)
     addToast(`🎬 Reproduciendo: ${video.title}`, 'info')
+    try {
+      if (user?.uid) {
+        const { setUserLastWatched } = await import('../services/firebase/firestore')
+        await setUserLastWatched(user.uid, video, 'figuras')
+      }
+    } catch (_) {}
   }
   
   // Función para cerrar el reproductor
