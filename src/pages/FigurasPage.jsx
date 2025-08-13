@@ -1484,7 +1484,7 @@ const FigurasPage = () => {
                {filteredVideos.map((video) => (
                 <div 
                   key={video.id} 
-                  className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${
+                  className={`bg-white rounded-lg shadow-md border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${
                     video.isCompleted
                       ? 'border-2 border-green-500 ring-2 ring-green-300'
                       : isBuilderOpen && !isVideoCompatible(video)
@@ -1493,7 +1493,7 @@ const FigurasPage = () => {
                   }`}
                 >
                   <div className="relative group">
-                    <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
+                    <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden rounded-t-lg flex items-center justify-center`}>
                       {video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? (
                         <img
                           src={video.thumbnailUrl}
@@ -1996,18 +1996,12 @@ const FigurasPage = () => {
                       })()}
                     
                     {/* Barra de acciones compactas (como antes) */}
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <div className="flex items-center space-x-2">
+                   <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium">{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <button 
-                          onClick={() => handlePlayVideo(video)}
-                          className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
-                          title="Reproducir video"
-                        >
-                          <Play className="h-4 w-4" />
-                        </button>
+                      <div className="flex flex-wrap items-center gap-2 justify-end">
+                        {/* Reproducir solo con el thumbnail */}
                         <button 
                           onClick={() => handleVideoLike(video)}
                           className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
@@ -2379,8 +2373,38 @@ Esta acción NO se puede deshacer.`}
                    <div className="text-xs text-gray-500">{((selectedVideo?.fileSize || 0) / (1024 * 1024)).toFixed(2)} MB</div>
                  </div>
 
-                 {/* Botonera de acciones */}
-                 <div className="flex flex-wrap items-center justify-end gap-2">
+                {/* Tags + Botonera de acciones */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    {(() => {
+                      const orderedTags = getOrderedTags(selectedVideo || {})
+                      const orderedIniciales = getOrderedTagsIniciales(selectedVideo || {})
+                      const orderedFinales = getOrderedTagsFinales(selectedVideo || {})
+                      if ((orderedTags.length + orderedIniciales.length + orderedFinales.length) > 0) {
+                        return (
+                          <div className="flex flex-wrap gap-2 items-center">
+                            {orderedTags.map(({ tag, categoryKey, color }) => (
+                              <span key={`${categoryKey}-${tag}`} className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}>{tag}</span>
+                            ))}
+                            {orderedIniciales.length > 0 && (
+                              <span className="text-xs text-gray-500 mx-1">Inicio:</span>
+                            )}
+                            {orderedIniciales.map(({ tag, categoryKey, color }) => (
+                              <span key={`ini-${categoryKey}-${tag}`} className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}>{tag}</span>
+                            ))}
+                            {orderedFinales.length > 0 && (
+                              <span className="text-xs text-gray-500 mx-1">Fin:</span>
+                            )}
+                            {orderedFinales.map(({ tag, categoryKey, color }) => (
+                              <span key={`fin-${categoryKey}-${tag}`} className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}>{tag}</span>
+                            ))}
+                          </div>
+                        )
+                      }
+                      return null
+                    })()}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
                    <button
                      onClick={() => {
                        setSelectedVideo(prev => ({ ...prev, userLiked: !prev?.userLiked, likes: (prev?.likes || 0) + (prev?.userLiked ? -1 : 1) }))
@@ -2480,7 +2504,7 @@ Esta acción NO se puede deshacer.`}
                   >
                     <Share2 className="h-4 w-4" />
                   </button>
-                 </div>
+                  </div>
                </div>
              </div>
            </div>

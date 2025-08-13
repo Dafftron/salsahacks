@@ -169,10 +169,10 @@ const EstudiosPage = () => {
                     renderCard={(video) => (
                       <div
                         key={video.id}
-                        className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${video.isCompleted ? 'border-2 border-green-500 ring-2 ring-green-300' : 'border-gray-100'}`}
+                        className={`bg-white rounded-lg shadow-md border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${video.isCompleted ? 'border-2 border-green-500 ring-2 ring-green-300' : 'border-gray-100'}`}
                       >
                         <div className="relative">
-                          <div className={`w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
+                          <div className={`w-full aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden rounded-t-lg flex items-center justify-center`}>
                             {video.thumbnailUrl && (
                               <img src={video.thumbnailUrl} alt={video.title} className="w-full h-full object-cover" loading="lazy" />
                             )}

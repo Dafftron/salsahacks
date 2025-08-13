@@ -1,7 +1,7 @@
 // 🎴 ACCIONES COMPACTAS PARA CARDS - SALSAHACKS V2.0
 
 import React from 'react'
-import { Heart, Edit, Trash2, Plus, Download, Play } from 'lucide-react'
+import { Heart, Edit, Trash2, Plus, Download } from 'lucide-react'
 
 const CompactCardActions = ({ 
   video, 
@@ -23,14 +23,7 @@ const CompactCardActions = ({
   if (type === 'video') {
     return (
       <div className="flex flex-wrap items-center justify-center gap-1 mt-2">
-        {/* Botón de reproducción */}
-        <button
-          onClick={onPlay}
-          className="p-1 text-gray-400 hover:text-blue-500 transition-colors rounded"
-          title="Reproducir"
-        >
-          <Play className="h-3 w-3" />
-        </button>
+        {/* Reproducción solo desde el thumbnail */}
         
         {/* Botón de like */}
         <button
@@ -131,14 +124,7 @@ const CompactCardActions = ({
   // Para secuencias
   return (
     <div className="flex flex-wrap items-center justify-center gap-1 mt-2">
-      {/* Botón de reproducción */}
-      <button
-        onClick={onPlay}
-        className="p-1 text-gray-400 hover:text-blue-500 transition-colors rounded"
-        title="Reproducir secuencia"
-      >
-        <Play className="h-3 w-3" />
-      </button>
+      {/* Reproducción de secuencia solo desde el thumbnail */}
       
       {/* Botón de descargar */}
       <button
