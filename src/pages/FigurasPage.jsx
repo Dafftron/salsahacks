@@ -108,6 +108,7 @@ const FigurasPage = () => {
   // Estados para reproductor de secuencias
   const [selectedSequence, setSelectedSequence] = useState(null)
   const [showSequencePlayer, setShowSequencePlayer] = useState(false)
+  const [lastWatched, setLastWatched] = useState(null)
   
   // Estados para el sistema de chips y filtros
   const [activeCategoryChips, setActiveCategoryChips] = useState([])
@@ -477,6 +478,31 @@ const FigurasPage = () => {
   const handleCloseSequencePlayer = () => {
     setShowSequencePlayer(false)
     setSelectedSequence(null)
+  }
+
+  // Cargar último visto del usuario
+  useEffect(() => {
+    let mounted = true
+    const load = async () => {
+      try {
+        if (!user?.uid) { setLastWatched(null); return }
+        const { getUserLastWatched } = await import('../services/firebase/firestore')
+        const res = await getUserLastWatched(user.uid)
+        if (mounted) setLastWatched(res.lastWatched || null)
+      } catch (_) { if (mounted) setLastWatched(null) }
+    }
+    load()
+    return () => { mounted = false }
+  }, [user])
+
+  const isRecentLastWatched = (lw) => {
+    try {
+      if (!lw?.watchedAt) return false
+      const toMs = (t) => (t?.toMillis ? t.toMillis() : (t instanceof Date ? t.getTime() : new Date(t).getTime()))
+      const watched = toMs(lw.watchedAt)
+      const fourMonthsMs = 4 * 30 * 24 * 60 * 60 * 1000
+      return Date.now() - watched <= fourMonthsMs
+    } catch { return false }
   }
 
 
@@ -1433,6 +1459,11 @@ const FigurasPage = () => {
                             : 'bg-red-500 text-white'
                         }`}>
                           {isVideoCompatible(video) ? '✅' : '❌'}
+                        </div>
+                      )}
+                      {lastWatched && isRecentLastWatched(lastWatched) && lastWatched.id === video.id && (
+                        <div className="absolute top-2 left-2 bg-pink-600 text-white px-2 py-1 rounded text-xs font-medium shadow">
+                          Visto recientemente
                         </div>
                       )}
                     </div>

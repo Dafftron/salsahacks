@@ -33,6 +33,7 @@ const EventosPage = () => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, video: null })
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [showVideoPlayer, setShowVideoPlayer] = useState(false)
+  const [lastWatched, setLastWatched] = useState(null)
   
   // Estado UI adicional (alineado con EscuelaPage)
   const loadFilterPreference = (key, defaultValue) => {
@@ -79,6 +80,31 @@ const EventosPage = () => {
       setSelectedTab(selectedStyle)
     }
   }, [selectedStyle])
+  // Cargar último visto del usuario
+  useEffect(() => {
+    let mounted = true
+    const load = async () => {
+      try {
+        if (!user?.uid) { setLastWatched(null); return }
+        const { getUserLastWatched } = await import('../services/firebase/firestore')
+        const res = await getUserLastWatched(user.uid)
+        if (mounted) setLastWatched(res.lastWatched || null)
+      } catch (_) { if (mounted) setLastWatched(null) }
+    }
+    load()
+    return () => { mounted = false }
+  }, [user])
+
+  const isRecentLastWatched = (lw) => {
+    try {
+      if (!lw?.watchedAt) return false
+      const toMs = (t) => (t?.toMillis ? t.toMillis() : (t instanceof Date ? t.getTime() : new Date(t).getTime()))
+      const watched = toMs(lw.watchedAt)
+      const fourMonthsMs = 4 * 30 * 24 * 60 * 60 * 1000
+      return Date.now() - watched <= fourMonthsMs
+    } catch { return false }
+  }
+
 
   // Asegurar que el estilo seleccionado sea válido para eventos
   useEffect(() => {
@@ -640,6 +666,11 @@ const EventosPage = () => {
                           <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
                             {video.resolution && video.resolution !== 'Unknown' ? video.resolution : 'HD'}
                           </div>
+                          {lastWatched && isRecentLastWatched(lastWatched) && lastWatched.id === video.id && (
+                            <div className="absolute top-2 left-2 bg-pink-600 text-white px-2 py-1 rounded text-xs font-medium shadow">
+                              Visto recientemente
+                            </div>
+                          )}
                           {/* Botón Play visual */}
                           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 group">
                             <div className="w-16 h-16 rounded-full bg-white bg-opacity-90 flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-200">

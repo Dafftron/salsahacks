@@ -114,6 +114,7 @@ const EscuelaPage = () => {
   // Estados para reproductor de video individual
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [showVideoPlayer, setShowVideoPlayer] = useState(false)
+  const [lastWatched, setLastWatched] = useState(null)
   
   // Estados para reproductor de secuencias
   const [selectedSequence, setSelectedSequence] = useState(null)
@@ -129,6 +130,31 @@ const EscuelaPage = () => {
     console.log('🔍 Estado inicial de showHiddenVideos:', value)
     return value
   })
+  // Cargar último visto del usuario
+  useEffect(() => {
+    let mounted = true
+    const load = async () => {
+      try {
+        if (!user?.uid) { setLastWatched(null); return }
+        const { getUserLastWatched } = await import('../services/firebase/firestore')
+        const res = await getUserLastWatched(user.uid)
+        if (mounted) setLastWatched(res.lastWatched || null)
+      } catch (_) { if (mounted) setLastWatched(null) }
+    }
+    load()
+    return () => { mounted = false }
+  }, [user])
+
+  const isRecentLastWatched = (lw) => {
+    try {
+      if (!lw?.watchedAt) return false
+      const toMs = (t) => (t?.toMillis ? t.toMillis() : (t instanceof Date ? t.getTime() : new Date(t).getTime()))
+      const watched = toMs(lw.watchedAt)
+      const fourMonthsMs = 4 * 30 * 24 * 60 * 60 * 1000
+      return Date.now() - watched <= fourMonthsMs
+    } catch { return false }
+  }
+
   
 
   
@@ -1030,6 +1056,11 @@ const EscuelaPage = () => {
                         <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-sm font-medium">
                           {video.resolution && video.resolution !== 'Unknown' ? video.resolution : 'HD'}
                       </div>
+                        {lastWatched && isRecentLastWatched(lastWatched) && lastWatched.id === video.id && (
+                          <div className="absolute top-2 left-2 bg-pink-600 text-white px-2 py-1 rounded text-xs font-medium shadow">
+                            Visto recientemente
+                          </div>
+                        )}
                       
                         {/* Botón de play */}
                           <button
