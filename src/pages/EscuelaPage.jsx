@@ -132,6 +132,8 @@ const EscuelaPage = () => {
     console.log('🔍 Estado inicial de showHiddenVideos:', value)
     return value
   })
+  const { user, userProfile } = useAuth()
+
   // Cargar último visto del usuario
   useEffect(() => {
     let mounted = true
@@ -170,7 +172,7 @@ const EscuelaPage = () => {
   
 
   
-  const { user, userProfile } = useAuth()
+  
   const { getVideoConfig, getSequenceConfig } = useCardSize()
 
   
