@@ -20,7 +20,13 @@ const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVi
 
 const EventosPage = () => {
   const { user, userProfile } = useAuth()
-  const [selectedStyle, setSelectedStyle] = useState('talleres')
+  const [selectedStyle, setSelectedStyle] = useState(() => {
+    try {
+      const saved = localStorage.getItem('eventos-filters')
+      const parsed = saved ? JSON.parse(saved) : {}
+      return parsed.selectedTab || parsed.selectedStyle || 'talleres'
+    } catch { return 'talleres' }
+  })
   const { availableStyles, getGradientClasses, categoriesList, getColorClasses } = useCategories('eventos', selectedStyle)
   const { getVideoConfig } = useCardSize()
 
@@ -55,7 +61,7 @@ const EventosPage = () => {
   const [sortDir, setSortDir] = useState(() => loadFilterPreference('sortDir', 'asc'))
   const [showFavorites, setShowFavorites] = useState(() => loadFilterPreference('showFavorites', false))
   const [showHiddenVideos, setShowHiddenVideos] = useState(() => loadFilterPreference('showHiddenVideos', false))
-  const [selectedTab, setSelectedTab] = useState(() => loadFilterPreference('selectedTab', 'talleres')) // 'talleres' | 'congresos'
+  const [selectedTab, setSelectedTab] = useState(() => loadFilterPreference('selectedTab', selectedStyle || 'talleres')) // 'talleres' | 'congresos'
 
   const addToast = (message, type = 'success') => setToasts(prev => [...prev, { id: Date.now(), message, type }])
 
@@ -69,19 +75,13 @@ const EventosPage = () => {
     return () => unsubscribe && unsubscribe()
   }, [])
 
-  // Mantener selectedStyle sincronizado con la pestaña para subidas/edición
+  // One-way sync: pestaña controla estilo (evita loops). Solo si cambió realmente.
   useEffect(() => {
-    if (selectedTab) {
+    if (selectedTab && selectedTab !== selectedStyle) {
       setSelectedStyle(selectedTab)
     }
   }, [selectedTab])
 
-  // Mantener la pestaña sincronizada si el usuario cambia el estilo arriba (chips grandes)
-  useEffect(() => {
-    if ((selectedStyle === 'talleres' || selectedStyle === 'congresos') && selectedStyle !== selectedTab) {
-      setSelectedTab(selectedStyle)
-    }
-  }, [selectedStyle])
   // Cargar último visto del usuario
   useEffect(() => {
     let mounted = true
