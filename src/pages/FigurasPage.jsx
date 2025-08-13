@@ -57,6 +57,7 @@ import {
   checkUserLikedVideo,
   checkUserFavorite
 } from '../services/firebase/firestore'
+import { useLocation } from 'react-router-dom'
 import {
   createSequence,
   getSequencesByStyle,
@@ -109,6 +110,7 @@ const FigurasPage = () => {
   const [selectedSequence, setSelectedSequence] = useState(null)
   const [showSequencePlayer, setShowSequencePlayer] = useState(false)
   const [lastWatched, setLastWatched] = useState(null)
+  const location = useLocation()
   
   // Estados para el sistema de chips y filtros
   const [activeCategoryChips, setActiveCategoryChips] = useState([])
@@ -494,6 +496,18 @@ const FigurasPage = () => {
     load()
     return () => { mounted = false }
   }, [user])
+
+  // Reanudar reproducción si viene ?play=id
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const playId = params.get('play')
+    if (playId && Array.isArray(videos) && videos.length > 0) {
+      const v = videos.find(x => x.id === playId)
+      if (v) {
+        handlePlayVideo(v)
+      }
+    }
+  }, [location.search, videos])
 
   const isRecentLastWatched = (lw) => {
     try {

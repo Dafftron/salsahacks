@@ -270,6 +270,14 @@ const HomePage = () => {
                 <div className="text-sm text-gray-500 uppercase">{lastWatched.page}</div>
                 <div className="text-lg font-medium text-gray-800">{lastWatched.title}</div>
               </div>
+              <div>
+                <a
+                  href={`${lastWatched.page === 'escuela' ? '/escuela' : (lastWatched.page === 'eventos' ? '/eventos' : '/figuras')}?play=${encodeURIComponent(lastWatched.id || '')}`}
+                  className="px-4 py-2 bg-salsa-primary text-white rounded-lg font-medium shadow hover:shadow-md transition"
+                >
+                  Reanudar
+                </a>
+              </div>
             </div>
           </div>
         )}

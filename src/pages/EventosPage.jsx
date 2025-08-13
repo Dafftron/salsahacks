@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Maximize2, Minimize2, Upload, Search, Filter, ChevronDown, ChevronUp, Star, Heart, X, EyeOff, Download, Play, Edit, Trash2, BookOpen, CheckCircle } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import { useAuth } from '../contexts/AuthContext'
@@ -34,6 +35,7 @@ const EventosPage = () => {
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [showVideoPlayer, setShowVideoPlayer] = useState(false)
   const [lastWatched, setLastWatched] = useState(null)
+  const location = useLocation()
   
   // Estado UI adicional (alineado con EscuelaPage)
   const loadFilterPreference = (key, defaultValue) => {
@@ -133,6 +135,16 @@ const EventosPage = () => {
       localStorage.setItem('eventos-filters', JSON.stringify(filters))
     } catch (_) {}
   }, [selectedStyle, selectedTags, searchTerm, showFilters, activeCategoryChips, sortKey, sortDir, showFavorites, showHiddenVideos, selectedTab])
+
+  // Reanudar con ?play=id
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const playId = params.get('play')
+    if (playId && Array.isArray(videos) && videos.length > 0) {
+      const v = videos.find(x => x.id === playId)
+      if (v) handlePlayVideo(v)
+    }
+  }, [location.search, videos])
 
   const handleTagFilter = (tag) => {
     setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])

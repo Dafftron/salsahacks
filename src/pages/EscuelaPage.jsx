@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react'
+import { useLocation } from 'react-router-dom'
 import { 
   Search, 
   Upload, 
@@ -115,6 +116,7 @@ const EscuelaPage = () => {
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [showVideoPlayer, setShowVideoPlayer] = useState(false)
   const [lastWatched, setLastWatched] = useState(null)
+  const location = useLocation()
   
   // Estados para reproductor de secuencias
   const [selectedSequence, setSelectedSequence] = useState(null)
@@ -144,6 +146,16 @@ const EscuelaPage = () => {
     load()
     return () => { mounted = false }
   }, [user])
+
+  // Reanudar con ?play=id
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const playId = params.get('play')
+    if (playId && Array.isArray(videos) && videos.length > 0) {
+      const v = videos.find(x => x.id === playId)
+      if (v) handlePlayVideo(v)
+    }
+  }, [location.search, videos])
 
   const isRecentLastWatched = (lw) => {
     try {
