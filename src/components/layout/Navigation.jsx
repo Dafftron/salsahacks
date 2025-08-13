@@ -16,8 +16,9 @@ const Navigation = () => {
     ...(user ? [
       { path: '/figuras', label: 'Figuras' },
       { path: '/escuela', label: 'Escuela' },
-      { path: '/estudios', label: 'Estudios' },
       { path: '/eventos', label: 'Eventos' },
+      { path: '/musica', label: 'Música' },
+      { path: '/estudios', label: 'Estudios' },
       { path: '/categorias', label: 'Categorías' },
       ...(userProfile?.role === ROLES.SUPER_ADMIN ? [{ path: '/notas', label: 'Notas' }] : [])
     ] : [])
