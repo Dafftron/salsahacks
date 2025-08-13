@@ -1533,9 +1533,22 @@ const FigurasPage = () => {
                       )}
                     </div>
                     
-                                         {/* Botón de reproducción */}
+                     {/* Botón de reproducción */}
                      <button
                        onClick={async () => {
+                         try {
+                           if (user?.uid) {
+                             const { setUserLastWatched } = await import('../services/firebase/firestore')
+                             await setUserLastWatched(user.uid, video, 'figuras')
+                             setLastWatched({
+                               id: video?.id,
+                               title: video?.title || video?.originalTitle || 'Video',
+                               thumbnailUrl: video?.thumbnailUrl || null,
+                               page: 'figuras',
+                               watchedAt: new Date()
+                             })
+                           }
+                         } catch (_) {}
                          try {
                            // Abrir modal de reproducción
                            const modal = document.createElement('div')

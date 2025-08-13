@@ -1745,6 +1745,12 @@ export const subscribeToInbox = (userId, callback) => {
     )
     return onSnapshot(q, (snapshot) => {
       const messages = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }))
+      try {
+        const unread = messages.filter(m => !m.read).length
+        if (!window.__salsahacks__) window.__salsahacks__ = {}
+        window.__salsahacks__.unreadInboxCount = unread
+        window.dispatchEvent(new CustomEvent('inbox:unread', { detail: { unread } }))
+      } catch (_) {}
       callback(messages)
     }, (error) => {
       console.error('❌ Error en suscripción de inbox:', error)

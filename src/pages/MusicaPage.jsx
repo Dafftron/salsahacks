@@ -150,6 +150,16 @@ const MusicaPage = () => {
     }
   }, [videos.length, user])
 
+  // Reanudar con ?play=id (alineado con Escuela/Eventos)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const playId = params.get('play')
+    if (playId && Array.isArray(videos) && videos.length > 0) {
+      const v = videos.find(x => x.id === playId)
+      if (v) handlePlayVideo(v)
+    }
+  }, [location.search, videos])
+
   const addToast = (message, type = 'success') => {
     const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`
     setToasts(prev => [...prev, { id, message, type }])

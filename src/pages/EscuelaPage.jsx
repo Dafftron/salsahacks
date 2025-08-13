@@ -1133,36 +1133,36 @@ const EscuelaPage = () => {
                           </div>
                           <div className="flex items-center space-x-2">
                             <button onClick={() => handlePlayVideo(video)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Reproducir video">
-                              <Play className="h-4 w-4" />
+                              <Play className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                             </button>
                             <button onClick={() => handleVideoLike(video)} className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} title={video.userLiked ? 'Quitar like' : 'Dar like'}>
-                              <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
+                              <Heart className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'} ${video.userLiked ? 'fill-current' : ''}`} />
                               <span className="font-medium">{video.likes || 0}</span>
                             </button>
                             <button onClick={() => handleToggleStudy(video)} className={`transition-colors duration-200 p-1 rounded ${video.isInStudy ? 'text-blue-600 bg-blue-50 ring-2 ring-blue-300' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`} title={video.isInStudy ? 'Quitar de estudios' : 'Añadir a estudios'}>
-                              <BookOpen className="h-4 w-4" />
+                              <BookOpen className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                             </button>
                             <button onClick={() => handleToggleCompleted(video)} className={`transition-colors duration-200 p-1 rounded ${video.isCompleted ? 'text-green-600 bg-green-50 ring-2 ring-green-300' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'}`} title={video.isCompleted ? 'Marcar como pendiente' : 'Marcar como completado'}>
-                              <CheckCircle className="h-4 w-4" />
+                              <CheckCircle className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                             </button>
                             {user && (
                               <button onClick={() => handleToggleHiddenVideo(video)} className={`transition-colors duration-200 p-1 rounded ${video.userHidden ? 'text-orange-600 bg-orange-50 ring-2 ring-orange-300' : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50'}`} title={video.userHidden ? 'Mostrar video' : 'Ocultar video'}>
-                                <EyeOff className="h-4 w-4" />
+                                <EyeOff className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                               </button>
                             )}
                             {(userProfile?.role === 'super_admin') && (
                               <button onClick={() => { downloadVideo(video) }} className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50" title="Descargar video">
-                                <Download className="h-4 w-4" />
+                                <Download className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                               </button>
                             )}
                             <button onClick={() => openEditModal(video)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Editar video">
-                              <Edit className="h-4 w-4" />
+                              <Edit className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                             </button>
                             <button onClick={() => openDeleteModal(video)} className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50" title="Eliminar video">
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                             </button>
                             <button onClick={() => openShareModal(video)} className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50" title="Reenviar a usuario">
-                              <Share2 className="h-4 w-4" />
+                              <Share2 className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
                             </button>
                           </div>
                         </div>
@@ -1231,7 +1231,7 @@ const EscuelaPage = () => {
             </div>
             
             {/* Video Player */}
-            <div className="flex-1 min-h-0 p-4 overflow-y-auto">
+                  <div className="flex-1 min-h-0 p-4 overflow-y-auto">
               <div className="w-full h-[65vh] max-h-[65vh] flex items-center justify-center">
                 <div className="w-full h-full max-w-md">
                   <Suspense fallback={<LoadingSpinner />}>
@@ -1359,6 +1359,13 @@ const EscuelaPage = () => {
                   >
                     <Edit className="h-4 w-4" />
                   </button>
+                    <button
+                      onClick={() => openShareModal(selectedVideo)}
+                      className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50"
+                      title="Reenviar a usuario"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               </div>

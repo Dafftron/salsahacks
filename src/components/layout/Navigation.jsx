@@ -97,9 +97,15 @@ const Navigation = () => {
               )}
             </button>
 
-            {/* Inbox */}
+            {/* Inbox con badge */}
             <Link to="/inbox" className="p-2 transition-colors relative" style={{ color: 'var(--text-secondary)' }}>
               <Inbox className="h-5 w-5" />
+              {/* badge dinámico usando window event */}
+              {typeof window !== 'undefined' && window.__salsahacks__?.unreadInboxCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-pink-600 text-white text-[10px] leading-none rounded-full h-4 min-w-4 px-1 flex items-center justify-center">
+                  {Math.min(window.__salsahacks__.unreadInboxCount, 9)}
+                </span>
+              )}
             </Link>
 
             {/* Favorites */}
