@@ -15,6 +15,14 @@
         { "fieldPath": "style", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "musica-videos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "style", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
