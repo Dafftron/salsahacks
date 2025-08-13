@@ -37,6 +37,8 @@ export const useCategories = (page, selectedStyle) => {
       // Colores específicos de estilos de baile
       salsa: 'bg-orange-500 text-white',
       bachata: 'bg-emerald-500 text-white',
+      rumba: 'bg-rose-500 text-white',
+      afro: 'bg-amber-600 text-white',
       merengue: 'bg-cyan-500 text-white',
       zouk: 'bg-violet-500 text-white',
       kizomba: 'bg-amber-500 text-white',
@@ -83,6 +85,8 @@ export const useCategories = (page, selectedStyle) => {
       // Fallback por color genérico
       salsa: 'from-orange-400 to-pink-500',
       bachata: 'from-emerald-400 to-teal-600',
+      rumba: 'from-rose-400 to-red-600',
+      afro: 'from-amber-500 to-red-600',
       merengue: 'from-cyan-400 to-blue-600',
       zouk: 'from-violet-400 to-indigo-600',
       kizomba: 'from-amber-400 to-orange-600'

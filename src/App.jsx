@@ -13,7 +13,8 @@ const HomePage = lazy(() => import('./pages/HomePage'))
 const NotasPage = lazy(() => import('./pages/NotasPage'))
 const CategoriesPage = lazy(() => import('./pages/CategoriesPage'))
 const FigurasPage = lazy(() => import('./pages/FigurasPage'))
-const EscuelaPage = lazy(() => import('./pages/EscuelaPage'))
+ const EscuelaPage = lazy(() => import('./pages/EscuelaPage'))
+ const MusicaPage = lazy(() => import('./pages/MusicaPage'))
 const EventosPage = lazy(() => import('./pages/EventosPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
 const AuthPage = lazy(() => import('./pages/AuthPage'))
@@ -36,11 +37,12 @@ function AppContent() {
   const isEscuelaPage = location.pathname === '/escuela'
   const isEstudiosPage = location.pathname === '/estudios'
   const isEventosPage = location.pathname === '/eventos'
+  const isMusicaPage = location.pathname === '/musica'
   
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       <Navigation />
-      <main className={isFigurasPage || isEscuelaPage || isEstudiosPage || isEventosPage ? 'w-full' : 'container mx-auto px-4 py-8'}>
+      <main className={isFigurasPage || isEscuelaPage || isEstudiosPage || isEventosPage || isMusicaPage ? 'w-full' : 'container mx-auto px-4 py-8'}>
         <Suspense fallback={<LoadingSpinner />}>
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -78,6 +80,11 @@ function AppContent() {
                 <EscuelaPage />
               </ProtectedRoute>
             } />
+             <Route path="/musica" element={
+               <ProtectedRoute>
+                 <MusicaPage />
+               </ProtectedRoute>
+             } />
             <Route path="/estudios" element={
               <ProtectedRoute>
                 <EstudiosPage />

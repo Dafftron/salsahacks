@@ -162,6 +162,196 @@ const CategoriesPage = () => {
         }
       }
     },
+    musica: {
+      name: 'MÚSICA',
+      icon: Music,
+      styles: {
+        salsa: {
+          name: 'SALSA',
+          icon: Music,
+          color: 'salsa',
+          categories: {
+            subestilo: {
+              name: 'SUBESTILO/SUBGÉNERO',
+              color: 'orange',
+              tags: ['Clásico', 'Romántica', 'Timba', 'Descarga', 'Mambo', 'Dura / NY style', 'Caleña', 'Puertorriqueña', 'Cubana', 'Moderna / Fusión']
+            },
+            influencia: {
+              name: 'INFLUENCIA',
+              color: 'purple',
+              tags: ['Son cubano', 'Rumba', 'Afro', 'Jazz', 'Pop', 'Flamenco', 'Urbana']
+            },
+            instrumentos: {
+              name: 'INSTRUMENTOS',
+              color: 'blue',
+              tags: ['Bajo', 'Piano', 'Conga', 'Timbal', 'Metales', 'Clave', 'Güiro']
+            },
+            tipo: {
+              name: 'TIPO',
+              color: 'green',
+              tags: ['Original', 'Remix', 'Instrumental', 'En vivo', 'Acústico']
+            },
+            energia: {
+              name: 'ENERGÍA',
+              color: 'red',
+              tags: ['Suave', 'Media', 'Alta']
+            },
+            bpm: {
+              name: 'BPM/RITMO',
+              color: 'blue',
+              tags: ['80-95', '96-110', '111-125', '126-140']
+            }
+          }
+        },
+        rumba: {
+          name: 'RUMBA',
+          icon: Star,
+          color: 'rumba',
+          categories: {
+            subestilo: {
+              name: 'SUBGÉNERO',
+              color: 'orange',
+              tags: ['Guaguancó', 'Yambú', 'Columbia', 'Rumba moderna / experimental']
+            },
+            influencia: {
+              name: 'INFLUENCIA',
+              color: 'purple',
+              tags: ['Afro', 'Yoruba / Batá', 'Percusión corporal', 'Voz / canto ritual']
+            },
+            instrumentos: {
+              name: 'INSTRUMENTOS',
+              color: 'blue',
+              tags: ['Cajones', 'Clave de rumba', 'Batá', 'Quinto', 'Tumbadora']
+            }
+          }
+        },
+        afro: {
+          name: 'AFRO-CUBANO/AFRO',
+          icon: Zap,
+          color: 'afro',
+          categories: {
+            subestilo: {
+              name: 'SUBGÉNERO',
+              color: 'orange',
+              tags: ['Yoruba (religioso)', 'Arará', 'Abakuá', 'Franco-haitiano', 'Makuta', 'Conga (ritual, no desfile)']
+            },
+            instrumentos: {
+              name: 'INSTRUMENTOS',
+              color: 'blue',
+              tags: ['Batá', 'Chekeré', 'Campana', 'Voz ritual', 'Tambores barriles']
+            }
+          }
+        },
+        bachata: {
+          name: 'BACHATA',
+          icon: Heart,
+          color: 'bachata',
+          categories: {
+            subestilo: {
+              name: 'SUBESTILO/SUBGÉNERO',
+              color: 'orange',
+              tags: ['Tradicional', 'Moderna', 'Sensual', 'Urbana']
+            },
+            tipo: {
+              name: 'TIPO',
+              color: 'green',
+              tags: ['Original', 'Remix', 'Instrumental', 'En vivo']
+            },
+            energia: {
+              name: 'ENERGÍA',
+              color: 'red',
+              tags: ['Suave', 'Media', 'Alta']
+            },
+            bpm: {
+              name: 'BPM/RITMO',
+              color: 'blue',
+              tags: ['70-85', '86-100', '101-115', '116-130']
+            }
+          }
+        },
+        kizomba: {
+          name: 'KIZOMBA',
+          icon: Zap,
+          color: 'kizomba',
+          categories: {
+            subestilo: {
+              name: 'SUBESTILO/SUBGÉNERO',
+              color: 'orange',
+              tags: ['Tradicional', 'Urban Kiz', 'Ghetto Zouk', 'Tarraxinha']
+            },
+            tipo: {
+              name: 'TIPO',
+              color: 'green',
+              tags: ['Original', 'Remix', 'Instrumental', 'En vivo']
+            },
+            energia: {
+              name: 'ENERGÍA',
+              color: 'red',
+              tags: ['Suave', 'Media', 'Alta']
+            },
+            bpm: {
+              name: 'BPM/RITMO',
+              color: 'blue',
+              tags: ['70-85', '86-95', '96-105']
+            }
+          }
+        },
+        zouk: {
+          name: 'ZOUK',
+          icon: Star,
+          color: 'zouk',
+          categories: {
+            subestilo: {
+              name: 'SUBESTILO/SUBGÉNERO',
+              color: 'orange',
+              tags: ['Brazilian', 'Lambazouk', 'Flow', 'Neo']
+            },
+            tipo: {
+              name: 'TIPO',
+              color: 'green',
+              tags: ['Original', 'Remix', 'Instrumental', 'En vivo']
+            },
+            energia: {
+              name: 'ENERGÍA',
+              color: 'red',
+              tags: ['Suave', 'Media', 'Alta']
+            },
+            bpm: {
+              name: 'BPM/RITMO',
+              color: 'blue',
+              tags: ['80-95', '96-110', '111-125']
+            }
+          }
+        },
+        merengue: {
+          name: 'MERENGUE',
+          icon: Sun,
+          color: 'merengue',
+          categories: {
+            subestilo: {
+              name: 'SUBESTILO/SUBGÉNERO',
+              color: 'orange',
+              tags: ['Tradicional', 'Moderno']
+            },
+            tipo: {
+              name: 'TIPO',
+              color: 'green',
+              tags: ['Original', 'Remix', 'Instrumental', 'En vivo']
+            },
+            energia: {
+              name: 'ENERGÍA',
+              color: 'red',
+              tags: ['Suave', 'Media', 'Alta']
+            },
+            bpm: {
+              name: 'BPM/RITMO',
+              color: 'blue',
+              tags: ['110-125', '126-140', '141-160']
+            }
+          }
+        }
+      }
+    },
     eventos: {
       name: 'EVENTOS',
       icon: Calendar,
@@ -499,6 +689,8 @@ const CategoriesPage = () => {
       // Colores específicos de estilos de baile
       salsa: 'bg-orange-500 text-white',
       bachata: 'bg-emerald-500 text-white',
+      rumba: 'bg-rose-500 text-white',
+      afro: 'bg-amber-600 text-white',
       merengue: 'bg-cyan-500 text-white',
       zouk: 'bg-violet-500 text-white',
       kizomba: 'bg-amber-500 text-white',
@@ -520,6 +712,8 @@ const CategoriesPage = () => {
       // Gradientes específicos de estilos de baile
       salsa: 'bg-gradient-to-r from-orange-400 to-pink-500',
       bachata: 'bg-gradient-to-r from-emerald-400 to-teal-600',
+      rumba: 'bg-gradient-to-r from-rose-400 to-red-600',
+      afro: 'bg-gradient-to-r from-amber-500 to-red-600',
       merengue: 'bg-gradient-to-r from-cyan-400 to-blue-600',
       zouk: 'bg-gradient-to-r from-violet-400 to-indigo-600',
       kizomba: 'bg-gradient-to-r from-amber-400 to-orange-600',
@@ -560,7 +754,11 @@ const CategoriesPage = () => {
 
       {/* Pestañas Principales */}
       <div className="flex flex-wrap justify-center gap-3 mb-8">
-        {Object.entries(categoryStructure).map(([key, page]) => (
+        {['figuras', 'escuela', 'eventos', 'musica']
+          .filter((key) => !!categoryStructure[key])
+          .map((key) => {
+            const page = categoryStructure[key]
+            return (
           <button
             key={key}
             onClick={() => {
@@ -578,7 +776,8 @@ const CategoriesPage = () => {
             <page.icon className="h-4 w-4" />
             <span>{page.name}</span>
           </button>
-        ))}
+            )
+          })}
       </div>
 
       {/* Estilos */}

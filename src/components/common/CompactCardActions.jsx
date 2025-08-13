@@ -22,7 +22,7 @@ const CompactCardActions = ({
 }) => {
   if (type === 'video') {
     return (
-      <div className="flex items-center justify-center space-x-1 mt-2">
+      <div className="flex flex-wrap items-center justify-center gap-1 mt-2">
         {/* Botón de reproducción */}
         <button
           onClick={onPlay}
@@ -130,7 +130,7 @@ const CompactCardActions = ({
 
   // Para secuencias
   return (
-    <div className="flex items-center justify-center space-x-1 mt-2">
+    <div className="flex flex-wrap items-center justify-center gap-1 mt-2">
       {/* Botón de reproducción */}
       <button
         onClick={onPlay}

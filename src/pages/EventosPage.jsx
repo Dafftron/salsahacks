@@ -6,7 +6,6 @@ import { useAuth } from '../contexts/AuthContext'
 import { useCardSize } from '../contexts/CardSizeContext'
 import VideoGridRenderer from '../components/gallery/VideoGridRenderer'
 import CardSizeSelector from '../components/common/CardSizeSelector'
-import CompactCardActions from '../components/common/CompactCardActions'
 import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
 import { subscribeToVideosByStyle, subscribeToPageVideos, updateVideoDocument, deleteVideoDocument, toggleVideoLike, checkUserLikedVideo, checkUserFavorite, toggleUserHiddenVideo, checkUserHiddenVideo, checkUserStudy, checkUserStudyCompleted, toggleUserStudy, setUserStudyCompleted } from '../services/firebase/firestore'
@@ -653,7 +652,7 @@ const EventosPage = () => {
                     {filtered.map((video) => (
                       <div
                         key={video.id}
-                        className="bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] border-gray-100"
+                        className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${video.isCompleted ? 'border-2 border-green-500 ring-2 ring-green-300' : 'border-gray-100'}`}
                       >
                         <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
                           {video.thumbnailUrl ? (
@@ -747,90 +746,7 @@ const EventosPage = () => {
                             </div>
                           )}
 
-                          {/* Acciones compactas como en Escuela */}
-                          {getVideoConfig(isFullWidth).compact ? (
-                            <CompactCardActions
-                              video={video}
-                              onLike={() => handleVideoLike(video)}
-                              onEdit={() => openEditModal(video)}
-                              onDelete={() => openDeleteModal(video)}
-                              onDownload={userProfile?.role === 'super_admin' ? () => downloadVideo(video) : undefined}
-                              onPlay={() => handlePlayVideo(video)}
-                              onToggleStudy={user ? () => handleToggleStudy(video) : undefined}
-                              onToggleCompleted={user ? () => handleToggleCompleted(video) : undefined}
-                              isInStudy={video.isInStudy}
-                              isCompleted={video.isCompleted}
-                              type="video"
-                            />
-                          ) : (
-                            <div className="flex items-center justify-between text-sm text-gray-500">
-                              <span className="font-medium">{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
-                              <div className="flex items-center space-x-2">
-                                <button
-                                  onClick={() => handleVideoLike(video)}
-                                  className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
-                                  title={video.userLiked ? 'Quitar like' : 'Dar like'}
-                                >
-                                  <svg className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41 1 4.22 2.44C11.09 5 12.76 4 14.5 4 17 4 19 6 19 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                                  <span className="font-medium">{video.likes || 0}</span>
-                                </button>
-                                {user && (
-                                  <button
-                                    onClick={() => handleToggleStudy(video)}
-                                    className={`transition-colors duration-200 p-1 rounded ${video.isInStudy ? 'text-blue-600 bg-blue-50 ring-2 ring-blue-300' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}
-                                    title={video.isInStudy ? 'Quitar de estudios' : 'Añadir a estudios'}
-                                  >
-                                    <BookOpen className="h-4 w-4" />
-                                  </button>
-                                )}
-                                {user && (
-                                  <button
-                                    onClick={() => handleToggleCompleted(video)}
-                                    className={`transition-colors duration-200 p-1 rounded ${video.isCompleted ? 'text-green-600 bg-green-50 ring-2 ring-green-300' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'}`}
-                                    title={video.isCompleted ? 'Marcar como pendiente' : 'Marcar como completado'}
-                                  >
-                                    <CheckCircle className="h-4 w-4" />
-                                  </button>
-                                )}
-                                {user && (
-                                  <button
-                                    onClick={() => handleToggleHiddenVideo(video)}
-                                    className={`transition-colors duration-200 p-1 rounded ${video.userHidden ? 'text-orange-600 bg-orange-50 ring-2 ring-orange-300' : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50'}`}
-                                    title={video.userHidden ? 'Mostrar video' : 'Ocultar video'}
-                                  >
-                                    <EyeOff className="h-4 w-4" />
-                                  </button>
-                                )}
-                                {(userProfile?.role === 'super_admin') && (
-                                  <button
-                                    onClick={() => downloadVideo(video)}
-                                    className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50"
-                                    title="Descargar video"
-                                  >
-                                    <Download className="h-4 w-4" />
-                                  </button>
-                                )}
-                                {(userProfile?.role === 'maese' || userProfile?.role === 'super_admin') && (
-                                  <button
-                                    onClick={() => openEditModal(video)}
-                                    className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
-                                    title="Editar video"
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </button>
-                                )}
-                                {(userProfile?.role === 'maese' || userProfile?.role === 'super_admin') && (
-                                  <button
-                                    onClick={() => openDeleteModal(video)}
-                                    className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50"
-                                    title="Eliminar video"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          )}
+                          
               </div>
                       </div>
                     ))}

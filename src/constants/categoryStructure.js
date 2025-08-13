@@ -506,7 +506,7 @@ export const categoryStructure = {
             tags: ['Talipo', 'Tamara y Candido', 'Luis y Alma']
           }
         }
-      },
+  },
       congresos: {
         name: 'CONGRESOS',
         icon: Calendar,

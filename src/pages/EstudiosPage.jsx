@@ -4,7 +4,6 @@ import { getUserStudy, setUserStudyCompleted, toggleUserStudy } from '../service
 import { Search, CheckCircle, Clock, X } from 'lucide-react'
 import CardSizeSelector from '../components/common/CardSizeSelector'
 import VideoGridRenderer from '../components/gallery/VideoGridRenderer'
-import CompactCardActions from '../components/common/CompactCardActions'
 
 const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVideoPlayer'))
 
@@ -189,18 +188,7 @@ const EstudiosPage = () => {
                             <h3 className="font-semibold text-gray-800 text-sm truncate">{video.title}</h3>
                           </div>
                           <p className="text-gray-600 text-sm mb-2 line-clamp-2">{video.description || 'Sin descripción'}</p>
-                          <CompactCardActions
-                            video={video}
-                            onPlay={() => setPlayer({ open: true, video })}
-                            onLike={() => {}}
-                            onEdit={() => {}}
-                            onDelete={() => {}}
-                            onToggleStudy={() => handleToggleStudy(video)}
-                            onToggleCompleted={() => handleToggleCompleted(video)}
-                            isInStudy={true}
-                            isCompleted={video.isCompleted}
-                            type="video"
-                          />
+                          
                         </div>
                       </div>
                     )}

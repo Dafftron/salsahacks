@@ -19,7 +19,7 @@ import {
 import { db } from './config';
 
 // Colecciones principales
-const COLLECTIONS = {
+ const COLLECTIONS = {
   USERS: 'users',
   NOTES: 'notes',
   CATEGORIES: 'categories',
@@ -29,16 +29,19 @@ const COLLECTIONS = {
   INVITATIONS: 'invitations',
   VIDEOS: 'videos',
   ESCUELA_VIDEOS: 'escuela-videos',
-  EVENTOS_VIDEOS: 'eventos-videos'
+   EVENTOS_VIDEOS: 'eventos-videos',
+   MUSICA_VIDEOS: 'musica-videos'
 };
 
 // Función para obtener la colección de videos según la página
-const getVideosCollection = (page = 'figuras') => {
+ const getVideosCollection = (page = 'figuras') => {
   switch(page) {
     case 'escuela':
       return COLLECTIONS.ESCUELA_VIDEOS;
     case 'eventos':
       return COLLECTIONS.EVENTOS_VIDEOS;
+    case 'musica':
+      return COLLECTIONS.MUSICA_VIDEOS;
     case 'figuras':
     default:
       return COLLECTIONS.VIDEOS;
@@ -877,7 +880,7 @@ export const checkUserHiddenVideo = async (videoId, userId) => {
   }
 }
 
-export const getUserHiddenVideos = async (userId) => {
+ export const getUserHiddenVideos = async (userId) => {
   try {
     console.log('🔍 Obteniendo videos ocultos del usuario:', userId)
     
@@ -895,12 +898,17 @@ export const getUserHiddenVideos = async (userId) => {
       return { hiddenVideos: [], error: null }
     }
     
-    // Obtener los videos ocultos
+     // Obtener los videos ocultos
     const videos = []
     for (const videoId of hiddenVideoIds) {
       try {
         // Buscar en todas las colecciones de videos
-        const collections = [COLLECTIONS.VIDEOS, COLLECTIONS.ESCUELA_VIDEOS, COLLECTIONS.EVENTOS_VIDEOS]
+        const collections = [
+          COLLECTIONS.VIDEOS,
+          COLLECTIONS.ESCUELA_VIDEOS,
+          COLLECTIONS.EVENTOS_VIDEOS,
+          COLLECTIONS.MUSICA_VIDEOS
+        ]
         
         for (const collectionName of collections) {
           const videoDocRef = doc(db, collectionName, videoId)

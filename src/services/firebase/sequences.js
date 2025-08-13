@@ -19,16 +19,19 @@ import { db } from './config'
 const SEQUENCES_COLLECTIONS = {
   FIGURAS: 'sequences',
   ESCUELA: 'escuela-sequences',
-  EVENTOS: 'eventos-sequences'
+  EVENTOS: 'eventos-sequences',
+  MUSICA: 'musica-sequences'
 };
 
 // Función para obtener la colección de secuencias según la página
-const getSequencesCollection = (page = 'figuras') => {
+ const getSequencesCollection = (page = 'figuras') => {
   switch(page) {
     case 'escuela':
       return SEQUENCES_COLLECTIONS.ESCUELA;
     case 'eventos':
       return SEQUENCES_COLLECTIONS.EVENTOS;
+    case 'musica':
+      return SEQUENCES_COLLECTIONS.MUSICA;
     case 'figuras':
     default:
       return SEQUENCES_COLLECTIONS.FIGURAS;
