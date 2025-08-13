@@ -1678,3 +1678,114 @@ export const cleanupDuplicateTags = async () => {
     return { success: false, updatedCount: 0, error: error.message }
   }
 } 
+
+// ===== MENSAJERÍA (BANDEJA DE ENTRADA) =====
+
+// Listar usuarios (para selector de destinatarios)
+export const listAllUsers = async (excludeUserId = null) => {
+  try {
+    const snap = await getDocs(collection(db, COLLECTIONS.USERS))
+    const users = snap.docs
+      .map((d) => ({ id: d.id, uid: d.id, ...d.data() }))
+      .filter((u) => !excludeUserId || u.uid !== excludeUserId)
+      .map((u) => ({
+        uid: u.uid || u.id,
+        displayName: u.displayName || u.username || u.email || 'Usuario',
+        username: u.username || null,
+        email: u.email || null,
+        photoURL: u.photoURL || null,
+        role: u.role || null,
+      }))
+    return { success: true, users }
+  } catch (error) {
+    console.error('❌ Error al listar usuarios:', error)
+    return { success: false, users: [], error: error.message }
+  }
+}
+
+// Enviar mensaje con referencia a video al inbox del destinatario
+export const sendVideoMessage = async ({
+  toUserId,
+  fromUser,
+  video,
+  page = 'figuras',
+  text = ''
+}) => {
+  try {
+    if (!toUserId || !fromUser?.uid || !video?.id) throw new Error('Datos insuficientes para enviar mensaje')
+    const inboxRef = collection(db, COLLECTIONS.USERS, toUserId, 'inbox')
+    const payload = {
+      type: 'video',
+      videoId: video.id,
+      page,
+      videoTitle: video.title || video.originalTitle || 'Video',
+      videoThumbnail: video.thumbnailUrl || null,
+      senderId: fromUser.uid,
+      senderName: fromUser.displayName || fromUser.email || 'Usuario',
+      senderPhotoURL: fromUser.photoURL || null,
+      text: (text || '').slice(0, 500),
+      read: false,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }
+    const docRef = await addDoc(inboxRef, payload)
+    return { success: true, id: docRef.id }
+  } catch (error) {
+    console.error('❌ Error al enviar mensaje de video:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+// Suscribirse al inbox del usuario
+export const subscribeToInbox = (userId, callback) => {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.USERS, userId, 'inbox'),
+      orderBy('createdAt', 'desc')
+    )
+    return onSnapshot(q, (snapshot) => {
+      const messages = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }))
+      callback(messages)
+    }, (error) => {
+      console.error('❌ Error en suscripción de inbox:', error)
+    })
+  } catch (error) {
+    console.error('❌ Error al suscribirse al inbox:', error)
+    return () => {}
+  }
+}
+
+// Obtener mensajes del inbox (no tiempo real)
+export const getInbox = async (userId) => {
+  try {
+    const q = query(
+      collection(db, COLLECTIONS.USERS, userId, 'inbox'),
+      orderBy('createdAt', 'desc')
+    )
+    const snap = await getDocs(q)
+    return { success: true, messages: snap.docs.map((d) => ({ id: d.id, ...d.data() })) }
+  } catch (error) {
+    return { success: false, messages: [], error: error.message }
+  }
+}
+
+// Marcar mensaje como leído
+export const markInboxMessageRead = async (userId, messageId, read = true) => {
+  try {
+    const refDoc = doc(db, COLLECTIONS.USERS, userId, 'inbox', messageId)
+    await updateDoc(refDoc, { read, updatedAt: serverTimestamp() })
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}
+
+// Eliminar mensaje del inbox
+export const deleteInboxMessage = async (userId, messageId) => {
+  try {
+    await deleteDoc(doc(db, COLLECTIONS.USERS, userId, 'inbox', messageId))
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: error.message }
+  }
+}

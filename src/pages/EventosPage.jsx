@@ -888,6 +888,22 @@ const EventosPage = () => {
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
+                {/* Tags coloreados como en las cards */}
+                <div className="mt-3">
+                  {(() => {
+                    const orderedTags = getOrderedTags(selectedVideo || {})
+                    if (orderedTags.length > 0) {
+                      return (
+                        <div className="flex flex-wrap gap-2">
+                          {orderedTags.map(({ tag, categoryKey, color }) => (
+                            <span key={`modal-tag-${categoryKey}-${tag}`} className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}>{tag}</span>
+                          ))}
+                        </div>
+                      )
+                    }
+                    return null
+                  })()}
+                </div>
                 </div>
               </div>
             </div>

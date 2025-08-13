@@ -20,6 +20,7 @@ const AdminPage = lazy(() => import('./pages/AdminPage'))
 const AuthPage = lazy(() => import('./pages/AuthPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+const InboxPage = lazy(() => import('./pages/InboxPage'))
 const InvitePage = lazy(() => import('./pages/InvitePage'))
 const EstudiosPage = lazy(() => import('./pages/EstudiosPage'))
 
@@ -58,6 +59,11 @@ function AppContent() {
             <Route path="/settings" element={
               <ProtectedRoute>
                 <SettingsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/inbox" element={
+              <ProtectedRoute>
+                <InboxPage />
               </ProtectedRoute>
             } />
             <Route path="/notas" element={

@@ -3786,3 +3786,6 @@ SequenceBuilder/
   - Rojo para no compatibles: `bg-red-500 hover:bg-red-600`
   - Gradientes consistentes con la web
 - **Tooltips**: Fondo oscuro con texto claro, explicación detallada
+
+- summary: added inbox + share modal + nav link
+- files: src/services/firebase/firestore.js; src/components/common/ShareVideoModal.jsx; src/pages/EscuelaPage.jsx; src/pages/EventosPage.jsx; src/pages/MusicaPage.jsx; src/pages/InboxPage.jsx; src/components/layout/Navigation.jsx; src/App.jsx

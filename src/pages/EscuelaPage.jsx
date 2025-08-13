@@ -23,7 +23,8 @@ import {
   Shuffle,
   Eye,
   EyeOff,
-  Loader
+  Loader,
+  Share2
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
@@ -71,6 +72,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useCardSize } from '../contexts/CardSizeContext'
 import VideoGridRenderer from '../components/gallery/VideoGridRenderer'
+import ShareVideoModal from '../components/common/ShareVideoModal'
 
 
 // Componente de carga para lazy loading
@@ -114,6 +116,7 @@ const EscuelaPage = () => {
   // Estados para reproductor de video individual
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [showVideoPlayer, setShowVideoPlayer] = useState(false)
+  const [shareState, setShareState] = useState({ isOpen: false, video: null })
   const [lastWatched, setLastWatched] = useState(null)
   const location = useLocation()
   
@@ -351,6 +354,9 @@ const EscuelaPage = () => {
     setVideos(prev => prev.map(v => v.id === updatedVideo.id ? updatedVideo : v))
     addToast(`${updatedVideo.title} actualizado exitosamente`, 'success')
   }
+
+  const openShareModal = (video) => setShareState({ isOpen: true, video })
+  const closeShareModal = () => setShareState({ isOpen: false, video: null })
 
   // Función para reproducir video
   const handlePlayVideo = async (video) => {
@@ -1119,29 +1125,47 @@ const EscuelaPage = () => {
                       </div>
                         {/* Estado visual inline: sin badges */}
                         <p className={`text-gray-600 text-sm ${getVideoConfig(isFullWidth).compact ? 'mb-2' : 'mb-3'} ${getVideoConfig(isFullWidth).descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig(isFullWidth).descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig(isFullWidth).descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
-                        
-                        {/* Tags Normales */}
-                        {getVideoConfig(isFullWidth).showTags && (
-                          <div className="flex flex-wrap gap-2 mb-3">
-                            {(() => {
-                              const orderedTags = getOrderedTags(video)
-                              if (orderedTags.length > 0) {
-                                return orderedTags.map(({ tag, categoryKey, color }) => (
-                                  <span
-                                    key={`${categoryKey}-${tag}`}
-                                    className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}
-                                  >
-                                    {tag}
-                                  </span>
-                                ))
-                              } else {
-                                return <span className="text-gray-400 text-sm">Sin etiquetas</span>
-                              }
-                            })()}
+
+                        {/* Barra de acciones compactas (como antes) */}
+                        <div className="flex items-center justify-between text-sm text-gray-500">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium">{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
                           </div>
-                        )}
-                        
-                        
+                          <div className="flex items-center space-x-2">
+                            <button onClick={() => handlePlayVideo(video)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Reproducir video">
+                              <Play className="h-4 w-4" />
+                            </button>
+                            <button onClick={() => handleVideoLike(video)} className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} title={video.userLiked ? 'Quitar like' : 'Dar like'}>
+                              <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
+                              <span className="font-medium">{video.likes || 0}</span>
+                            </button>
+                            <button onClick={() => handleToggleStudy(video)} className={`transition-colors duration-200 p-1 rounded ${video.isInStudy ? 'text-blue-600 bg-blue-50 ring-2 ring-blue-300' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`} title={video.isInStudy ? 'Quitar de estudios' : 'Añadir a estudios'}>
+                              <BookOpen className="h-4 w-4" />
+                            </button>
+                            <button onClick={() => handleToggleCompleted(video)} className={`transition-colors duration-200 p-1 rounded ${video.isCompleted ? 'text-green-600 bg-green-50 ring-2 ring-green-300' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'}`} title={video.isCompleted ? 'Marcar como pendiente' : 'Marcar como completado'}>
+                              <CheckCircle className="h-4 w-4" />
+                            </button>
+                            {user && (
+                              <button onClick={() => handleToggleHiddenVideo(video)} className={`transition-colors duration-200 p-1 rounded ${video.userHidden ? 'text-orange-600 bg-orange-50 ring-2 ring-orange-300' : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50'}`} title={video.userHidden ? 'Mostrar video' : 'Ocultar video'}>
+                                <EyeOff className="h-4 w-4" />
+                              </button>
+                            )}
+                            {(userProfile?.role === 'super_admin') && (
+                              <button onClick={() => { downloadVideo(video) }} className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50" title="Descargar video">
+                                <Download className="h-4 w-4" />
+                              </button>
+                            )}
+                            <button onClick={() => openEditModal(video)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Editar video">
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <button onClick={() => openDeleteModal(video)} className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50" title="Eliminar video">
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                            <button onClick={() => openShareModal(video)} className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50" title="Reenviar a usuario">
+                              <Share2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
         </div>
                     </div>
                   </div>
@@ -1164,6 +1188,15 @@ const EscuelaPage = () => {
           style={selectedStyle}
           />
       </Suspense>
+
+      <ShareVideoModal
+        isOpen={shareState.isOpen}
+        onClose={closeShareModal}
+        video={shareState.video}
+        page="escuela"
+        currentUser={user}
+        onShared={() => addToast('Enviado ✅', 'success')}
+      />
 
         {/* Video Edit Modal */}
       <Suspense fallback={<LoadingSpinner />}>
@@ -1255,7 +1288,7 @@ const EscuelaPage = () => {
                         return (
                           <div className="flex flex-wrap gap-2">
                             {orderedTags.map(({ tag, categoryKey, color }) => (
-                              <span key={`${categoryKey}-${tag}`} className="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">{tag}</span>
+                              <span key={`${categoryKey}-${tag}`} className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}>{tag}</span>
                             ))}
                           </div>
                         )

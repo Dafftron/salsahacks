@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useState } from 'react'
 import { useTheme } from '../../contexts/ThemeContext'
 import { useAuth } from '../../contexts/AuthContext'
-import { Music, Sun, Moon, User, Bell, Heart, Search, Shield, Menu } from 'lucide-react'
+import { Music, Sun, Moon, User, Bell, Heart, Search, Shield, Menu, Inbox } from 'lucide-react'
 import { ROLE_LABELS, ROLE_COLORS, ROLES } from '../../constants/roles'
 
 const Navigation = () => {
@@ -20,6 +20,7 @@ const Navigation = () => {
       { path: '/musica', label: 'Música' },
       { path: '/estudios', label: 'Estudios' },
       { path: '/categorias', label: 'Categorías' },
+      { path: '/inbox', label: 'Inbox' },
       ...(userProfile?.role === ROLES.SUPER_ADMIN ? [{ path: '/notas', label: 'Notas' }] : [])
     ] : [])
   ]
@@ -96,13 +97,10 @@ const Navigation = () => {
               )}
             </button>
 
-            {/* Notifications */}
-            <button className="p-2 transition-colors relative" style={{ color: 'var(--text-secondary)' }}>
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                3
-              </span>
-            </button>
+            {/* Inbox */}
+            <Link to="/inbox" className="p-2 transition-colors relative" style={{ color: 'var(--text-secondary)' }}>
+              <Inbox className="h-5 w-5" />
+            </Link>
 
             {/* Favorites */}
             <button className="p-2 transition-colors" style={{ color: 'var(--text-secondary)' }}>
