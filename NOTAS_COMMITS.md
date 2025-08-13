@@ -1,3 +1,10 @@
+### 🔧 COMMIT: Índice Firestore para MusicaPage (musica-videos) - 2025-08-13  
+- Archivos: `firestore.indexes.json`
+- Descripción: Añadido índice compuesto para la colección `musica-videos` (`style ASC`, `createdAt DESC`) necesario para la consulta de `MusicaPage` (`where('style') + orderBy('createdAt')`).
+- Impacto: Elimina el aviso “create index…” en la consola y habilita la suscripción optimizada sin fallback. Requiere ejecutar `firebase deploy --only firestore:indexes`.
+
+---
+
 ### 🛠️ COMMIT: Fix móvil paneo lateral + cards responsivas - 2025-08-12  [deploy]
 ### 🔒 COMMIT: Descargas restringidas solo a Super Admin - 2025-08-12
 - Archivos: `src/constants/roles.js`, `src/pages/EventosPage.jsx`, `src/pages/EscuelaPage.jsx`, `src/pages/FigurasPage.jsx`, `src/components/video/VideoPlayer.jsx`, `src/components/video/VideoDownloadModal.jsx`, `src/components/video/DownloadModal.jsx`, `src/components/sequence/SequenceGallery.jsx`, `src/components/sequence/SequenceVideoPlayer.jsx`
