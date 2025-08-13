@@ -73,6 +73,13 @@ const EventosPage = () => {
     }
   }, [selectedTab])
 
+  // Mantener la pestaña sincronizada si el usuario cambia el estilo arriba (chips grandes)
+  useEffect(() => {
+    if ((selectedStyle === 'talleres' || selectedStyle === 'congresos') && selectedStyle !== selectedTab) {
+      setSelectedTab(selectedStyle)
+    }
+  }, [selectedStyle])
+
   // Asegurar que el estilo seleccionado sea válido para eventos
   useEffect(() => {
     const validKeys = (availableStyles || []).map(s => s.key)

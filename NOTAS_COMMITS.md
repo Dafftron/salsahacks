@@ -2675,15 +2675,13 @@ Si una secuencia tiene 3 videos con estos tags:
 - [x] **Modal de confirmación** - Reemplazo de window.confirm por modal personalizado
 
 ### **🔄 EN PROGRESO**
-- [ ] **Página de Escuela** - Preparando réplica de Figuras con sistema de tabs
-- [ ] **Página de Eventos** - Preparando réplica de Figuras con sistema de tabs
 - [ ] **Adaptación de orientación móvil** - Última funcionalidad del VideoPlayer
 
 ### **⏳ PENDIENTE**
 - [ ] **Testing** - Tests unitarios y E2E
 - [ ] **Deploy** - Firebase Hosting
 - [ ] **Sistema de recomendaciones** - Algoritmos avanzados
-- [ ] **Analytics** - Métricas y estadísticas
+- [ ] **Analytics avanzados (Fase 2)** - Dashboards y eventos de uso
 - [ ] **Optimización** - Performance y SEO
 - [ ] **Vista previa de videos al hacer hover** - En tarjetas de video
 

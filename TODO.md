@@ -70,15 +70,13 @@
 ## 🚀 Próximas Mejoras Sugeridas
 
 ### 🔥 Prioridad Alta
-- [ ] **Unificar EscuelaPage** - Aplicar el mismo sistema de tabs y navegación
-- [ ] **Unificar EventosPage** - Aplicar el mismo sistema de tabs y navegación
 - [ ] **Arreglar descarga de videos** - Investigar y resolver problema de CORS
 - [ ] **Testing del sistema completo** - Verificar todas las funcionalidades
 - [ ] **Optimización de performance** - Mejorar velocidad de carga
 
 ### 📋 Prioridad Media
 - [ ] **Sistema de recomendaciones** - Algoritmos basados en historial
-- [ ] **Analytics avanzados** - Métricas de uso de secuencias
+- [ ] **Analytics avanzados (Fase 2)** - Dashboards y métricas profundas
 - [ ] **Exportación de secuencias** - Videos combinados descargables
 - [ ] **Testing automatizado** - Tests unitarios y E2E
 - [ ] **Deploy a producción** - Firebase Hosting
@@ -108,7 +106,6 @@
 - ✅ **Documentación completa actualizada**
 
 ### 🔄 En Progreso
-- [ ] Unificación de EscuelaPage y EventosPage
 - [ ] Resolución del problema de descarga de videos
 
 ### ⏳ Pendiente

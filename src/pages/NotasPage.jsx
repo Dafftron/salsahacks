@@ -47,6 +47,18 @@ const NotasPage = () => {
           category: 'PÁGINAS'
         },
         {
+          id: 122,
+          hash: 'd12f34a',
+          date: '2025-08-13',
+          time: '10:00:00',
+          title: 'Commit #122 - Analytics rápidos (MVP) en HomePage',
+          description: 'KPI rápidos y tarjetas de analytics: subidas 24h, estilo top, total de secuencias, promedio por secuencia y top por likes',
+          files: ['src/pages/HomePage.jsx', 'README.md', 'NOTAS_COMMITS.md'],
+          notes: 'Se añaden métricas rápidas en HomePage calculadas desde Firestore/servicios. Base para dashboards avanzados.',
+          status: 'Completado',
+          category: 'SISTEMAS'
+        },
+        {
           id: 120,
           hash: '65db22d',
           date: '2025-08-11',
@@ -1565,15 +1577,6 @@ const NotasPage = () => {
       notes: 'Página base operativa; queda afinar categorías visibles y textos.'
     },
     {
-      id: 2,
-      title: 'Replicación del sistema a EventosPage',
-      description: 'Implementar EventosPage con base de datos separada eventos-videos y eventos-sequences',
-      category: 'PÁGINAS',
-      priority: 'Media',
-      progress: 5,
-      status: 'En Progreso'
-    },
-    {
       id: 3,
       title: 'Optimización y limpieza de código',
       description: 'Refactoring general, optimización de performance y documentación',
@@ -1589,26 +1592,9 @@ const NotasPage = () => {
     
     // DESARROLLO ADICIONAL
     {
-      id: 3,
-      title: 'EventosPage - Implementación completa',
-      description: 'Nueva página con base de datos separada eventos-videos y eventos-sequences',
-      category: 'PÁGINAS',
-      priority: 'Media',
-      estimatedTime: '3 días',
-      status: 'Futuro',
-      details: [
-        'Colecciones separadas en Firestore: eventos-videos y eventos-sequences',
-        'Filtros por estilo, evento/fecha y etiquetas como en Escuela/Figuras',
-        'Subida, edición y eliminación con las mismas reglas de permisos',
-        'Tabs de Videos y Secuencias, con contadores y vistas virtualizadas',
-        'Integración de VideoPlayer y VideoEditModal; soporte para favoritos y búsqueda'
-      ]
-    },
-    
-    {
       id: 6,
-      title: 'Analytics avanzados',
-      description: 'Métricas de uso de secuencias y comportamiento de usuarios',
+      title: 'Analytics avanzados (Fase 2)',
+      description: 'Dashboards y métricas profundas (más allá del MVP de HomePage)',
       category: 'SISTEMAS',
       priority: 'Baja',
       estimatedTime: '3 días',
@@ -1618,7 +1604,8 @@ const NotasPage = () => {
         'Métricas de interacción: favoritos, descargas, ediciones, creación de secuencias',
         'Dashboard para Admin/Super Admin con gráficos y filtros por periodo',
         'Reportes por estilo, categoría y top videos/creadores',
-        'Integración con Firestore/BigQuery o GA4 para almacenamiento de eventos'
+        'Integración con Firestore/BigQuery o GA4 para almacenamiento de eventos',
+        'Gráficas (BarChart3) y vistas comparativas por periodo'
       ]
     },
     

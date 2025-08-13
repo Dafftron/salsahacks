@@ -364,6 +364,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       }
 
       // Usar solo los tags seleccionados por el usuario, sin agregar automáticamente el style
+      // Asegurar que el campo style se grabe exactamente con la pestaña activa (talleres|congresos)
       const tagsWithStyle = {
         ...selectedTags,
         estilo: selectedTags.estilo || []

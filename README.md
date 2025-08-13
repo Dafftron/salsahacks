@@ -47,10 +47,6 @@ Una aplicación web avanzada para gestión de videos de salsa con funcionalidade
 
 ### ⏳ **PENDIENTE**
 
-#### 🔄 **Unificación de Páginas**
-- EscuelaPage: Aplicar mismo sistema que FigurasPage
-- EventosPage: Aplicar mismo sistema que FigurasPage
-
 #### 🧪 **Testing y Deploy**
 - Tests unitarios y E2E
 - Optimización de performance
@@ -83,16 +79,11 @@ Una aplicación web avanzada para gestión de videos de salsa con funcionalidade
 ## 🎯 Próximos Objetivos
 
 ### 🔥 **Prioridad Alta (Esta semana)**
-1. **Unificar EscuelaPage y EventosPage**
-   - Sistema de tabs consistente
-   - Galerías independientes por estilo
-   - Constructor de secuencias integrado
-
-2. **Resolver Problema de Descarga**
+1. **Resolver Problema de Descarga**
    - Investigar CORS
    - Implementar solución robusta
 
-3. **Testing del Sistema Completo**
+2. **Testing del Sistema Completo**
    - Verificar todas las funcionalidades
    - Optimización de performance
 
@@ -103,7 +94,7 @@ Una aplicación web avanzada para gestión de videos de salsa con funcionalidade
 
 ### 📈 **Prioridad Baja (Próximas 4 semanas)**
 - Sistema de recomendaciones
-- Analytics avanzados
+- Analytics avanzados (Fase 2)
 - Deploy a producción
 
 ---
