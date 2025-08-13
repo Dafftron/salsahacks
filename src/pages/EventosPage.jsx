@@ -684,11 +684,15 @@ const EventosPage = () => {
                             </div>
                           )}
                           {/* Botón Play visual */}
-                          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 group">
+                          <button
+                            onClick={() => handlePlayVideo(video)}
+                            className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-200 group"
+                            title="Reproducir"
+                          >
                             <div className="w-16 h-16 rounded-full bg-white bg-opacity-90 flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-200">
                               <Play className="w-8 h-8 text-gray-800 ml-1" />
                             </div>
-                          </div>
+                          </button>
                         </div>
 
                         <div className={`${getVideoConfig(isFullWidth).compact ? 'p-2' : 'p-4'}`}>
