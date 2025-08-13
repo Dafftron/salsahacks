@@ -66,6 +66,13 @@ const EventosPage = () => {
     return () => unsubscribe && unsubscribe()
   }, [selectedStyle])
 
+  // Mantener selectedStyle sincronizado con la pestaña (talleres/congresos)
+  useEffect(() => {
+    if (selectedTab && selectedTab !== selectedStyle) {
+      setSelectedStyle(selectedTab)
+    }
+  }, [selectedTab])
+
   // Asegurar que el estilo seleccionado sea válido para eventos
   useEffect(() => {
     const validKeys = (availableStyles || []).map(s => s.key)
