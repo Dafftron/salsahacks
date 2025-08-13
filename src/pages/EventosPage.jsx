@@ -1,10 +1,11 @@
 import React, { lazy, Suspense, useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Maximize2, Minimize2, Upload, Search, Filter, ChevronDown, ChevronUp, Star, Heart, X, EyeOff, Download, Play, Edit, Trash2, BookOpen, CheckCircle } from 'lucide-react'
+import { Maximize2, Minimize2, Upload, Search, Filter, ChevronDown, ChevronUp, Star, Heart, X, EyeOff, Download, Play, Edit, Trash2, BookOpen, CheckCircle, Share2 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import { useAuth } from '../contexts/AuthContext'
 import { useCardSize } from '../contexts/CardSizeContext'
 import VideoGridRenderer from '../components/gallery/VideoGridRenderer'
+import ShareVideoModal from '../components/common/ShareVideoModal'
 import CardSizeSelector from '../components/common/CardSizeSelector'
 import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
@@ -39,6 +40,7 @@ const EventosPage = () => {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, video: null })
   const [selectedVideo, setSelectedVideo] = useState(null)
   const [showVideoPlayer, setShowVideoPlayer] = useState(false)
+  const [shareState, setShareState] = useState({ isOpen: false, video: null })
   const [lastWatched, setLastWatched] = useState(null)
   const location = useLocation()
   
@@ -80,6 +82,13 @@ const EventosPage = () => {
       setSelectedStyle(selectedTab)
     }
   }, [selectedTab])
+
+  // Sync inverso: si el usuario cambia el estilo arriba (talleres/congresos), alinear la pestaña
+  useEffect(() => {
+    if (selectedStyle && ['talleres', 'congresos'].includes(selectedStyle) && selectedTab !== selectedStyle) {
+      setSelectedTab(selectedStyle)
+    }
+  }, [selectedStyle])
 
   // Cargar último visto del usuario
   useEffect(() => {
@@ -378,6 +387,9 @@ const EventosPage = () => {
       }
     } catch (_) {}
   }
+
+  const openShareModal = (video) => setShareState({ isOpen: true, video })
+  const closeShareModal = () => setShareState({ isOpen: false, video: null })
 
   return (
     <div className="min-h-screen bg-white">
@@ -745,9 +757,57 @@ const EventosPage = () => {
                               })()}
                             </div>
                           )}
-
+                          
                           
               </div>
+                      {/* Barra de acciones compactas (como antes) */}
+                      <div className={`${getVideoConfig(isFullWidth).compact ? 'px-2 pb-2' : 'px-4 pb-4'}`}>
+                        <div className="flex items-center justify-between text-sm text-gray-500">
+                          <div className="flex items-center space-x-2">
+                            <span className="font-medium">{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <button onClick={() => handlePlayVideo(video)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Reproducir video">
+                              <Play className="h-4 w-4" />
+                            </button>
+                            <button onClick={() => handleVideoLike(video)} className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} title={video.userLiked ? 'Quitar like' : 'Dar like'}>
+                              <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
+                              <span className="font-medium">{video.likes || 0}</span>
+                            </button>
+                            <button onClick={() => handleToggleStudy(video)} className={`transition-colors duration-200 p-1 rounded ${video.isInStudy ? 'text-blue-600 bg-blue-50 ring-2 ring-blue-300' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`} title={video.isInStudy ? 'Quitar de estudios' : 'Añadir a estudios'}>
+                              <BookOpen className="h-4 w-4" />
+                            </button>
+                            <button onClick={() => handleToggleCompleted(video)} className={`transition-colors duration-200 p-1 rounded ${video.isCompleted ? 'text-green-600 bg-green-50 ring-2 ring-green-300' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'}`} title={video.isCompleted ? 'Marcar como pendiente' : 'Marcar como completado'}>
+                              <CheckCircle className="h-4 w-4" />
+                            </button>
+                            {user && (
+                              <button onClick={() => {
+                                toggleUserHiddenVideo(video.id, user.uid).then((result) => {
+                                  if (result?.success) {
+                                    setVideos(prev => prev.map(v => v.id === video.id ? { ...v, userHidden: result.isHidden } : v))
+                                  }
+                                })
+                              }} className={`transition-colors duration-200 p-1 rounded ${video.userHidden ? 'text-orange-600 bg-orange-50 ring-2 ring-orange-300' : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50'}`} title={video.userHidden ? 'Mostrar video' : 'Ocultar video'}>
+                                <EyeOff className="h-4 w-4" />
+                              </button>
+                            )}
+                            {(userProfile?.role === 'super_admin') && (
+                              <button onClick={() => downloadVideo(video)} className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50" title="Descargar video">
+                                <Download className="h-4 w-4" />
+                              </button>
+                            )}
+                            <button onClick={() => openEditModal(video)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Editar video">
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <button onClick={() => openDeleteModal(video)} className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50" title="Eliminar video">
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                            <button onClick={() => openShareModal(video)} className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50" title="Reenviar a usuario">
+                              <Share2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                       </div>
                     ))}
             </div>
@@ -774,6 +834,61 @@ const EventosPage = () => {
                     <SequenceVideoPlayer videos={[selectedVideo]} className="w-full h-full" showControls={true} autoplay={true} loop={false} muted={false} />
                   </div>
                 </div>
+                {/* Acciones e información del video (como en cards) */}
+                <div className="mt-4">
+                  {/* Rating y tamaño */}
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-1">
+                      {[1,2,3,4,5].map(star => {
+                        const isFilled = (selectedVideo?.rating || 0) >= star
+                        return (
+                          <svg key={star} className={`h-4 w-4 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} fill="currentColor" viewBox="0 0 24 24" onClick={async () => {
+                            try {
+                              const currentRating = selectedVideo?.rating || 0
+                              const newRating = currentRating >= star ? 0 : star
+                              await updateVideoDocument(selectedVideo.id, { rating: newRating }, 'eventos')
+                              setVideos(prev => prev.map(v => v.id === selectedVideo.id ? { ...v, rating: newRating } : v))
+                              setSelectedVideo(prev => ({ ...prev, rating: newRating }))
+                            } catch (_) {}
+                          }}>
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                        )
+                      })}
+                      <span className="text-xs font-medium text-gray-500 ml-1">({selectedVideo?.rating || 0})</span>
+                    </div>
+                    <div className="text-xs text-gray-500">{((selectedVideo?.fileSize || 0) / (1024 * 1024)).toFixed(2)} MB</div>
+                  </div>
+                  {/* Botonera */}
+                  <div className="flex items-center justify-end space-x-2">
+                    <button onClick={() => { setSelectedVideo(p => ({ ...p, userLiked: !p?.userLiked, likes: (p?.likes || 0) + (p?.userLiked ? -1 : 1) })); handleVideoLike(selectedVideo) }} className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${selectedVideo?.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} title={selectedVideo?.userLiked ? 'Quitar like' : 'Dar like'}>
+                      <Heart className={`h-4 w-4 ${selectedVideo?.userLiked ? 'fill-current' : ''}`} />
+                      <span className="font-medium">{selectedVideo?.likes || 0}</span>
+                    </button>
+                    <button onClick={() => { handleToggleStudy(selectedVideo); setSelectedVideo(p => ({ ...p, isInStudy: !p?.isInStudy })) }} className={`transition-colors duration-200 p-1 rounded ${selectedVideo?.isInStudy ? 'text-blue-600 bg-blue-50 ring-2 ring-blue-300' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`} title={selectedVideo?.isInStudy ? 'Quitar de estudios' : 'Añadir a estudios'}>
+                      <BookOpen className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => { handleToggleCompleted(selectedVideo); setSelectedVideo(p => ({ ...p, isCompleted: !p?.isCompleted })) }} className={`transition-colors duration-200 p-1 rounded ${selectedVideo?.isCompleted ? 'text-green-600 bg-green-50 ring-2 ring-green-300' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'}`} title={selectedVideo?.isCompleted ? 'Marcar como pendiente' : 'Marcar como completado'}>
+                      <CheckCircle className="h-4 w-4" />
+                    </button>
+                    {user && (
+                      <button onClick={() => { toggleUserHiddenVideo(selectedVideo.id, user.uid).then((result) => { if (result?.success) { setSelectedVideo(p => ({ ...p, userHidden: result.isHidden })); setVideos(prev => prev.map(v => v.id === selectedVideo.id ? { ...v, userHidden: result.isHidden } : v)) } }) }} className={`transition-colors duration-200 p-1 rounded ${selectedVideo?.userHidden ? 'text-orange-600 bg-orange-50 ring-2 ring-orange-300' : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50'}`} title={selectedVideo?.userHidden ? 'Mostrar video' : 'Ocultar video'}>
+                        <EyeOff className="h-4 w-4" />
+                      </button>
+                    )}
+                    {(userProfile?.role === 'super_admin') && (
+                      <button onClick={() => downloadVideo(selectedVideo)} className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50" title="Descargar video">
+                        <Download className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button onClick={() => openEditModal(selectedVideo)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Editar video">
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => setDeleteModal({ isOpen: true, video: selectedVideo })} className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50" title="Eliminar video">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -786,6 +901,15 @@ const EventosPage = () => {
           onVideoUpdated={handleVideoUpdated}
           page="eventos"
           style={selectedStyle}
+        />
+
+        <ShareVideoModal
+          isOpen={shareState.isOpen}
+          onClose={closeShareModal}
+          video={shareState.video}
+          page="eventos"
+          currentUser={user}
+          onShared={() => addToast('Enviado ✅', 'success')}
         />
 
         <ConfirmModal

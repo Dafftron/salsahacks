@@ -1,3 +1,12 @@
+### 🐞 FIX: Eventos - Congresos muestra su propia galería - 2025-08-13
+- Archivos: `src/pages/EventosPage.jsx`
+- Cambios:
+  - Sincronización bidireccional entre `selectedTab` y `selectedStyle` para alinear pestañas y estilo.
+- Impacto:
+  - Al seleccionar Congresos se muestran solo sus videos; si no hay, se muestra el estado vacío correcto.
+
+---
+
 ### 🔧 COMMIT: Índice Firestore para MusicaPage (musica-videos) - 2025-08-13  
 - Archivos: `firestore.indexes.json`
 - Descripción: Añadido índice compuesto para la colección `musica-videos` (`style ASC`, `createdAt DESC`) necesario para la consulta de `MusicaPage` (`where('style') + orderBy('createdAt')`).
