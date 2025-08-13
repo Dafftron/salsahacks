@@ -1050,9 +1050,18 @@ export const deleteVideoDocument = async (videoId, page = 'figuras') => {
     const docRef = doc(db, videosCollection, videoId)
     console.log('📄 Referencia del documento:', docRef.path)
     
-    await deleteDoc(docRef)
-    console.log('✅ Video eliminado exitosamente de Firestore')
-    return { success: true, error: null }
+    try {
+      await deleteDoc(docRef)
+      console.log('✅ Video eliminado exitosamente de Firestore')
+      return { success: true, error: null }
+    } catch (err) {
+      // Si el doc ya no existe, considerar eliminación lógica exitosa para desatascar UI
+      if (err?.code === 'not-found' || /No document to update:/.test(String(err?.message))) {
+        console.warn('⚠️ Documento ya no existe; se considera eliminado')
+        return { success: true, error: null }
+      }
+      throw err
+    }
   } catch (error) {
     console.error('❌ Error al eliminar video de Firestore:', error)
     console.error('❌ Código de error:', error.code)

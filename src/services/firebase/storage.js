@@ -572,53 +572,74 @@ export const deleteVideo = async (videoPath, thumbnailPath) => {
     console.log('🗑️ Iniciando eliminación de archivos:')
     console.log('📁 Video path:', videoPath)
     console.log('🖼️ Thumbnail path:', thumbnailPath)
-    
-    const promises = [];
-    
+
+    let attempted = 0
+    let deleted = 0
+    let hardErrors = []
+
     // Eliminar archivo de video
     if (videoPath) {
-      console.log('🎬 Eliminando video:', videoPath)
-      const videoRef = ref(storage, videoPath);
-      promises.push(deleteObject(videoRef));
+      attempted++
+      try {
+        console.log('🎬 Eliminando video:', videoPath)
+        const videoRef = ref(storage, videoPath)
+        await deleteObject(videoRef)
+        deleted++
+      } catch (err) {
+        // Si no existe el objeto en Storage, no bloquear la eliminación lógica
+        if (err?.code === 'storage/object-not-found' || /does not exist/i.test(String(err?.message))) {
+          console.warn('⚠️ Video no existe en Storage, se continúa con la eliminación lógica')
+        } else {
+          console.error('❌ Error eliminando video:', err)
+          hardErrors.push(err.message || String(err))
+        }
+      }
     } else {
       console.log('⚠️ No hay ruta de video para eliminar')
     }
-    
+
     // Eliminar thumbnail (solo si existe y no es null)
     if (thumbnailPath && thumbnailPath !== null && thumbnailPath !== '') {
-      console.log('🖼️ Eliminando thumbnail:', thumbnailPath)
-      const thumbnailRef = ref(storage, thumbnailPath);
-      promises.push(deleteObject(thumbnailRef));
+      attempted++
+      try {
+        console.log('🖼️ Eliminando thumbnail:', thumbnailPath)
+        const thumbnailRef = ref(storage, thumbnailPath)
+        await deleteObject(thumbnailRef)
+        deleted++
+      } catch (err) {
+        if (err?.code === 'storage/object-not-found' || /does not exist/i.test(String(err?.message))) {
+          console.warn('⚠️ Thumbnail no existe en Storage, se continúa con la eliminación lógica')
+        } else {
+          console.error('❌ Error eliminando thumbnail:', err)
+          hardErrors.push(err.message || String(err))
+        }
+      }
     } else {
       console.log('⚠️ No hay ruta de thumbnail para eliminar (thumbnailPath:', thumbnailPath, ')')
     }
-    
-    console.log(`📊 Archivos a eliminar: ${promises.length}`)
-    
-    if (promises.length === 0) {
-      console.log('⚠️ No hay archivos para eliminar')
-      return { 
-        success: true, 
-        error: null,
-        deletedCount: 0
-      };
+
+    console.log(`📊 Intentados: ${attempted}, eliminados: ${deleted}, errores: ${hardErrors.length}`)
+
+    if (hardErrors.length > 0) {
+      return {
+        success: false,
+        error: hardErrors.join(' | '),
+        deletedCount: deleted
+      }
     }
-    
-    await Promise.all(promises);
-    
-    console.log('✅ Archivos eliminados exitosamente')
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       error: null,
-      deletedCount: promises.length
-    };
+      deletedCount: deleted
+    }
   } catch (error) {
-    console.error('❌ Error deleting video:', error);
-    return { 
-      success: false, 
+    console.error('❌ Error deleting video:', error)
+    return {
+      success: false,
       error: error.message,
       deletedCount: 0
-    };
+    }
   }
 };
 
