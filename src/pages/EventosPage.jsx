@@ -56,19 +56,19 @@ const EventosPage = () => {
 
   const addToast = (message, type = 'success') => setToasts(prev => [...prev, { id: Date.now(), message, type }])
 
+  // Suscripción por página (trae todos los eventos) y filtramos por pestaña/tags en cliente
   useEffect(() => {
     setLoading(true)
-    // Suscribirse por estilo como en EscuelaPage para coherencia y eficiencia
-    const unsubscribe = subscribeToVideosByStyle(selectedStyle, (list) => {
+    const unsubscribe = subscribeToPageVideos('eventos', (list) => {
       setVideos(list)
       setLoading(false)
-    }, 'eventos')
+    })
     return () => unsubscribe && unsubscribe()
-  }, [selectedStyle])
+  }, [])
 
-  // Mantener selectedStyle sincronizado con la pestaña (talleres/congresos)
+  // Mantener selectedStyle sincronizado con la pestaña para subidas/edición
   useEffect(() => {
-    if (selectedTab && selectedTab !== selectedStyle) {
+    if (selectedTab) {
       setSelectedStyle(selectedTab)
     }
   }, [selectedTab])
