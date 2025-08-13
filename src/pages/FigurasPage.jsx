@@ -22,7 +22,8 @@ import {
   Shuffle,
   Eye,
   EyeOff,
-  Loader
+  Loader,
+  Share2
 } from 'lucide-react'
 import { useCategories } from '../hooks/useCategories'
 import CategoryBadge from '../components/common/CategoryBadge'
@@ -42,6 +43,7 @@ const DownloadModal = lazy(() => import('../components/video/DownloadModal'))
 const SequenceBuilder = lazy(() => import('../components/sequence/SequenceBuilder'))
 const SequenceGallery = lazy(() => import('../components/sequence/SequenceGallery'))
 const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVideoPlayer'))
+import ShareVideoModal from '../components/common/ShareVideoModal'
 
 import { 
   getVideos, 
@@ -102,6 +104,7 @@ const FigurasPage = () => {
   const [downloadSequenceModal, setDownloadSequenceModal] = useState({ isOpen: false, sequence: null })
   const [migrationModal, setMigrationModal] = useState({ isOpen: false })
   const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
+  const [shareState, setShareState] = useState({ isOpen: false, video: null })
   
   // Estados para reproductor de video individual
   const [selectedVideo, setSelectedVideo] = useState(null)
@@ -2048,6 +2051,13 @@ const FigurasPage = () => {
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
+                        <button
+                          onClick={() => setShareState({ isOpen: true, video })}
+                          className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50"
+                          title="Reenviar a usuario"
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </button>
                       </div>
                     </div>
 
@@ -2198,6 +2208,15 @@ const FigurasPage = () => {
            style={selectedStyle}
          />
                 </Suspense>
+
+        <ShareVideoModal
+          isOpen={shareState.isOpen}
+          onClose={() => setShareState({ isOpen: false, video: null })}
+          video={shareState.video}
+          page="figuras"
+          currentUser={user}
+          onShared={() => addToast('Enviado ✅', 'success')}
+        />
 
         {/* Video Edit Modal */}
         <Suspense fallback={<LoadingSpinner />}>
@@ -2441,6 +2460,13 @@ Esta acción NO se puede deshacer.`}
                    >
                      <Trash2 className="h-4 w-4" />
                    </button>
+                  <button
+                    onClick={() => setShareState({ isOpen: true, video: selectedVideo })}
+                    className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50"
+                    title="Reenviar a usuario"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </button>
                  </div>
                </div>
              </div>
