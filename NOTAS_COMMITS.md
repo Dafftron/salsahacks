@@ -7,17 +7,6 @@
 
 ---
 
-### 🎬 FIX: Modal de Figuras igual que Escuela (tags + botonera completa) - 2025-08-13
-- Archivos: `src/pages/FigurasPage.jsx`
-- Cambios:
-  - Modal de reproducción unificado con `EscuelaPage`: muestra tags completos ordenados por categoría y además “Inicio” (tagsIniciales) y “Fin” (tagsFinales).
-  - Botonera en modal visible y completa: like, estudios, completado, ocultar, descargar (solo super_admin), añadir a secuencia, editar, eliminar y reenviar.
-  - En las cards de galería, barra de acciones compacta con `flex-wrap` para que no se oculten iconos en líneas largas de tags.
-- Impacto:
-  - Experiencia de reproducción en Figuras consistente con Escuela; todos los iconos y tags se ven correctamente en el modal y en la galería.
-
----
-
 ### 🔧 COMMIT: Índice Firestore para MusicaPage (musica-videos) - 2025-08-13  
 - Archivos: `firestore.indexes.json`
 - Descripción: Añadido índice compuesto para la colección `musica-videos` (`style ASC`, `createdAt DESC`) necesario para la consulta de `MusicaPage` (`where('style') + orderBy('createdAt')`).

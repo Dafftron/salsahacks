@@ -393,7 +393,7 @@ const EventosPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className={`${isFullWidth ? 'w-full px-0' : 'max-w-6xl mx-auto px-6'} py-8`}>
+      <div className="max-w-6xl mx-auto px-6 py-8">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-2">
           <span className="text-pink-500">EVENTOS</span>
@@ -584,6 +584,16 @@ const EventosPage = () => {
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
+          <button
+            onClick={() => setIsFullWidth(!isFullWidth)}
+            className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+              isFullWidth ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg` : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+            }`}
+            title={isFullWidth ? 'Modo compacto' : 'Modo ancho completo'}
+          >
+            {isFullWidth ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            <span className="hidden sm:inline">{isFullWidth ? 'Compacto' : 'Ancho'}</span>
+          </button>
         </div>
       {loading ? (
         <div className="flex justify-center items-center py-12">
@@ -650,13 +660,13 @@ const EventosPage = () => {
                     <p className="text-gray-400 text-sm mt-2">Ajusta los filtros o sube tu primer video en {selectedTab}</p>
                   </div>
                 ) : (
-                  <div className={`grid gap-6 ${getVideoConfig(false).grid}`}>
+                  <div className={`grid gap-6 ${getVideoConfig(isFullWidth).grid}`}>
                     {filtered.map((video) => (
                       <div
                         key={video.id}
-                        className={`bg-white rounded-lg shadow-md border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${video.isCompleted ? 'border-2 border-green-500 ring-2 ring-green-300' : 'border-gray-100'}`}
+                        className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${video.isCompleted ? 'border-2 border-green-500 ring-2 ring-green-300' : 'border-gray-100'}`}
                       >
-                        <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden rounded-t-lg flex items-center justify-center`}>
+                        <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
                           {video.thumbnailUrl ? (
                             <img
                               src={video.thumbnailUrl}
@@ -753,20 +763,22 @@ const EventosPage = () => {
                       {/* Barra de acciones compactas (como antes) */}
                       <div className={`${getVideoConfig(isFullWidth).compact ? 'px-2 pb-2' : 'px-4 pb-4'}`}>
                         <div className="flex items-center justify-between text-sm text-gray-500">
-                          <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex items-center space-x-2">
                             <span className="font-medium">{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 justify-end">
-                            {/* Reproducir solo con el thumbnail */}
+                          <div className="flex items-center space-x-2">
+                            <button onClick={() => handlePlayVideo(video)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Reproducir video">
+                              <Play className="h-4 w-4" />
+                            </button>
                             <button onClick={() => handleVideoLike(video)} className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} title={video.userLiked ? 'Quitar like' : 'Dar like'}>
-                              <Heart className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'} ${video.userLiked ? 'fill-current' : ''}`} />
+                              <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
                               <span className="font-medium">{video.likes || 0}</span>
                             </button>
                             <button onClick={() => handleToggleStudy(video)} className={`transition-colors duration-200 p-1 rounded ${video.isInStudy ? 'text-blue-600 bg-blue-50 ring-2 ring-blue-300' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`} title={video.isInStudy ? 'Quitar de estudios' : 'Añadir a estudios'}>
-                              <BookOpen className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                              <BookOpen className="h-4 w-4" />
                             </button>
                             <button onClick={() => handleToggleCompleted(video)} className={`transition-colors duration-200 p-1 rounded ${video.isCompleted ? 'text-green-600 bg-green-50 ring-2 ring-green-300' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'}`} title={video.isCompleted ? 'Marcar como pendiente' : 'Marcar como completado'}>
-                              <CheckCircle className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                              <CheckCircle className="h-4 w-4" />
                             </button>
                             {user && (
                               <button onClick={() => {
@@ -776,22 +788,22 @@ const EventosPage = () => {
                                   }
                                 })
                               }} className={`transition-colors duration-200 p-1 rounded ${video.userHidden ? 'text-orange-600 bg-orange-50 ring-2 ring-orange-300' : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50'}`} title={video.userHidden ? 'Mostrar video' : 'Ocultar video'}>
-                                <EyeOff className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                                <EyeOff className="h-4 w-4" />
                               </button>
                             )}
                             {(userProfile?.role === 'super_admin') && (
                               <button onClick={() => downloadVideo(video)} className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50" title="Descargar video">
-                                <Download className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                                <Download className="h-4 w-4" />
                               </button>
                             )}
                             <button onClick={() => openEditModal(video)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Editar video">
-                              <Edit className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                              <Edit className="h-4 w-4" />
                             </button>
                             <button onClick={() => openDeleteModal(video)} className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50" title="Eliminar video">
-                              <Trash2 className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                              <Trash2 className="h-4 w-4" />
                             </button>
                             <button onClick={() => openShareModal(video)} className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50" title="Reenviar a usuario">
-                              <Share2 className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                              <Share2 className="h-4 w-4" />
                             </button>
                           </div>
                         </div>
@@ -848,7 +860,7 @@ const EventosPage = () => {
                     <div className="text-xs text-gray-500">{((selectedVideo?.fileSize || 0) / (1024 * 1024)).toFixed(2)} MB</div>
                   </div>
                   {/* Botonera */}
-                  <div className="flex flex-wrap items-center justify-end gap-2">
+                  <div className="flex items-center justify-end space-x-2">
                     <button onClick={() => { setSelectedVideo(p => ({ ...p, userLiked: !p?.userLiked, likes: (p?.likes || 0) + (p?.userLiked ? -1 : 1) })); handleVideoLike(selectedVideo) }} className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${selectedVideo?.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} title={selectedVideo?.userLiked ? 'Quitar like' : 'Dar like'}>
                       <Heart className={`h-4 w-4 ${selectedVideo?.userLiked ? 'fill-current' : ''}`} />
                       <span className="font-medium">{selectedVideo?.likes || 0}</span>
@@ -871,9 +883,6 @@ const EventosPage = () => {
                     )}
                     <button onClick={() => openEditModal(selectedVideo)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Editar video">
                       <Edit className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => openShareModal(selectedVideo)} className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50" title="Reenviar a usuario">
-                      <Share2 className="h-4 w-4" />
                     </button>
                     <button onClick={() => setDeleteModal({ isOpen: true, video: selectedVideo })} className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50" title="Eliminar video">
                       <Trash2 className="h-4 w-4" />

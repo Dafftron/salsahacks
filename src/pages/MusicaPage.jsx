@@ -546,9 +546,9 @@ const MusicaPage = () => {
           ) : (
             <div className={`grid gap-6 ${getVideoConfig(isFullWidth).grid}`}>
               {filteredVideos.map((video) => (
-                <div key={video.id} className={`bg-white rounded-lg shadow-md border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${video.isCompleted ? 'border-2 border-green-500 ring-2 ring-green-300' : 'border-gray-100'}`}>
+                <div key={video.id} className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${video.isCompleted ? 'border-2 border-green-500 ring-2 ring-green-300' : 'border-gray-100'}`}>
                   <div className="relative group">
-                    <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden rounded-t-lg flex items-center justify-center`}>
+                    <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
                       {video.thumbnailUrl && video.thumbnailUrl !== 'https://via.placeholder.com/400x225/1a1a1a/ffffff?text=VIDEO' ? (
                         <img src={video.thumbnailUrl} alt={video.title} className={`w-full h-full ${getVideoConfig(isFullWidth).imageObject || 'object-cover'}`} loading="lazy" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex' }} />
                       ) : null}
@@ -599,15 +599,15 @@ const MusicaPage = () => {
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 justify-end">
-                        {/* Reproducir solo con el thumbnail */}
+                      <div className="flex items-center space-x-2">
+                        <button onClick={() => handlePlayVideo(video)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Reproducir video"><Play className="h-4 w-4" /></button>
                         <button onClick={() => handleVideoLike(video)} className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${video.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} title={video.userLiked ? 'Quitar like' : 'Dar like'}>
-                          <Heart className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'} ${video.userLiked ? 'fill-current' : ''}`} />
+                          <Heart className={`h-4 w-4 ${video.userLiked ? 'fill-current' : ''}`} />
                           <span className="font-medium">{video.likes || 0}</span>
                         </button>
-                        <button onClick={() => handleToggleStudy(video)} className={`transition-colors duration-200 p-1 rounded ${video.isInStudy ? 'text-blue-600 bg-blue-50 ring-2 ring-blue-300' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`} title={video.isInStudy ? 'Quitar de estudios' : 'Añadir a estudios'}><BookOpen className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} /></button>
-                        <button onClick={() => handleToggleCompleted(video)} className={`transition-colors duration-200 p-1 rounded ${video.isCompleted ? 'text-green-600 bg-green-50 ring-2 ring-green-300' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'}`} title={video.isCompleted ? 'Marcar como pendiente' : 'Marcar como completado'}><CheckCircle className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} /></button>
-                        {user && (<button onClick={() => handleToggleHiddenVideo(video)} className={`transition-colors duration-200 p-1 rounded ${video.userHidden ? 'text-orange-600 bg-orange-50 ring-2 ring-orange-300' : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50'}`} title={video.userHidden ? 'Mostrar video' : 'Ocultar video'}><EyeOff className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} /></button>)}
+                        <button onClick={() => handleToggleStudy(video)} className={`transition-colors duration-200 p-1 rounded ${video.isInStudy ? 'text-blue-600 bg-blue-50 ring-2 ring-blue-300' : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`} title={video.isInStudy ? 'Quitar de estudios' : 'Añadir a estudios'}><BookOpen className="h-4 w-4" /></button>
+                        <button onClick={() => handleToggleCompleted(video)} className={`transition-colors duration-200 p-1 rounded ${video.isCompleted ? 'text-green-600 bg-green-50 ring-2 ring-green-300' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'}`} title={video.isCompleted ? 'Marcar como pendiente' : 'Marcar como completado'}><CheckCircle className="h-4 w-4" /></button>
+                        {user && (<button onClick={() => handleToggleHiddenVideo(video)} className={`transition-colors duration-200 p-1 rounded ${video.userHidden ? 'text-orange-600 bg-orange-50 ring-2 ring-orange-300' : 'text-gray-400 hover:text-orange-600 hover:bg-orange-50'}`} title={video.userHidden ? 'Mostrar video' : 'Ocultar video'}><EyeOff className="h-4 w-4" /></button>)}
                         {(userProfile?.role === 'super_admin') && (
                           <button onClick={async () => {
                             try {
@@ -630,13 +630,13 @@ const MusicaPage = () => {
                               URL.revokeObjectURL(url)
                               addToast('✅ Descarga completada exitosamente', 'success')
                             } catch (e) { addToast('❌ Error al descargar', 'error') }
-                          }} className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50" title="Descargar video"><Download className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} /></button>
+                          }} className="text-gray-400 hover:text-green-500 transition-colors duration-200 p-1 rounded hover:bg-green-50" title="Descargar video"><Download className="h-4 w-4" /></button>
                         )}
-                        <button onClick={() => openEditModal(video)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Editar video"><Edit className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} /></button>
+                        <button onClick={() => openEditModal(video)} className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50" title="Editar video"><Edit className="h-4 w-4" /></button>
                         <button onClick={() => setDeleteModal({ isOpen: true, video })} className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50" title="Eliminar video">
                           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                         </button>
-                        <button onClick={() => openShareModal(video)} className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50" title="Reenviar a usuario"><Share2 className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'}`} /></button>
+                        <button onClick={() => openShareModal(video)} className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50" title="Reenviar a usuario"><Share2 className="h-4 w-4" /></button>
                       </div>
                     </div>
                   </div>
@@ -693,7 +693,7 @@ const MusicaPage = () => {
                   </div>
                   <div className="text-xs text-gray-500">{((selectedVideo?.fileSize || 0) / (1024 * 1024)).toFixed(2)} MB</div>
                 </div>
-                <div className="flex flex-wrap items-center justify-end gap-2">
+                <div className="flex items-center justify-end space-x-2">
                   <button onClick={() => { setSelectedVideo(p => ({ ...p, userLiked: !p?.userLiked, likes: (p?.likes || 0) + (p?.userLiked ? -1 : 1) })); handleVideoLike(selectedVideo) }} className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${selectedVideo?.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} title={selectedVideo?.userLiked ? 'Quitar like' : 'Dar like'}>
                     <Heart className={`h-4 w-4 ${selectedVideo?.userLiked ? 'fill-current' : ''}`} />
                     <span className="font-medium">{selectedVideo?.likes || 0}</span>
@@ -719,9 +719,6 @@ const MusicaPage = () => {
                   </button>
                   <button onClick={() => setDeleteModal({ isOpen: true, video: selectedVideo })} className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50" title="Eliminar video">
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                  </button>
-                  <button onClick={() => setShareState({ isOpen: true, video: selectedVideo })} className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50" title="Reenviar a usuario">
-                    <Share2 className="h-4 w-4" />
                   </button>
                 </div>
                 {/* Tags coloreados como en las cards */}
