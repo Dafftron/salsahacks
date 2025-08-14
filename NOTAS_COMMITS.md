@@ -3797,4 +3797,4 @@ SequenceBuilder/
     - Ajuste de headers de cards (título + rating): `flex-wrap` + `gap-1` y estrellas con `shrink-0`
     - Ajuste de barras de acciones: `flex-wrap` + `gap-2` en lugar de `space-x-*` para permitir varias líneas
     - Eliminado `ml-1` en contadores para evitar desbordes en cortes estrechos; uso de `gap-*`
-    - Aplicado en todas las galerías principales (Figuras, Escuela, Eventos, Música) y `SequenceGallery`
+    - Aplicado en todas las galerías principales (Figuras, Escuela, Eventos, Música) y `SequenceGallery`. Segunda pasada completada en `FigurasPage.jsx` (secciones pendientes).

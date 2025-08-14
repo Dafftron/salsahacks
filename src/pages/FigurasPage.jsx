@@ -1403,7 +1403,7 @@ const FigurasPage = () => {
         {/* Videos Grid */}
         {activeTab === 'videos' && (
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
               <div>
                 <h2 className="text-2xl font-semibold text-gray-800">
                   Videos de {selectedStyle.toLowerCase()} ({filteredVideos.length})
@@ -1416,7 +1416,7 @@ const FigurasPage = () => {
                   </p>
                 )}
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-wrap items-center gap-4">
                 {/* Selector de tamaño de cards */}
                 <CardSizeSelector type="video" styleColor={selectedStyle} />
                 
@@ -1951,7 +1951,7 @@ const FigurasPage = () => {
                         if (tagsIniciales.length > 0) {
                           return (
                             <div className="mb-3">
-                              <div className="flex items-center space-x-2 mb-2">
+                              <div className="flex flex-wrap items-center gap-2 mb-2">
                                 <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Iniciales:</span>
                               </div>
                               <div className="flex flex-wrap gap-2">
@@ -1976,7 +1976,7 @@ const FigurasPage = () => {
                         if (tagsFinales.length > 0) {
                           return (
                             <div className="mb-3">
-                              <div className="flex items-center space-x-2 mb-2">
+                              <div className="flex flex-wrap items-center gap-2 mb-2">
                                 <span className="text-xs font-medium text-green-600 uppercase tracking-wide">Finales:</span>
                               </div>
                               <div className="flex flex-wrap gap-2">
@@ -1996,11 +1996,11 @@ const FigurasPage = () => {
                       })()}
                     
                     {/* Barra de acciones compactas (como antes) */}
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                        <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500">
+                        <div className="flex items-center gap-2">
                         <span className="font-medium">{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <button 
                           onClick={() => handlePlayVideo(video)}
                           className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
@@ -2085,11 +2085,11 @@ const FigurasPage = () => {
         {/* Secuencias Grid */}
         {activeTab === 'secuencias' && (
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
               <h2 className="text-2xl font-semibold text-gray-800">
                 Secuencias de {selectedStyle.toLowerCase()} ({sequences.length})
               </h2>
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-wrap items-center gap-4">
                 {/* Selector de tamaño de cards */}
                 <CardSizeSelector type="sequence" styleColor={selectedStyle} />
                 
@@ -2350,14 +2350,14 @@ Esta acción NO se puede deshacer.`}
                </div>
                {/* Acciones e información del video (unificado con Escuela) */}
                <div className="mt-4">
-                 <div className="flex items-center justify-between mb-2">
-                   <div className="flex items-center space-x-1">
+                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                   <div className="flex flex-wrap items-center gap-1">
                      {[1, 2, 3, 4, 5].map(star => {
                        const isFilled = (selectedVideo?.rating || 0) >= star
                        return (
                          <svg
                            key={star}
-                           className={`h-4 w-4 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`}
+                            className={`h-4 w-4 shrink-0 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`}
                            fill="currentColor"
                            viewBox="0 0 24 24"
                            onClick={async () => {
@@ -2374,7 +2374,7 @@ Esta acción NO se puede deshacer.`}
                          </svg>
                        )
                      })}
-                     <span className="text-xs font-medium text-gray-500 ml-1">({selectedVideo?.rating || 0})</span>
+                      <span className="text-xs font-medium text-gray-500">({selectedVideo?.rating || 0})</span>
                    </div>
                    <div className="text-xs text-gray-500">{((selectedVideo?.fileSize || 0) / (1024 * 1024)).toFixed(2)} MB</div>
                  </div>
