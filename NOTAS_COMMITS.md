@@ -1,3 +1,11 @@
+### 🔒 COMMIT: Infra Firebase + YouTube URL + sin secuencias en Escuela/Eventos - 2025-08-14  
+- Reglas Firestore por colección/página y rol (crear/editar solo `super_admin`/`maese`; social: likes/rating para autenticados)
+- Reglas Storage por rutas: `videos/{page}/{style}/**` y `thumbnails/{page}/{style}/**`
+- Índice añadido: `eventos-videos` por `style + createdAt`
+- Soporte añadir videos por URL de YouTube + reproducción embebida en `VideoPlayer`
+- Escuela/Eventos: reproductor de video único; eliminadas referencias a secuencias
+- Fix `checkUserLikedVideo` para respetar colección por página
+
 ### 🎛️ COMMIT: Figuras - modal muestra secciones Tags/Iniciales/Finales - 2025-08-14
 - Archivos: `src/pages/FigurasPage.jsx`
 - Cambios:
