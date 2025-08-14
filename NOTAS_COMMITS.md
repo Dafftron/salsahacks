@@ -1,3 +1,10 @@
+- summary: Modales de reproducción – unificación de botonera y rating
+  date: 2025-08-14  
+  files: src/pages/EscuelaPage.jsx; src/pages/EventosPage.jsx; src/pages/MusicaPage.jsx  
+  details:
+    - Fila de rating con `flex-wrap` + `gap-1`, estrellas `shrink-0`, contador sin `ml-1`
+    - Botonera con `flex-wrap` + `gap-2` y añadido botón "Reenviar" (Share2) donde faltaba
+    - Alineado de permisos de descarga y ocultar según rol/usuario
 ### 🐞 FIX: Eventos - Congresos muestra su propia galería - 2025-08-13
 - Archivos: `src/pages/EventosPage.jsx`
 - Cambios:

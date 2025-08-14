@@ -671,12 +671,12 @@ const MusicaPage = () => {
               </div>
               {/* Acciones e información del video (como en cards) */}
               <div className="mt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-1">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <div className="flex flex-wrap items-center gap-1">
                     {[1,2,3,4,5].map(star => {
                       const isFilled = (selectedVideo?.rating || 0) >= star
                       return (
-                        <svg key={star} className={`h-4 w-4 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} fill="currentColor" viewBox="0 0 24 24" onClick={async () => {
+                        <svg key={star} className={`h-4 w-4 shrink-0 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} fill="currentColor" viewBox="0 0 24 24" onClick={async () => {
                           try {
                             const currentRating = selectedVideo?.rating || 0
                             const newRating = currentRating >= star ? 0 : star
@@ -689,11 +689,11 @@ const MusicaPage = () => {
                         </svg>
                       )
                     })}
-                    <span className="text-xs font-medium text-gray-500 ml-1">({selectedVideo?.rating || 0})</span>
+                    <span className="text-xs font-medium text-gray-500">({selectedVideo?.rating || 0})</span>
                   </div>
                   <div className="text-xs text-gray-500">{((selectedVideo?.fileSize || 0) / (1024 * 1024)).toFixed(2)} MB</div>
                 </div>
-                <div className="flex items-center justify-end space-x-2">
+                <div className="flex flex-wrap items-center justify-end gap-2">
                   <button onClick={() => { setSelectedVideo(p => ({ ...p, userLiked: !p?.userLiked, likes: (p?.likes || 0) + (p?.userLiked ? -1 : 1) })); handleVideoLike(selectedVideo) }} className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${selectedVideo?.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} title={selectedVideo?.userLiked ? 'Quitar like' : 'Dar like'}>
                     <Heart className={`h-4 w-4 ${selectedVideo?.userLiked ? 'fill-current' : ''}`} />
                     <span className="font-medium">{selectedVideo?.likes || 0}</span>
@@ -719,6 +719,9 @@ const MusicaPage = () => {
                   </button>
                   <button onClick={() => setDeleteModal({ isOpen: true, video: selectedVideo })} className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50" title="Eliminar video">
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                  </button>
+                  <button onClick={() => openShareModal(selectedVideo)} className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50" title="Reenviar a usuario">
+                    <Share2 className="h-4 w-4" />
                   </button>
                 </div>
                 {/* Tags coloreados como en las cards */}

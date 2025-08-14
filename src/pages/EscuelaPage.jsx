@@ -1249,14 +1249,14 @@ const EscuelaPage = () => {
               {/* Acciones e información del video */}
               <div className="mt-4">
                 {/* Rating */}
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-1">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <div className="flex flex-wrap items-center gap-1">
                     {[1, 2, 3, 4, 5].map(star => {
                       const isFilled = (selectedVideo?.rating || 0) >= star
                       return (
                         <svg
                           key={star}
-                          className={`h-4 w-4 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`}
+                          className={`h-4 w-4 shrink-0 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`}
                           fill="currentColor"
                           viewBox="0 0 24 24"
                           onClick={async () => {
@@ -1273,7 +1273,7 @@ const EscuelaPage = () => {
                         </svg>
                       )
                     })}
-                    <span className="text-xs font-medium text-gray-500 ml-1">({selectedVideo?.rating || 0})</span>
+                    <span className="text-xs font-medium text-gray-500">({selectedVideo?.rating || 0})</span>
                   </div>
                   <div className="text-xs text-gray-500">{((selectedVideo?.fileSize || 0) / (1024 * 1024)).toFixed(2)} MB</div>
                 </div>
@@ -1359,13 +1359,13 @@ const EscuelaPage = () => {
                   >
                     <Edit className="h-4 w-4" />
                   </button>
-                    <button
-                      onClick={() => openShareModal(selectedVideo)}
-                      className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50"
-                      title="Reenviar a usuario"
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </button>
+                  <button
+                    onClick={() => openShareModal(selectedVideo)}
+                    className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50"
+                    title="Reenviar a usuario"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </button>
                   </div>
                 </div>
               </div>

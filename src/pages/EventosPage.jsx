@@ -393,7 +393,7 @@ const EventosPage = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className={`${isFullWidth ? 'w-full px-0' : 'max-w-6xl mx-auto px-6'} py-8`}>
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-2">
           <span className="text-pink-500">EVENTOS</span>
@@ -584,16 +584,6 @@ const EventosPage = () => {
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
-          <button
-            onClick={() => setIsFullWidth(!isFullWidth)}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
-              isFullWidth ? `bg-gradient-to-r ${getGradientClasses(selectedStyle)} text-white shadow-lg` : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-            }`}
-            title={isFullWidth ? 'Modo compacto' : 'Modo ancho completo'}
-          >
-            {isFullWidth ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-            <span className="hidden sm:inline">{isFullWidth ? 'Compacto' : 'Ancho'}</span>
-          </button>
         </div>
       {loading ? (
         <div className="flex justify-center items-center py-12">
@@ -666,12 +656,12 @@ const EventosPage = () => {
                         key={video.id}
                         className={`bg-white rounded-lg shadow-md overflow-hidden border hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] ${video.isCompleted ? 'border-2 border-green-500 ring-2 ring-green-300' : 'border-gray-100'}`}
                       >
-                        <div className={`w-full ${getVideoConfig(isFullWidth).aspect} ${getVideoConfig(isFullWidth).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
+                        <div className={`w-full ${getVideoConfig(false).aspect} ${getVideoConfig(false).thumbnailSize} bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden flex items-center justify-center`}>
                           {video.thumbnailUrl ? (
                             <img
                               src={video.thumbnailUrl}
                               alt={video.title}
-                              className={`w-full h-full ${getVideoConfig(isFullWidth).imageObject || 'object-cover'}`}
+                              className={`w-full h-full ${getVideoConfig(false).imageObject || 'object-cover'}`}
                               loading="lazy"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none'
@@ -706,9 +696,9 @@ const EventosPage = () => {
                           </button>
                         </div>
 
-                        <div className={`${getVideoConfig(isFullWidth).compact ? 'p-2' : 'p-4'}`}>
-                          <div className={`flex flex-wrap items-center justify-between gap-1 ${getVideoConfig(isFullWidth).compact ? 'mb-1' : 'mb-2'}`}>
-                            <h3 className={`font-semibold text-gray-800 ${getVideoConfig(isFullWidth).titleSize}`}>{video.title}</h3>
+                        <div className={`${getVideoConfig(false).compact ? 'p-2' : 'p-4'}`}>
+                          <div className={`flex flex-wrap items-center justify-between gap-1 ${getVideoConfig(false).compact ? 'mb-1' : 'mb-2'}`}>
+                            <h3 className={`font-semibold text-gray-800 ${getVideoConfig(false).titleSize}`}>{video.title}</h3>
                             {/* Rating */}
                             <div className="flex flex-wrap items-center gap-1">
                               {[1,2,3,4,5].map(star => {
@@ -716,7 +706,7 @@ const EventosPage = () => {
                                 return (
                                   <svg
                                     key={star}
-                                    className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'} shrink-0 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`}
+                                    className={`${getVideoConfig(false).compact ? 'h-3 w-3' : 'h-4 w-4'} shrink-0 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`}
                                     fill="currentColor"
                                     viewBox="0 0 24 24"
                                     onClick={async () => {
@@ -735,10 +725,10 @@ const EventosPage = () => {
                               <span className={`${getVideoConfig(isFullWidth).compact ? 'text-xs' : 'text-xs'} font-medium text-gray-500`}>({video.rating || 0})</span>
                             </div>
               </div>
-                          <p className={`text-gray-600 text-sm ${getVideoConfig(isFullWidth).compact ? 'mb-2' : 'mb-3'} ${getVideoConfig(isFullWidth).descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig(isFullWidth).descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig(isFullWidth).descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
+                          <p className={`text-gray-600 text-sm ${getVideoConfig(false).compact ? 'mb-2' : 'mb-3'} ${getVideoConfig(false).descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig(false).descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig(false).descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
 
                           {/* Tags como en Escuela (ordenados por categoría) */}
-                          {getVideoConfig(isFullWidth).showTags && (
+                          {getVideoConfig(false).showTags && (
                             <div className="flex flex-wrap gap-2 mb-3">
                               {(() => {
                                 const orderedTags = getOrderedTags(video)
@@ -761,7 +751,7 @@ const EventosPage = () => {
                           
               </div>
                       {/* Barra de acciones compactas (como antes) */}
-                        <div className={`${getVideoConfig(isFullWidth).compact ? 'px-2 pb-2' : 'px-4 pb-4'}`}>
+                        <div className={`${getVideoConfig(false).compact ? 'px-2 pb-2' : 'px-4 pb-4'}`}>
                         <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
@@ -837,12 +827,12 @@ const EventosPage = () => {
                 {/* Acciones e información del video (como en cards) */}
                 <div className="mt-4">
                   {/* Rating y tamaño */}
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <div className="flex flex-wrap items-center gap-1">
                       {[1,2,3,4,5].map(star => {
                         const isFilled = (selectedVideo?.rating || 0) >= star
                         return (
-                          <svg key={star} className={`h-4 w-4 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} fill="currentColor" viewBox="0 0 24 24" onClick={async () => {
+                          <svg key={star} className={`h-4 w-4 shrink-0 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} fill="currentColor" viewBox="0 0 24 24" onClick={async () => {
                             try {
                               const currentRating = selectedVideo?.rating || 0
                               const newRating = currentRating >= star ? 0 : star
@@ -855,12 +845,12 @@ const EventosPage = () => {
                           </svg>
                         )
                       })}
-                      <span className="text-xs font-medium text-gray-500 ml-1">({selectedVideo?.rating || 0})</span>
+                      <span className="text-xs font-medium text-gray-500">({selectedVideo?.rating || 0})</span>
                     </div>
                     <div className="text-xs text-gray-500">{((selectedVideo?.fileSize || 0) / (1024 * 1024)).toFixed(2)} MB</div>
                   </div>
                   {/* Botonera */}
-                  <div className="flex items-center justify-end space-x-2">
+                  <div className="flex flex-wrap items-center justify-end gap-2">
                     <button onClick={() => { setSelectedVideo(p => ({ ...p, userLiked: !p?.userLiked, likes: (p?.likes || 0) + (p?.userLiked ? -1 : 1) })); handleVideoLike(selectedVideo) }} className={`flex items-center space-x-1 transition-colors duration-200 p-1 rounded hover:bg-red-50 ${selectedVideo?.userLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} title={selectedVideo?.userLiked ? 'Quitar like' : 'Dar like'}>
                       <Heart className={`h-4 w-4 ${selectedVideo?.userLiked ? 'fill-current' : ''}`} />
                       <span className="font-medium">{selectedVideo?.likes || 0}</span>
@@ -886,6 +876,9 @@ const EventosPage = () => {
                     </button>
                     <button onClick={() => setDeleteModal({ isOpen: true, video: selectedVideo })} className="text-gray-400 hover:text-red-500 transition-colors duration-200 p-1 rounded hover:bg-red-50" title="Eliminar video">
                       <Trash2 className="h-4 w-4" />
+                    </button>
+                    <button onClick={() => openShareModal(selectedVideo)} className="text-gray-400 hover:text-pink-600 transition-colors duration-200 p-1 rounded hover:bg-pink-50" title="Reenviar a usuario">
+                      <Share2 className="h-4 w-4" />
                     </button>
                   </div>
                 {/* Tags coloreados como en las cards */}
