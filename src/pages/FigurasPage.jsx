@@ -38,7 +38,6 @@ import { storage } from '../services/firebase/config'
 // Lazy loading de componentes pesados
 const VideoUploadModal = lazy(() => import('../components/video/VideoUploadModal'))
 const VideoEditModal = lazy(() => import('../components/video/VideoEditModal'))
-const VideoPlayer = lazy(() => import('../components/video/VideoPlayer'))
 const DownloadModal = lazy(() => import('../components/video/DownloadModal'))
 const SequenceBuilder = lazy(() => import('../components/sequence/SequenceBuilder'))
 const SequenceGallery = lazy(() => import('../components/sequence/SequenceGallery'))
@@ -1536,6 +1535,8 @@ const FigurasPage = () => {
                      {/* Botón de reproducción */}
                      <button
                        onClick={async () => {
+                         handlePlayVideo(video);
+                         return;
                          try {
                            if (user?.uid) {
                              const { setUserLastWatched } = await import('../services/firebase/firestore')
