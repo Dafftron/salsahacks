@@ -605,7 +605,7 @@ const CategoriesPage = () => {
             profesores: {
               name: 'PROFESORES',
               color: 'yellow',
-              tags: ['Pepe y Marta', 'Alberto y Ani', 'Aitor y Nuria', 'Pepe y Ani', 'El Andres e Isa', 'Andress y Yessica', 'Ani', 'Luis Enrique y Alma', 'Alma', 'Tamara y Candido']
+              tags: ['Pepe y Marta', 'Alberto y Ani', 'Aitor y Nuria', 'Pepe y Ani', 'Andres e Isa', 'Andress y Yessica', 'Ani', 'Luis Enrique y Alma', 'Alma', 'Tamara y Candido']
             }
           }
         },

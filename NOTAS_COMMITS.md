@@ -3844,3 +3844,10 @@ SequenceBuilder/
   details:
     - `escuela > bachata > estilo`: alineado exactamente con CategoriesPage (Bachata, Bachata tradicional, Bolero, Bachata Zouk, Bachata sensual).
     - Color de categoría ajustado a `red` para consistencia.
+
+- summary: Corrección de nombre y consistencia de color en profesores (Escuela/Bachata)
+  date: 2025-08-14 16:38
+  files: src/constants/categoryStructure.js; src/pages/CategoriesPage.jsx
+  details:
+    - Cambiado "El Andres e Isa" a "Andres e Isa" en ambos sitios.
+    - Unificado color de `profesores` a `yellow` en `escuela > bachata` para ambas páginas.

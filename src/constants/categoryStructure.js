@@ -575,8 +575,8 @@ export const categoryStructure = {
           },
           profesores: {
             name: 'PROFESORES',
-            color: 'pink',
-            tags: ['Pepe y Marta', 'Alberto y Ani', 'Aitor y Nuria', 'Pepe y Ani', 'El Andres e Isa', 'Andress y Yessica', 'Ani', 'Luis Enrique y Alma', 'Alma', 'Tamara y Candido']
+            color: 'yellow',
+            tags: ['Pepe y Marta', 'Alberto y Ani', 'Aitor y Nuria', 'Pepe y Ani', 'Andres e Isa', 'Andress y Yessica', 'Ani', 'Luis Enrique y Alma', 'Alma', 'Tamara y Candido']
           }
         }
       },
