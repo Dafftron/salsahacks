@@ -3789,3 +3789,12 @@ SequenceBuilder/
 
 - summary: added inbox + share modal + nav link
 - files: src/services/firebase/firestore.js; src/components/common/ShareVideoModal.jsx; src/pages/EscuelaPage.jsx; src/pages/EventosPage.jsx; src/pages/MusicaPage.jsx; src/pages/InboxPage.jsx; src/components/layout/Navigation.jsx; src/App.jsx
+
+- summary: UI - Evitar corte de iconos en cards y permitir salto de renglón
+  date: 2025-08-14  
+  files: src/pages/EscuelaPage.jsx; src/pages/EventosPage.jsx; src/pages/MusicaPage.jsx; src/pages/FigurasPage.jsx; src/components/sequence/SequenceGallery.jsx  
+  details:
+    - Ajuste de headers de cards (título + rating): `flex-wrap` + `gap-1` y estrellas con `shrink-0`
+    - Ajuste de barras de acciones: `flex-wrap` + `gap-2` en lugar de `space-x-*` para permitir varias líneas
+    - Eliminado `ml-1` en contadores para evitar desbordes en cortes estrechos; uso de `gap-*`
+    - Aplicado en todas las galerías principales (Figuras, Escuela, Eventos, Música) y `SequenceGallery`

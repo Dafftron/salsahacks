@@ -207,9 +207,9 @@ const SequenceGallery = ({
             {/* Contenido del card */}
             <div className={`${getSequenceConfig(isFullWidth).compact ? 'p-2' : 'p-4'}`}>
               {/* Título y rating */}
-              <div className={`flex items-center justify-between ${getSequenceConfig(isFullWidth).compact ? 'mb-1' : 'mb-2'}`}>
-                <h3 className={`font-semibold text-gray-800 ${getSequenceConfig(isFullWidth).titleSize} truncate`}>{sequence.name}</h3>
-                <div className="flex items-center space-x-1">
+              <div className={`flex flex-wrap items-center justify-between gap-1 ${getSequenceConfig(isFullWidth).compact ? 'mb-1' : 'mb-2'}`}>
+                <h3 className={`font-semibold text-gray-800 ${getSequenceConfig(isFullWidth).titleSize}`}>{sequence.name}</h3>
+                <div className="flex flex-wrap items-center gap-1">
                   <span className={`bg-blue-100 text-blue-800 px-2 py-1 rounded-full ${getSequenceConfig(isFullWidth).compact ? 'text-xs' : 'text-xs'} font-medium`}>
                     {sequence.videos.length} videos
                   </span>
@@ -220,7 +220,7 @@ const SequenceGallery = ({
               {getSequenceConfig(isFullWidth).showIcons ? (
                 // Mostrar solo número de videos en tamaños pequeños y medianos
                 <div className="flex items-center justify-center text-gray-500 mb-2">
-                  <div className="flex items-center space-x-1">
+                  <div className="flex flex-wrap items-center gap-1">
                     <Users className="w-3 h-3" />
                     <span className="text-xs font-medium">{sequence.videos.length} videos</span>
                   </div>

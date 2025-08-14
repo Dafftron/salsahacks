@@ -1892,15 +1892,15 @@ const FigurasPage = () => {
                   </div>
                   
                                      <div className={`${getVideoConfig(isFullWidth).compact ? 'p-2' : 'p-4'}`}>
-                                            <div className={`flex items-center justify-between ${getVideoConfig(isFullWidth).compact ? 'mb-1' : 'mb-2'}`}>
+                                             <div className={`flex flex-wrap items-center justify-between gap-1 ${getVideoConfig(isFullWidth).compact ? 'mb-1' : 'mb-2'}`}>
                          <h3 className={`font-semibold text-gray-800 ${getVideoConfig(isFullWidth).titleSize}`}>{video.title}</h3>
-                       <div className="flex items-center space-x-1">
+                        <div className="flex flex-wrap items-center gap-1">
                          {[1, 2, 3, 4, 5].map(star => {
                            const isFilled = (video.rating || 0) >= star
-                           return (
-                             <svg 
+                             return (
+                              <svg 
                                key={star}
-                               className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'} ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} 
+                               className={`${getVideoConfig(isFullWidth).compact ? 'h-3 w-3' : 'h-4 w-4'} shrink-0 ${isFilled ? 'text-yellow-400 fill-current' : 'text-gray-300'} cursor-pointer`} 
                                fill="currentColor" 
                                viewBox="0 0 24 24"
                                onClick={async () => {
@@ -1920,7 +1920,7 @@ const FigurasPage = () => {
                              </svg>
                            )
                          })}
-                         <span className={`${getVideoConfig(isFullWidth).compact ? 'text-xs' : 'text-xs'} font-medium text-gray-500 ml-1`}>({video.rating || 0})</span>
+                          <span className={`${getVideoConfig(isFullWidth).compact ? 'text-xs' : 'text-xs'} font-medium text-gray-500`}>({video.rating || 0})</span>
                        </div>
                      </div>
                      <p className={`text-gray-600 text-sm ${getVideoConfig(isFullWidth).compact ? 'mb-2' : 'mb-3'} ${getVideoConfig(isFullWidth).descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig(isFullWidth).descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig(isFullWidth).descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
@@ -1997,7 +1997,7 @@ const FigurasPage = () => {
                     
                     {/* Barra de acciones compactas (como antes) */}
                     <div className="flex items-center justify-between text-sm text-gray-500">
-                      <div className="flex items-center space-x-2">
+                        <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium">{(video.fileSize / (1024 * 1024)).toFixed(2)} MB</span>
                       </div>
                       <div className="flex items-center space-x-2">
