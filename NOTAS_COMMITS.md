@@ -3858,3 +3858,9 @@ SequenceBuilder/
   details:
     - `EscuelaPage`: añadido render de chips de tags por categoría en las cards, ocultando el tag `oculto` a no-superadmin.
     - `CategoriesPage`: añadido color `indigo` al mapa de colores para evitar chips grises en categoría `tipo`.
+
+- summary: CategoriesPage (Figuras) - Añado tag 'oculto' en categorías tipo
+  date: 2025-08-14 16:38
+  files: src/pages/CategoriesPage.jsx
+  details:
+    - Agregado 'oculto' a `tipo` en estilos de Figuras (salsa, bachata, kizomba, zouk, merengue) para consistencia con lógica de visibilidad.

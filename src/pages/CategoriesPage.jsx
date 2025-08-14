@@ -43,7 +43,7 @@ const CategoriesPage = () => {
             tipo: {
               name: 'TIPO DE FIGURA',
               color: 'green',
-              tags: ['Cross Body Lead', 'Copa', 'Sombrero', 'Dile que no', 'Setenta', 'Vacilala', 'Enchufla']
+              tags: ['Cross Body Lead', 'Copa', 'Sombrero', 'Dile que no', 'Setenta', 'Vacilala', 'Enchufla', 'oculto']
             },
             manos: {
               name: 'MANOS/TÉCNICA DE AGARRE',
@@ -70,7 +70,7 @@ const CategoriesPage = () => {
             tipo: {
               name: 'TIPO DE FIGURA',
               color: 'green',
-              tags: ['Dile que no', 'Setenta', 'Vacilala', 'Sombrero', 'Copa']
+              tags: ['Dile que no', 'Setenta', 'Vacilala', 'Sombrero', 'Copa', 'oculto']
             },
             manos: {
               name: 'MANOS/TÉCNICA DE AGARRE',
@@ -97,7 +97,7 @@ const CategoriesPage = () => {
             tipo: {
               name: 'TIPO DE FIGURA',
               color: 'green',
-              tags: ['Saída', 'Volta', 'Tarraxinha', 'Semba step']
+              tags: ['Saída', 'Volta', 'Tarraxinha', 'Semba step', 'oculto']
             },
             manos: {
               name: 'MANOS/TÉCNICA DE AGARRE',
@@ -124,7 +124,7 @@ const CategoriesPage = () => {
             tipo: {
               name: 'TIPO DE FIGURA',
               color: 'green',
-              tags: ['Lateral', 'Tranca', 'Pião', 'Balanço']
+              tags: ['Lateral', 'Tranca', 'Pião', 'Balanço', 'oculto']
             },
             manos: {
               name: 'MANOS/TÉCNICA DE AGARRE',
@@ -151,7 +151,7 @@ const CategoriesPage = () => {
             tipo: {
               name: 'TIPO DE FIGURA',
               color: 'green',
-              tags: ['Giros simples', 'Cambios de dirección', 'Pasos básicos']
+              tags: ['Giros simples', 'Cambios de dirección', 'Pasos básicos', 'oculto']
             },
             manos: {
               name: 'MANOS/TÉCNICA DE AGARRE',
