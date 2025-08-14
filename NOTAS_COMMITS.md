@@ -1,3 +1,10 @@
+### 🎛️ COMMIT: Figuras - modal muestra secciones Tags/Iniciales/Finales - 2025-08-14
+- Archivos: `src/pages/FigurasPage.jsx`
+- Cambios:
+  - Se agregan bloques "Tags:", "Iniciales:" y "Finales:" en el modal de reproducción.
+  - Chips sin nombre de categoría; solo se muestra el grupo con su título.
+  - Paridad visual con las cards del grid.
+
 - summary: Modales de reproducción – unificación de botonera y rating
   date: 2025-08-14  
   files: src/pages/EscuelaPage.jsx; src/pages/EventosPage.jsx; src/pages/MusicaPage.jsx  

@@ -2482,6 +2482,72 @@ Esta acción NO se puede deshacer.`}
                     <Share2 className="h-4 w-4" />
                   </button>
                  </div>
+
+                 {/* Tags generales */}
+                 <div className="mt-3">
+                   {(() => {
+                     const orderedTags = getOrderedTags(selectedVideo || {})
+                     if (orderedTags.length > 0) {
+                       return (
+                         <>
+                           <div className="flex flex-wrap items-center gap-2 mb-2">
+                             <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">Tags:</span>
+                           </div>
+                           <div className="flex flex-wrap gap-2">
+                             {orderedTags.map(({ tag, categoryKey, color }) => (
+                               <span key={`modal-tag-${categoryKey}-${tag}`} className={`px-2 py-1 rounded-full text-xs font-medium ${getColorClasses(color)}`}>{tag}</span>
+                             ))}
+                           </div>
+                         </>
+                       )
+                     }
+                     return null
+                   })()}
+                 </div>
+
+                 {/* Tags iniciales */}
+                 <div className="mt-2">
+                   {(() => {
+                     const iniciales = getOrderedTagsIniciales(selectedVideo || {})
+                     if (iniciales.length > 0) {
+                       return (
+                         <>
+                           <div className="flex flex-wrap items-center gap-2 mb-2">
+                             <span className="text-xs font-medium text-blue-600 uppercase tracking-wide">Iniciales:</span>
+                           </div>
+                           <div className="flex flex-wrap gap-2">
+                             {iniciales.map(({ tag, categoryKey }) => (
+                               <span key={`modal-initial-${categoryKey}-${tag}`} className="px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-purple-500 text-white">{tag}</span>
+                             ))}
+                           </div>
+                         </>
+                       )
+                     }
+                     return null
+                   })()}
+                 </div>
+
+                 {/* Tags finales */}
+                 <div className="mt-2">
+                   {(() => {
+                     const finales = getOrderedTagsFinales(selectedVideo || {})
+                     if (finales.length > 0) {
+                       return (
+                         <>
+                           <div className="flex flex-wrap items-center gap-2 mb-2">
+                             <span className="text-xs font-medium text-green-600 uppercase tracking-wide">Finales:</span>
+                           </div>
+                           <div className="flex flex-wrap gap-2">
+                             {finales.map(({ tag, categoryKey }) => (
+                               <span key={`modal-final-${categoryKey}-${tag}`} className="px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-green-500 to-teal-500 text-white">{tag}</span>
+                             ))}
+                           </div>
+                         </>
+                       )
+                     }
+                     return null
+                   })()}
+                 </div>
                </div>
              </div>
            </div>
