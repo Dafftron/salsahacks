@@ -3827,3 +3827,13 @@ SequenceBuilder/
     - En `escuela > bachata > profesores`, se añadieron: "El Andres e Isa", "Andress y Yessica", "Ani", "Luis Enrique y Alma", "Alma", "Tamara y Candido".
     - Se eliminaron: "Talipo", "Dabbicco y Ani" y "Fran y Meel".
     - Se mantuvieron: "Pepe y Marta", "Alberto y Ani", "Aitor y Nuria", "Pepe y Ani".
+
+- summary: Categorías Page - Escuela/Bachata alineado con Salsa y nuevos estilos
+  date: 2025-08-14 16:38
+  files: src/pages/CategoriesPage.jsx
+  details:
+    - Añadidos `curso`, `mes`, `día`, `hora` (idénticos a Salsa) en `escuela > bachata`.
+    - `estilo`: ['Bachata', 'Bachata tradicional', 'Bolero', 'Bachata Zouk', 'Bachata sensual'].
+    - `nivel`: igual que Salsa (Inicio, Intermedio I/II/III, Avanzado).
+    - `tipo`: ['Intensivo', 'oculto'] con soporte de funcionalidad existente para oculto.
+    - `profesores`: sincronizados con `categoryStructure`.

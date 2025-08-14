@@ -567,25 +567,45 @@ const CategoriesPage = () => {
           icon: Heart,
           color: 'escuela-bachata',
           categories: {
+            curso: {
+              name: 'CURSO',
+              color: 'blue',
+              tags: ['Año 18-19', 'Año 19-20', 'Año 20-21', 'Año 21-22', 'Año 22-23', 'Año 23-24', 'Año 24-25', 'Año 25-26', 'Año 26-27', 'Año 27-28', 'Año 28-29']
+            },
+            mes: {
+              name: 'MES',
+              color: 'green',
+              tags: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+            },
+            dia: {
+              name: 'DÍA',
+              color: 'orange',
+              tags: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+            },
+            hora: {
+              name: 'HORA',
+              color: 'purple',
+              tags: ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00']
+            },
             estilo: {
               name: 'ESTILO',
               color: 'red',
-              tags: ['Bachata tradicional', 'Bachata moderna', 'Bachata sensual', 'Bachata dominicana', 'Bachata urbana']
+              tags: ['Bachata', 'Bachata tradicional', 'Bolero', 'Bachata Zouk', 'Bachata sensual']
             },
             nivel: {
               name: 'NIVEL',
-              color: 'green',
-              tags: ['Principiante', 'Intermedio', 'Avanzado', 'Experto']
+              color: 'red',
+              tags: ['Inicio', 'Intermedio I', 'Intermedio II', 'Intermedio III', 'Avanzado']
             },
-            técnica: {
-              name: 'TÉCNICA',
-              color: 'pink',
-              tags: ['Paso básico', 'Giros', 'Dips', 'Body waves', 'Isolaciones', 'Footwork']
+            tipo: {
+              name: 'TIPO',
+              color: 'indigo',
+              tags: ['Intensivo', 'oculto']
             },
             profesores: {
               name: 'PROFESORES',
-              color: 'pink',
-              tags: ['Miguel y Sunsire']
+              color: 'yellow',
+              tags: ['Pepe y Marta', 'Alberto y Ani', 'Aitor y Nuria', 'Pepe y Ani', 'El Andres e Isa', 'Andress y Yessica', 'Ani', 'Luis Enrique y Alma', 'Alma', 'Tamara y Candido']
             }
           }
         },
