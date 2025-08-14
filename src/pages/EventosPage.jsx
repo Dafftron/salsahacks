@@ -16,7 +16,7 @@ import { deleteVideo } from '../services/firebase/storage'
 
 const VideoUploadModal = lazy(() => import('../components/video/VideoUploadModal'))
 const VideoEditModal = lazy(() => import('../components/video/VideoEditModal'))
-const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVideoPlayer'))
+const VideoPlayer = lazy(() => import('../components/video/VideoPlayer'))
 
 const EventosPage = () => {
   const { user, userProfile } = useAuth()
@@ -242,7 +242,7 @@ const EventosPage = () => {
         const updated = await Promise.all(videos.map(async video => {
           try {
             const [likeResult, favoriteResult, hiddenResult, studyResult, completedResult] = await Promise.all([
-              checkUserLikedVideo(video.id, user.uid),
+              checkUserLikedVideo(video.id, user.uid, 'eventos'),
               checkUserFavorite(video.id, user.uid),
               checkUserHiddenVideo(video.id, user.uid),
               checkUserStudy(video.id, user.uid),
@@ -821,7 +821,16 @@ const EventosPage = () => {
               <div className="flex-1 min-h-0 p-4 overflow-y-auto">
                 <div className="w-full h-full max-h-[65vh] flex items-center justify-center">
                   <div className="w-full max-w-md">
-                    <SequenceVideoPlayer videos={[selectedVideo]} className="w-full h-full" showControls={true} autoplay={true} loop={false} muted={false} />
+                    <VideoPlayer
+                      src={selectedVideo.videoUrl}
+                      size="medium"
+                      loop={false}
+                      showControls={true}
+                      autoplay={true}
+                      muted={false}
+                      className="w-full h-full"
+                      videoTitle={selectedVideo.title}
+                    />
                   </div>
                 </div>
                 {/* Acciones e información del video (como en cards) */}

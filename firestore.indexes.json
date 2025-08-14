@@ -9,6 +9,14 @@
       ]
     },
     {
+      "collectionGroup": "eventos-videos",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "style", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "escuela-videos",
       "queryScope": "COLLECTION",
       "fields": [

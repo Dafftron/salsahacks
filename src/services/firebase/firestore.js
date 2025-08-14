@@ -641,9 +641,10 @@ export const toggleVideoLike = async (videoId, userId, page = 'figuras') => {
   }
 }
 
-export const checkUserLikedVideo = async (videoId, userId) => {
+export const checkUserLikedVideo = async (videoId, userId, page = 'figuras') => {
   try {
-    const docRef = doc(db, COLLECTIONS.VIDEOS, videoId)
+    const videosCollection = getVideosCollection(page)
+    const docRef = doc(db, videosCollection, videoId)
     const docSnap = await getDoc(docRef)
     
     if (!docSnap.exists()) {

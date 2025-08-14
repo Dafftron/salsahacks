@@ -17,6 +17,46 @@ import {
 } from 'lucide-react'
 import { getFileURL } from '../../services/firebase/storage'
 
+// Detectar URLs de YouTube para usar iframe en lugar de <video>
+const isYouTubeUrl = (url) => {
+  if (!url || typeof url !== 'string') return false
+  return /(youtube\.com|youtu\.be|youtube-nocookie\.com)/i.test(url)
+}
+
+const extractYouTubeId = (url) => {
+  try {
+    if (!url) return null
+    // youtu.be/<id>
+    const short = url.match(/^https?:\/\/youtu\.be\/([\w-]{11})/i)
+    if (short) return short[1]
+    // youtube.com/watch?v=<id>
+    const vParam = url.match(/[?&]v=([\w-]{11})/i)
+    if (vParam) return vParam[1]
+    // youtube.com/embed/<id>
+    const embed = url.match(/\/embed\/([\w-]{11})/i)
+    if (embed) return embed[1]
+  } catch (_) {}
+  return null
+}
+
+const buildYouTubeEmbed = (url, { autoplay = false, muted = false, loop = false } = {}) => {
+  const id = extractYouTubeId(url)
+  if (!id) return null
+  const params = new URLSearchParams({
+    rel: '0',
+    modestbranding: '1',
+    playsinline: '1',
+    controls: '1',
+    autoplay: autoplay ? '1' : '0',
+    mute: muted ? '1' : '0'
+  })
+  if (loop) {
+    params.set('loop', '1')
+    params.set('playlist', id)
+  }
+  return `https://www.youtube.com/embed/${id}?${params.toString()}`
+}
+
 const VideoPlayer = ({ 
   src, 
   size = 'medium', 
@@ -538,6 +578,28 @@ const VideoPlayer = ({
       console.error('Error en descarga:', error)
       alert(`Error al descargar el video: ${error.message}`)
     }
+  }
+
+  // Render simplificado para YouTube
+  if (isYouTubeUrl(src)) {
+    const embedUrl = buildYouTubeEmbed(src, { autoplay, muted, loop })
+    return (
+      <div 
+        ref={containerRef}
+        className={`relative bg-black rounded-lg overflow-hidden video-player-container ${getSizeClasses()} ${className}`}
+      >
+        <div className="w-full h-full aspect-video">
+          <iframe
+            title={videoTitle || 'YouTube video'}
+            src={embedUrl || src}
+            className={`w-full h-full ${size === 'fullscreen' ? 'object-contain' : 'object-cover'}`}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+      </div>
+    )
   }
 
   return (

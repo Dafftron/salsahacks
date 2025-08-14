@@ -32,7 +32,6 @@ import ConfirmModal from '../components/common/ConfirmModal'
 import Toast from '../components/common/Toast'
 import CardSizeSelector from '../components/common/CardSizeSelector'
 import CategoryChips from '../components/common/CategoryChips'
-import { useSequenceBuilderContext } from '../contexts/SequenceBuilderContext'
 import { ref, getDownloadURL } from 'firebase/storage'
 import { storage } from '../services/firebase/config'
 
@@ -41,9 +40,7 @@ const VideoUploadModal = lazy(() => import('../components/video/VideoUploadModal
 const VideoEditModal = lazy(() => import('../components/video/VideoEditModal'))
 const VideoPlayer = lazy(() => import('../components/video/VideoPlayer'))
 const DownloadModal = lazy(() => import('../components/video/DownloadModal'))
-const SequenceBuilder = lazy(() => import('../components/sequence/SequenceBuilder'))
-const SequenceGallery = lazy(() => import('../components/sequence/SequenceGallery'))
-const SequenceVideoPlayer = lazy(() => import('../components/sequence/SequenceVideoPlayer'))
+// Secuencias no disponibles en Escuela; usar VideoPlayer para reproducir
 
 import { 
   getVideos, 
@@ -107,8 +104,6 @@ const EscuelaPage = () => {
   const [activeTab, setActiveTab] = useState('videos')
   const [syncStatus, setSyncStatus] = useState('idle') // idle, syncing, error
   const [cleanupModal, setCleanupModal] = useState({ isOpen: false, type: null })
-  const [editSequenceModal, setEditSequenceModal] = useState({ isOpen: false, sequence: null })
-  const [downloadSequenceModal, setDownloadSequenceModal] = useState({ isOpen: false, sequence: null })
   const [migrationModal, setMigrationModal] = useState({ isOpen: false })
   const [isFullWidth, setIsFullWidth] = useState(false) // Modo ancho completo
 
@@ -121,8 +116,7 @@ const EscuelaPage = () => {
   const location = useLocation()
   
   // Estados para reproductor de secuencias
-  const [selectedSequence, setSelectedSequence] = useState(null)
-  const [showSequencePlayer, setShowSequencePlayer] = useState(false)
+  // Secuencias deshabilitadas en Escuela
   
   // Estados para el sistema de chips y filtros
   const [activeCategoryChips, setActiveCategoryChips] = useState(() => loadFilterPreference('activeCategoryChips', []))
@@ -175,7 +169,7 @@ const EscuelaPage = () => {
 
   
   
-  const { getVideoConfig, getSequenceConfig } = useCardSize()
+  const { getVideoConfig } = useCardSize()
 
   
 
@@ -274,7 +268,7 @@ const EscuelaPage = () => {
             try {
               const { checkUserStudy, checkUserStudyCompleted } = await import('../services/firebase/firestore')
               const [likeResult, favoriteResult, studyResult, completedResult, hiddenResult] = await Promise.all([
-                checkUserLikedVideo(video.id, user.uid),
+                checkUserLikedVideo(video.id, user.uid, 'escuela'),
                 checkUserFavorite(video.id, user.uid),
                 checkUserStudy(video.id, user.uid),
                 checkUserStudyCompleted(video.id, user.uid),
@@ -1235,13 +1229,15 @@ const EscuelaPage = () => {
               <div className="w-full h-[65vh] max-h-[65vh] flex items-center justify-center">
                 <div className="w-full h-full max-w-md">
                   <Suspense fallback={<LoadingSpinner />}>
-                    <SequenceVideoPlayer
-                      videos={[selectedVideo]}
-                      className="w-full h-full"
+                    <VideoPlayer
+                      src={selectedVideo.videoUrl}
+                      size="medium"
+                      loop={false}
                       showControls={true}
                       autoplay={true}
-                      loop={false}
                       muted={false}
+                      className="w-full h-full"
+                      videoTitle={selectedVideo.title}
                     />
                   </Suspense>
                 </div>

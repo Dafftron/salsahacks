@@ -13,6 +13,8 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
   const { currentCategories, categoriesList, getColorClasses, getGradientClasses } = useCategories(page, style)
   const fileInputRef = useRef(null)
   const [selectedFiles, setSelectedFiles] = useState([])
+  const [selectedLinks, setSelectedLinks] = useState([]) // { key, type: 'youtube', url, youtubeId, thumb }
+  const [urlInput, setUrlInput] = useState('')
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState({})
   const [currentStep, setCurrentStep] = useState(1)
@@ -60,6 +62,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     })
     
     setSelectedFiles([])
+    setSelectedLinks([])
     setVideoData({})
     setCollapsedVideos(new Set())
     setUploadProgress({})
@@ -70,6 +73,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
+    setUrlInput('')
   }
 
   const addToast = (message, type = 'success') => {
@@ -97,7 +101,11 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
   // Función para plegar/desplegar todos los videos
   const toggleAllVideos = (collapse) => {
     if (collapse) {
-      setCollapsedVideos(new Set(selectedFiles.map(file => file.name)))
+      const keys = [
+        ...selectedFiles.map(file => file.name),
+        ...selectedLinks.map(l => l.key)
+      ]
+      setCollapsedVideos(new Set(keys))
     } else {
       setCollapsedVideos(new Set())
     }
@@ -178,6 +186,61 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       const newSet = new Set(prev)
       newSet.delete(fileToRemove.name)
       return newSet
+    })
+  }
+
+  // ====== Manejo de URLs (YouTube) ======
+  const isYouTubeUrl = (url) => /(youtube\.com|youtu\.be|youtube-nocookie\.com)/i.test(url || '')
+  const extractYouTubeId = (url) => {
+    try {
+      const short = url.match(/^https?:\/\/youtu\.be\/([\w-]{11})/i)
+      if (short) return short[1]
+      const vParam = url.match(/[?&]v=([\w-]{11})/i)
+      if (vParam) return vParam[1]
+      const embed = url.match(/\/embed\/([\w-]{11})/i)
+      if (embed) return embed[1]
+    } catch (_) {}
+    return null
+  }
+  const getYouTubeThumb = (id) => `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+
+  const handleAddUrl = () => {
+    const raw = (urlInput || '').trim()
+    if (!raw) {
+      addToast('Ingresa una URL', 'error')
+      return
+    }
+    if (!isYouTubeUrl(raw)) {
+      addToast('Solo soportamos YouTube por ahora', 'warning')
+      return
+    }
+    const id = extractYouTubeId(raw)
+    if (!id) {
+      addToast('URL de YouTube inválida', 'error')
+      return
+    }
+    const key = `yt-${id}-${Date.now()}`
+    const thumb = getYouTubeThumb(id)
+    setSelectedLinks(prev => [...prev, { key, type: 'youtube', url: raw, youtubeId: id, thumb }])
+    // Precargar datos para UI
+    setVideoData(prev => ({
+      ...prev,
+      [key]: {
+        title: '',
+        description: '',
+        thumbnailPreview: thumb
+      }
+    }))
+    setUrlInput('')
+    addToast('URL añadida', 'success')
+  }
+
+  const removeLink = (key) => {
+    setSelectedLinks(prev => prev.filter(l => l.key !== key))
+    setVideoData(prev => {
+      const copy = { ...prev }
+      delete copy[key]
+      return copy
     })
   }
 
@@ -448,9 +511,66 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     }
   }
 
+  const createVideoFromLink = async (link, index) => {
+    try {
+      // Verificar duplicado por URL en base de datos para la página específica
+      const duplicateCheck = await checkVideoDuplicate(link.url, page)
+      if (duplicateCheck.isDuplicate) {
+        addToast('Esta URL ya existe en la colección', 'warning')
+        return null
+      }
+
+      // Usar solo los tags seleccionados por el usuario
+      const tagsWithStyle = {
+        ...selectedTags,
+        estilo: selectedTags.estilo || []
+      }
+      const titleInput = fieldRefs.current[`${link.key}-title`]
+      const descriptionInput = fieldRefs.current[`${link.key}-description`]
+      const currentTitle = titleInput?.value?.trim() || videoData[link.key]?.title || `YouTube ${link.youtubeId}`
+      const currentDescription = descriptionInput?.value?.trim() || videoData[link.key]?.description || ''
+
+      const videoDoc = {
+        title: currentTitle,
+        originalTitle: link.url,
+        description: currentDescription,
+        videoUrl: link.url,
+        thumbnailUrl: link.thumb || null,
+        videoPath: null,
+        thumbnailPath: null,
+        fileSize: null,
+        fileType: 'external/youtube',
+        duration: 0,
+        resolution: 'Unknown',
+        videoWidth: null,
+        videoHeight: null,
+        style: style,
+        tags: tagsWithStyle,
+        uploadedBy: user?.uid || 'anonymous',
+        views: 0,
+        likes: 0,
+        likedBy: [],
+        sourceType: 'youtube',
+        externalId: link.youtubeId
+      }
+
+      const docResult = await createVideoDocument(videoDoc, page)
+      if (!docResult.success) {
+        addToast('Error al guardar metadatos de URL', 'error')
+        return null
+      }
+      addToast('URL guardada exitosamente', 'success')
+      return { ...videoDoc, id: docResult.id }
+    } catch (error) {
+      console.error('Error creando video desde URL:', error)
+      addToast('Error inesperado al procesar URL', 'error')
+      return null
+    }
+  }
+
   const handleUpload = async () => {
-    if (selectedFiles.length === 0) {
-      addToast('Selecciona al menos un video', 'error')
+    if (selectedFiles.length === 0 && selectedLinks.length === 0) {
+      addToast('Selecciona al menos un video o añade una URL', 'error')
       return
     }
 
@@ -460,9 +580,13 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     for (let i = 0; i < selectedFiles.length; i++) {
       const file = selectedFiles[i]
       const result = await uploadVideoFile(file, i)
-      if (result) {
-        uploadedVideos.push(result)
-      }
+      if (result) uploadedVideos.push(result)
+    }
+
+    for (let j = 0; j < selectedLinks.length; j++) {
+      const link = selectedLinks[j]
+      const result = await createVideoFromLink(link, j)
+      if (result) uploadedVideos.push(result)
     }
 
     setUploading(false)
@@ -478,7 +602,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     <div className="space-y-4">
       <div className="text-center">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Seleccionar Videos</h3>
-        <p className="text-gray-600">Selecciona uno o varios videos para subir</p>
+        <p className="text-gray-600">Selecciona uno o varios videos para subir o añade URLs de YouTube</p>
       </div>
 
       <div className={`border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-${style === 'salsa' ? 'pink' : style === 'bachata' ? 'emerald' : style === 'kizomba' ? 'amber' : style === 'zouk' ? 'violet' : 'cyan'}-400 transition-colors duration-200`}>
@@ -498,6 +622,44 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
           <span className="font-medium text-center">Haz clic para seleccionar videos</span>
           <span className="text-sm text-center">MP4, AVI, MOV, etc. (máx. 500MB cada uno)</span>
         </button>
+      </div>
+
+      {/* Añadir por URL */}
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-gray-700">Añadir por URL (YouTube)</label>
+        <div className="flex gap-2">
+          <input
+            type="url"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            placeholder="https://www.youtube.com/watch?v=..."
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+          />
+          <button
+            type="button"
+            onClick={handleAddUrl}
+            className={`px-4 py-2 bg-gradient-to-r ${getGradientClasses(style)} text-white rounded-lg`}
+          >Añadir</button>
+        </div>
+        {selectedLinks.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="font-medium text-gray-900">URLs agregadas ({selectedLinks.length})</h4>
+            {selectedLinks.map((l) => (
+              <div key={l.key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-9 bg-gray-100 rounded overflow-hidden">
+                    {l.thumb ? <img src={l.thumb} alt="thumb" className="w-full h-full object-cover" /> : null}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900 truncate max-w-[380px]">{l.url}</p>
+                    <p className="text-xs text-gray-500">YouTube</p>
+                  </div>
+                </div>
+                <button onClick={() => removeLink(l.key)} className="p-1 text-red-500 hover:text-red-700"><Trash2 className="h-4 w-4" /></button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {selectedFiles.length > 0 && (
@@ -549,7 +711,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         </div>
       )}
 
-      {/* Configuración por video */}
+      {/* Configuración por video (archivos locales) */}
       {selectedFiles.map((file, fileIndex) => {
         const isCollapsed = collapsedVideos.has(file.name)
         return (
@@ -735,6 +897,90 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
         )
       })}
 
+      {/* Configuración por URL (YouTube) */}
+      {selectedLinks.map((link) => {
+        const isCollapsed = collapsedVideos.has(link.key)
+        return (
+          <div key={link.key} className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-9 bg-gray-100 rounded flex items-center justify-center relative overflow-hidden">
+                  {videoData[link.key]?.thumbnailPreview ? (
+                    <img 
+                      src={videoData[link.key].thumbnailPreview} 
+                      alt="Vista previa del video"
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = 'none' }}
+                    />
+                  ) : null}
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 truncate max-w-[420px]">{link.url}</h4>
+                  <p className="text-sm text-gray-500">YouTube</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => toggleVideoCollapse(link.key)}
+                  className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
+                  title={isCollapsed ? 'Desplegar' : 'Plegar'}
+                >
+                  {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            {!isCollapsed && (
+              <div className="p-4 space-y-4">
+                <div className="space-y-4">
+                  <h4 className="font-medium text-gray-900">Vista previa</h4>
+                  <div className="flex justify-center">
+                    <VideoPlayer
+                      src={link.url}
+                      size="medium"
+                      loop={false}
+                      showControls={true}
+                      autoplay={false}
+                      muted={false}
+                      className="w-full max-w-2xl"
+                      resolutions={null}
+                      currentResolution={null}
+                      videoTitle={videoData[link.key]?.title || 'YouTube'}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Nombre del video</label>
+                  <input
+                    type="text"
+                    data-file={link.key}
+                    data-field="title"
+                    ref={(el) => { if (el) fieldRefs.current[`${link.key}-title`] = el }}
+                    defaultValue={videoData[link.key]?.title || ''}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="Ingresa un nombre para el video"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Descripción (opcional)</label>
+                  <textarea
+                    data-file={link.key}
+                    data-field="description"
+                    ref={(el) => { if (el) fieldRefs.current[`${link.key}-description`] = el }}
+                    defaultValue={videoData[link.key]?.description || ''}
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    placeholder="Describe brevemente el contenido del video..."
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })}
+
       {/* Etiquetas globales */}
       <div className="border-t pt-6">
         <h4 className="font-medium text-gray-900 mb-4">Etiquetas para todos los videos</h4>
@@ -790,7 +1036,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
     <div className="space-y-4">
       <div className="text-center">
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Subiendo Videos</h3>
-        <p className="text-gray-600">Procesando {selectedFiles.length} video(s)...</p>
+        <p className="text-gray-600">Procesando {selectedFiles.length} archivo(s) y {selectedLinks.length} URL(s)...</p>
       </div>
 
       {selectedFiles.map((file, index) => (
@@ -804,6 +1050,15 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
               className={`bg-gradient-to-r ${getGradientClasses(style)} h-2 rounded-full transition-all duration-300`}
               style={{ width: `${uploadProgress[index] || 0}%` }}
             />
+          </div>
+        </div>
+      ))}
+
+      {selectedLinks.map((link) => (
+        <div key={link.key} className="space-y-1">
+          <div className="flex items-center justify-between">
+            <span className="font-medium text-gray-900 truncate max-w-[420px]">{link.url}</span>
+            <span className="text-sm text-gray-500">listo</span>
           </div>
         </div>
       ))}
@@ -826,7 +1081,7 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return selectedFiles.length > 0
+        return selectedFiles.length > 0 || selectedLinks.length > 0
       case 2:
         return true // Siempre se puede proceder desde tags
       case 3:
@@ -843,7 +1098,11 @@ const VideoUploadModal = ({ isOpen, onClose, onVideoUploaded, page = 'figuras', 
       setCurrentStep(prev => prev + 1)
       // Cuando se avanza al paso 2, plegar todos los videos
       if (currentStep === 1) {
-        setCollapsedVideos(new Set(selectedFiles.map(file => file.name)))
+        const keys = [
+          ...selectedFiles.map(file => file.name),
+          ...selectedLinks.map(l => l.key)
+        ]
+        setCollapsedVideos(new Set(keys))
       }
     }
   }

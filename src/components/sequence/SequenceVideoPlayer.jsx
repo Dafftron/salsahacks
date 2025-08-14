@@ -14,6 +14,7 @@ import {
   Settings
 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
+import VideoPlayer from '../video/VideoPlayer'
 
 const SequenceVideoPlayer = ({ 
   videos, 
@@ -463,20 +464,18 @@ const SequenceVideoPlayer = ({
       onTouchStart={activateControls}
       onTouchMove={activateControls}
     >
-      {/* Video Element */}
-      <video
-        ref={videoRef}
+      {/* Video Element (soporta YouTube via VideoPlayer) */}
+      <VideoPlayer
         src={currentVideo.videoUrl}
-        className="w-full h-full object-contain cursor-pointer"
-        onEnded={handleVideoEnd}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoadedMetadata}
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
+        size="medium"
+        loop={false}
+        showControls={true}
+        autoplay={autoplay}
         muted={isMuted}
-        autoPlay={autoplay}
-        loop={false} // We handle looping manually
-        onClick={activateControls}
+        className="w-full h-full object-contain"
+        videoTitle={currentVideo.title}
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={handleVideoEnd}
       />
       
              {/* Video Info Overlay */}

@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userRole() {
+      return isAuth() ? (userDoc().data.role != null ? userDoc().data.role : 'user') : 'guest';
+    }
+
+    function isSuper() {
+      return userRole() == 'super_admin';
+    }
+
+    function isMaese() {
+      return userRole() == 'maese';
+    }
+
+    function isPrivileged() {
+      return isSuper() || isMaese();
+    }
+
+    // Permitir actualizar solo campos sociales (likes/likedBy/rating/updatedAt)
+    function isSocialOnlyChange() {
+      let diff = request.resource.data.diff(resource.data);
+      return diff.changedKeys().hasOnly(['likes', 'likedBy', 'rating', 'updatedAt']);
+    }
+
+    // ===== Videos por página =====
+    match /videos/{videoId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && isPrivileged();
+      allow update: if isAuth() && (isPrivileged() || isSocialOnlyChange());
+      allow delete: if isAuth() && isSuper();
+    }
+
+    match /escuela-videos/{videoId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && isPrivileged();
+      allow update: if isAuth() && (isPrivileged() || isSocialOnlyChange());
+      allow delete: if isAuth() && isSuper();
+    }
+
+    match /eventos-videos/{videoId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && isPrivileged();
+      allow update: if isAuth() && (isPrivileged() || isSocialOnlyChange());
+      allow delete: if isAuth() && isSuper();
+    }
+
+    match /musica-videos/{videoId} {
+      allow read: if isAuth();
+      allow create: if isAuth() && isPrivileged();
+      allow update: if isAuth() && (isPrivileged() || isSocialOnlyChange());
+      allow delete: if isAuth() && isSuper();
+    }
+
+    // ===== Usuarios =====
+    match /users/{userId} {
+      allow read: if isAuth() && (request.auth.uid == userId || isPrivileged());
+      allow create: if isAuth() && request.auth.uid == userId;
+      allow update: if isAuth() && (
+        request.auth.uid == userId || isSuper()
+      ) && (
+        // Solo SUPER puede cambiar el rol
+        (!request.resource.data.diff(resource.data).changedKeys().hasAny(['role']) || isSuper())
+      );
+    }
+
+    // Inbox del usuario
+    match /users/{userId}/inbox/{messageId} {
+      // Crear: cualquier autenticado puede enviar, pero debe coincidir senderId
+      allow create: if isAuth() && request.resource.data.senderId == request.auth.uid;
+      // Leer/actualizar/borrar: solo el dueño
+      allow read, update, delete: if isAuth() && request.auth.uid == userId;
+    }
+
+    // Invitaciones
+    match /invitations/{code} {
+      allow read: if isAuth();
+      allow create, update, delete: if isAuth() && isPrivileged();
+    }
+
+    // Por defecto: denegar
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+
