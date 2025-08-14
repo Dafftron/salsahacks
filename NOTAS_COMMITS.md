@@ -5,6 +5,13 @@
   - Chips sin nombre de categoría; solo se muestra el grupo con su título.
   - Paridad visual con las cards del grid.
 
+### ➕ COMMIT: Figuras - botón "Añadir a secuencia" también en cards - 2025-08-14
+- Archivos: `src/pages/FigurasPage.jsx`
+- Cambios:
+  - Añadido botón de sumar al secuenciador en la barra de acciones de cada card.
+  - Deshabilitado si el video ya está en la secuencia; respeta compatibilidad (estilos/tooltip).
+  - Paridad de UX con el botón del modal.
+
 - summary: Modales de reproducción – unificación de botonera y rating
   date: 2025-08-14  
   files: src/pages/EscuelaPage.jsx; src/pages/EventosPage.jsx; src/pages/MusicaPage.jsx  

@@ -2051,6 +2051,27 @@ const FigurasPage = () => {
                             <Download className="h-4 w-4" />
                           </button>
                         )}
+                        {/* Añadir a secuencia (con compatibilidad) */}
+                        <button
+                          onClick={() => handleAddVideoToSequence(video)}
+                          disabled={isVideoInSequence(video)}
+                          className={`transition-colors duration-200 p-1 rounded ${
+                            isVideoInSequence(video)
+                              ? 'text-gray-300 cursor-not-allowed'
+                              : isBuilderOpen && !isVideoCompatible(video)
+                              ? 'text-red-400 hover:text-red-500 hover:bg-red-50'
+                              : 'text-gray-400 hover:text-purple-500 hover:bg-purple-50'
+                          }`}
+                          title={
+                            isVideoInSequence(video)
+                              ? 'Ya en secuencia'
+                              : isBuilderOpen && !isVideoCompatible(video)
+                              ? 'Añadir forzadamente (incompatible)'
+                              : 'Añadir a secuencia'
+                          }
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
                         <button
                           onClick={() => openEditModal(video)}
                           className="text-gray-400 hover:text-blue-500 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
