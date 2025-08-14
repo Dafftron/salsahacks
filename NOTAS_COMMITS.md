@@ -3819,3 +3819,11 @@ SequenceBuilder/
     - Ajuste de barras de acciones: `flex-wrap` + `gap-2` en lugar de `space-x-*` para permitir varias líneas
     - Eliminado `ml-1` en contadores para evitar desbordes en cortes estrechos; uso de `gap-*`
     - Aplicado en todas las galerías principales (Figuras, Escuela, Eventos, Música) y `SequenceGallery`. Segunda pasada completada en `FigurasPage.jsx` (secciones pendientes).
+
+- summary: Escuela (Bachata) - Actualización de profesores
+  date: 2025-08-14 16:38
+  files: src/constants/categoryStructure.js
+  details:
+    - En `escuela > bachata > profesores`, se añadieron: "El Andres e Isa", "Andress y Yessica", "Ani", "Luis Enrique y Alma", "Alma", "Tamara y Candido".
+    - Se eliminaron: "Talipo", "Dabbicco y Ani" y "Fran y Meel".
+    - Se mantuvieron: "Pepe y Marta", "Alberto y Ani", "Aitor y Nuria", "Pepe y Ani".
