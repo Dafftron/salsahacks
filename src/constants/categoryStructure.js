@@ -560,8 +560,8 @@ export const categoryStructure = {
           },
           estilo: {
             name: 'ESTILO',
-            color: 'emerald',
-            tags: ['Bachata tradicional', 'Bachata moderna', 'Bachata sensual', 'Coreografía']
+            color: 'red',
+            tags: ['Bachata', 'Bachata tradicional', 'Bolero', 'Bachata Zouk', 'Bachata sensual']
           },
           nivel: {
             name: 'NIVEL',

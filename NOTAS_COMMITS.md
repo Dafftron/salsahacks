@@ -3837,3 +3837,10 @@ SequenceBuilder/
     - `nivel`: igual que Salsa (Inicio, Intermedio I/II/III, Avanzado).
     - `tipo`: ['Intensivo', 'oculto'] con soporte de funcionalidad existente para oculto.
     - `profesores`: sincronizados con `categoryStructure`.
+
+- summary: Sincronización EscuelaPage/CategoriesPage para Escuela/Bachata
+  date: 2025-08-14 16:38
+  files: src/constants/categoryStructure.js
+  details:
+    - `escuela > bachata > estilo`: alineado exactamente con CategoriesPage (Bachata, Bachata tradicional, Bolero, Bachata Zouk, Bachata sensual).
+    - Color de categoría ajustado a `red` para consistencia.
