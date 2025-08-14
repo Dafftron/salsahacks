@@ -1117,8 +1117,32 @@ const EscuelaPage = () => {
                                 <span className={`${getVideoConfig(isFullWidth).compact ? 'text-xs' : 'text-xs'} font-medium text-gray-500`}>({video.rating || 0})</span>
                         </div>
                       </div>
-                        {/* Estado visual inline: sin badges */}
+                        {/* Descripción */}
                         <p className={`text-gray-600 text-sm ${getVideoConfig(isFullWidth).compact ? 'mb-2' : 'mb-3'} ${getVideoConfig(isFullWidth).descriptionLines === 1 ? 'line-clamp-1' : getVideoConfig(isFullWidth).descriptionLines === 2 ? 'line-clamp-2' : getVideoConfig(isFullWidth).descriptionLines === 3 ? 'line-clamp-3' : 'line-clamp-4'}`}>{video.description || 'Sin descripción'}</p>
+
+                        {/* Chips de tags por categorías (ordenadas) */}
+                        {(() => {
+                          const isSuperAdmin = userProfile?.role === 'super_admin'
+                          const orderedTags = getOrderedTags(video).filter(({ tag, categoryKey }) => {
+                            // Ocultar tag "oculto" de la categoría tipo para no-superadmin
+                            if (categoryKey === 'tipo' && tag === 'oculto' && !isSuperAdmin) return false
+                            return true
+                          })
+                          if (orderedTags.length === 0) return null
+                          return (
+                            <div className={`${getVideoConfig(isFullWidth).compact ? 'mb-2' : 'mb-3'} flex flex-wrap gap-2`}>
+                              {orderedTags.map(({ tag, categoryKey, color }) => (
+                                <span
+                                  key={`${video.id}-${categoryKey}-${tag}`}
+                                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${getColorClasses(color)}`}
+                                  title={`${categoryKey}: ${tag}`}
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )
+                        })()}
 
                         {/* Barra de acciones compactas (como antes) */}
                         <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500">

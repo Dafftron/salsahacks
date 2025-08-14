@@ -3851,3 +3851,10 @@ SequenceBuilder/
   details:
     - Cambiado "El Andres e Isa" a "Andres e Isa" en ambos sitios.
     - Unificado color de `profesores` a `yellow` en `escuela > bachata` para ambas páginas.
+
+- summary: Escuela - Mostrar chips de tags en cards y color indigo en CategoriesPage
+  date: 2025-08-14 16:38
+  files: src/pages/EscuelaPage.jsx; src/pages/CategoriesPage.jsx
+  details:
+    - `EscuelaPage`: añadido render de chips de tags por categoría en las cards, ocultando el tag `oculto` a no-superadmin.
+    - `CategoriesPage`: añadido color `indigo` al mapa de colores para evitar chips grises en categoría `tipo`.

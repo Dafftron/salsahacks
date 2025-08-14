@@ -722,7 +722,8 @@ const CategoriesPage = () => {
       purple: 'bg-purple-500 text-white',
       orange: 'bg-orange-500 text-white',
       green: 'bg-green-500 text-white',
-      blue: 'bg-blue-500 text-white'
+      blue: 'bg-blue-500 text-white',
+      indigo: 'bg-indigo-500 text-white'
     }
     return colorMap[color] || 'bg-gray-500 text-white'
   }
